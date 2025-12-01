@@ -1,0 +1,5 @@
+class ModoSimples {
+  constructor(config) {
+    
+  }
+}
