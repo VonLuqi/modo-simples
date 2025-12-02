@@ -4,9 +4,28 @@
   "description": "",
   "main": "modo-simples.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node modo-simples.js",
+    "format": "prettier --write .",
+    "prepare": "husky install"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "^3.7.3"
+  },
+  "directories": {
+    "example": "examples"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VonLuqi/modo-simples.git"
+  },
+  "bugs": {
+    "url": "https://github.com/VonLuqi/modo-simples/issues"
+  },
+  "homepage": "https://github.com/VonLuqi/modo-simples#readme",
+  "lint-staged": {
+    "*.{js,css,md}": "prettier --write"
+  }
 }

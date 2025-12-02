@@ -1,2 +1,19 @@
-node_modules
+# Dependências (O mais importante: nunca enviar isto!)
+node_modules/
+
+# Logs e arquivos de erro (Lixo gerado pelo npm)
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Arquivos de sistema (Lixo do Windows e Mac)
 .DS_Store
+Thumbs.db
+
+# Pastas de Build (Caso o projeto cresça e gere arquivos finais)
+dist/
+build/
+
+# Variáveis de ambiente (Segurança: nunca enviar senhas)
+.env
