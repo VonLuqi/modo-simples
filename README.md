@@ -11,7 +11,7 @@ Para garantir que todas as ferramentas de automação (como o Prettier e o Husky
 1. **Clonar o repositório:**
 
    ```bash
-   git clone [https://github.com/VonLuqui/modo-simples.git](https://github.com/VonLuqui/modo-simples.git)
+   git clone https://github.com/VonLuqui/modo-simples.git
    cd modo-simples
    ```
 
