@@ -8,8 +8,8 @@
     "build": "node scripts/bundle.cjs",
     "build:dev": "node scripts/bundle.cjs",
     "watch": "node scripts/bundle.cjs",
-    "test": "node --test tests/unit/*.test.js",
-    "test:watch": "node --test --watch tests/unit/*.test.js",
+    "test": "node scripts/test.cjs",
+    "test:watch": "node scripts/test.cjs --watch",
     "format": "prettier --write .",
     "prepare": "husky install"
   },

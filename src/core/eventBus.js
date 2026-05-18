@@ -51,7 +51,9 @@ const eventBus = {
         cb(data);
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.error('[ModoSimples] Event handler error:', err);
+        if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
+          console.error('[ModoSimples] Event handler error:', err);
+        }
       }
     });
   },
