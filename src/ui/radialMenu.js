@@ -41,14 +41,33 @@ import { trapFocus, getFocusable } from '../utils/focus.js';
  * angle: graus, 0 = topo, sentido horário.
  * Espaçamos 8 itens em 180° (semicírculo superior) com offset centrado.
  */
-const ITEM_COUNT    = 8;
-const ARC_START_DEG = 200;  // início do arco (sentido horário a partir do topo)
-const ARC_SPAN_DEG  = 160;  // largura do arco
+const ITEM_COUNT = 8;
 
-/** Retorna o ângulo de cada item no arco. */
-function computeAngles(count) {
-  const step = count > 1 ? ARC_SPAN_DEG / (count - 1) : 0;
-  return Array.from({ length: count }, (_, i) => ARC_START_DEG + i * step);
+/**
+ * Retorna start e span do arco de acordo com o canto onde o menu está.
+ * O arco sempre abre para o interior da tela.
+ *
+ * Convenção de ângulo: 0° = topo, sentido horário.
+ *   bottom-right → abre ↖  (180° a 270°)
+ *   bottom-left  → abre ↗  (270° a 360°)
+ *   top-right    → abre ↙  ( 90° a 180°)
+ *   top-left     → abre ↘  (  0° a  90°)
+ */
+function arcForPosition(position) {
+  switch (position) {
+    case 'bottom-left':  return { start: 270, span: 90 };
+    case 'top-right':    return { start:  90, span: 90 };
+    case 'top-left':     return { start:   0, span: 90 };
+    case 'bottom-right':
+    default:             return { start: 180, span: 90 };
+  }
+}
+
+/** Retorna o ângulo de cada item no arco para a posição dada. */
+function computeAngles(count, position) {
+  const { start, span } = arcForPosition(position);
+  const step = count > 1 ? span / (count - 1) : 0;
+  return Array.from({ length: count }, (_, i) => start + i * step);
 }
 
 export const RADIAL_ITEMS_DEF = [
@@ -94,8 +113,8 @@ export const RADIAL_ITEMS_DEF = [
   },
 ];
 
-export function createRadialMenu({ state, onToggle, onHelp }) {
-  const angles = computeAngles(ITEM_COUNT);
+export function createRadialMenu({ state, onToggle, onHelp, position = 'bottom-right' }) {
+  const angles = computeAngles(ITEM_COUNT, position);
 
   // ── Container ───────────────────────────────────────────────
   const root = document.createElement('div');

@@ -60,6 +60,8 @@ export function getUIStyles(position = 'bottom-right') {
       width: ${BTN_SIZE}px;
       height: ${BTN_SIZE}px;
       pointer-events: none;
+      user-select: none;
+      touch-action: none;
     }
 
     /* â”€â”€ BotÃ£o central â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -101,8 +103,13 @@ export function getUIStyles(position = 'bottom-right') {
         0 4px 20px rgba(0,0,0,0.28);
     }
 
-    #ms-central-btn:hover { transform: scale(1.1); }
+    #ms-central-btn:hover { transform: scale(1.08); }
     #ms-central-btn:active { transform: scale(0.96); }
+
+    /* Cursor de arrastar quando não está abrindo/fechando */
+    #ms-radial-root.ms-dragging #ms-central-btn,
+    #ms-radial-root.ms-drag-ready #ms-central-btn { cursor: grab; }
+    #ms-radial-root.ms-dragging #ms-central-btn    { cursor: grabbing; }
 
     #ms-central-btn:focus-visible {
       outline: 3px solid #fbbf24;
@@ -231,12 +238,12 @@ export function getUIStyles(position = 'bottom-right') {
     }
 
     .ms-item-label {
-      font-size: 0.47rem;
+      font-size: 0.55rem;
       font-weight: 700;
       text-align: center;
       line-height: 1.1;
       letter-spacing: 0.01em;
-      max-width: 44px;
+      max-width: 56px;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;

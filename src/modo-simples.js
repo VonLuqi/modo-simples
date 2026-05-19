@@ -49,6 +49,7 @@ class ModoSimples {
     this._removeMotionListener = null;
     this._removeStateListener = null;
     this._initialized = false;
+    this._dragCleanup = null;
   }
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -78,6 +79,7 @@ class ModoSimples {
     stopObserving();
     if (this._removeMotionListener) { this._removeMotionListener(); this._removeMotionListener = null; }
     if (this._removeStateListener)  { this._removeStateListener();  this._removeStateListener  = null; }
+    if (this._dragCleanup)          { this._dragCleanup();          this._dragCleanup          = null; }
     if (this._host?.parentNode) this._host.parentNode.removeChild(this._host);
     const pageStyle = document.getElementById('ms-page-styles');
     if (pageStyle?.parentNode) pageStyle.parentNode.removeChild(pageStyle);
@@ -112,6 +114,7 @@ class ModoSimples {
       state: s,
       onToggle: (key, value) => state.set({ options: { [key]: value } }),
       onHelp: () => this._toggleHelp(),
+      position: this._config.position,
     });
     this._shadow.appendChild(this._radial.element);
 
@@ -123,6 +126,7 @@ class ModoSimples {
 
     this._centralBtn.sync({ modoSimples: s.modoSimples, radialOpen: s.panelOpen });
     this._radial.updateItems(s.options);
+    this._initDrag();
   }
 
   _buildHelpPanel() {
@@ -155,6 +159,130 @@ class ModoSimples {
     `;
     panel.prepend(closeBtn);
     return panel;
+  }
+
+  // ── Drag to reposition ────────────────────────────────────────────────────
+
+  /**
+   * Permite arrastar o botão central para reposicioná-lo na tela.
+   * Usa pointer events para suporte a mouse e touch.
+   * Após soltar, o botão se encaixa no canto mais próximo (snap-to-corner).
+   */
+  _initDrag() {
+    const root = this._radial.element;  // #ms-radial-root
+    const btn  = this._centralBtn.element;
+    const DRAG_THRESHOLD = 6; // px — mínimo para considerar drag (não click)
+    const MARGIN = 20;        // px — margem das bordas
+
+    let startX = 0, startY = 0, startLeft = 0, startTop = 0;
+    let dragging = false, moved = false;
+
+    const onPointerDown = (e) => {
+      // Somente botão primário / toque
+      if (e.button !== undefined && e.button !== 0) return;
+      startX = e.clientX;
+      startY = e.clientY;
+
+      // Posição atual do root dentro do :host (que cobre o viewport)
+      const rect = root.getBoundingClientRect();
+      startLeft = rect.left;
+      startTop  = rect.top;
+
+      dragging = false;
+      moved = false;
+      root.classList.add('ms-drag-ready');
+      btn.setPointerCapture(e.pointerId);
+
+      e.stopPropagation();
+    };
+
+    const onPointerMove = (e) => {
+      if (!root.classList.contains('ms-drag-ready') && !dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      if (!dragging && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+
+      // Primeiro movimento significativo
+      if (!dragging) {
+        dragging = true;
+        moved = true;
+        root.classList.remove('ms-drag-ready');
+        root.classList.add('ms-dragging');
+        // Troca para posicionamento absoluto livre
+        root.style.right  = '';
+        root.style.bottom = '';
+        root.style.left   = startLeft + 'px';
+        root.style.top    = startTop  + 'px';
+      }
+
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const sz = root.offsetWidth || 72;
+
+      const newLeft = Math.max(MARGIN, Math.min(vw - sz - MARGIN, startLeft + dx));
+      const newTop  = Math.max(MARGIN, Math.min(vh - sz - MARGIN, startTop  + dy));
+
+      root.style.left = newLeft + 'px';
+      root.style.top  = newTop  + 'px';
+    };
+
+    const onPointerUp = (e) => {
+      if (!root.classList.contains('ms-drag-ready') && !dragging) return;
+      root.classList.remove('ms-drag-ready', 'ms-dragging');
+
+      if (!moved) { dragging = false; return; }
+
+      // Snap para o canto mais próximo
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const sz = root.offsetWidth || 72;
+      const cx = parseFloat(root.style.left) + sz / 2;
+      const cy = parseFloat(root.style.top)  + sz / 2;
+
+      const snapRight  = cx > vw / 2;
+      const snapBottom = cy > vh / 2;
+
+      // Remove posicionamento livre e volta para corner CSS
+      root.style.left   = '';
+      root.style.top    = '';
+      root.style.right  = '';
+      root.style.bottom = '';
+
+      if (snapRight && snapBottom) {
+        root.style.right  = MARGIN + 'px';
+        root.style.bottom = MARGIN + 'px';
+      } else if (!snapRight && snapBottom) {
+        root.style.left   = MARGIN + 'px';
+        root.style.bottom = MARGIN + 'px';
+      } else if (snapRight && !snapBottom) {
+        root.style.right = MARGIN + 'px';
+        root.style.top   = MARGIN + 'px';
+      } else {
+        root.style.left = MARGIN + 'px';
+        root.style.top  = MARGIN + 'px';
+      }
+
+      dragging = false;
+      moved = false;
+    };
+
+    btn.addEventListener('pointerdown', onPointerDown);
+    btn.addEventListener('pointermove', onPointerMove);
+    btn.addEventListener('pointerup',   onPointerUp);
+    btn.addEventListener('pointercancel', onPointerUp);
+
+    // Impede que o drag dispare click
+    btn.addEventListener('click', (e) => {
+      if (moved) { e.stopImmediatePropagation(); moved = false; }
+    }, { capture: true });
+
+    this._dragCleanup = () => {
+      btn.removeEventListener('pointerdown', onPointerDown);
+      btn.removeEventListener('pointermove', onPointerMove);
+      btn.removeEventListener('pointerup',   onPointerUp);
+      btn.removeEventListener('pointercancel', onPointerUp);
+    };
   }
 
   // ── Events ─────────────────────────────────────────────────────────────────
