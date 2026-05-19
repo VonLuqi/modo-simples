@@ -10,11 +10,15 @@ import eventBus from './eventBus.js';
  * Shape:
  *   {
  *     modoSimples: boolean,   // Modo Simples activation flag
- *     panelOpen:   boolean,   // accessibility panel open/closed
+ *     panelOpen:   boolean,   // radial menu open/closed
  *     options: {
- *       reducedMotion: boolean,  // synced from prefers-reduced-motion
- *       highContrast:  boolean,  // user-enabled high contrast
- *       largerText:    boolean,  // user-enabled larger text
+ *       reducedMotion:    boolean,  // synced from prefers-reduced-motion
+ *       highContrast:     boolean,  // user-enabled high contrast
+ *       largerText:       boolean,  // user-enabled larger text
+ *       highlightLinks:   boolean,  // make links more visible
+ *       dyslexiaFont:     boolean,  // apply dyslexia-friendly font stack
+ *       textSpacing:      boolean,  // increase line-height / letter-spacing
+ *       hideImages:       boolean,  // hide decorative images
  *     }
  *   }
  */
@@ -24,9 +28,13 @@ const initialState = {
   modoSimples: false,
   panelOpen: false,
   options: {
-    reducedMotion: false,
-    highContrast: false,
-    largerText: false,
+    reducedMotion:  false,
+    highContrast:   false,
+    largerText:     false,
+    highlightLinks: false,
+    dyslexiaFont:   false,
+    textSpacing:    false,
+    hideImages:     false,
   },
 };
 

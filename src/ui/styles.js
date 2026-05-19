@@ -1,46 +1,42 @@
-/**
+﻿/**
  * CSS factory functions for Modo Simples.
  *
  * Two separate style sets:
- *  1. getUIStyles(position)  → injected inside Shadow DOM (UI isolation)
- *  2. getPageStyles()        → injected into host page <head> (scoped under
+ *  1. getUIStyles(position)  â†’ injected inside Shadow DOM (UI isolation)
+ *  2. getPageStyles()        â†’ injected into host page <head> (scoped under
  *                              html.ms-ativo, dormant when inactive)
- *
- * Trade-off on !important in getPageStyles:
- *   Necessary to override unknown host-page specificity. Risk is minimised
- *   because every rule requires the `html.ms-ativo` prefix — the styles
- *   are completely inert on pages where Modo Simples is never activated.
  */
 
 /**
- * CSS for the Shadow DOM host content: floating button + panel.
+ * CSS for the radial menu UI inside Shadow DOM.
  *
  * Architecture:
- *   :host is position:fixed covering the full viewport with pointer-events:none
- *   so it never blocks page interactions. The button and panel re-enable
- *   pointer-events individually.
+ *   :host covers full viewport (pointer-events:none)
+ *   #ms-radial-root anchors the central button + items (pointer-events:auto)
+ *
+ * Radial item positioning:
+ *   Each item uses CSS custom property --ms-angle (degrees) set inline.
+ *   translateX(var(--ms-radius)) rotates the item to its arc position.
+ *   The label rotates back to stay readable.
  *
  * @param {'bottom-right'|'bottom-left'|'top-right'|'top-left'} position
- * @returns {string} CSS text
+ * @returns {string}
  */
 export function getUIStyles(position = 'bottom-right') {
-  const btnCorner = {
-    'bottom-right': 'bottom:1.5rem;right:1.5rem;',
-    'bottom-left': 'bottom:1.5rem;left:1.5rem;',
-    'top-right': 'top:1.5rem;right:1.5rem;',
-    'top-left': 'top:1.5rem;left:1.5rem;',
-  }[position] ?? 'bottom:1.5rem;right:1.5rem;';
-
   const isBottom = position.startsWith('bottom');
-  const isRight = position.endsWith('right');
+  const isRight  = position.endsWith('right');
 
-  const panelVertical = isBottom
-    ? 'bottom:calc(1.5rem + 52px + 0.625rem);'
-    : 'top:calc(1.5rem + 52px + 0.625rem);';
-  const panelHorizontal = isRight ? 'right:1.5rem;' : 'left:1.5rem;';
+  const rootCorner = [
+    isBottom ? 'bottom:1.5rem;' : 'top:1.5rem;',
+    isRight  ? 'right:1.5rem;' : 'left:1.5rem;',
+  ].join('');
+
+  const RADIUS    = 95;   // px â€” distÃ¢ncia do centro ao meio do item
+  const BTN_SIZE  = 60;   // px â€” diÃ¢metro do botÃ£o central
+  const ITEM_SIZE = 52;   // px â€” diÃ¢metro de cada item radial
 
   return `
-    /* ── Host container ─────────────────────────────────────── */
+    /* â”€â”€ Host â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     :host {
       all: initial;
       display: block;
@@ -57,186 +53,248 @@ export function getUIStyles(position = 'bottom-right') {
 
     *, *::before, *::after { box-sizing: inherit; }
 
-    /* ── Floating button ─────────────────────────────────────── */
-    #ms-btn {
+    /* â”€â”€ Radial root â€” Ã¢ncora de posicionamento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    #ms-radial-root {
       position: absolute;
-      ${btnCorner}
-      width: 52px;
-      height: 52px;
+      ${rootCorner}
+      width: ${BTN_SIZE}px;
+      height: ${BTN_SIZE}px;
+      pointer-events: none;
+    }
+
+    /* â”€â”€ BotÃ£o central â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    #ms-central-btn {
+      position: absolute;
+      inset: 0;
+      width: ${BTN_SIZE}px;
+      height: ${BTN_SIZE}px;
       border-radius: 50%;
-      border: 2px solid transparent;
-      background: #1a56db;
-      color: #fff;
+      border: 3px solid rgba(255,255,255,0.5);
       cursor: pointer;
       pointer-events: auto;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.22);
-      transition: background 0.18s ease, transform 0.18s ease;
+      gap: 1px;
       padding: 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.28), 0 1px 4px rgba(0,0,0,0.15);
+      transition:
+        background 0.22s ease,
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+      z-index: 2;
+      /* Estado padrÃ£o: OFF = vermelho */
+      background: #dc2626;
+      color: #fff;
     }
 
-    #ms-btn:hover { background: #1e429f; transform: scale(1.08); }
+    /* Estado ON â€” verde */
+    #ms-central-btn.ms-central--on {
+      background: #16a34a;
+    }
 
-    /* Visible focus indicator complying with WCAG 2.4.11 (Focus Appearance) */
-    #ms-btn:focus-visible {
+    /* Anel de abertura (radial aberto) */
+    #ms-central-btn.ms-central--open {
+      box-shadow:
+        0 0 0 6px rgba(255,255,255,0.15),
+        0 4px 20px rgba(0,0,0,0.28);
+    }
+
+    #ms-central-btn:hover { transform: scale(1.1); }
+    #ms-central-btn:active { transform: scale(0.96); }
+
+    #ms-central-btn:focus-visible {
+      outline: 3px solid #fbbf24;
+      outline-offset: 4px;
+    }
+
+    /* Label compacta visÃ­vel (nÃ£o apenas cor para indicar estado) */
+    .ms-central-label {
+      font-size: 0.55rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      line-height: 1;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .ms-central-icon svg { display: block; }
+
+    /* â”€â”€ Menu radial (container dos itens) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    #ms-radial-menu {
+      position: absolute;
+      /* Centralizado sobre o botÃ£o central */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+
+    #ms-radial-menu[hidden] { display: block !important; visibility: hidden; pointer-events: none; }
+    /* Quando nÃ£o estÃ¡ hidden â€” ativo */
+    #ms-radial-menu:not([hidden]) { visibility: visible; pointer-events: none; }
+
+    /* â”€â”€ Item radial â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .ms-radial-item {
+      position: absolute;
+      /* PivÃ´ no centro do menu */
+      top: -${ITEM_SIZE / 2}px;
+      left: -${ITEM_SIZE / 2}px;
+      width: ${ITEM_SIZE}px;
+      height: ${ITEM_SIZE}px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.18);
+      background: #1e293b;
+      color: #e2e8f0;
+      cursor: pointer;
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.32);
+
+      /* Posicionamento pelo Ã¢ngulo â€” cada item recebe --ms-angle via JS */
+      transform:
+        rotate(var(--ms-angle))
+        translateX(${RADIUS}px)
+        rotate(calc(-1 * var(--ms-angle)));
+
+      /* AnimaÃ§Ã£o de entrada */
+      opacity: 0;
+      scale: 0.4;
+      transition:
+        opacity 0.22s ease,
+        scale 0.22s ease,
+        background 0.15s ease,
+        transform 0.15s ease,
+        border-color 0.15s ease;
+    }
+
+    /* Itens visÃ­veis quando menu estÃ¡ aberto */
+    #ms-radial-menu:not([hidden]) .ms-radial-item {
+      opacity: 1;
+      scale: 1;
+    }
+
+    /* Delay escalonado por ordem de filho */
+    #ms-radial-menu:not([hidden]) .ms-radial-item:nth-child(1) { transition-delay: 0.00s; }
+    #ms-radial-menu:not([hidden]) .ms-radial-item:nth-child(2) { transition-delay: 0.03s; }
+    #ms-radial-menu:not([hidden]) .ms-radial-item:nth-child(3) { transition-delay: 0.06s; }
+    #ms-radial-menu:not([hidden]) .ms-radial-item:nth-child(4) { transition-delay: 0.09s; }
+    #ms-radial-menu:not([hidden]) .ms-radial-item:nth-child(5) { transition-delay: 0.12s; }
+    #ms-radial-menu:not([hidden]) .ms-radial-item:nth-child(6) { transition-delay: 0.15s; }
+    #ms-radial-menu:not([hidden]) .ms-radial-item:nth-child(7) { transition-delay: 0.18s; }
+    #ms-radial-menu:not([hidden]) .ms-radial-item:nth-child(8) { transition-delay: 0.21s; }
+
+    .ms-radial-item:hover {
+      background: #334155;
+      border-color: rgba(255,255,255,0.35);
+      transform:
+        rotate(var(--ms-angle))
+        translateX(${RADIUS + 5}px)
+        rotate(calc(-1 * var(--ms-angle)))
+        scale(1.08);
+    }
+
+    .ms-radial-item:active {
+      transform:
+        rotate(var(--ms-angle))
+        translateX(${RADIUS}px)
+        rotate(calc(-1 * var(--ms-angle)))
+        scale(0.95);
+    }
+
+    /* Estado ON do item */
+    .ms-radial-item.ms-item--on {
+      background: #1d4ed8;
+      border-color: rgba(147,197,253,0.5);
+      color: #fff;
+    }
+
+    .ms-radial-item:focus-visible {
       outline: 3px solid #fbbf24;
       outline-offset: 3px;
     }
 
-    /* ── Accessibility panel ─────────────────────────────────── */
-    #ms-panel {
-      position: absolute;
-      ${panelVertical}
-      ${panelHorizontal}
-      width: 308px;
-      max-height: 80vh;
-      overflow-y: auto;
-      background: #ffffff;
-      border-radius: 14px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08);
-      pointer-events: auto;
-      padding: 1.25rem;
-    }
-
-    #ms-panel[hidden] { display: none; }
-
-    /* Panel header */
-    .ms-panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 1px solid #e5e7eb;
-      gap: 0.5rem;
-    }
-
-    #ms-panel-title {
-      font-size: 1rem;
-      font-weight: 700;
-      margin: 0;
-      color: #111827;
-      flex: 1;
-    }
-
-    /* Close button */
-    #ms-close {
-      background: none;
-      border: 1px solid transparent;
-      border-radius: 6px;
-      cursor: pointer;
-      padding: 0.25rem;
-      color: #6b7280;
+    /* Ãcone e label dentro do item */
+    .ms-item-icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.15s;
+      line-height: 0;
     }
 
-    #ms-close:hover { background: #f3f4f6; color: #111827; }
-
-    #ms-close:focus-visible {
-      outline: 3px solid #1a56db;
-      outline-offset: 2px;
+    .ms-item-label {
+      font-size: 0.47rem;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.1;
+      letter-spacing: 0.01em;
+      max-width: 44px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: currentColor;
     }
 
-    /* ── Toggle rows ─────────────────────────────────────────── */
-    .ms-toggle-row {
+    /* â”€â”€ Painel de ajuda â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    #ms-help-panel {
+      position: absolute;
+      ${isBottom ? 'bottom: calc(' + BTN_SIZE + 'px + 8rem);' : 'top: calc(' + BTN_SIZE + 'px + 2rem);'}
+      ${isRight  ? 'right: 0;' : 'left: 0;'}
+      width: 280px;
+      background: #1e293b;
+      color: #e2e8f0;
+      border-radius: 14px;
+      padding: 1.25rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      pointer-events: auto;
+      font-size: 0.82rem;
+      line-height: 1.55;
+    }
+
+    #ms-help-panel[hidden] { display: none; }
+
+    #ms-help-panel h3 {
+      margin: 0 0 0.75rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    #ms-help-panel p { margin: 0 0 0.5rem; }
+    #ms-help-panel p:last-child { margin: 0; }
+
+    .ms-help-close {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.6rem;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 4px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 0.7rem 0;
-      gap: 0.75rem;
+      justify-content: center;
     }
 
-    .ms-toggle-row + .ms-toggle-row { border-top: 1px solid #f3f4f6; }
+    .ms-help-close:hover { color: #f8fafc; background: rgba(255,255,255,0.1); }
+    .ms-help-close:focus-visible { outline: 3px solid #fbbf24; outline-offset: 2px; }
 
-    .ms-toggle-label {
-      flex: 1;
-      cursor: pointer;
-    }
-
-    .ms-toggle-label strong {
-      display: block;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #111827;
-    }
-
-    .ms-toggle-label span {
-      display: block;
-      font-size: 0.775rem;
-      color: #6b7280;
-      margin-top: 0.1rem;
-    }
-
-    /* Switch component — native checkbox visually hidden, custom track shown */
-    .ms-switch { position: relative; flex-shrink: 0; }
-
-    .ms-switch input[type="checkbox"] {
-      /* Accessible: visible to AT but not sighted users */
-      position: absolute;
-      opacity: 0;
-      width: 44px;
-      height: 24px;
-      margin: 0;
-      cursor: pointer;
-      z-index: 1;
-    }
-
-    .ms-switch-track {
-      display: block;
-      width: 44px;
-      height: 24px;
-      border-radius: 12px;
-      background: #d1d5db;
-      position: relative;
-      transition: background 0.18s ease;
-      pointer-events: none;
-    }
-
-    /* Thumb */
-    .ms-switch-track::after {
-      content: '';
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-      transition: transform 0.18s ease;
-    }
-
-    .ms-switch input:checked + .ms-switch-track { background: #1a56db; }
-    .ms-switch input:checked + .ms-switch-track::after { transform: translateX(20px); }
-
-    /* Focus ring on the invisible checkbox transfers to the visible track */
-    .ms-switch input:focus-visible + .ms-switch-track {
-      outline: 3px solid #fbbf24;
-      outline-offset: 2px;
-    }
-
-    /* ── Panel footer ────────────────────────────────────────── */
-    .ms-panel-footer {
-      margin-top: 1rem;
-      padding-top: 0.625rem;
-      border-top: 1px solid #e5e7eb;
-      font-size: 0.7rem;
-      color: #9ca3af;
-      text-align: center;
-    }
-
-    /* ── Reduced motion: disable all UI animations ───────────── */
+    /* â”€â”€ Reduced motion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     @media (prefers-reduced-motion: reduce) {
-      #ms-btn,
-      .ms-switch-track,
-      .ms-switch-track::after {
-        transition: none;
+      #ms-central-btn,
+      .ms-radial-item {
+        transition: none !important;
+        transition-delay: 0s !important;
       }
     }
   `;
@@ -244,21 +302,19 @@ export function getUIStyles(position = 'bottom-right') {
 
 /**
  * CSS injected into the host page <head> to apply Modo Simples visual effects.
+ * All selectors gated on html.ms-ativo â€” inert when Modo Simples is off.
  *
- * All selectors are gated on `html.ms-ativo` — no style applies when Modo
- * Simples is off, regardless of which site the script is running on.
- *
- * @returns {string} CSS text
+ * @returns {string}
  */
 export function getPageStyles() {
   return `
-    /* ── Hidden distractions ─────────────────────────────────── */
+    /* â”€â”€ Hidden distractions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     html.ms-ativo [data-ms-hidden="true"] {
       display: none !important;
       visibility: hidden !important;
     }
 
-    /* ── Main content: readable column ──────────────────────── */
+    /* â”€â”€ Main content: readable column â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     html.ms-ativo [data-ms-principal] {
       display: block !important;
       max-width: 75ch !important;
@@ -268,29 +324,75 @@ export function getPageStyles() {
       line-height: 1.8 !important;
     }
 
-    /* ── Stop page animations when reduced-motion is active ─── */
-    @media (prefers-reduced-motion: reduce) {
-      html.ms-ativo *,
-      html.ms-ativo *::before,
-      html.ms-ativo *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-      }
+    /* â”€â”€ Stop page animations when reduced-motion is active â”€â”€â”€ */
+    html.ms-ativo.ms-reduced-motion *,
+    html.ms-ativo.ms-reduced-motion *::before,
+    html.ms-ativo.ms-reduced-motion *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
 
-    /* ── High contrast option ────────────────────────────────── */
+    /* â”€â”€ High contrast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     html.ms-ativo.ms-high-contrast [data-ms-principal],
     html.ms-ativo.ms-high-contrast [data-ms-principal] * {
       background-color: #ffffff !important;
       color: #000000 !important;
     }
 
-    /* ── Larger text option ──────────────────────────────────── */
+    html.ms-ativo.ms-high-contrast a,
+    html.ms-ativo.ms-high-contrast a:visited {
+      color: #00008b !important;
+    }
+
+    /* â”€â”€ Larger text â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     html.ms-ativo.ms-larger-text [data-ms-principal] {
       font-size: 1.375rem !important;
       line-height: 2 !important;
+    }
+
+    /* â”€â”€ Highlight links â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    html.ms-ativo.ms-highlight-links a:not([data-ms-hidden]) {
+      text-decoration: underline !important;
+      text-decoration-thickness: 2px !important;
+      text-underline-offset: 3px !important;
+      outline: 1px dashed currentColor !important;
+      outline-offset: 2px !important;
+    }
+
+    /* â”€â”€ Dyslexia-friendly font â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    html.ms-ativo.ms-dyslexia-font [data-ms-principal],
+    html.ms-ativo.ms-dyslexia-font [data-ms-principal] * {
+      font-family:
+        'Atkinson Hyperlegible',
+        'Arial',
+        'Helvetica Neue',
+        'Verdana',
+        system-ui,
+        sans-serif !important;
+      word-spacing: 0.12em !important;
+    }
+
+    /* â”€â”€ Text spacing (WCAG 1.4.12) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    html.ms-ativo.ms-text-spacing [data-ms-principal],
+    html.ms-ativo.ms-text-spacing [data-ms-principal] p,
+    html.ms-ativo.ms-text-spacing [data-ms-principal] li {
+      line-height: 2 !important;
+      letter-spacing: 0.12em !important;
+      word-spacing: 0.16em !important;
+    }
+
+    html.ms-ativo.ms-text-spacing [data-ms-principal] p {
+      margin-bottom: 1.5em !important;
+    }
+
+    /* â”€â”€ Hide decorative images â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    html.ms-ativo.ms-hide-images img[alt=""],
+    html.ms-ativo.ms-hide-images img[role="presentation"],
+    html.ms-ativo.ms-hide-images [data-ms-deco-img] {
+      visibility: hidden !important;
+      opacity: 0 !important;
     }
   `;
 }

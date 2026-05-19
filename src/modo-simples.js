@@ -1,3 +1,31 @@
+﻿/**
+ * src/modo-simples.js — Orchestrator principal
+ *
+ * Wires todos os módulos para o menu radial de acessibilidade.
+ *
+ * Estrutura no Shadow DOM:
+ *   #ms-container (host)
+ *     └─ shadow root
+ *          ├─ <style>  (UI styles)
+ *          └─ #ms-radial-root
+ *               ├─ #ms-radial-menu  (itens radiais)
+ *               ├─ #ms-central-btn  (toggle Modo Simples + acionador do radial)
+ *               └─ #ms-help-panel   (painel de ajuda inline)
+ *
+ * Fluxo de interação:
+ *   Clique no #ms-central-btn → abre/fecha o radial se fechado/aberto
+ *   Clique em item radial → toggle da opção correspondente
+ *   Esc → fecha o radial e devolve foco ao botão central
+ *   Estado → persiste no localStorage prefixado com ms_
+ *
+ * API pública:
+ *   instance.enable()           Ativa Modo Simples
+ *   instance.disable()          Desativa Modo Simples
+ *   instance.toggle()           Alterna Modo Simples
+ *   instance.configure(patch)   Sobrescreve config em runtime
+ *   instance.destroy()          Remove completamente da página
+ */
+
 import defaults from './config/defaults.js';
 import eventBus from './core/eventBus.js';
 import state from './core/state.js';
@@ -5,84 +33,39 @@ import persistence from './core/persistence.js';
 import { prefersReducedMotion, onReducedMotionChange } from './utils/mediaQuery.js';
 import { announce } from './utils/aria.js';
 import { getUIStyles } from './ui/styles.js';
-import { createFloatingButton } from './ui/button.js';
-import { createPanel } from './ui/panel.js';
+import { createCentralToggle } from './ui/centralToggle.js';
+import { createRadialMenu } from './ui/radialMenu.js';
 import { injectPageStyles, scan, apply, revert } from './mutator/domMutator.js';
 import { startObserving, stopObserving } from './mutator/domObserver.js';
 
-/**
- * ModoSimples — orchestrator class.
- *
- * Wires all modules together:
- *   - Builds the Shadow DOM UI (button + panel)
- *   - Manages state lifecycle (load → react → persist)
- *   - Delegates DOM mutations to domMutator
- *   - Delegates observation to domObserver
- *
- * Public API:
- *   instance.enable()           Activate Modo Simples
- *   instance.disable()          Deactivate Modo Simples
- *   instance.toggle()           Toggle Modo Simples
- *   instance.configure(patch)   Override config at runtime
- *   instance.destroy()          Fully remove from page
- *
- * Auto-boot: when loaded as a plain <script> (IIFE bundle), the class
- * instantiates itself and boots immediately. Integrators using ES modules
- * can call `new ModoSimples(config).init()` manually.
- */
 class ModoSimples {
-  /**
-   * @param {Partial<typeof defaults>} [userConfig]
-   */
   constructor(userConfig = {}) {
     this._config = { ...defaults, ...userConfig };
-
-    /** @type {HTMLElement|null} */
     this._host = null;
-    /** @type {ShadowRoot|null} */
     this._shadow = null;
-    /** @type {ReturnType<typeof createFloatingButton>|null} */
-    this._button = null;
-    /** @type {ReturnType<typeof createPanel>|null} */
-    this._panel = null;
-    /** @type {Function|null} Unsubscribe from reduced-motion OS change */
+    this._centralBtn = null;
+    this._radial = null;
+    this._helpPanel = null;
     this._removeMotionListener = null;
-    /** @type {Function|null} Unsubscribe from state changes */
     this._removeStateListener = null;
-
     this._initialized = false;
   }
 
-  // ── Lifecycle ───────────────────────────────────────────────
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
 
-  /**
-   * Bootstrap the script. Safe to call multiple times (idempotent).
-   * Should be called after DOMContentLoaded.
-   */
   init() {
     if (this._initialized) return;
     this._initialized = true;
 
-    // 1. Load persisted state before building UI
     this._loadPersistedState();
-
-    // 2. Inject page-level CSS (scoped to html.ms-ativo — dormant until enabled)
     injectPageStyles();
-
-    // 3. Build Shadow DOM UI
     this._buildUI();
-
-    // 4. Wire all event handlers
     this._bindEvents();
 
-    // 5. Start DOM observer for SPA support
     startObserving(() => state.get(), this._config);
-
-    // 6. Sync initial reduced-motion preference from OS, then watch for changes
     this._syncReducedMotion();
     this._removeMotionListener = onReducedMotionChange(() => this._syncReducedMotion());
 
-    // 7. Re-apply if Modo Simples was ON when the user last left the page
     const currentState = state.get();
     if (currentState.modoSimples) {
       scan(this._config);
@@ -90,157 +73,146 @@ class ModoSimples {
     }
   }
 
-  /**
-   * Completely remove Modo Simples from the page.
-   * Reverts DOM changes, removes the UI, and releases all listeners.
-   */
   destroy() {
     revert();
     stopObserving();
-
-    if (this._removeMotionListener) {
-      this._removeMotionListener();
-      this._removeMotionListener = null;
-    }
-    if (this._removeStateListener) {
-      this._removeStateListener();
-      this._removeStateListener = null;
-    }
-
-    if (this._host && this._host.parentNode) {
-      this._host.parentNode.removeChild(this._host);
-    }
-
+    if (this._removeMotionListener) { this._removeMotionListener(); this._removeMotionListener = null; }
+    if (this._removeStateListener)  { this._removeStateListener();  this._removeStateListener  = null; }
+    if (this._host?.parentNode) this._host.parentNode.removeChild(this._host);
     const pageStyle = document.getElementById('ms-page-styles');
-    if (pageStyle && pageStyle.parentNode) {
-      pageStyle.parentNode.removeChild(pageStyle);
-    }
-
+    if (pageStyle?.parentNode) pageStyle.parentNode.removeChild(pageStyle);
     state.reset();
     eventBus.clearAll();
     this._initialized = false;
   }
 
-  // ── Public API ──────────────────────────────────────────────
+  // ── API pública ────────────────────────────────────────────────────────────
 
-  /** Activate Modo Simples. */
-  enable() {
-    state.set({ modoSimples: true });
-  }
+  enable()         { state.set({ modoSimples: true }); }
+  disable()        { state.set({ modoSimples: false }); }
+  toggle()         { state.set({ modoSimples: !state.get().modoSimples }); }
+  configure(patch) { this._config = { ...this._config, ...patch }; }
 
-  /** Deactivate Modo Simples. */
-  disable() {
-    state.set({ modoSimples: false });
-  }
-
-  /** Toggle Modo Simples on/off. */
-  toggle() {
-    state.set({ modoSimples: !state.get().modoSimples });
-  }
-
-  /**
-   * Override configuration at runtime.
-   * Useful for integrators who need custom selectors per page.
-   * @param {Partial<typeof defaults>} patch
-   */
-  configure(patch) {
-    this._config = { ...this._config, ...patch };
-  }
-
-  // ── Private — UI construction ───────────────────────────────
+  // ── UI Construction ────────────────────────────────────────────────────────
 
   _buildUI() {
-    // Shadow DOM host: position:fixed, full viewport, pointer-events:none
-    // (the button and panel re-enable pointer-events inside the shadow root)
     this._host = document.createElement('div');
     this._host.id = 'ms-container';
     document.body.appendChild(this._host);
 
     this._shadow = this._host.attachShadow({ mode: 'open' });
 
-    // Inject Shadow DOM styles
     const styleEl = document.createElement('style');
     styleEl.textContent = getUIStyles(this._config.position);
     this._shadow.appendChild(styleEl);
 
-    // Floating button
-    this._button = createFloatingButton();
-    this._shadow.appendChild(this._button.element);
-
-    // Accessibility panel (dialog)
     const s = state.get();
-    this._panel = createPanel({
+
+    this._radial = createRadialMenu({
       state: s,
-      onToggleModoSimples: (checked) => state.set({ modoSimples: checked }),
-      onToggleHighContrast: (checked) => state.set({ options: { highContrast: checked } }),
-      onToggleLargerText: (checked) => state.set({ options: { largerText: checked } }),
-      onClose: () => this._closePanel(),
+      onToggle: (key, value) => state.set({ options: { [key]: value } }),
+      onHelp: () => this._toggleHelp(),
     });
-    this._shadow.appendChild(this._panel.element);
+    this._shadow.appendChild(this._radial.element);
+
+    this._centralBtn = createCentralToggle();
+    this._radial.element.appendChild(this._centralBtn.element);
+
+    this._helpPanel = this._buildHelpPanel();
+    this._radial.element.appendChild(this._helpPanel);
+
+    this._centralBtn.sync({ modoSimples: s.modoSimples, radialOpen: s.panelOpen });
+    this._radial.updateItems(s.options);
   }
 
-  // ── Private — Event wiring ──────────────────────────────────
+  _buildHelpPanel() {
+    const panel = document.createElement('div');
+    panel.id = 'ms-help-panel';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'false');
+    panel.setAttribute('aria-label', 'Ajuda — Modo Simples');
+    panel.hidden = true;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'ms-help-close';
+    closeBtn.type = 'button';
+    closeBtn.setAttribute('aria-label', 'Fechar ajuda');
+    closeBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
+    closeBtn.addEventListener('click', () => { panel.hidden = true; });
+
+    panel.innerHTML = `
+      <h3>Como usar o menu de acessibilidade</h3>
+      <p><strong>Botão central (A):</strong> clique para abrir/fechar as opções. Verde = Modo Simples ativo, Vermelho = inativo.</p>
+      <p><strong>Modo Simples:</strong> remove distrações e centraliza o conteúdo principal.</p>
+      <p><strong>Alto Contraste:</strong> reforça preto/branco para melhor legibilidade.</p>
+      <p><strong>Texto Maior:</strong> aumenta o tamanho da fonte do conteúdo.</p>
+      <p><strong>Reduzir Movimento:</strong> desativa animações e transições da página.</p>
+      <p><strong>Destacar Links:</strong> sublinha e realça todos os links visíveis.</p>
+      <p><strong>Fonte Legível:</strong> aplica uma fonte com maior legibilidade para dislexia.</p>
+      <p><strong>Espaçamento:</strong> aumenta espaço entre linhas, letras e parágrafos.</p>
+      <p><strong>Ocultar Imagens:</strong> esconde imagens decorativas.</p>
+      <p><em>Tecle Esc para fechar o menu. Use Tab ou setas para navegar.</em></p>
+    `;
+    panel.prepend(closeBtn);
+    return panel;
+  }
+
+  // ── Events ─────────────────────────────────────────────────────────────────
 
   _bindEvents() {
-    // Button click → toggle panel
-    this._button.element.addEventListener('click', () => this._togglePanel());
+    this._centralBtn.element.addEventListener('click', () => this._toggleRadial());
 
-    // Esc key closes panel from anywhere on the page
-    // Keyboard events cross shadow boundaries, so listening on document works
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && state.get().panelOpen) {
-        this._closePanel();
-        // Return focus to the trigger button (WCAG dialog pattern)
-        this._button.element.focus();
+        this._closeRadial();
+        this._centralBtn.element.focus();
       }
     });
 
-    // React to state changes
+    document.addEventListener('click', (e) => {
+      if (!state.get().panelOpen) return;
+      if (e.target !== this._host && !this._host?.contains(e.target)) {
+        this._closeRadial();
+      }
+    }, { capture: true });
+
     this._removeStateListener = eventBus.on('stateChange', ({ prev, next }) => {
       this._onStateChange(prev, next);
     });
   }
 
-  // ── Private — Panel management ──────────────────────────────
+  // ── Radial management ─────────────────────────────────────────────────────
 
-  _togglePanel() {
-    if (state.get().panelOpen) {
-      this._closePanel();
-    } else {
-      this._openPanel();
-    }
+  _toggleRadial() {
+    state.get().panelOpen ? this._closeRadial() : this._openRadial();
   }
 
-  _openPanel() {
+  _openRadial() {
     state.set({ panelOpen: true });
-    this._button.setExpanded(true);
-    this._panel.open();
-    announce('Painel de acessibilidade aberto');
+    this._radial.open();
+    this._centralBtn.sync({ modoSimples: state.get().modoSimples, radialOpen: true });
+    announce('Menu de acessibilidade aberto');
   }
 
-  _closePanel() {
+  _closeRadial() {
     state.set({ panelOpen: false });
-    this._button.setExpanded(false);
-    this._panel.close();
+    this._radial.close();
+    this._centralBtn.sync({ modoSimples: state.get().modoSimples, radialOpen: false });
+    if (this._helpPanel) this._helpPanel.hidden = true;
   }
 
-  // ── Private — State reactions ───────────────────────────────
+  _toggleHelp() {
+    if (this._helpPanel) this._helpPanel.hidden = !this._helpPanel.hidden;
+  }
 
-  /**
-   * Reacts to every state mutation and orchestrates side-effects:
-   *   - Sync panel toggle visuals
-   *   - Apply/revert Modo Simples DOM transformations
-   *   - Re-apply when options change while Modo Simples is active
-   *   - Persist state to localStorage
-   *
-   * @param {Object} prev Previous state snapshot
-   * @param {Object} next New state snapshot
-   */
+  // ── State reactions ────────────────────────────────────────────────────────
+
   _onStateChange(prev, next) {
-    // Sync panel toggle checkboxes with new state
-    if (this._panel) this._panel.updateToggles(next);
+    if (this._centralBtn) {
+      this._centralBtn.sync({ modoSimples: next.modoSimples, radialOpen: next.panelOpen });
+    }
+    if (this._radial) this._radial.updateItems(next.options);
 
-    // Handle Modo Simples activation / deactivation
     if (prev.modoSimples !== next.modoSimples) {
       if (next.modoSimples) {
         scan(this._config);
@@ -252,79 +224,68 @@ class ModoSimples {
       }
     }
 
-    // Re-apply when an option changes while Modo Simples is already on
-    // (e.g. user toggles highContrast → root classes need updating)
-    const optionChanged =
-      prev.options.highContrast !== next.options.highContrast ||
-      prev.options.largerText !== next.options.largerText;
+    const optionKeys = ['highContrast', 'largerText', 'reducedMotion', 'highlightLinks', 'dyslexiaFont', 'textSpacing', 'hideImages'];
+    const optionChanged = optionKeys.some((k) => prev.options[k] !== next.options[k]);
+    if (next.modoSimples && optionChanged) { revert(); apply(next, this._config); }
 
-    if (next.modoSimples && optionChanged) {
-      // Lightweight re-apply: revert root classes only, then re-add
-      revert();
-      apply(next, this._config);
-    }
+    const announcements = {
+      highContrast:   ['Alto contraste ativado',           'Alto contraste desativado'],
+      largerText:     ['Texto maior ativado',              'Texto maior desativado'],
+      highlightLinks: ['Destaque de links ativado',        'Destaque de links desativado'],
+      dyslexiaFont:   ['Fonte legível ativada',            'Fonte legível desativada'],
+      textSpacing:    ['Espaçamento de texto ativado',     'Espaçamento de texto desativado'],
+      hideImages:     ['Imagens ocultadas',                'Imagens visíveis'],
+    };
+    Object.entries(announcements).forEach(([k, [on, off]]) => {
+      if (prev.options[k] !== next.options[k]) announce(next.options[k] ? on : off);
+    });
 
-    // Persist relevant state (not panelOpen — that's transient UI state)
     if (this._config.persistence) {
-      persistence.save('state', {
-        modoSimples: next.modoSimples,
-        options: next.options,
-      });
+      persistence.save('state', { modoSimples: next.modoSimples, options: next.options });
     }
   }
 
-  // ── Private — Persistence ───────────────────────────────────
+  // ── Persistence ────────────────────────────────────────────────────────────
 
   _loadPersistedState() {
     if (!this._config.persistence) return;
     const saved = persistence.load('state');
     if (!saved) return;
-
     state.set({
       modoSimples: Boolean(saved.modoSimples),
       options: {
-        highContrast: Boolean(saved.options?.highContrast),
-        largerText: Boolean(saved.options?.largerText),
-        reducedMotion: Boolean(saved.options?.reducedMotion),
+        highContrast:   Boolean(saved.options?.highContrast),
+        largerText:     Boolean(saved.options?.largerText),
+        reducedMotion:  Boolean(saved.options?.reducedMotion),
+        highlightLinks: Boolean(saved.options?.highlightLinks),
+        dyslexiaFont:   Boolean(saved.options?.dyslexiaFont),
+        textSpacing:    Boolean(saved.options?.textSpacing),
+        hideImages:     Boolean(saved.options?.hideImages),
       },
     });
   }
 
-  // ── Private — System preferences ───────────────────────────
+  // ── System preferences ─────────────────────────────────────────────────────
 
-  /**
-   * Sync reducedMotion state with the OS preference.
-   * The system preference always overrides the stored value.
-   */
   _syncReducedMotion() {
     state.set({ options: { reducedMotion: prefersReducedMotion() } });
   }
 }
 
-// ── Auto-boot ──────────────────────────────────────────────────
-//
-// When used as a plain <script> (IIFE bundle), instantiate and boot
-// automatically once the DOM is ready.
-//
-// When used as an ES module, the consumer controls instantiation:
-//   import ModoSimples from './modo-simples.js';
-//   new ModoSimples({ position: 'bottom-left' }).init();
+// ── Auto-boot ──────────────────────────────────────────────────────────────────
 
 if (typeof window !== 'undefined') {
   function boot() {
     const instance = new ModoSimples();
     instance.init();
-    // Expose on window so page code can control it (e.g. window.ModoSimples.disable())
     window.ModoSimples = instance;
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {
-    // DOMContentLoaded already fired (script loaded with defer or at bottom of body)
     boot();
   }
 }
 
 export default ModoSimples;
-

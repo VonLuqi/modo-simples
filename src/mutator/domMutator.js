@@ -17,9 +17,14 @@ import { detectDistractions } from '../heuristics/distractionDetector.js';
  *   data-ms-hidden     → marks elements to be visually hidden
  *
  * Root classes:
- *   ms-ativo           → Modo Simples is ON
- *   ms-high-contrast   → high contrast option is ON
- *   ms-larger-text     → larger text option is ON
+ *   ms-ativo            → Modo Simples is ON
+ *   ms-high-contrast    → high contrast option is ON
+ *   ms-larger-text      → larger text option is ON
+ *   ms-reduced-motion   → reduced motion option is ON
+ *   ms-highlight-links  → highlight links option is ON
+ *   ms-dyslexia-font    → dyslexia-friendly font option is ON
+ *   ms-text-spacing     → text spacing option is ON
+ *   ms-hide-images      → hide images option is ON
  */
 
 const PAGE_STYLE_ID = 'ms-page-styles';
@@ -74,8 +79,13 @@ export function apply(state, config) {
   // Apply root activation class + option classes
   const html = document.documentElement;
   html.classList.add('ms-ativo');
-  if (state.options.highContrast) html.classList.add('ms-high-contrast');
-  if (state.options.largerText) html.classList.add('ms-larger-text');
+  if (state.options.highContrast)   html.classList.add('ms-high-contrast');
+  if (state.options.largerText)     html.classList.add('ms-larger-text');
+  if (state.options.reducedMotion)  html.classList.add('ms-reduced-motion');
+  if (state.options.highlightLinks) html.classList.add('ms-highlight-links');
+  if (state.options.dyslexiaFont)   html.classList.add('ms-dyslexia-font');
+  if (state.options.textSpacing)    html.classList.add('ms-text-spacing');
+  if (state.options.hideImages)     html.classList.add('ms-hide-images');
 }
 
 /**
@@ -98,6 +108,11 @@ export function revert() {
     'ms-ativo',
     'ms-high-contrast',
     'ms-larger-text',
+    'ms-reduced-motion',
+    'ms-highlight-links',
+    'ms-dyslexia-font',
+    'ms-text-spacing',
+    'ms-hide-images',
   );
 
   // Clear cache — forces fresh heuristic scan on next apply()

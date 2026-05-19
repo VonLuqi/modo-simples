@@ -28,6 +28,10 @@ describe('state', () => {
     assert.strictEqual(s.options.reducedMotion, false);
     assert.strictEqual(s.options.highContrast, false);
     assert.strictEqual(s.options.largerText, false);
+    assert.strictEqual(s.options.highlightLinks, false);
+    assert.strictEqual(s.options.dyslexiaFont, false);
+    assert.strictEqual(s.options.textSpacing, false);
+    assert.strictEqual(s.options.hideImages, false);
   });
 
   it('get() deve retornar uma cópia — mutações externas não afetam o estado', () => {
