@@ -1,87 +1,100 @@
 # Modo Simples
 
-Bem-vindo ao projeto **Modo Simples**! Este projeto serve como base para desenvolvimento, já configurado com ferramentas automáticas para garantir a qualidade e padronização do código.
+Script JavaScript injetável de **acessibilidade cognitiva** (Projeto Integrador 2025 · Senac).  
+Licença **MIT** · versão **1.1.0**.
+
+Inclui:
+
+- Painel **Acessibilidade Digital** (FAB)
+- Toggle **SIMPLES** + barra sob o menu
+- Modo Simples (menos distrações), texto, temas, Lexend, régua, TTS
+- Imagens ocultas por padrão no MS (reativáveis)
+- Protótipo Senac Minas com hub, pills e assistente de cursos
+
+Docs: [`doc/`](./doc/README.md) · Entrega banca: [`doc/11-pacote-entrega.md`](./doc/11-pacote-entrega.md) · Status: [`doc/03-status-implementacao.md`](./doc/03-status-implementacao.md)
 
 ---
 
-## 🚀 Como começar (Obrigatório)
+## Começar em 1 minuto
 
-Para garantir que todas as ferramentas de automação (como o Prettier e o Husky) funcionem corretamente no teu computador, segue estes passos rigorosamente:
+```bash
+git clone https://github.com/VonLuqi/modo-simples.git
+cd modo-simples
+npm install
+npm run preview
+```
 
-1. **Clonar o repositório:**
+Abra **`http://127.0.0.1:8765/`** — a raiz (e `/examples`) redireciona para o protótipo.
 
-   ```bash
-   git clone https://github.com/VonLuqui/modo-simples.git
-   cd modo-simples
-   ```
+| URL | Conteúdo |
+| --- | --- |
+| `http://127.0.0.1:8765/` | Home (via `index.html` na raiz) |
+| `http://127.0.0.1:8765/examples/index.html` | Home Senac (canônica) |
+| `…/examples/psg.html` | Cursos gratuitos (PSG) |
+| `…/examples/hello-modo-simples.html` | Demo mínima da lib |
 
-2. **Instalar dependências (IMPORTANTE):**
-   Este passo é fundamental. Além de baixar as bibliotecas, ele ativa o sistema de verificação de código (Husky) no teu computador.
+```bash
+npm run smoke:examples
+# Com o preview no ar:
+# set SMOKE_BASE=http://127.0.0.1:8765&& npm run smoke:examples   (Windows)
+# SMOKE_BASE=http://127.0.0.1:8765 npm run smoke:examples         (Unix)
+```
 
-   ```bash
-   npm install
-   ```
-
----
-
-## 🛠️ Comandos Disponíveis
-
-No terminal, podes executar os seguintes comandos:
-
-- **`npm start`**:
-  Executa o projeto principal (roda o arquivo `src/modo-simples.js`).
-
-- **`npm run format`**:
-  Formata manualmente todos os arquivos do projeto usando as regras do Prettier.
+> Sirva sempre a **raiz do repo** (`npm run preview`), não só a pasta `examples/`: o script aponta para `../src/modo-simples.js`.  
+> Não use URLs “limpas” sem `.html` (`/contato`) — use `/examples/contato.html`.
 
 ---
 
-## 🎨 Padronização de Código (Automático)
+## Protótipo (mapa)
 
-Nós usamos **Prettier** para manter o código limpo e **Husky** para garantir que ninguém envie código fora do padrão para o GitHub.
+Início · Sobre Nós · Cursos · Gratuitos (PSG) · Unidades · Contato · Área do Aluno · Pesquisar  
 
-### Como funciona?
+Com Modo Simples ligado: **pills** + **hub** na home. Demo guiada em 5 passos: [`doc/11-pacote-entrega.md`](./doc/11-pacote-entrega.md#3-guia-de-demo-em-5-passos-banca).
 
-Tu não precisas de te preocupar em formatar o código manualmente. O processo é automático:
-
-1. Escreve o teu código normalmente.
-2. Quando fizeres um `git commit`, o sistema (Husky + lint-staged) vai verificar e **formatar automaticamente** os teus arquivos.
-3. Se houver algum erro grave que o sistema não consiga corrigir sozinho, o commit será bloqueado e verás o aviso no terminal para que possas corrigir.
-
-### Regras principais (definidas no `.prettierrc`)
-
-- **Ponto e vírgula**: Obrigatório no final da linha (`semi: true`).
-- **Aspas**: Simples (`' '`) em vez de duplas (`singleQuote: true`).
-- **Indentação**: 2 espaços (`tabWidth: 2`).
-- **Vírgula final**: Adicionada em listas e objetos (`trailingComma: "all"`).
+Inventário: [`doc/05-inventario-prototipo.md`](./doc/05-inventario-prototipo.md)
 
 ---
 
-## ⚙️ Configuração do Editor (VS Code)
+## Comandos
 
-Este projeto contém uma pasta `.vscode` que ajuda a manter a consistência entre todos os programadores.
-
-**Recomendações:**
-
-1. Utilize o **Visual Studio Code**.
-2. Instale a extensão **Prettier - Code formatter**.
-3. O projeto está configurado para formatar o arquivo automaticamente sempre que salvar (`Ctrl + S` ou `Cmd + S`).
+| Comando | Função |
+| --- | --- |
+| `npm run preview` | Serve o projeto na porta 8765 (`/` e `/examples` → home) |
+| `npm test` | Unitários + estruturais |
+| `npm run test:unit` | Só unitários |
+| `npm run test:structure` | Só estrutura do protótipo |
+| `npm run smoke:examples` | Verifica páginas/assets do protótipo |
+| `npm run smoke:assistente` | Smoke do assistente de cursos |
+| `npm run build` | Gera `dist/modo-simples(.min).js` |
+| `npm run format` | Prettier |
 
 ---
 
-## 📁 Estrutura do Projeto
+## Integração
 
-- **`src/`**: Código fonte do projeto.
-- **`.husky/`**: Configurações dos ganchos do Git (não apagar).
-- **`.vscode/`**: Configurações partilhadas do editor.
-- **`.prettierrc`**: Arquivo de regras de formatação.
+```html
+<!-- Dev -->
+<script type="module" src="../src/modo-simples.js"></script>
 
-<!-- end list -->
+<!-- Prod (após npm run build) -->
+<script src="../dist/modo-simples.min.js"></script>
+```
 
-### O que incluí nesta versão
+Guia completo: [`doc/09-guia-integracao.md`](./doc/09-guia-integracao.md)  
+Bookmarklet: [`doc/10-bookmarklet.md`](./doc/10-bookmarklet.md)
 
-1. **Correção de Espaçamentos:** Corrigi os erros que o teu editor estava a mostrar na imagem (as linhas amarelas em `MD030`), garantindo o espaço correto depois dos marcadores de lista.
-2. **Links e Comandos:** O link de clone está correto baseando-se no teu `package.json`.
-3. **Explicação Técnica:** Detalhei o que cada regra do `.prettierrc` faz, para que os teus colegas entendam porque é que o código muda sozinho.
+```js
+window.ModoSimples.enable();
+window.ModoSimples.disable();
+window.ModoSimples.toggle();
+window.ModoSimples.configure({
+  simpleNav: [{ label: 'Início', href: '/' }],
+});
+```
 
-Este código cobre tudo o que precisas? Se faltou alguma secção específica, diz-me!
+Pills em sites externos: ver [`doc/09-guia-integracao.md`](./doc/09-guia-integracao.md) e `examples/hello-modo-simples.html`.
+---
+
+## Padronização
+
+Prettier + Husky + lint-staged. VS Code: format on save (`.vscode/`).

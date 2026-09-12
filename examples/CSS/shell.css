@@ -1,0 +1,281 @@
+/**
+ * Shell único do protótipo Senac Minas (F5-T03).
+ * Depende de tokens.css
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--ms-font);
+  font-size: var(--ms-font-size-base);
+  line-height: var(--ms-line-relaxed);
+  color: var(--ms-text);
+  background: var(--ms-surface-soft);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: var(--senac-blue);
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ms-orange-brand);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.container {
+  width: min(var(--ms-content-max), calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+/* —— Header / nav —— */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--ms-header-z);
+  background: var(--ms-surface);
+  border-bottom: 1px solid var(--ms-border);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 4%);
+}
+
+.site-header__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  font-size: 0.8rem;
+  color: var(--ms-text-muted);
+  border-bottom: 1px solid var(--ms-border);
+}
+
+.site-header__top strong {
+  color: var(--senac-blue);
+}
+
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.85rem 0 1rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--senac-blue);
+  text-decoration: none;
+}
+
+.brand:hover {
+  text-decoration: none;
+}
+
+.brand-logo {
+  width: 48px;
+  height: auto;
+}
+
+.main-nav {
+  flex: 1;
+  min-width: 0;
+  overflow-x: visible;
+}
+
+.main-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.85rem;
+  list-style: none;
+  margin: 0;
+  padding: 0.15rem 0;
+  white-space: normal;
+}
+
+.main-nav a {
+  display: inline-block;
+  padding: 0.3rem 0;
+  color: var(--senac-blue);
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.main-nav a:hover {
+  border-bottom-color: var(--ms-orange-brand);
+  text-decoration: none;
+}
+
+.main-nav a[aria-current='page'] {
+  color: #fff;
+  background: var(--senac-blue);
+  border-bottom-color: transparent;
+  border-radius: 8px;
+  padding: 0.35rem 0.65rem;
+  font-weight: 800;
+}
+
+.header-search {
+  flex-shrink: 0;
+}
+
+/* —— Buttons —— */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.55rem 1.15rem;
+  border-radius: var(--ms-radius-pill);
+  border: 2px solid transparent;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.btn:hover {
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--senac-blue);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--senac-blue-deep);
+  color: #fff;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--senac-blue);
+  border-color: var(--ms-border);
+}
+
+.btn-accent {
+  background: var(--ms-orange-brand);
+  color: #1a1a1a;
+}
+
+.btn-accent:hover {
+  background: var(--ms-orange-dark);
+  color: #fff;
+}
+
+/* —— Main grows —— */
+body > main,
+.page-main {
+  flex: 1;
+}
+
+/* —— Footer —— */
+.site-footer {
+  background: var(--senac-blue);
+  color: #fff;
+  padding: 1.5rem 0;
+  margin-top: auto;
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.92rem;
+}
+
+.footer-inner p {
+  margin: 0;
+}
+
+.footer-inner a {
+  color: #fff;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .header-inner {
+    flex-wrap: wrap;
+  }
+
+  .main-nav {
+    order: 3;
+    flex: 1 1 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .main-nav ul {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
+  .site-header__top {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .brand span {
+    font-size: 0.95rem;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+}

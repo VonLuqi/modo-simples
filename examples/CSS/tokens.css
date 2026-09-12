@@ -1,0 +1,60 @@
+/**
+ * Tokens visuais — protótipo Senac Minas + Modo Simples
+ * Congelado em F5-T01 (2026-09-10).
+ *
+ * Fonte: docs 06/07, src/ui/styles.js (--ms-*), referência zip
+ * (cores #004587 / #f39200). Ligado ao shell em F5-T03 (`shell.css` + `pages.css`).
+ *
+ * A lib injeta os mesmos valores em Shadow DOM / chrome;
+ * este arquivo é a fonte canônica do **protótipo** (examples/).
+ */
+
+:root {
+  /* Marca Senac */
+  --senac-blue: #004587;
+  --senac-blue-deep: #002d5b;
+  --senac-blue-dark: #002244;
+  --senac-blue-mid: #2979bb;
+
+  /* Alinhado à lib (painel / FAB / chrome) */
+  --ms-blue: #0b2c5f;
+  --ms-blue-mid: #1b3f92;
+  --ms-orange: #f5a623;
+  --ms-orange-brand: #f39200;
+  --ms-orange-dark: #e08400;
+  --ms-amber-bar: #f59e0b;
+  --ms-simple-bg: #fff8e7;
+  --ms-simple-border: #f5a623;
+
+  /* Neutros */
+  --ms-text: #1a1a1a;
+  --ms-text-muted: #4a5568;
+  --ms-surface: #ffffff;
+  --ms-surface-soft: #f8fafc;
+  --ms-border: #e2e8f0;
+
+  /* Forma */
+  --ms-radius-sm: 8px;
+  --ms-radius: 12px;
+  --ms-radius-lg: 16px;
+  --ms-radius-xl: 24px;
+  --ms-radius-pill: 999px;
+  --ms-panel-radius: 14px;
+  --ms-fab-size: 56px;
+
+  /* Tipografia */
+  --ms-font: 'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ms-font-size-base: 1rem;
+  --ms-line-relaxed: 1.65;
+  --ms-space: 8px;
+
+  /* Sombra (sutil — sem glow) */
+  --ms-shadow: 0 1px 3px rgb(0 0 0 / 8%), 0 4px 12px rgb(0 0 0 / 6%);
+  --ms-shadow-fab: 0 4px 14px rgb(243 146 0 / 35%);
+
+  /* Layout */
+  --ms-content-max: 72rem;
+  --ms-header-z: 40;
+  --ms-bar-z: 35;
+  --ms-fab-z: 50;
+}

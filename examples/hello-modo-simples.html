@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hello Modo Simples</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        line-height: 1.6;
+        color: #1d2738;
+        background: #f4f7fb;
+      }
+      header {
+        background: #0b2c5f;
+        color: #fff;
+        padding: 1rem 1.25rem;
+      }
+      nav a {
+        color: #fff;
+        margin-right: 1rem;
+      }
+      aside {
+        background: #ffe8a3;
+        padding: 1rem;
+        margin: 1rem 1.25rem;
+      }
+      main {
+        max-width: 40rem;
+        margin: 1.5rem auto;
+        padding: 0 1.25rem 3rem;
+      }
+      footer {
+        background: #1b3f92;
+        color: #fff;
+        padding: 1rem;
+        text-align: center;
+      }
+      code {
+        font-size: 0.9em;
+        background: #e8eef6;
+        padding: 0.1em 0.35em;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <strong>Demo Modo Simples</strong>
+      <nav aria-label="Menu principal">
+        <a href="hello-modo-simples.html">Início</a>
+        <a href="#sobre">Sobre</a>
+      </nav>
+    </header>
+
+    <aside>
+      <p>Banner promocional (deve sumir no Modo Simples).</p>
+    </aside>
+
+    <main>
+      <h1>Conteúdo principal</h1>
+      <p>
+        Esta página mínima mostra como incluir o Modo Simples. Ative pelo FAB
+        laranja, pelo toggle SIMPLES ou pela barra sob o menu.
+      </p>
+      <p>
+        Com <code>simpleNav</code> configurado, ao ativar o Modo Simples aparecem
+        pills injetadas pela lib (atalhos Início / Sobre / Ajuda).
+      </p>
+      <p id="sobre">
+        O texto desta área deve permanecer legível quando o Modo Simples estiver
+        ativo.
+      </p>
+      <p id="ajuda">
+        Integração: após o script, chame
+        <code>ModoSimples.configure({ simpleNav: [...] })</code>.
+      </p>
+    </main>
+
+    <footer>Rodapé de exemplo — ocultável no Modo Simples</footer>
+
+    <!--
+      DEV: módulo ES
+      PROD: <script src="../dist/modo-simples.min.js"></script>
+    -->
+    <script type="module">
+      import '../src/modo-simples.js';
+
+      // F5-T11 — pills injetáveis em sites sem markup de pills
+      window.ModoSimples.configure({
+        simpleNav: [
+          { label: 'Início', href: 'hello-modo-simples.html' },
+          { label: 'Sobre esta demo', href: '#sobre', short: 'Sobre' },
+          { label: 'Como integrar', href: '#ajuda', short: 'Ajuda' },
+        ],
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unidades — Senac Minas</title>
+    <link rel="stylesheet" href="CSS/tokens.css" />
+    <link rel="stylesheet" href="CSS/shell.css" />
+    <link rel="stylesheet" href="CSS/pages.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container site-header__top">
+        <p>Integrado ao Sistema <strong>Fecomércio MG</strong></p>
+        <div class="site-header__actions">
+          <span>Você está em: <strong>Belo Horizonte</strong></span>
+          <button class="btn btn-ghost" type="button">Entrar</button>
+        </div>
+      </div>
+      <div class="container header-inner">
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="img/logoSenac.png" alt="Senac Minas" />
+        </a>
+        <nav class="main-nav" aria-label="Menu principal">
+          <ul>
+            <li><a href="index.html">Início</a></li>
+            <li><a href="sobrenos.html">Sobre Nós</a></li>
+            <li><a href="cursos.html">Cursos</a></li>
+            <li><a href="psg.html">Gratuitos (PSG)</a></li>
+            <li><a href="unidades.html" aria-current="page">Unidades</a></li>
+            <li><a href="contato.html">Contato</a></li>
+            <li><a href="aluno.html">Área do Aluno</a></li>
+            <li><a href="pesquisa.html">Pesquisar</a></li>
+          </ul>
+        </nav>
+        <a class="btn btn-primary header-search" href="pesquisa.html">Pesquisar</a>
+      </div>
+    </header>
+    <nav class="ms-pills-nav ms-simple-only" data-ms-pills aria-label="Navegação do Modo Simples">
+      <div class="container ms-pills-nav__inner">
+        <a class="ms-pill" href="index.html"><span class="ms-pill__full">Início / O que precisa?</span><span class="ms-pill__short">Início</span></a>
+        <a class="ms-pill" href="cursos.html"><span class="ms-pill__full">Cursos Disponíveis</span><span class="ms-pill__short">Cursos</span></a>
+        <a class="ms-pill" href="psg.html"><span class="ms-pill__full">Cursos 100% Gratuitos (PSG)</span><span class="ms-pill__short">Gratuitos (PSG)</span></a>
+        <a class="ms-pill" href="unidades.html" aria-current="page"><span class="ms-pill__full">Onde tem Senac?</span><span class="ms-pill__short">Unidades</span></a>
+        <a class="ms-pill" href="contato.html"><span class="ms-pill__full">Falar com Atendente</span><span class="ms-pill__short">Atendente</span></a>
+        <a class="ms-pill" href="aluno.html"><span class="ms-pill__full">Área do Aluno</span><span class="ms-pill__short">Área do Aluno</span></a>
+      </div>
+    </nav>
+
+<section class="page-hero ms-simple-hide">
+      <div class="container hero-inner">
+        <nav class="breadcrumbs" aria-label="Caminho de navegação">
+          <a href="index.html">Início</a>
+          <span aria-hidden="true">›</span>
+          <span>Unidades</span>
+        </nav>
+        <h1>Onde tem Senac?</h1>
+        <p data-ms-plain>
+          Encontre endereço, telefone e WhatsApp das unidades em Minas Gerais.
+        </p>
+        <p data-ms-simple>
+          Escolha a cidade e veja o endereço e o telefone da escola.
+        </p>
+      </div>
+    </section>
+
+    <main class="container page-main section-pad">
+      <section class="ms-simple-view ms-simple-only" aria-labelledby="unidades-simples-titulo" style="margin-bottom: 1.25rem">
+        <p class="ms-simple-view__eyebrow">Modo Simples · Unidades</p>
+        <h1 id="unidades-simples-titulo">Onde tem Senac?</h1>
+        <p data-ms-plain>Escolha a cidade nos botões. Depois veja endereço e telefone.</p>
+        <p data-ms-simple>Toque na cidade. Depois leia o endereço da escola.</p>
+        <div class="ms-simple-view__ctas">
+          <a class="btn btn-primary" href="contato.html">Preciso de ajuda</a>
+          <a class="btn btn-ghost" href="psg.html">Ver cursos gratuitos</a>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="locator-titulo">
+        <span class="callout__eyebrow" style="color: var(--senac-blue)">Localizador</span>
+        <h2 id="locator-titulo">Escolas perto de você</h2>
+        <p style="margin: 0; color: var(--ms-text-muted)">
+          Filtre pela cidade. Os dados abaixo são demonstrativos do protótipo.
+        </p>
+        <div
+          class="chip-row"
+          id="city-filters"
+          role="group"
+          aria-label="Filtrar por cidade"
+        >
+          <button type="button" class="chip is-active" data-city="Todas" aria-pressed="true">
+            Todas
+          </button>
+          <button type="button" class="chip" data-city="Belo Horizonte" aria-pressed="false">
+            Belo Horizonte
+          </button>
+          <button type="button" class="chip" data-city="Betim" aria-pressed="false">Betim</button>
+          <button type="button" class="chip" data-city="Contagem" aria-pressed="false">
+            Contagem
+          </button>
+          <button type="button" class="chip" data-city="Divinópolis" aria-pressed="false">
+            Divinópolis
+          </button>
+          <button type="button" class="chip" data-city="Juiz de Fora" aria-pressed="false">
+            Juiz de Fora
+          </button>
+          <button type="button" class="chip" data-city="Uberlândia" aria-pressed="false">
+            Uberlândia
+          </button>
+        </div>
+      </section>
+
+      <ul class="list-cards" id="unit-list"></ul>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <p>Senac Minas — Rua dos Tupinambás, 1086 — Belo Horizonte / MG</p>
+        <p>
+          <a href="contato.html">Contato</a>
+          ·
+          <a href="psg.html">PSG</a>
+          · Senac Minas 2026
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        var units = [
+          {
+            city: 'Belo Horizonte',
+            name: 'Senac Belo Horizonte — Centro',
+            address: 'Rua dos Tupinambás, 1086 — Centro',
+            phone: '(31) 3057-8600',
+            phoneTel: '3130578600',
+            whatsapp: '553130578600',
+            hours: 'Seg–sex 7h–22h · Sáb 8h–14h',
+            highlight: 'Perto da Praça Sete e do metrô',
+          },
+          {
+            city: 'Belo Horizonte',
+            name: 'Senac Venda Nova',
+            address: 'Av. Vilarinho, 1060 — Venda Nova',
+            phone: '(31) 3459-8800',
+            phoneTel: '3134598800',
+            whatsapp: '553134598800',
+            hours: 'Seg–sex 8h–21h',
+            highlight: 'Fácil acesso pela Estação Vilarinho',
+          },
+          {
+            city: 'Betim',
+            name: 'Senac Betim',
+            address: 'Rua das Flores, 450 — Centro',
+            phone: '(31) 3512-4400',
+            phoneTel: '3135124400',
+            whatsapp: '553135124400',
+            hours: 'Seg–sex 8h–21h30',
+            highlight: 'Laboratórios de logística, saúde e informática',
+          },
+          {
+            city: 'Contagem',
+            name: 'Senac Contagem',
+            address: 'Av. Dulce Geralda Mattos, 54 — Centro',
+            phone: '(31) 3390-1200',
+            phoneTel: '3133901200',
+            whatsapp: '553133901200',
+            hours: 'Seg–sex 8h–21h',
+            highlight: 'Cursos ligados ao polo industrial',
+          },
+          {
+            city: 'Divinópolis',
+            name: 'Senac Divinópolis',
+            address: 'Av. Antônio Olímpio de Morais, 545 — Centro',
+            phone: '(37) 3229-6400',
+            phoneTel: '3732296400',
+            whatsapp: '553732296400',
+            hours: 'Seg–sex 8h–21h',
+            highlight: 'Moda, gestão e gastronomia',
+          },
+          {
+            city: 'Juiz de Fora',
+            name: 'Senac Juiz de Fora',
+            address: 'Av. Barão do Rio Branco, 3372 — Centro',
+            phone: '(32) 3690-4700',
+            phoneTel: '3236904700',
+            whatsapp: '553236904700',
+            hours: 'Seg–sex 8h–21h',
+            highlight: 'Ampla estrutura na Zona da Mata',
+          },
+          {
+            city: 'Uberlândia',
+            name: 'Senac Uberlândia',
+            address: 'Av. Fernando Vilela, 1314 — Martins',
+            phone: '(34) 3304-1400',
+            phoneTel: '3433041400',
+            whatsapp: '553433041400',
+            hours: 'Seg–sex 8h–21h',
+            highlight: 'Tecnologia e negócios no Triângulo',
+          },
+        ];
+
+        var list = document.getElementById('unit-list');
+        var filters = document.getElementById('city-filters');
+        var city = 'Todas';
+
+        function render() {
+          var rows = units.filter(function (u) {
+            return city === 'Todas' || u.city === city;
+          });
+          if (!rows.length) {
+            list.innerHTML = '<li class="list-card"><p>Nenhuma unidade nesta cidade no protótipo.</p></li>';
+            return;
+          }
+          list.innerHTML = rows
+            .map(function (u) {
+              return (
+                '<li class="list-card" data-city="' +
+                u.city +
+                '">' +
+                '<div class="list-card__body">' +
+                '<span class="badge badge--city">' +
+                u.city +
+                '</span>' +
+                '<h3>' +
+                u.name +
+                '</h3>' +
+                '<p>' +
+                u.address +
+                '</p>' +
+                '<span class="list-card__meta">Horário: ' +
+                u.hours +
+                '</span>' +
+                '<span class="highlight-note">' +
+                u.highlight +
+                '</span>' +
+                '</div>' +
+                '<div class="unit-actions">' +
+                '<a class="btn btn-primary" href="tel:' +
+                u.phoneTel +
+                '">Ligar ' +
+                u.phone +
+                '</a>' +
+                '<a class="btn btn-whatsapp" href="https://wa.me/' +
+                u.whatsapp +
+                '" target="_blank" rel="noopener noreferrer">WhatsApp</a>' +
+                '</div>' +
+                '</li>'
+              );
+            })
+            .join('');
+        }
+
+        filters.addEventListener('click', function (e) {
+          var btn = e.target.closest('.chip');
+          if (!btn) return;
+          city = btn.getAttribute('data-city');
+          filters.querySelectorAll('.chip').forEach(function (c) {
+            var on = c === btn;
+            c.classList.toggle('is-active', on);
+            c.setAttribute('aria-pressed', on ? 'true' : 'false');
+          });
+          render();
+        });
+
+        render();
+      })();
+    </script>
+    <script type="module" src="../src/modo-simples.js"></script>
+  </body>
+</html>

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cursos — Senac Minas</title>
+    <link rel="stylesheet" href="CSS/tokens.css" />
+    <link rel="stylesheet" href="CSS/shell.css" />
+    <link rel="stylesheet" href="CSS/pages.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container site-header__top">
+        <p>Integrado ao Sistema <strong>Fecomércio MG</strong></p>
+        <div class="site-header__actions">
+          <span>Você está em: <strong>Belo Horizonte</strong></span>
+          <button class="btn btn-ghost" type="button">Entrar</button>
+        </div>
+      </div>
+      <div class="container header-inner">
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="img/logoSenac.png" alt="Senac Minas" />
+        </a>
+        <nav class="main-nav" aria-label="Menu principal">
+          <ul>
+            <li><a href="index.html">Início</a></li>
+            <li><a href="sobrenos.html">Sobre Nós</a></li>
+            <li><a href="cursos.html" aria-current="page">Cursos</a></li>
+            <li><a href="psg.html">Gratuitos (PSG)</a></li>
+            <li><a href="unidades.html">Unidades</a></li>
+            <li><a href="contato.html">Contato</a></li>
+            <li><a href="aluno.html">Área do Aluno</a></li>
+            <li><a href="pesquisa.html">Pesquisar</a></li>
+          </ul>
+        </nav>
+        <a class="btn btn-primary header-search" href="pesquisa.html">Pesquisar</a>
+      </div>
+    </header>
+    <nav class="ms-pills-nav ms-simple-only" data-ms-pills aria-label="Navegação do Modo Simples">
+      <div class="container ms-pills-nav__inner">
+        <a class="ms-pill" href="index.html"><span class="ms-pill__full">Início / O que precisa?</span><span class="ms-pill__short">Início</span></a>
+        <a class="ms-pill" href="cursos.html" aria-current="page"><span class="ms-pill__full">Cursos Disponíveis</span><span class="ms-pill__short">Cursos</span></a>
+        <a class="ms-pill" href="psg.html"><span class="ms-pill__full">Cursos 100% Gratuitos (PSG)</span><span class="ms-pill__short">Gratuitos (PSG)</span></a>
+        <a class="ms-pill" href="unidades.html"><span class="ms-pill__full">Onde tem Senac?</span><span class="ms-pill__short">Unidades</span></a>
+        <a class="ms-pill" href="contato.html"><span class="ms-pill__full">Falar com Atendente</span><span class="ms-pill__short">Atendente</span></a>
+        <a class="ms-pill" href="aluno.html"><span class="ms-pill__full">Área do Aluno</span><span class="ms-pill__short">Área do Aluno</span></a>
+      </div>
+    </nav>
+
+
+    <section class="page-hero ms-simple-hide">
+      <div class="container hero-inner">
+        <nav class="breadcrumbs" aria-label="Caminho de navegação">
+          <a href="index.html">Início</a>
+          <span aria-hidden="true">›</span>
+          <span>Cursos</span>
+        </nav>
+        <h1>Cursos</h1>
+        <p data-ms-plain>
+          Cursos ágeis e técnicos do Senac Minas — formação prática para o
+          mercado de trabalho.
+        </p>
+        <p data-ms-simple>
+          Veja os cursos e escolha um. Depois, peça mais informações no Contato.
+        </p>
+      </div>
+    </section>
+
+    <main class="container page-main section-pad">
+      <section class="ms-simple-view ms-simple-only" aria-labelledby="cursos-simples-titulo" style="margin-bottom: 1.25rem">
+        <p class="ms-simple-view__eyebrow">Modo Simples · Cursos</p>
+        <h1 id="cursos-simples-titulo">Escolher um curso</h1>
+        <p data-ms-plain>Use a busca ou os filtros abaixo. Depois abra o curso que interessar.</p>
+        <p data-ms-simple>Procure o curso. Depois toque nele para ver mais.</p>
+        <div class="ms-simple-view__ctas">
+          <a class="btn btn-ghost" href="psg.html">Quero gratuito (PSG)</a>
+          <a class="btn btn-ghost" href="contato.html">Tirar dúvida</a>
+        </div>
+      </section>
+      <div id="curso-assistente" data-mode="all"></div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <p>Senac Minas — Rua dos Tupinambás, 1086 — Belo Horizonte / MG</p>
+        <p>
+          <a href="index.html">Início</a>
+          ·
+          <a href="contato.html">Contato</a>
+          · Senac Minas 2026
+        </p>
+      </div>
+    </footer>
+
+    <script src="js/cursos-data.js"></script>
+    <script src="js/cursos-assistente.js"></script>
+    <script type="module" src="../src/modo-simples.js"></script>
+  </body>
+</html>

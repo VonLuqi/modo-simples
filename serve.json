@@ -1,0 +1,22 @@
+{
+  "cleanUrls": false,
+  "trailingSlash": false,
+  "directoryListing": false,
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/examples/index.html",
+      "type": 302
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/examples",
+      "destination": "/examples/index.html"
+    },
+    {
+      "source": "/examples/",
+      "destination": "/examples/index.html"
+    }
+  ]
+}

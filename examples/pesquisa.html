@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pesquisar — Senac Minas</title>
+    <link rel="stylesheet" href="CSS/tokens.css" />
+    <link rel="stylesheet" href="CSS/shell.css" />
+    <link rel="stylesheet" href="CSS/pages.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container site-header__top">
+        <p>Integrado ao Sistema <strong>Fecomércio MG</strong></p>
+        <div class="site-header__actions">
+          <span>Você está em: <strong>Belo Horizonte</strong></span>
+          <button class="btn btn-ghost" type="button">Entrar</button>
+        </div>
+      </div>
+      <div class="container header-inner">
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="img/logoSenac.png" alt="Senac Minas" />
+        </a>
+        <nav class="main-nav" aria-label="Menu principal">
+          <ul>
+            <li><a href="index.html">Início</a></li>
+            <li><a href="sobrenos.html">Sobre Nós</a></li>
+            <li><a href="cursos.html">Cursos</a></li>
+            <li><a href="psg.html">Gratuitos (PSG)</a></li>
+            <li><a href="unidades.html">Unidades</a></li>
+            <li><a href="contato.html">Contato</a></li>
+            <li><a href="aluno.html">Área do Aluno</a></li>
+            <li><a href="pesquisa.html" aria-current="page">Pesquisar</a></li>
+          </ul>
+        </nav>
+        <a
+          class="btn btn-primary header-search"
+          href="pesquisa.html"
+          aria-current="page"
+          >Pesquisar</a
+        >
+      </div>
+    </header>
+    <nav class="ms-pills-nav ms-simple-only" data-ms-pills aria-label="Navegação do Modo Simples">
+      <div class="container ms-pills-nav__inner">
+        <a class="ms-pill" href="index.html"><span class="ms-pill__full">Início / O que precisa?</span><span class="ms-pill__short">Início</span></a>
+        <a class="ms-pill" href="cursos.html"><span class="ms-pill__full">Cursos Disponíveis</span><span class="ms-pill__short">Cursos</span></a>
+        <a class="ms-pill" href="psg.html"><span class="ms-pill__full">Cursos 100% Gratuitos (PSG)</span><span class="ms-pill__short">Gratuitos (PSG)</span></a>
+        <a class="ms-pill" href="unidades.html"><span class="ms-pill__full">Onde tem Senac?</span><span class="ms-pill__short">Unidades</span></a>
+        <a class="ms-pill" href="contato.html"><span class="ms-pill__full">Falar com Atendente</span><span class="ms-pill__short">Atendente</span></a>
+        <a class="ms-pill" href="aluno.html"><span class="ms-pill__full">Área do Aluno</span><span class="ms-pill__short">Área do Aluno</span></a>
+      </div>
+    </nav>
+
+<section class="page-hero ms-simple-hide">
+      <div class="container hero-inner">
+        <nav class="breadcrumbs" aria-label="Caminho de navegação">
+          <a href="index.html">Início</a>
+          <span aria-hidden="true">›</span>
+          <span>Pesquisar</span>
+        </nav>
+        <h1>Pesquisar</h1>
+        <p data-ms-plain>Encontre cursos e páginas deste protótipo Senac Minas.</p>
+        <p data-ms-simple>Digite uma palavra e veja os resultados.</p>
+      </div>
+    </section>
+
+    <main class="container page-main">
+      <section class="ms-simple-view ms-simple-only" aria-labelledby="pesquisa-simples-titulo" style="margin-bottom: 1.25rem">
+        <p class="ms-simple-view__eyebrow">Modo Simples · Pesquisar</p>
+        <h1 id="pesquisa-simples-titulo">O que você procura?</h1>
+        <p data-ms-plain>Digite uma palavra abaixo. Exemplos: operador, PSG, contato.</p>
+        <p data-ms-simple>Escreva uma palavra e toque em Pesquisar.</p>
+        <div class="ms-simple-view__ctas">
+          <a class="btn btn-ghost" href="cursos.html">Ir para Cursos</a>
+          <a class="btn btn-ghost" href="psg.html">Cursos gratuitos</a>
+        </div>
+      </section>
+
+      <section class="search-panel" aria-labelledby="busca-titulo">
+        <h2 id="busca-titulo" class="visually-hidden">Formulário de pesquisa</h2>
+        <form id="form-pesquisa" role="search" action="pesquisa.html" method="get">
+          <label for="q">Buscar no site</label>
+          <div class="search-row">
+            <input
+              id="q"
+              name="q"
+              type="search"
+              placeholder="Ex.: operador, recepcionista, contato"
+              autocomplete="off"
+            />
+            <button class="btn btn-primary" type="submit">Pesquisar</button>
+          </div>
+          <p class="search-hint ms-simple-hide">
+            Busca local do protótipo (sem servidor). Filtra títulos de cursos e
+            páginas internas.
+          </p>
+        </form>
+        <ul class="search-results" id="resultados" aria-live="polite"></ul>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <p>Senac Minas — Rua dos Tupinambás, 1086 — Belo Horizonte / MG</p>
+        <p>
+          <a href="index.html">Início</a>
+          ·
+          <a href="cursos.html">Cursos</a>
+          · Senac Minas 2026
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        var catalogo = [
+          { titulo: 'Operador de Computador', url: 'cursos.html', tipo: 'Curso' },
+          { titulo: 'Recepcionista', url: 'cursos.html', tipo: 'Curso' },
+          { titulo: 'Consultora de Imagem', url: 'cursos.html', tipo: 'Curso' },
+          { titulo: 'Programa Senac de Gratuidade (PSG)', url: 'psg.html', tipo: 'Página' },
+          { titulo: 'Unidades Senac em Minas', url: 'unidades.html', tipo: 'Página' },
+          { titulo: 'Área do Aluno', url: 'aluno.html', tipo: 'Página' },
+          { titulo: 'Sobre Nós', url: 'sobrenos.html', tipo: 'Página' },
+          { titulo: 'Contato / Fale Conosco', url: 'contato.html', tipo: 'Página' },
+          { titulo: 'Início', url: 'index.html', tipo: 'Página' },
+          { titulo: 'Cursos', url: 'cursos.html', tipo: 'Página' },
+        ];
+
+        var form = document.getElementById('form-pesquisa');
+        var input = document.getElementById('q');
+        var lista = document.getElementById('resultados');
+
+        function render(termo) {
+          var t = (termo || '').trim().toLowerCase();
+          var hits = !t
+            ? catalogo
+            : catalogo.filter(function (item) {
+                return item.titulo.toLowerCase().indexOf(t) !== -1;
+              });
+
+          if (!hits.length) {
+            lista.innerHTML = '<li>Nenhum resultado para “' + termo + '”.</li>';
+            return;
+          }
+
+          lista.innerHTML = hits
+            .map(function (item) {
+              return (
+                '<li><span>' +
+                item.tipo +
+                ' — </span><a href="' +
+                item.url +
+                '">' +
+                item.titulo +
+                '</a></li>'
+              );
+            })
+            .join('');
+        }
+
+        var params = new URLSearchParams(window.location.search);
+        var inicial = params.get('q') || '';
+        input.value = inicial;
+        render(inicial);
+
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var valor = input.value;
+          var url = new URL(window.location.href);
+          if (valor) url.searchParams.set('q', valor);
+          else url.searchParams.delete('q');
+          history.replaceState(null, '', url);
+          render(valor);
+        });
+      })();
+    </script>
+    <script type="module" src="../src/modo-simples.js"></script>
+  </body>
+</html>

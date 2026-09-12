@@ -1,113 +1,145 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="sobrenos.css" />
-    <title>Sobre Nós - SENAC Minas</title>
+    <title>Sobre Nós — Senac Minas</title>
+    <link rel="stylesheet" href="CSS/tokens.css" />
+    <link rel="stylesheet" href="CSS/shell.css" />
+    <link rel="stylesheet" href="CSS/pages.css" />
   </head>
   <body>
     <header class="site-header">
+      <div class="container site-header__top">
+        <p>Integrado ao Sistema <strong>Fecomércio MG</strong></p>
+        <div class="site-header__actions">
+          <span>Você está em: <strong>Belo Horizonte</strong></span>
+          <button class="btn btn-ghost" type="button">Entrar</button>
+        </div>
+      </div>
       <div class="container header-inner">
         <a class="brand" href="index.html">
-          <img
-            class="brand-logo"
-            src="../examples/imagem/Logo_Senac.png"
-            alt="Senac Minas"
-          />
-          <span>Senac Minas</span>
+          <img class="brand-logo" src="img/logoSenac.png" alt="Senac Minas" />
         </a>
-
         <nav class="main-nav" aria-label="Menu principal">
           <ul>
             <li><a href="index.html">Início</a></li>
-            <li><a href="sobrenos.html">Sobre Nós</a></li>
+            <li><a href="sobrenos.html" aria-current="page">Sobre Nós</a></li>
             <li><a href="cursos.html">Cursos</a></li>
+            <li><a href="psg.html">Gratuitos (PSG)</a></li>
+            <li><a href="unidades.html">Unidades</a></li>
             <li><a href="contato.html">Contato</a></li>
+            <li><a href="aluno.html">Área do Aluno</a></li>
+            <li><a href="pesquisa.html">Pesquisar</a></li>
           </ul>
         </nav>
-
-        <a class="btn btn-primary" href="pesquisa.html">Pesquisar</a>
+        <a class="btn btn-primary header-search" href="pesquisa.html">Pesquisar</a>
       </div>
     </header>
+    <nav class="ms-pills-nav ms-simple-only" data-ms-pills aria-label="Navegação do Modo Simples">
+      <div class="container ms-pills-nav__inner">
+        <a class="ms-pill" href="index.html"><span class="ms-pill__full">Início / O que precisa?</span><span class="ms-pill__short">Início</span></a>
+        <a class="ms-pill" href="cursos.html"><span class="ms-pill__full">Cursos Disponíveis</span><span class="ms-pill__short">Cursos</span></a>
+        <a class="ms-pill" href="psg.html"><span class="ms-pill__full">Cursos 100% Gratuitos (PSG)</span><span class="ms-pill__short">Gratuitos (PSG)</span></a>
+        <a class="ms-pill" href="unidades.html"><span class="ms-pill__full">Onde tem Senac?</span><span class="ms-pill__short">Unidades</span></a>
+        <a class="ms-pill" href="contato.html"><span class="ms-pill__full">Falar com Atendente</span><span class="ms-pill__short">Atendente</span></a>
+        <a class="ms-pill" href="aluno.html"><span class="ms-pill__full">Área do Aluno</span><span class="ms-pill__short">Área do Aluno</span></a>
+      </div>
+    </nav>
 
-    <section class="page-hero">
+    <section class="page-hero ms-simple-hide">
       <div class="container hero-inner">
-        <div class="breadcrumbs" aria-label="Caminho de navegação">
+        <nav class="breadcrumbs" aria-label="Caminho de navegação">
           <a href="index.html">Início</a>
-          <span>›</span>
+          <span aria-hidden="true">›</span>
           <span>Sobre Nós</span>
-        </div>
-
+        </nav>
         <h1>Sobre Nós</h1>
-        <p>
+        <p data-ms-plain>
           Conheça o Senac Minas, referência em educação profissional que
           transforma vidas desde 1946.
+        </p>
+        <p data-ms-simple>
+          O Senac ensina profissões desde 1946. Leia um resumo abaixo.
         </p>
       </div>
     </section>
 
-    <main class="container">
-      <section class="content-section">
+    <main class="container page-main">
+      <section class="content-section ms-simple-hide">
         <div class="content-text">
           <h2>Quem Somos</h2>
           <p>
             Desde 1946, o Senac Minas transforma vidas por meio da educação
             profissional. Integrado ao Sistema Fecomércio MG, Sesc e Senac, a
-            instituição é referência na formação de profissionais preparados
-            para atuar com excelência nos setores de comércio, bens, serviços e
-            turismo.
+            instituição é referência na formação de profissionais para o
+            comércio, bens, serviços e turismo.
           </p>
           <p>
-            Com uma ampla oferta de cursos, o Senac forma pessoas para o
-            presente e o futuro do trabalho. São cursos ágeis, técnicos,
-            graduações e MBAs em áreas essenciais para o desenvolvimento do
-            mercado: saúde, gastronomia, gestão, comércio, idiomas, tecnologia
-            da informação, beleza, moda, segurança, meio ambiente, comunicação,
-            educação, conservação e zeladoria, hospedagem, turismo, produção de
-            alimentos, artes e design.
+            Oferecemos cursos ágeis, técnicos, graduações e MBAs em áreas como
+            saúde, gastronomia, gestão, tecnologia, beleza e comunicação.
           </p>
           <p>
-            Presente em 40 unidades por todo o estado, o Senac Minas alia
-            tradição e inovação em sua metodologia de ensino. Ambientes
-            pedagógicos como os Salões de Beleza-Escola, Café-Bar Escola e o
-            Hotel Escola Senac Grogotó aproximam o aluno da prática
-            profissional. E por meio das 14 unidades móveis, o conhecimento
-            chega ainda mais longe, levando qualificação e oportunidades a todas
-            as regiões de Minas Gerais.
-          </p>
-          <p>
-            No Ensino Superior, a Faculdade Senac é sinônimo de qualidade e
-            resultados. No último Enade, o curso de Gastronomia de Belo
-            Horizonte foi reconhecido como o 1º do estado e o 7º do Brasil entre
-            as instituições privadas.
+            Com dezenas de unidades em Minas e unidades móveis, o conhecimento
+            chega a mais regiões do estado — com prática em ambientes como
+            salões-escola, café-bar escola e hotel escola.
           </p>
         </div>
-
         <div class="content-media">
           <div class="video-card">
             <iframe
               src="https://www.youtube.com/embed/XA-TAo_HkJI?rel=0"
-              title="Vídeo Senac Minas"
+              title="Vídeo institucional Senac Minas"
               allowfullscreen
             ></iframe>
           </div>
+        </div>
+      </section>
+
+      <section class="ms-simple-view ms-simple-only" aria-labelledby="sobre-simples-titulo">
+        <p class="ms-simple-view__eyebrow">Modo Simples · Sobre o Senac</p>
+        <h1 id="sobre-simples-titulo">O que é o Senac Minas?</h1>
+        <p data-ms-plain>
+          Uma escola de profissões. Desde 1946, forma pessoas para trabalhar no
+          comércio, serviços e turismo em Minas Gerais.
+        </p>
+        <p data-ms-simple>
+          O Senac é uma escola de profissões. Ensina desde 1946.
+        </p>
+        <ul class="ms-simple-view__list">
+          <li>Cursos práticos: saúde, gastronomia, gestão, tecnologia e mais</li>
+          <li>Unidades em várias cidades de Minas</li>
+          <li>Tem também cursos gratuitos (PSG)</li>
+        </ul>
+        <p>
+          <a
+            class="ms-simple-view__link"
+            href="https://www.youtube.com/watch?v=XA-TAo_HkJI"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Assistir vídeo institucional (YouTube) →</a
+          >
+        </p>
+        <div class="ms-simple-view__ctas">
+          <a class="btn btn-primary" href="cursos.html">Ver cursos</a>
+          <a class="btn btn-ghost" href="psg.html">Cursos gratuitos (PSG)</a>
+          <a class="btn btn-ghost" href="contato.html">Falar com atendente</a>
         </div>
       </section>
     </main>
 
     <footer class="site-footer">
       <div class="container footer-inner">
-        <p>Senac Minas - Rua dos Tupinambás, 1086 - Belo Horizonte / MG</p>
-        <p>Senac Minas - 2026 - Todos os direitos reservados</p>
+        <p>Senac Minas — Rua dos Tupinambás, 1086 — Belo Horizonte / MG</p>
+        <p>
+          <a href="index.html">Início</a>
+          ·
+          <a href="cursos.html">Cursos</a>
+          · Senac Minas 2026
+        </p>
       </div>
     </footer>
 
-    <!--
-      Modo Simples — script de acessibilidade
-      DEV:  carrega o módulo ES diretamente (sem build)
-      PROD: substituir por <script src="../dist/modo-simples.min.js"></script>
-    -->
     <script type="module" src="../src/modo-simples.js"></script>
   </body>
 </html>
