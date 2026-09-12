@@ -20,12 +20,11 @@ Complementa o painel flutuante ([06-ui-painel-acessibilidade.md](./06-ui-painel-
 | Isolamento | Preferência: injetado pela lib (Shadow DOM ou host controlado); no protótipo pode haver markup âncora |
 | Tom | Laranja de destaque + tipografia limpa; alinhado aos tokens do doc 06 |
 
-Dois pontos de ativação (devem permanecer sincronizados):
+Controle único de ativação (sincronizado com o painel):
 
-1. Toggle **SIMPLES** no header  
-2. CTA **Ativar Modo Simples** na barra (estado off)
+1. Toggle **SIMPLES** no header (com MS on, o mesmo controle vai para a faixa de pills)
 
-Desligar: toggle off **ou** botão **Voltar ao Site Padrão** na barra (estado on).
+Desligar: toggle **SIMPLES** off (ou o switch do painel). A barra **não** tem CTA “Ativar” nem “Voltar ao site padrão” — só convite (off) e ações Ouvir / Linguagem / Imagens (on).
 
 ---
 
@@ -69,16 +68,15 @@ Posição: **logo abaixo** da barra de navegação azul (Cursos, Contato, etc.).
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-| ★ Prefere uma navegação mais calma, sem excesso de informações…?  [CTA] |
+| ★ Prefere uma navegação mais calma…? Use o interruptor SIMPLES no menu.  |
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 | Campo | Valor |
 | --- | --- |
 | Fundo | Laranja sólido (token `--ms-orange` / alinhado à marca) |
-| Texto | Prefere uma navegação mais calma, sem excesso de informações e com textos diretos? |
-| CTA | Botão branco, texto laranja: **Ativar Modo Simples →** |
-| Ação do CTA | `modoSimples = true` (mesmo efeito do toggle) |
+| Texto | Convite + instrução para usar o interruptor **SIMPLES** no menu |
+| CTA | Nenhum — ativação só pelo switch SIMPLES / painel |
 
 ### 3.2 Estado ON — sessão ativa
 
@@ -86,7 +84,7 @@ Posição: **logo abaixo** da barra de navegação azul (Cursos, Contato, etc.).
 ┌────────────────────────────────────────────────────────────────────────────┐
 | [★] Modo Simples Ativado  [Foco na Navegação]                               |
 |     Exibindo explicações em palavras fáceis, sem termos complicados.        |
-|                          [Ouvir Página] [Linguagem Simples: LIGADA] [Voltar]|
+|     [Ouvir Página] [Linguagem Simples: LIGADA] [Imagens: OCULTAS|VISÍVEIS]  |
 └────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -94,10 +92,11 @@ Posição: **logo abaixo** da barra de navegação azul (Cursos, Contato, etc.).
 | --- | --- |
 | Título | **Modo Simples Ativado** |
 | Badge | Pill escuro: **Foco na Navegação** |
-| Descrição | Exibindo explicações em palavras fáceis, sem termos complicados. |
-| Botão **Ouvir Página** | Branco; ícone alto-falante; dispara TTS do conteúdo principal (liga com F2-T12) |
-| Botão **Linguagem Simples** | Escuro; estado **LIGADA** / **DESLIGADA**; toggle de linguagem simplificada (MVP: priorização/heurística; copy “palavras fáceis”) |
-| Botão **Voltar ao Site Padrão** | Escuro; ícone seta circular; `modoSimples = false` |
+| Descrição | Exibindo explicações em palavras fáceis… (ou copy sem linguagem simples) |
+| Botão **Ouvir Página** | Branco; ícone alto-falante; TTS do conteúdo principal |
+| Botão **Linguagem Simples** | Escuro; estado **LIGADA** / **DESLIGADA** |
+| Botão **Imagens** | Escuro; **OCULTAS** / **VISÍVEIS** (`hideImages`) |
+| Desligar MS | Switch **SIMPLES** (nas pills com MS on) ou switch do painel — **sem** “Voltar ao site” |
 
 ---
 
@@ -105,12 +104,12 @@ Posição: **logo abaixo** da barra de navegação azul (Cursos, Contato, etc.).
 
 | Evento | Efeito |
 | --- | --- |
-| Toggle SIMPLES → on | Ativa Modo Simples; barra passa ao estado ON; anúncio `aria-live` |
-| CTA “Ativar Modo Simples” | Idem |
-| Toggle → off **ou** “Voltar ao Site Padrão” | Desativa; barra volta ao estado OFF; reverte mutações |
-| “Ouvir Página” | Lê `<main>` / bloco principal (mesmo motor do painel) |
-| “Linguagem Simples” | Liga/desliga opção dedicada; label reflete LIGADA/DESLIGADA |
-| Persistência | Mesmo `localStorage` / state da lib (`modoSimples` + opção de linguagem) |
+| Toggle SIMPLES → on | Ativa Modo Simples; barra passa ao estado ON; anúncio `aria-live`; switch vai para as pills |
+| Toggle SIMPLES → off | Desativa; barra volta ao OFF; switch volta ao header; reverte mutações |
+| “Ouvir Página” | Lê `<main>` / bloco principal (mesmo motor do painel); highlight por bloco |
+| “Linguagem Simples” | Liga/desliga opção; label LIGADA/DESLIGADA |
+| “Imagens” | Alterna `hideImages`; preferência “mostrar no MS” é lembrada |
+| Persistência | Mesmo `localStorage` / state da lib (`modoSimples` + options) |
 
 O card **Modo Simples** do painel (doc 06) e estes controles são a **mesma fonte de verdade** de estado.
 
@@ -128,12 +127,12 @@ O card **Modo Simples** do painel (doc 06) e estes controles são a **mesma font
 
 ## 6. Gap vs. plano anterior
 
-| Capacidade | Antes (só doc 06) | Este mockup |
+| Capacidade | Antes (só doc 06) | Implementação atual |
 | --- | --- | --- |
 | Entrada no header | ❌ (só FAB) | Toggle **SIMPLES** |
 | Faixa abaixo do nav | ❌ | Barra off/on |
-| CTA de ativação na página | ❌ | **Ativar Modo Simples →** |
-| Ações na sessão ativa | Só no painel | Ouvir · Linguagem Simples · Voltar |
+| Ativação | — | Só switch SIMPLES / painel (sem CTA na barra) |
+| Ações na sessão ativa | Só no painel | Ouvir · Linguagem · Imagens |
 | Badge de status | ❌ | **Foco na Navegação** |
 
 ---
@@ -143,17 +142,19 @@ O card **Modo Simples** do painel (doc 06) e estes controles são a **mesma font
 | ID | Task | Prioridade |
 | --- | --- | --- |
 | F2-T14 | Toggle SIMPLES no header + barra abaixo do nav (off/on) | P0 |
-| F2-T15 | Botões da sessão ativa (Ouvir, Linguagem Simples, Voltar) | P0 |
+| F2-T15 | Botões da sessão ativa (Ouvir, Linguagem, Imagens) | P0 |
 
-Detalhes e aceite: [04-plano-implementacao.md](./04-plano-implementacao.md).
+Detalhes e aceite: [04-plano-implementacao.md](./04-plano-implementacao.md).  
+Integração/API: [09-guia-integracao.md](./09-guia-integracao.md).
 
 ---
 
 ## 8. Critério de aceite visual
 
 - [ ] Toggle SIMPLES visível no header (off/on distintos)
+- [ ] Com MS on, o mesmo switch aparece nas pills (header some como distração)
 - [ ] Barra laranja logo abaixo do nav nos dois estados
-- [ ] OFF: texto de convite + CTA Ativar
-- [ ] ON: título, badge, descrição e três botões de ação
-- [ ] Toggle, CTA e “Voltar” sincronizados com o estado global
+- [ ] OFF: só texto de convite (sem CTA Ativar)
+- [ ] ON: título, badge, descrição e Ouvir / Linguagem / Imagens (sem “Voltar”)
+- [ ] Toggle e painel sincronizados com o estado global
 - [ ] Não regressa o painel (doc 06) nem o protótipo `examples/`

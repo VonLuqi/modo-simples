@@ -11,6 +11,9 @@ Inclui:
 - Imagens ocultas por padrão no MS (reativáveis)
 - Protótipo Senac Minas com hub, pills e assistente de cursos
 
+**Guia para desenvolvedores (instalar, configurar, API, markup):**  
+[`doc/09-guia-integracao.md`](./doc/09-guia-integracao.md)
+
 Docs: [`doc/`](./doc/README.md) · Entrega banca: [`doc/11-pacote-entrega.md`](./doc/11-pacote-entrega.md) · Status: [`doc/03-status-implementacao.md`](./doc/03-status-implementacao.md)
 
 ---
@@ -24,7 +27,7 @@ npm install
 npm run preview
 ```
 
-Abra **`http://127.0.0.1:8765/`** — a raiz (e `/examples`) redireciona para o protótipo.
+Abra **`http://127.0.0.1:8765/`** — a raiz (e `/examples`) levam ao protótipo.
 
 | URL | Conteúdo |
 | --- | --- |
@@ -41,7 +44,8 @@ npm run smoke:examples
 ```
 
 > Sirva sempre a **raiz do repo** (`npm run preview`), não só a pasta `examples/`: o script aponta para `../src/modo-simples.js`.  
-> Não use URLs “limpas” sem `.html` (`/contato`) — use `/examples/contato.html`.
+> Não use URLs “limpas” sem `.html` (`/contato`) — use `/examples/contato.html`.  
+> Prefira **sempre o mesmo host** (`127.0.0.1` **ou** `localhost`): a persistência é por hostname.
 
 ---
 
@@ -65,34 +69,101 @@ Inventário: [`doc/05-inventario-prototipo.md`](./doc/05-inventario-prototipo.md
 | `npm run test:structure` | Só estrutura do protótipo |
 | `npm run smoke:examples` | Verifica páginas/assets do protótipo |
 | `npm run smoke:assistente` | Smoke do assistente de cursos |
-| `npm run build` | Gera `dist/modo-simples(.min).js` |
+| `npm run build` | Gera `dist/modo-simples(.min).js` (ES2018) |
 | `npm run format` | Prettier |
 
 ---
 
-## Integração
+## Integração e configuração (devs)
+
+### Incluir o script
 
 ```html
-<!-- Dev -->
+<!-- Desenvolvimento (ES module) -->
 <script type="module" src="../src/modo-simples.js"></script>
 
-<!-- Prod (após npm run build) -->
+<!-- Produção (após npm run build) -->
 <script src="../dist/modo-simples.min.js"></script>
 ```
 
-Guia completo: [`doc/09-guia-integracao.md`](./doc/09-guia-integracao.md)  
-Bookmarklet: [`doc/10-bookmarklet.md`](./doc/10-bookmarklet.md)
+O script **auto-inicia** e expõe `window.ModoSimples`.
+
+### API
+
+| Método | Uso |
+| --- | --- |
+| `enable()` / `disable()` / `toggle()` | Liga/desliga Modo Simples |
+| `configure(patch)` | Config da lib (`position`, `simpleNav`, limiares, …) |
+| `destroy()` | Remove UI, estilos e listeners |
 
 ```js
 window.ModoSimples.enable();
 window.ModoSimples.disable();
 window.ModoSimples.toggle();
+
 window.ModoSimples.configure({
-  simpleNav: [{ label: 'Início', href: '/' }],
+  position: 'bottom-right', // FAB
+  confidenceThreshold: 0.45,
+  persistence: true,
+  hostnamePersistence: true,
+  simpleNav: [
+    { label: 'Início', href: '/' },
+    { label: 'Ajuda', href: '/ajuda', short: 'Ajuda' },
+  ],
 });
 ```
 
-Pills em sites externos: ver [`doc/09-guia-integracao.md`](./doc/09-guia-integracao.md) e `examples/hello-modo-simples.html`.
+### Configuração principal (`configure` / defaults)
+
+| Chave | Default | Papel |
+| --- | --- | --- |
+| `position` | `bottom-right` | Canto do FAB |
+| `persistence` | `true` | Salva preferências em `localStorage` |
+| `hostnamePersistence` | `true` | Escopo por hostname |
+| `confidenceThreshold` | `0.45` | Abaixo → seleção manual do conteúdo |
+| `reprocessDebounce` | `300` | Debounce do observer (SPA) |
+| `mainSelectors` | `main`, `[role=main]`, … | Onde achar o conteúdo |
+| `distractionSelectors` | `header`, `nav`, `aside`, … | O que ocultar no MS |
+| `simpleNav` | `null` | Pills injetáveis (se não houver `[data-ms-pills]`) |
+
+Tabela completa: [`doc/09-guia-integracao.md`](./doc/09-guia-integracao.md#4-configuração-da-lib-defaults--configure).
+
+### Preferências do usuário (painel)
+
+Persistidas entre páginas (mesmo host): escala de texto, tema, Lexend, régua, links, espaçamento, motion, ocultar imagens, estado do MS.
+
+Ativar MS também liga linguagem simples e oculta imagens (reativáveis na barra/painel). Desligar MS não apaga tema/escala do painel.
+
+### Markup útil no site hospedeiro
+
+```html
+<main>…conteúdo principal…</main>
+
+<section class="ms-simple-hide">…some no Modo Simples…</section>
+<section class="ms-simple-view ms-simple-only">…só no Modo Simples…</section>
+
+<img src="logo.png" alt="Marca" data-ms-keep-img />
+```
+
+| Marcação | Efeito |
+| --- | --- |
+| `<main>` / `[role="main"]` | Melhora detecção + TTS |
+| `.ms-simple-hide` | Some com MS on |
+| `.ms-simple-only` / `.ms-simple-view` | Aparece só com MS on |
+| `data-ms-plain` / `data-ms-simple` | Pares de linguagem |
+| `data-ms-keep-img` | Não some com “ocultar imagens” |
+| `[data-ms-pills]` | Pills autoradas (a lib não sobrescreve) |
+
+### Controles na UI
+
+- **Ativar/desativar MS:** switch **SIMPLES** (header; com MS on, também nas pills) ou switch do painel  
+- **Barra âmbar:** convite (off) ou Ouvir / Linguagem / Imagens (on) — sem segundo botão de ativar/voltar  
+- **FAB:** abre o painel (Esc fecha)
+
+Demo mínima: [`examples/hello-modo-simples.html`](./examples/hello-modo-simples.html)  
+Bookmarklet: [`doc/10-bookmarklet.md`](./doc/10-bookmarklet.md)  
+Browsers: [`doc/13-compatibilidade-browsers.md`](./doc/13-compatibilidade-browsers.md)
+
 ---
 
 ## Padronização

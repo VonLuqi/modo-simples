@@ -11,7 +11,7 @@
 | [06-ui-painel-acessibilidade.md](./06-ui-painel-acessibilidade.md) | UI painel |
 | [07-ui-barra-modo-simples.md](./07-ui-barra-modo-simples.md) | UI barra SIMPLES |
 | [08-heuristicas-edges.md](./08-heuristicas-edges.md) | Edges heurísticas |
-| [09-guia-integracao.md](./09-guia-integracao.md) | Guia para desenvolvedores |
+| [09-guia-integracao.md](./09-guia-integracao.md) | **Guia para desenvolvedores** (instalar, API, config, markup, persistência) |
 | [10-bookmarklet.md](./10-bookmarklet.md) | Bookmarklet |
 | [11-pacote-entrega.md](./11-pacote-entrega.md) | **Entrega UC / slides** |
 | [13-compatibilidade-browsers.md](./13-compatibilidade-browsers.md) | Browsers / ES2018 |
@@ -24,6 +24,9 @@
 
 **Fases 0–7 concluídas** · **Release v1.1.0** (beta de testes encerrada).  
 Ver [03-status-implementacao.md](./03-status-implementacao.md) · [12-plano-melhorias-ux.md](./12-plano-melhorias-ux.md).  
+
+**Para integrar o script:** comece por [09-guia-integracao.md](./09-guia-integracao.md) (também resumido no [README](../README.md#integração-e-configuração-devs)).
+
 Demo: `npm run preview` → `/` redireciona para `/examples/index.html`  
 Roteiro banca (5 passos): [11-pacote-entrega.md §3](./11-pacote-entrega.md#3-guia-de-demo-em-5-passos-banca)  
 Checklist visual: [checklists/pixel-banca.md](./checklists/pixel-banca.md)  

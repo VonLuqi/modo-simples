@@ -9,7 +9,7 @@
 | Hub MS + pills + linguagem simples | ✅ F5-T05 |
 | `npm test` passando | ✅ |
 | `npm run build` gera `dist/` | ✅ (versionado no repo) |
-| Guia para desenvolvedores | ✅ `doc/09-guia-integracao.md` |
+| Guia para desenvolvedores | ✅ `doc/09-guia-integracao.md` (API, config, markup, persistência) |
 | UI documentada (painel + barra) | ✅ docs 06 / 07 |
 | Auditoria a11y | ✅ `doc/checklists/a11y-menu.md` |
 | Inventário de páginas | ✅ `doc/05-inventario-prototipo.md` |

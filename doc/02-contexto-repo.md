@@ -3,7 +3,7 @@
 Snapshot detalhado do projeto no GitHub [`VonLuqi/modo-simples`](https://github.com/VonLuqi/modo-simples).  
 Última atualização: **2026-09-11** · versão **1.1.0** · licença **MIT**.
 
-Documentos irmãos: [proposta](./01-proposta.md) · [status](./03-status-implementacao.md) · [inventário](./05-inventario-prototipo.md) · [integração](./09-guia-integracao.md) · [entrega](./11-pacote-entrega.md)
+Documentos irmãos: [proposta](./01-proposta.md) · [status](./03-status-implementacao.md) · [inventário](./05-inventario-prototipo.md) · **[integração / config (devs)](./09-guia-integracao.md)** · [entrega](./11-pacote-entrega.md)
 
 ---
 
@@ -105,7 +105,8 @@ Nav unificada (8 itens) com `aria-current="page"`. Com MS ligado: **pills** + **
 1. Tempos reais de ≥ 3 participantes no roteiro de estudo de caso  
 2. Contagens before/after do script de métricas  
 3. Ensaio da demo ao vivo (5 passos em [11-pacote-entrega.md](./11-pacote-entrega.md))  
-4. (Opcional) Publish npm / tag `v1.1.0`
+4. (Opcional) Publish npm — tag `v1.1.0` já publicada no GitHub
+5. Guia de integração atualizado: [09-guia-integracao.md](./09-guia-integracao.md)
 
 ---
 
