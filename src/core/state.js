@@ -9,32 +9,35 @@ import eventBus from './eventBus.js';
  *
  * Shape:
  *   {
- *     modoSimples: boolean,   // Modo Simples activation flag
- *     panelOpen:   boolean,   // radial menu open/closed
+ *     modoSimples: boolean,
+ *     panelOpen:   boolean,
  *     options: {
- *       reducedMotion:    boolean,  // synced from prefers-reduced-motion
- *       highContrast:     boolean,  // user-enabled high contrast
- *       largerText:       boolean,  // user-enabled larger text
- *       highlightLinks:   boolean,  // make links more visible
- *       dyslexiaFont:     boolean,  // apply dyslexia-friendly font stack
- *       textSpacing:      boolean,  // increase line-height / letter-spacing
- *       hideImages:       boolean,  // hide decorative images
+ *       textScale:     '100'|'125'|'150'|'175',
+ *       colorTheme:    'senac'|'yellowBlack'|'darkHigh'|'soft',
+ *       dyslexiaFont:  boolean,
+ *       readingRuler:  boolean,
+ *       highlightLinks: boolean,
+ *       textSpacing:   boolean,
+ *       reducedMotion: boolean,
+ *       hideImages:    boolean,
+ *       simpleLanguage: boolean,
  *     }
  *   }
  */
 
-/** @type {import('../types.js').AppState} */
 const initialState = {
   modoSimples: false,
   panelOpen: false,
   options: {
-    reducedMotion:  false,
-    highContrast:   false,
-    largerText:     false,
+    textScale: '100',
+    colorTheme: 'senac',
+    dyslexiaFont: false,
+    readingRuler: false,
     highlightLinks: false,
-    dyslexiaFont:   false,
-    textSpacing:    false,
-    hideImages:     false,
+    textSpacing: false,
+    reducedMotion: false,
+    hideImages: false,
+    simpleLanguage: false,
   },
 };
 
@@ -55,10 +58,10 @@ function createState(initial) {
     /**
      * Merge a patch into current state and emit 'stateChange'.
      * Nested `options` are merged (not replaced), so partial patches work:
-     *   state.set({ options: { highContrast: true } })
-     *   → only highContrast changes; others are preserved.
+     *   state.set({ options: { textScale: '150' } })
+     *   → only textScale changes; others are preserved.
      *
-     * @param {Partial<import('../types.js').AppState>} patch
+     * @param {Object} patch
      */
     set(patch) {
       const prev = cloneState(current);

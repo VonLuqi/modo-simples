@@ -6,30 +6,44 @@ import { detectDistractions } from '../heuristics/distractionDetector.js';
  * DOM Mutator — applies and reverts Modo Simples visual transformations.
  *
  * Core principle: NEVER modify DOM structure. Only set/remove data attributes
- * and add/remove CSS classes on the root <html> element. All visual changes
- * are expressed purely through CSS (see getPageStyles in styles.js).
- *
- * This makes the entire operation reversible with a single revert() call and
- * eliminates the risk of corrupting the host page's layout.
- *
- * Data attributes:
- *   data-ms-principal  → marks the detected main content block
- *   data-ms-hidden     → marks elements to be visually hidden
+ * and add/remove CSS classes on the root <html> element.
  *
  * Root classes:
- *   ms-ativo            → Modo Simples is ON
- *   ms-high-contrast    → high contrast option is ON
- *   ms-larger-text      → larger text option is ON
- *   ms-reduced-motion   → reduced motion option is ON
- *   ms-highlight-links  → highlight links option is ON
- *   ms-dyslexia-font    → dyslexia-friendly font option is ON
- *   ms-text-spacing     → text spacing option is ON
- *   ms-hide-images      → hide images option is ON
+ *   ms-ativo                     → Modo Simples ON (distraction hiding)
+ *   ms-text-scale-{100|125|…}    → text scale
+ *   ms-theme-{senac|yellowBlack|…}
+ *   ms-dyslexia-font, ms-highlight-links, ms-text-spacing,
+ *   ms-reduced-motion, ms-hide-images, ms-reading-ruler
  */
 
 const PAGE_STYLE_ID = 'ms-page-styles';
+const LEXEND_LINK_ID = 'ms-lexend-font';
 
-/** Cached scan results. Cleared on revert() to force re-scan on next apply(). */
+const TEXT_SCALE_CLASSES = [
+  'ms-text-scale-100',
+  'ms-text-scale-125',
+  'ms-text-scale-150',
+  'ms-text-scale-175',
+];
+
+const THEME_CLASSES = [
+  'ms-theme-senac',
+  'ms-theme-yellowBlack',
+  'ms-theme-darkHigh',
+  'ms-theme-soft',
+];
+
+const OPTION_FLAG_CLASSES = [
+  'ms-dyslexia-font',
+  'ms-highlight-links',
+  'ms-text-spacing',
+  'ms-reduced-motion',
+  'ms-hide-images',
+  'ms-reading-ruler',
+  'ms-simple-language',
+];
+
+/** Cached scan results. Cleared on revertModoSimples / full revert. */
 let _mainElement = null;
 /** @type {Element[]} */
 let _distractionElements = [];
@@ -47,10 +61,23 @@ export function injectPageStyles() {
 }
 
 /**
+ * Ensure Lexend is available via Google Fonts link (idempotent).
+ */
+export function ensureLexendFont() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById(LEXEND_LINK_ID)) return;
+  const link = document.createElement('link');
+  link.id = LEXEND_LINK_ID;
+  link.rel = 'stylesheet';
+  link.href =
+    'https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap';
+  document.head.appendChild(link);
+}
+
+/**
  * Scan the page heuristically and cache results.
- * Must be called before apply(). Called again by reprocess() after DOM changes.
  *
- * @param {import('../config/defaults.js').default} config
+ * @param {Object} config
  * @returns {{ mainElement: Element, confidence: number }}
  */
 export function scan(config) {
@@ -61,74 +88,117 @@ export function scan(config) {
 }
 
 /**
- * Apply all Modo Simples transformations to the current page.
- *
- * @param {Object} state  Current state snapshot
- * @param {Object} config Current configuration
+ * Apply option classes (text/theme/aids) independently of Modo Simples.
+ * @param {Object} state
  */
-export function apply(state, config) {
-  // Ensure we have scan results
-  if (!_mainElement) scan(config);
-
-  // Mark main content
-  if (_mainElement) _mainElement.setAttribute('data-ms-principal', '');
-
-  // Mark distractions
-  _distractionElements.forEach((el) => el.setAttribute('data-ms-hidden', 'true'));
-
-  // Apply root activation class + option classes
+export function applyOptions(state) {
   const html = document.documentElement;
-  html.classList.add('ms-ativo');
-  if (state.options.highContrast)   html.classList.add('ms-high-contrast');
-  if (state.options.largerText)     html.classList.add('ms-larger-text');
-  if (state.options.reducedMotion)  html.classList.add('ms-reduced-motion');
-  if (state.options.highlightLinks) html.classList.add('ms-highlight-links');
-  if (state.options.dyslexiaFont)   html.classList.add('ms-dyslexia-font');
-  if (state.options.textSpacing)    html.classList.add('ms-text-spacing');
-  if (state.options.hideImages)     html.classList.add('ms-hide-images');
+  const opts = state.options || {};
+
+  html.classList.remove(...TEXT_SCALE_CLASSES);
+  const scale = opts.textScale || '100';
+  html.classList.add(`ms-text-scale-${scale}`);
+
+  html.classList.remove(...THEME_CLASSES);
+  const theme = opts.colorTheme || 'senac';
+  html.classList.add(`ms-theme-${theme}`);
+
+  html.classList.toggle('ms-dyslexia-font', !!opts.dyslexiaFont);
+  html.classList.toggle('ms-highlight-links', !!opts.highlightLinks);
+  html.classList.toggle('ms-text-spacing', !!opts.textSpacing);
+  html.classList.toggle('ms-reduced-motion', !!opts.reducedMotion);
+  html.classList.toggle('ms-hide-images', !!opts.hideImages);
+  html.classList.toggle('ms-reading-ruler', !!opts.readingRuler);
+  html.classList.toggle('ms-simple-language', !!opts.simpleLanguage);
 }
 
 /**
- * Revert ALL Modo Simples transformations without modifying DOM structure.
+ * Apply Modo Simples: mark principal, hide distractions, add ms-ativo.
+ * Does not clear option classes.
  *
- * After this call the page looks exactly as it did before apply() ran.
- * Also clears the scan cache so the next apply() triggers a fresh scan.
+ * @param {Object} state
+ * @param {Object} config
  */
-export function revert() {
-  // Remove element-level markers
+export function applyModoSimples(state, config) {
+  if (!_mainElement) scan(config);
+
+  if (_mainElement) _mainElement.setAttribute('data-ms-principal', '');
+  _distractionElements.forEach((el) => el.setAttribute('data-ms-hidden', 'true'));
+
+  document.documentElement.classList.add('ms-ativo');
+  applyOptions(state);
+}
+
+/**
+ * Apply all transformations when Modo Simples is on (legacy-compatible).
+ * @param {Object} state
+ * @param {Object} config
+ */
+export function apply(state, config) {
+  applyModoSimples(state, config);
+}
+
+/**
+ * Remove Modo Simples markers (principal / hidden) and ms-ativo.
+ * Keeps option classes (text scale, theme, etc.).
+ */
+export function revertModoSimples() {
   document.querySelectorAll('[data-ms-hidden="true"]').forEach((el) => {
     el.removeAttribute('data-ms-hidden');
   });
+  // Keep manually selected principal if present; only clear scan-cache markers
+  // when fully reverting — for disable we remove all principal markers.
   document.querySelectorAll('[data-ms-principal]').forEach((el) => {
     el.removeAttribute('data-ms-principal');
   });
 
-  // Remove root classes
-  document.documentElement.classList.remove(
-    'ms-ativo',
-    'ms-high-contrast',
-    'ms-larger-text',
-    'ms-reduced-motion',
-    'ms-highlight-links',
-    'ms-dyslexia-font',
-    'ms-text-spacing',
-    'ms-hide-images',
-  );
-
-  // Clear cache — forces fresh heuristic scan on next apply()
+  document.documentElement.classList.remove('ms-ativo');
   _mainElement = null;
   _distractionElements = [];
 }
 
 /**
- * Re-scan and re-apply after DOM changes (e.g. SPA navigation).
- * Wraps revert() + scan() + apply() in a single atomic operation.
- *
- * @param {Object} state  Current state snapshot
- * @param {Object} config Current configuration
+ * Revert ALL Modo Simples transformations (destroy path).
+ */
+export function revert() {
+  revertModoSimples();
+
+  document.documentElement.classList.remove(
+    ...TEXT_SCALE_CLASSES,
+    ...THEME_CLASSES,
+    ...OPTION_FLAG_CLASSES,
+  );
+}
+
+/**
+ * Mark a specific element as principal (manual select) and re-hide distractions.
+ * @param {Element} el
+ * @param {Object} config
+ */
+export function setPrincipal(el, config) {
+  document.querySelectorAll('[data-ms-principal]').forEach((node) => {
+    node.removeAttribute('data-ms-principal');
+  });
+  _mainElement = el;
+  el.setAttribute('data-ms-principal', '');
+  _distractionElements = detectDistractions(_mainElement, config);
+  document.querySelectorAll('[data-ms-hidden="true"]').forEach((node) => {
+    node.removeAttribute('data-ms-hidden');
+  });
+  _distractionElements.forEach((node) => node.setAttribute('data-ms-hidden', 'true'));
+}
+
+/**
+ * Re-scan and re-apply after DOM changes (SPA).
+ * @param {Object} state
+ * @param {Object} config
  */
 export function reprocess(state, config) {
-  revert();
+  if (!state.modoSimples) {
+    applyOptions(state);
+    return;
+  }
+  revertModoSimples();
   scan(config);
-  apply(state, config);
+  applyModoSimples(state, config);
 }

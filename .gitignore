@@ -11,9 +11,12 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# Pastas de Build (Caso o projeto cresça e gere arquivos finais)
-dist/
+# Pastas de Build
 build/
+# dist/ versionado (entrega / npm files) — regenerar com npm run build
+
+# Referência visual local (zip React — não versionar)
+_ref-prototipo-senac/
 
 # Variáveis de ambiente (Segurança: nunca enviar senhas)
 .env

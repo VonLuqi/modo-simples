@@ -109,4 +109,22 @@ describe('persistence', () => {
     const result = persistence.load('corrompido', 'default');
     assert.strictEqual(result, 'default');
   });
+
+  // ── hostKey / saveForHost / loadForHost ───────────────────────────────────
+
+  it('hostKey deve concatenar base e hostname', () => {
+    const prev = global.location;
+    global.location = { hostname: 'localhost' };
+    assert.strictEqual(persistence.hostKey('state'), 'state:localhost');
+    global.location = prev;
+  });
+
+  it('saveForHost e loadForHost devem usar chave com hostname', () => {
+    const prev = global.location;
+    global.location = { hostname: 'demo.local' };
+    persistence.saveForHost('prefs', { a: 1 });
+    assert.ok(lsMock._store.has('ms_prefs:demo.local'));
+    assert.deepEqual(persistence.loadForHost('prefs'), { a: 1 });
+    global.location = prev;
+  });
 });

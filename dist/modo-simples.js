@@ -1,0 +1,2959 @@
+/*! modo-simples v1.1.0 | MIT | Script JavaScript injetável de acessibilidade web — Modo Simples */
+(() => {
+  // src/config/defaults.js
+  var defaults = {
+    /**
+     * CSS selectors tried in order to locate the main content.
+     * The first selector that returns a high-scoring element wins.
+     */
+    mainSelectors: [
+      "main",
+      '[role="main"]',
+      "article",
+      "#conteudo",
+      "#content",
+      ".content",
+      ".main-content",
+      ".post-content",
+      ".article-body",
+      ".entry-content"
+    ],
+    /**
+     * Candidates for hiding when Modo Simples is active.
+     * Elements inside the detected main content are never hidden, regardless
+     * of whether they match these selectors.
+     */
+    distractionSelectors: [
+      "header",
+      "footer",
+      "aside",
+      '[role="complementary"]',
+      '[role="banner"]',
+      '[role="contentinfo"]',
+      "nav",
+      ".barra-superior",
+      ".ad",
+      ".ads",
+      ".advertisement",
+      '[class*="banner"]:not([class*="page-banner"])',
+      '[class*="popup"]',
+      '[class*="overlay"]',
+      '[class*="sidebar"]',
+      '[class*="cookie"]',
+      '[class*="newsletter"]',
+      '[class*="promo"]',
+      '[class*="carousel"]',
+      '[class*="slider"]',
+      ".slider",
+      ".s1",
+      "iframe"
+    ],
+    /** Scoring weights used by the heuristic engine. */
+    scoring: {
+      mainTagBonus: 100,
+      roleMainBonus: 90,
+      articleBonus: 60,
+      h1Bonus: 30,
+      h2Bonus: 20,
+      textLengthBonus: 40,
+      /** Minimum text length (chars) to award textLengthBonus. */
+      minTextLength: 200
+    },
+    /** Persist state (modoSimples on/off + options) across page loads. */
+    persistence: true,
+    /** Scope persistence keys by hostname (`state:hostname`). */
+    hostnamePersistence: true,
+    /**
+     * Floating button corner position.
+     * One of: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
+     */
+    position: "bottom-right",
+    /**
+     * Minimum heuristic confidence (0–1) to auto-apply main detection.
+     * Below this threshold, a manual-selection fallback is shown instead.
+     */
+    confidenceThreshold: 0.45,
+    /**
+     * Milliseconds to debounce MutationObserver reprocessing after DOM changes.
+     */
+    reprocessDebounce: 300,
+    /**
+     * Optional simple-mode nav pills for host pages without markup.
+     * Example: [{ label: 'Início', href: '/' }, { label: 'Ajuda', href: '/ajuda' }]
+     * Ignored when the page already has [data-ms-pills] authored in HTML.
+     * @type {null | { label: string, href: string, short?: string }[]}
+     */
+    simpleNav: null
+  };
+  var defaults_default = defaults;
+
+  // src/core/eventBus.js
+  var eventBus = {
+    /** @type {Record<string, Function[]>} */
+    _listeners: {},
+    /**
+     * Subscribe to an event.
+     * @param {string} event
+     * @param {Function} callback
+     * @returns {Function} Unsubscribe function
+     */
+    on(event, callback) {
+      if (!this._listeners[event]) this._listeners[event] = [];
+      this._listeners[event].push(callback);
+      return () => this.off(event, callback);
+    },
+    /**
+     * Unsubscribe a specific callback from an event.
+     * @param {string} event
+     * @param {Function} callback
+     */
+    off(event, callback) {
+      if (!this._listeners[event]) return;
+      this._listeners[event] = this._listeners[event].filter((cb) => cb !== callback);
+    },
+    /**
+     * Emit an event, invoking all registered callbacks with data.
+     * Errors inside callbacks are caught and logged so a bad handler cannot
+     * crash the whole system.
+     * @param {string} event
+     * @param {*} data
+     */
+    emit(event, data) {
+      const listeners = this._listeners[event];
+      if (!listeners || listeners.length === 0) return;
+      [...listeners].forEach((cb) => {
+        try {
+          cb(data);
+        } catch (err) {
+          if (typeof process === "undefined" || true) {
+            console.error("[ModoSimples] Event handler error:", err);
+          }
+        }
+      });
+    },
+    /**
+     * Remove all listeners for one event. Used on destroy().
+     * @param {string} event
+     */
+    clear(event) {
+      delete this._listeners[event];
+    },
+    /** Remove all listeners for every event. */
+    clearAll() {
+      this._listeners = {};
+    }
+  };
+  var eventBus_default = eventBus;
+
+  // src/core/state.js
+  var initialState = {
+    modoSimples: false,
+    panelOpen: false,
+    options: {
+      textScale: "100",
+      colorTheme: "senac",
+      dyslexiaFont: false,
+      readingRuler: false,
+      highlightLinks: false,
+      textSpacing: false,
+      reducedMotion: false,
+      hideImages: false,
+      simpleLanguage: false
+    }
+  };
+  function cloneState(s) {
+    return { ...s, options: { ...s.options } };
+  }
+  function createState(initial) {
+    let current = cloneState(initial);
+    return {
+      /** Returns a snapshot — never a direct reference to internal state. */
+      get() {
+        return cloneState(current);
+      },
+      /**
+       * Merge a patch into current state and emit 'stateChange'.
+       * Nested `options` are merged (not replaced), so partial patches work:
+       *   state.set({ options: { textScale: '150' } })
+       *   → only textScale changes; others are preserved.
+       *
+       * @param {Object} patch
+       */
+      set(patch) {
+        const prev = cloneState(current);
+        if (patch.options) {
+          current = {
+            ...current,
+            ...patch,
+            options: { ...current.options, ...patch.options }
+          };
+        } else {
+          current = { ...current, ...patch };
+        }
+        eventBus_default.emit("stateChange", { prev, next: cloneState(current) });
+      },
+      /** Reset state to initial values (e.g. on destroy). */
+      reset() {
+        this.set(cloneState(initialState));
+      }
+    };
+  }
+  var state = createState(initialState);
+  var state_default = state;
+
+  // src/core/persistence.js
+  var KEY_PREFIX = "ms_";
+  var persistence = {
+    /**
+     * Save a JSON-serialisable value.
+     * @param {string} key
+     * @param {*} value
+     */
+    save(key, value) {
+      try {
+        localStorage.setItem(KEY_PREFIX + key, JSON.stringify(value));
+      } catch (_) {
+      }
+    },
+    /**
+     * Load a previously saved value.
+     * @param {string} key
+     * @param {*} [fallback=null] Value returned when the key is not found or parsing fails
+     * @returns {*}
+     */
+    load(key, fallback = null) {
+      try {
+        const raw = localStorage.getItem(KEY_PREFIX + key);
+        return raw !== null ? JSON.parse(raw) : fallback;
+      } catch (_) {
+        return fallback;
+      }
+    },
+    /**
+     * Remove a saved value.
+     * @param {string} key
+     */
+    remove(key) {
+      try {
+        localStorage.removeItem(KEY_PREFIX + key);
+      } catch (_) {
+      }
+    },
+    /**
+     * Build a hostname-scoped key: `base:hostname`.
+     * @param {string} base
+     * @returns {string}
+     */
+    hostKey(base) {
+      const host = typeof location !== "undefined" && location.hostname ? location.hostname : "local";
+      return `${base}:${host}`;
+    },
+    /**
+     * Save a value under a hostname-scoped key.
+     * @param {string} base
+     * @param {*} value
+     */
+    saveForHost(base, value) {
+      this.save(this.hostKey(base), value);
+    },
+    /**
+     * Load a value from a hostname-scoped key.
+     * @param {string} base
+     * @param {*} [fallback=null]
+     * @returns {*}
+     */
+    loadForHost(base, fallback = null) {
+      return this.load(this.hostKey(base), fallback);
+    }
+  };
+  var persistence_default = persistence;
+
+  // src/core/persistedState.js
+  function hydratePersistedState(saved) {
+    if (!saved || typeof saved !== "object") return null;
+    const opts = saved.options || {};
+    let textScale = opts.textScale || "100";
+    if (!opts.textScale && opts.largerText) textScale = "125";
+    let colorTheme = opts.colorTheme || "senac";
+    if (!opts.colorTheme && opts.highContrast) colorTheme = "yellowBlack";
+    const modoSimples = Boolean(saved.modoSimples);
+    return {
+      modoSimples,
+      options: {
+        textScale: ["100", "125", "150", "175"].includes(textScale) ? textScale : "100",
+        colorTheme: ["senac", "yellowBlack", "darkHigh", "soft"].includes(colorTheme) ? colorTheme : "senac",
+        dyslexiaFont: Boolean(opts.dyslexiaFont),
+        readingRuler: Boolean(opts.readingRuler),
+        highlightLinks: Boolean(opts.highlightLinks),
+        textSpacing: Boolean(opts.textSpacing),
+        reducedMotion: Boolean(opts.reducedMotion),
+        hideImages: Boolean(opts.hideImages),
+        // Linguagem simples é acoplada ao MS; sem MS não reativa “órfã”
+        simpleLanguage: modoSimples ? Boolean(opts.simpleLanguage) : false
+      }
+    };
+  }
+
+  // src/utils/mediaQuery.js
+  function prefersReducedMotion() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+  function onReducedMotionChange(callback) {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    mq.addEventListener("change", callback);
+    return () => mq.removeEventListener("change", callback);
+  }
+
+  // src/utils/aria.js
+  function announce(message, politeness = "polite") {
+    const live = document.createElement("div");
+    live.setAttribute("role", "status");
+    live.setAttribute("aria-live", politeness);
+    live.setAttribute("aria-atomic", "true");
+    live.style.cssText = "position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;";
+    document.body.appendChild(live);
+    setTimeout(() => {
+      live.textContent = message;
+      setTimeout(() => {
+        if (live.parentNode) live.parentNode.removeChild(live);
+      }, 3e3);
+    }, 50);
+  }
+
+  // src/ui/styles.js
+  function getUIStyles(position = "bottom-right") {
+    const isBottom = position.startsWith("bottom");
+    const isRight = position.endsWith("right");
+    const fabCorner = [
+      isBottom ? "bottom: 1.5rem;" : "top: 1.5rem;",
+      isRight ? "right: 1.5rem;" : "left: 1.5rem;"
+    ].join("");
+    const panelCorner = [
+      isBottom ? "bottom: calc(1.5rem + 100px);" : "top: calc(1.5rem + 100px);",
+      isRight ? "right: 1.5rem;" : "left: 1.5rem;"
+    ].join("");
+    const panelOrigin = `${isBottom ? "bottom" : "top"} ${isRight ? "right" : "left"}`;
+    return `
+    :host {
+      all: initial;
+      display: block;
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2147483647;
+      --ms-blue: #0B2C5F;
+      --ms-blue-mid: #1B3F92;
+      --ms-orange: #F39200;
+      --ms-orange-dark: #E08400;
+      --ms-simple-bg: #FFF8E7;
+      --ms-simple-border: #F39200;
+      --ms-panel-radius: 14px;
+      --ms-font: 'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      font-family: var(--ms-font);
+      font-size: 15px;
+      line-height: 1.45;
+      color: #1a1a1a;
+      box-sizing: border-box;
+    }
+
+    *, *::before, *::after { box-sizing: inherit; }
+
+    /* \u2500\u2500 FAB \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    .ms-fab-wrap {
+      position: absolute;
+      ${fabCorner}
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.45rem;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .ms-fab-tip {
+      pointer-events: none;
+      position: relative;
+      background: #0B2C5F;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      box-shadow:
+        0 2px 4px rgba(11, 44, 95, 0.18),
+        0 8px 20px rgba(11, 44, 95, 0.28);
+      white-space: nowrap;
+      max-width: min(240px, 72vw);
+      line-height: 1.25;
+      animation: ms-fab-tip-in 0.38s ease both;
+    }
+    .ms-fab-tip::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      right: 1.15rem;
+      width: 0;
+      height: 0;
+      border: 6px solid transparent;
+      border-top-color: #0B2C5F;
+      filter: drop-shadow(0 2px 1px rgba(11, 44, 95, 0.15));
+    }
+    .ms-fab-tip[hidden] { display: none !important; }
+
+    @keyframes ms-fab-tip-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #ms-fab,
+    .ms-fab {
+      position: relative;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      border: none;
+      background: var(--ms-orange);
+      color: #fff;
+      cursor: pointer;
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow:
+        0 2px 6px rgba(243, 146, 0, 0.35),
+        0 8px 22px rgba(243, 146, 0, 0.4);
+      transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+      padding: 0;
+    }
+
+    #ms-fab:hover {
+      background: var(--ms-orange-dark);
+      transform: scale(1.06);
+      box-shadow:
+        0 4px 10px rgba(243, 146, 0, 0.4),
+        0 12px 28px rgba(243, 146, 0, 0.45);
+    }
+    #ms-fab:active { transform: scale(0.96); }
+    #ms-fab:focus-visible {
+      outline: 3px solid var(--ms-blue);
+      outline-offset: 3px;
+    }
+    #ms-fab.ms-fab--open {
+      box-shadow:
+        0 0 0 4px rgba(243, 146, 0, 0.35),
+        0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+    .ms-fab-icon { display: block; }
+    .ms-fab-icon--close[hidden],
+    .ms-fab-icon--open[hidden] { display: none !important; }
+
+    /* \u2500\u2500 Panel \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    #ms-a11y-panel,
+    .ms-a11y-panel {
+      position: absolute;
+      ${panelCorner}
+      width: min(380px, calc(100vw - 2rem));
+      max-height: min(72vh, 640px);
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border-radius: var(--ms-panel-radius);
+      box-shadow:
+        0 4px 12px rgba(11, 44, 95, 0.12),
+        0 16px 48px rgba(11, 44, 95, 0.28);
+      overflow: hidden;
+      pointer-events: auto;
+      z-index: 1;
+      transform-origin: ${panelOrigin};
+      animation: ms-panel-in 0.22s ease both;
+    }
+
+    #ms-a11y-panel[hidden] { display: none !important; }
+
+    @keyframes ms-panel-in {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .ms-a11y-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 1rem 1rem 0.9rem;
+      background: linear-gradient(135deg, var(--ms-blue) 0%, var(--ms-blue-mid) 100%);
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .ms-a11y-header-icon {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--ms-orange);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ms-a11y-header-text { flex: 1; min-width: 0; }
+    .ms-a11y-header-text h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: #fff;
+    }
+    .ms-a11y-subtitle {
+      margin: 0.2rem 0 0;
+      font-size: 0.72rem;
+      opacity: 0.85;
+      color: #fff;
+    }
+
+    .ms-a11y-close {
+      flex-shrink: 0;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.85);
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ms-a11y-close:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+    .ms-a11y-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+    .ms-a11y-body {
+      overflow-y: auto;
+      padding: 0.85rem 1rem 1.1rem;
+      flex: 1;
+      background: #f7f8fa;
+    }
+
+    /* \u2500\u2500 Modo Simples card \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    .ms-a11y-card--simple {
+      background: var(--ms-simple-bg);
+      border: 2px solid var(--ms-simple-border);
+      border-radius: 12px;
+      padding: 0.85rem 0.9rem;
+      margin-bottom: 1rem;
+    }
+    .ms-a11y-card-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    .ms-a11y-card-text { flex: 1; min-width: 0; }
+    .ms-a11y-card-star {
+      color: var(--ms-orange);
+      margin-right: 0.2rem;
+      font-size: 1rem;
+    }
+    .ms-a11y-card-text strong {
+      font-size: 0.95rem;
+      color: var(--ms-blue);
+    }
+    .ms-a11y-card-text p {
+      margin: 0.35rem 0 0;
+      font-size: 0.78rem;
+      color: #4a5568;
+      line-height: 1.4;
+    }
+
+    .ms-a11y-card--simple .ms-switch--on,
+    .ms-a11y-card--simple .ms-switch[aria-checked="true"] {
+      background: var(--ms-orange);
+    }
+
+    /* \u2500\u2500 Sections \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    .ms-a11y-section {
+      background: #fff;
+      border-radius: 10px;
+      padding: 0.75rem 0.85rem;
+      margin-bottom: 0.75rem;
+      border: 1px solid #e8eaef;
+    }
+    .ms-a11y-section-title {
+      margin: 0 0 0.65rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ms-blue);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    /* \u2500\u2500 Segmented text scale \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    .ms-segmented {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.35rem;
+    }
+    .ms-segment {
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 0.25rem;
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: #eef0f4;
+      color: #334155;
+      cursor: pointer;
+    }
+    .ms-segment--on,
+    .ms-segment[aria-checked="true"] {
+      background: var(--ms-blue);
+      color: #fff;
+    }
+    .ms-segment:focus-visible {
+      outline: 2px solid var(--ms-orange);
+      outline-offset: 2px;
+    }
+
+    /* \u2500\u2500 Theme grid \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    .ms-theme-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+    .ms-theme-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.15rem;
+      text-align: left;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.55rem 0.6rem;
+      background: #fff;
+      cursor: pointer;
+      font: inherit;
+      color: #1a1a1a;
+    }
+    .ms-theme-btn--on,
+    .ms-theme-btn[aria-checked="true"] {
+      border-color: var(--ms-blue);
+      box-shadow: 0 0 0 1px var(--ms-blue);
+    }
+    .ms-theme-btn:focus-visible {
+      outline: 2px solid var(--ms-orange);
+      outline-offset: 2px;
+    }
+    .ms-theme-swatch {
+      width: 100%;
+      height: 18px;
+      border-radius: 4px;
+      margin-bottom: 0.25rem;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    .ms-theme-btn--senac .ms-theme-swatch {
+      background: linear-gradient(90deg, #0B2C5F 40%, #F5A623 40%);
+    }
+    .ms-theme-btn--yellowBlack .ms-theme-swatch {
+      background: linear-gradient(90deg, #000 50%, #ffe600 50%);
+    }
+    .ms-theme-btn--darkHigh .ms-theme-swatch {
+      background: linear-gradient(90deg, #111 50%, #f1f5f9 50%);
+    }
+    .ms-theme-btn--soft .ms-theme-swatch {
+      background: linear-gradient(90deg, #f5efe0 50%, #5c4a32 50%);
+    }
+    .ms-theme-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .ms-theme-sub {
+      font-size: 0.65rem;
+      color: #64748b;
+    }
+
+    /* \u2500\u2500 Option rows + switches \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    .ms-a11y-option-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .ms-a11y-option-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .ms-a11y-option-text { flex: 1; min-width: 0; }
+    .ms-a11y-option-text strong {
+      font-size: 0.85rem;
+      color: #1e293b;
+      display: block;
+    }
+    .ms-a11y-option-hint {
+      display: block;
+      margin-top: 0.2rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: #64748b;
+      line-height: 1.35;
+    }
+    .ms-a11y-option-text p {
+      margin: 0.15rem 0 0;
+      font-size: 0.72rem;
+      color: #64748b;
+      line-height: 1.35;
+    }
+
+    .ms-switch {
+      flex-shrink: 0;
+      width: 44px;
+      height: 26px;
+      border-radius: 999px;
+      border: none;
+      background: #cbd5e1;
+      padding: 3px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.18s ease;
+    }
+    .ms-switch-thumb {
+      display: block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+      transition: transform 0.18s ease;
+    }
+    .ms-switch--on,
+    .ms-switch[aria-checked="true"] {
+      background: var(--ms-blue);
+    }
+    .ms-switch--on .ms-switch-thumb,
+    .ms-switch[aria-checked="true"] .ms-switch-thumb {
+      transform: translateX(18px);
+    }
+    .ms-switch:focus-visible {
+      outline: 2px solid var(--ms-orange);
+      outline-offset: 2px;
+    }
+
+    .ms-btn-ouvir {
+      flex-shrink: 0;
+      border: none;
+      border-radius: 8px;
+      padding: 0.45rem 0.9rem;
+      background: var(--ms-orange);
+      color: #fff;
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .ms-btn-ouvir:hover { background: var(--ms-orange-dark); }
+    .ms-btn-ouvir:focus-visible {
+      outline: 2px solid var(--ms-blue);
+      outline-offset: 2px;
+    }
+
+    .ms-a11y-live {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+    }
+
+    .ms-a11y-footer-note {
+      margin: 0.35rem 0 0;
+      text-align: center;
+      font-size: 0.68rem;
+      color: #94a3b8;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 480px) {
+      #ms-a11y-panel {
+        width: calc(100vw - 1rem);
+        max-height: calc(100vh - 6rem);
+        right: 0.5rem !important;
+        left: 0.5rem !important;
+        transform-origin: bottom center;
+      }
+      .ms-fab-tip {
+        max-width: min(180px, 62vw);
+        font-size: 0.68rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ms-fab-tip,
+      #ms-a11y-panel,
+      .ms-a11y-panel {
+        animation: none !important;
+      }
+      #ms-fab,
+      .ms-fab,
+      .ms-switch-thumb,
+      .ms-switch,
+      .ms-fab-wrap,
+      .ms-chrome-switch .ms-switch-thumb {
+        transition: none !important;
+      }
+      #ms-fab:hover,
+      #ms-fab:active {
+        transform: none;
+      }
+    }
+  `;
+  }
+  function getPageStyles() {
+    return `
+    @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+
+    /* \u2500\u2500 Hidden distractions (Modo Simples only) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    html.ms-ativo [data-ms-hidden="true"] {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    html.ms-ativo [data-ms-principal] {
+      display: block !important;
+      max-width: 75ch !important;
+      margin-inline: auto !important;
+      padding-inline: 1.5rem !important;
+      font-size: 1.125rem !important;
+      line-height: 1.8 !important;
+    }
+
+    /* \u2500\u2500 Text scale (independent of ms-ativo) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    html.ms-text-scale-100 { font-size: 100%; }
+    html.ms-text-scale-125 { font-size: 125%; }
+    html.ms-text-scale-150 { font-size: 150%; }
+    html.ms-text-scale-175 { font-size: 175%; }
+
+    /* \u2500\u2500 Color themes \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    html.ms-theme-yellowBlack,
+    html.ms-theme-yellowBlack body {
+      background-color: #000000 !important;
+      color: #ffe600 !important;
+    }
+    html.ms-theme-yellowBlack body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      background-color: transparent !important;
+      color: #ffe600 !important;
+      border-color: #ffe600 !important;
+    }
+    html.ms-theme-yellowBlack a,
+    html.ms-theme-yellowBlack a:visited {
+      color: #fff59d !important;
+      text-decoration: underline !important;
+    }
+    html.ms-theme-yellowBlack .site-header,
+    html.ms-theme-yellowBlack .ms-pills-nav {
+      background-color: #000000 !important;
+      color: #ffe600 !important;
+      border-bottom-color: #ffe600 !important;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 55%) !important;
+    }
+    html.ms-theme-yellowBlack .site-header a,
+    html.ms-theme-yellowBlack .ms-pills-nav a {
+      color: #ffe600 !important;
+    }
+    html.ms-theme-yellowBlack .main-nav a[aria-current='page'],
+    html.ms-theme-yellowBlack .ms-pill[aria-current='page'] {
+      background-color: #ffe600 !important;
+      color: #000000 !important;
+      border-color: #ffe600 !important;
+      text-decoration: none !important;
+    }
+
+    html.ms-theme-darkHigh,
+    html.ms-theme-darkHigh body {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+    }
+    html.ms-theme-darkHigh body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      background-color: transparent !important;
+      color: #f8fafc !important;
+      border-color: #94a3b8 !important;
+    }
+    html.ms-theme-darkHigh a,
+    html.ms-theme-darkHigh a:visited {
+      color: #93c5fd !important;
+    }
+    html.ms-theme-darkHigh .site-header,
+    html.ms-theme-darkHigh .ms-pills-nav {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      border-bottom-color: #334155 !important;
+      box-shadow: 0 2px 10px rgb(0 0 0 / 45%) !important;
+    }
+    html.ms-theme-darkHigh .site-header a,
+    html.ms-theme-darkHigh .ms-pills-nav a {
+      color: #e2e8f0 !important;
+    }
+    html.ms-theme-darkHigh .main-nav a[aria-current='page'],
+    html.ms-theme-darkHigh .ms-pill[aria-current='page'] {
+      background-color: #38bdf8 !important;
+      color: #0f172a !important;
+      border-color: #38bdf8 !important;
+      text-decoration: none !important;
+    }
+
+    html.ms-theme-soft,
+    html.ms-theme-soft body {
+      background-color: #f5efe0 !important;
+      color: #3d3226 !important;
+    }
+    html.ms-theme-soft body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      background-color: transparent !important;
+      color: #3d3226 !important;
+      border-color: #c4b59a !important;
+    }
+    html.ms-theme-soft a,
+    html.ms-theme-soft a:visited {
+      color: #5c4a32 !important;
+    }
+    html.ms-theme-soft .site-header,
+    html.ms-theme-soft .ms-pills-nav {
+      background-color: #f5efe0 !important;
+      color: #3d3226 !important;
+      border-bottom-color: #c4b59a !important;
+      box-shadow: 0 2px 8px rgb(61 50 38 / 12%) !important;
+    }
+    html.ms-theme-soft .site-header a,
+    html.ms-theme-soft .ms-pills-nav a {
+      color: #3d3226 !important;
+    }
+    html.ms-theme-soft .main-nav a[aria-current='page'],
+    html.ms-theme-soft .ms-pill[aria-current='page'] {
+      background-color: #3d3226 !important;
+      color: #f5efe0 !important;
+      border-color: #3d3226 !important;
+      text-decoration: none !important;
+    }
+
+    /* Session bar: opaque amber over page content under any theme */
+    html.ms-theme-yellowBlack #ms-session-bar,
+    html.ms-theme-darkHigh #ms-session-bar,
+    html.ms-theme-soft #ms-session-bar {
+      position: relative;
+      z-index: 40;
+      background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%) !important;
+      color: #1a1205 !important;
+      border-bottom-color: #d97706 !important;
+    }
+
+    /* ms-theme-senac is a noop (default site look) */
+
+    /* \u2500\u2500 Reduced motion \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    html.ms-reduced-motion *,
+    html.ms-reduced-motion *::before,
+    html.ms-reduced-motion *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    /* \u2500\u2500 Highlight links \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    html.ms-highlight-links a:not([data-ms-hidden]) {
+      text-decoration: underline !important;
+      text-decoration-thickness: 2px !important;
+      text-underline-offset: 3px !important;
+      outline: 1px dashed currentColor !important;
+      outline-offset: 2px !important;
+    }
+
+    /* \u2500\u2500 Lexend / dyslexia font \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    html.ms-dyslexia-font,
+    html.ms-dyslexia-font body,
+    html.ms-dyslexia-font body *:not(#ms-container):not(#ms-container *) {
+      font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif !important;
+      letter-spacing: 0.02em !important;
+      word-spacing: 0.08em !important;
+    }
+
+    /* \u2500\u2500 Text spacing (WCAG 1.4.12) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    html.ms-text-spacing body,
+    html.ms-text-spacing p,
+    html.ms-text-spacing li {
+      line-height: 2 !important;
+      letter-spacing: 0.12em !important;
+      word-spacing: 0.16em !important;
+    }
+    html.ms-text-spacing p { margin-bottom: 1.5em !important; }
+
+    /* \u2500\u2500 Hide images (content + logo; keep only [data-ms-keep-img]) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    html.ms-hide-images img:not([data-ms-keep-img]),
+    html.ms-hide-images picture:not([data-ms-keep-img]),
+    html.ms-hide-images video,
+    html.ms-hide-images .home-hero__media,
+    html.ms-hide-images [data-ms-deco-img] {
+      display: none !important;
+    }
+
+    /* \u2500\u2500 Reading ruler marker (overlay is created in JS) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    html.ms-reading-ruler { cursor: crosshair; }
+
+    html.ms-manual-select-active { cursor: pointer !important; }
+
+    /* \u2500\u2500 Session chrome (SIMPLES header) + barra sob o nav \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    #ms-simples-chrome {
+      display: flex;
+      align-items: center;
+      margin-left: auto;
+      z-index: 50;
+      flex-shrink: 0;
+    }
+    #ms-simples-chrome.ms-simples-chrome--fixed {
+      position: fixed;
+      top: 0.75rem;
+      right: 5.5rem;
+      z-index: 2147483646;
+    }
+    /* Same SIMPLES control, parked in MS pills nav while site header is hidden */
+    #ms-simples-chrome.ms-simples-chrome--ms-nav {
+      margin-left: auto;
+      align-self: center;
+      position: sticky;
+      right: 0;
+      z-index: 2;
+    }
+    #ms-simples-chrome.ms-simples-chrome--ms-nav .ms-chrome-icon {
+      display: none;
+    }
+    .ms-simples-chrome-inner {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .ms-chrome-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid #c5d0e3;
+      background: #fff;
+      color: #0b2c5f;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .ms-chrome-icon:hover {
+      border-color: #f39200;
+      color: #e08400;
+      box-shadow: 0 0 0 3px rgba(243, 146, 0, 0.18);
+    }
+    .ms-simples-toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.4rem 0.7rem 0.4rem 0.75rem;
+      border-radius: 999px;
+      border: 2px solid #d8e1ef;
+      background: #fff;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
+      transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+    .ms-simples-toggle-wrap[data-active="true"] {
+      border-color: #f39200;
+      background: #fff8e7;
+      box-shadow: 0 0 0 2px rgba(243, 146, 0, 0.22);
+    }
+    .ms-simples-spark { color: #f39200; font-size: 1rem; }
+    .ms-simples-toggle-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+    .ms-simples-toggle-text strong {
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      color: #0b2c5f;
+    }
+    .ms-simples-sub {
+      font-size: 0.65rem;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .ms-chrome-switch {
+      width: 44px;
+      height: 26px;
+      border-radius: 999px;
+      border: none;
+      background: #cbd5e1;
+      padding: 3px;
+      cursor: pointer;
+    }
+    .ms-chrome-switch .ms-switch-thumb {
+      display: block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
+      transition: transform 0.18s ease;
+    }
+    .ms-chrome-switch.ms-switch--on,
+    .ms-chrome-switch[aria-checked="true"] {
+      background: #f39200;
+    }
+    .ms-chrome-switch.ms-switch--on .ms-switch-thumb,
+    .ms-chrome-switch[aria-checked="true"] .ms-switch-thumb {
+      transform: translateX(18px);
+    }
+
+    #ms-session-bar {
+      background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+      color: #1a1205;
+      width: 100%;
+      border-bottom: 2px solid #d97706;
+      box-shadow: 0 2px 10px rgb(217 119 6 / 22%);
+    }
+    .ms-session-bar-inner {
+      width: min(72rem, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 0.9rem 0;
+    }
+    .ms-session-off {
+      display: block;
+    }
+    .ms-session-off[hidden],
+    .ms-session-on[hidden] {
+      display: none !important;
+    }
+    .ms-session-off p {
+      margin: 0;
+      font-weight: 600;
+      max-width: 52rem;
+      font-size: 0.95rem;
+    }
+    .ms-chrome-icon:focus-visible,
+    .ms-chrome-switch:focus-visible,
+    .ms-session-btn:focus-visible {
+      outline: 3px solid #0b2c5f;
+      outline-offset: 2px;
+    }
+    .ms-session-on-top { margin-bottom: 0.7rem; }
+    .ms-session-on-title {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.05rem;
+    }
+    .ms-session-badge {
+      background: #1a1205;
+      color: #fff;
+      border-radius: 999px;
+      padding: 0.22rem 0.7rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    .ms-session-desc {
+      margin: 0.35rem 0 0;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .ms-session-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .ms-session-btn {
+      border: none;
+      border-radius: 12px;
+      padding: 0.55rem 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .ms-session-btn:hover {
+      transform: translateY(-1px);
+    }
+    .ms-session-btn--light {
+      background: #fff;
+      color: #1a1205;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+    }
+    .ms-session-btn--dark {
+      background: #1a1205;
+      color: #fff;
+    }
+    .ms-session-btn--active {
+      box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1a1205;
+    }
+    .ms-session-btn--speaking {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    html.ms-simple-language [data-ms-principal],
+    html.ms-simple-language main {
+      font-size: 1.15em !important;
+      line-height: 1.75 !important;
+      max-width: 65ch !important;
+    }
+
+    /* Pares de linguagem (prot\xF3tipo / sites que marcam o markup) */
+    [data-ms-simple] {
+      display: none !important;
+    }
+    html.ms-simple-language [data-ms-plain] {
+      display: none !important;
+    }
+    html.ms-simple-language [data-ms-simple] {
+      display: revert !important;
+    }
+
+    /* Conven\xE7\xF5es do prot\xF3tipo Senac (F5-T05) */
+    .ms-simple-only {
+      display: none !important;
+    }
+    html.ms-ativo .ms-simple-only {
+      display: block !important;
+    }
+    html.ms-ativo .ms-simple-only.ms-hub,
+    html.ms-ativo .ms-simple-only.ms-pills-nav {
+      display: block !important;
+    }
+    html.ms-ativo .ms-simple-hide {
+      display: none !important;
+    }
+
+    /* Highlight do bloco sendo lido pelo TTS */
+    [data-ms-tts-active] {
+      background: #fef3c7 !important;
+      outline: 3px solid #f59e0b !important;
+      outline-offset: 4px;
+      border-radius: 6px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
+    /* Pills injet\xE1veis (F5-T11 \u2014 simpleNav) */
+    .ms-pills-nav[data-ms-injected] {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      box-shadow: 0 1px 0 rgb(0 0 0 / 4%);
+    }
+    .ms-pills-nav[data-ms-injected] .ms-pills-nav__inner {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0.65rem 1rem;
+      scrollbar-width: thin;
+    }
+    .ms-pills-nav[data-ms-injected] .ms-pill {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.55rem 0.95rem;
+      border-radius: 10px;
+      background: #eef2f7;
+      color: #0b2c5f;
+      font-weight: 700;
+      font-size: 0.82rem;
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      text-decoration: none;
+      border: 2px solid transparent;
+      white-space: nowrap;
+      transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .ms-pills-nav[data-ms-injected] .ms-pill:hover {
+      background: #e2e8f0;
+      text-decoration: none;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgb(11 44 95 / 10%);
+    }
+    .ms-pills-nav[data-ms-injected] .ms-pill[aria-current='page'] {
+      background: #0b2c5f;
+      color: #fff;
+      border-color: #f39200;
+      box-shadow: 0 0 0 2px rgb(243 146 0 / 35%);
+      font-weight: 800;
+    }
+    .ms-pills-nav[data-ms-injected] .ms-pill__short {
+      display: none;
+    }
+    @media (max-width: 720px) {
+      .ms-pills-nav[data-ms-injected] .ms-pill__full {
+        display: none;
+      }
+      .ms-pills-nav[data-ms-injected] .ms-pill__short {
+        display: inline;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ms-chrome-icon,
+      .ms-simples-toggle-wrap,
+      .ms-chrome-switch .ms-switch-thumb,
+      .ms-session-btn,
+      .ms-pills-nav[data-ms-injected] .ms-pill {
+        transition: none !important;
+      }
+      .ms-session-btn:hover,
+      .ms-pills-nav[data-ms-injected] .ms-pill:hover {
+        transform: none;
+      }
+    }
+  `;
+  }
+
+  // src/ui/fab.js
+  function createFab({ onClick }) {
+    const wrap = document.createElement("div");
+    wrap.className = "ms-fab-wrap";
+    wrap.setAttribute("data-ms-fab-wrap", "");
+    const tip = document.createElement("span");
+    tip.className = "ms-fab-tip";
+    tip.id = "ms-fab-tip";
+    tip.textContent = "Acessibilidade & Modo Simples";
+    const btn = document.createElement("button");
+    btn.id = "ms-fab";
+    btn.type = "button";
+    btn.className = "ms-fab";
+    btn.setAttribute("aria-expanded", "false");
+    btn.setAttribute("aria-controls", "ms-a11y-panel");
+    btn.setAttribute("aria-haspopup", "dialog");
+    btn.setAttribute("aria-describedby", "ms-fab-tip");
+    btn.setAttribute("aria-label", "Abrir painel de acessibilidade");
+    const iconOpen = `
+    <svg class="ms-fab-icon ms-fab-icon--open" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" focusable="false">
+      <line x1="4" y1="6" x2="20" y2="6"/>
+      <line x1="4" y1="12" x2="20" y2="12"/>
+      <line x1="4" y1="18" x2="20" y2="18"/>
+      <circle cx="8" cy="6" r="2.2" fill="currentColor" stroke="none"/>
+      <circle cx="14" cy="12" r="2.2" fill="currentColor" stroke="none"/>
+      <circle cx="10" cy="18" r="2.2" fill="currentColor" stroke="none"/>
+    </svg>`;
+    const iconClose = `
+    <svg class="ms-fab-icon ms-fab-icon--close" viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true" focusable="false" hidden>
+      <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+    </svg>`;
+    btn.innerHTML = iconOpen + iconClose;
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      onClick();
+    });
+    wrap.appendChild(tip);
+    wrap.appendChild(btn);
+    function sync({ panelOpen }) {
+      btn.setAttribute("aria-expanded", String(panelOpen));
+      btn.setAttribute(
+        "aria-label",
+        panelOpen ? "Fechar painel de acessibilidade" : "Abrir painel de acessibilidade"
+      );
+      btn.classList.toggle("ms-fab--open", panelOpen);
+      wrap.classList.toggle("ms-fab-wrap--open", panelOpen);
+      tip.hidden = panelOpen;
+      const openIcon = btn.querySelector(".ms-fab-icon--open");
+      const closeIcon = btn.querySelector(".ms-fab-icon--close");
+      if (openIcon) openIcon.hidden = panelOpen;
+      if (closeIcon) closeIcon.hidden = !panelOpen;
+    }
+    sync({ panelOpen: false });
+    return { element: wrap, button: btn, sync };
+  }
+
+  // src/utils/focus.js
+  var FOCUSABLE_SELECTORS = [
+    "a[href]",
+    "button:not([disabled])",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(", ");
+  function getFocusable(container) {
+    return Array.from(container.querySelectorAll(FOCUSABLE_SELECTORS)).filter(
+      (el) => !el.closest("[hidden]") && el.getBoundingClientRect().width > 0
+    );
+  }
+  function trapFocus(container) {
+    function handleKeydown(e) {
+      if (e.key !== "Tab") return;
+      const focusable = getFocusable(container);
+      if (focusable.length < 2) return;
+      const root = container.getRootNode();
+      const active = root instanceof ShadowRoot ? root.activeElement : document.activeElement;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+    container.addEventListener("keydown", handleKeydown);
+    return () => container.removeEventListener("keydown", handleKeydown);
+  }
+
+  // src/ui/a11yPanel.js
+  var TEXT_SCALES = [
+    { value: "100", label: "100%", title: "Padr\xE3o" },
+    { value: "125", label: "125%", title: "Grande" },
+    { value: "150", label: "150%", title: "Muito +" },
+    { value: "175", label: "175%", title: "Extra" }
+  ];
+  var COLOR_THEMES = [
+    { value: "senac", label: "Cores Senac", sub: "Padr\xE3o" },
+    { value: "yellowBlack", label: "Amarelo e Preto", sub: "Alto contraste" },
+    { value: "darkHigh", label: "Modo Escuro Alto", sub: "Fundo escuro" },
+    { value: "soft", label: "Descanso / Suave", sub: "Baixa intensidade" }
+  ];
+  function createA11yPanel({
+    state: state2,
+    onClose,
+    onToggleModoSimples,
+    onSetOption,
+    onSpeak
+  }) {
+    const panel = document.createElement("div");
+    panel.id = "ms-a11y-panel";
+    panel.className = "ms-a11y-panel";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "true");
+    panel.setAttribute("aria-labelledby", "ms-a11y-title");
+    panel.hidden = true;
+    panel.innerHTML = `
+    <header class="ms-a11y-header">
+      <div class="ms-a11y-header-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/>
+        </svg>
+      </div>
+      <div class="ms-a11y-header-text">
+        <h2 id="ms-a11y-title">Acessibilidade Digital</h2>
+        <p class="ms-a11y-subtitle">Projeto Integrador 2025 \u2022 Senac</p>
+      </div>
+      <button type="button" class="ms-a11y-close" aria-label="Fechar painel de acessibilidade">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="ms-a11y-body">
+      <div class="ms-a11y-card ms-a11y-card--simple" data-section="modo-simples">
+        <div class="ms-a11y-card-row">
+          <div class="ms-a11y-card-text">
+            <span class="ms-a11y-card-star" aria-hidden="true">\u2605</span>
+            <strong>Modo Simples (Recomendado)</strong>
+            <p>Oculta distra\xE7\xF5es visuais, aumenta bot\xF5es e resume conte\xFAdos essenciais.</p>
+          </div>
+          <button type="button" class="ms-switch" role="switch" aria-checked="false"
+            data-action="modo-simples" aria-label="Ativar Modo Simples">
+            <span class="ms-switch-thumb"></span>
+          </button>
+        </div>
+      </div>
+
+      <section class="ms-a11y-section" aria-labelledby="ms-label-text">
+        <h3 id="ms-label-text" class="ms-a11y-section-title">
+          <span aria-hidden="true">T</span> Tamanho do texto
+        </h3>
+        <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-text" data-option="textScale">
+          ${TEXT_SCALES.map(
+      (s) => `
+            <button type="button" role="radio" class="ms-segment"
+              data-value="${s.value}" aria-checked="false"
+              aria-label="Tamanho do texto ${s.label} \u2014 ${s.title}" title="${s.title}">
+              ${s.label}
+            </button>`
+    ).join("")}
+        </div>
+      </section>
+
+      <section class="ms-a11y-section" aria-labelledby="ms-label-theme">
+        <h3 id="ms-label-theme" class="ms-a11y-section-title">
+          <span aria-hidden="true">\u25C9</span> Contraste e cores
+        </h3>
+        <div class="ms-theme-grid" role="radiogroup" aria-labelledby="ms-label-theme" data-option="colorTheme">
+          ${COLOR_THEMES.map(
+      (t) => `
+            <button type="button" role="radio" class="ms-theme-btn ms-theme-btn--${t.value}"
+              data-value="${t.value}" aria-checked="false"
+              aria-label="Tema ${t.label} \u2014 ${t.sub}">
+              <span class="ms-theme-swatch" aria-hidden="true"></span>
+              <span class="ms-theme-label">${t.label}</span>
+              <span class="ms-theme-sub">${t.sub}</span>
+            </button>`
+    ).join("")}
+        </div>
+      </section>
+
+      <section class="ms-a11y-section" aria-labelledby="ms-label-cognitive">
+        <h3 id="ms-label-cognitive" class="ms-a11y-section-title">
+          <span aria-hidden="true">\u25A3</span> Aux\xEDlio cognitivo &amp; TDAH
+        </h3>
+        <ul class="ms-a11y-option-list">
+          <li class="ms-a11y-option-row">
+            <div class="ms-a11y-option-text">
+              <strong>Fonte Acess\xEDvel (Lexend)</strong>
+              <p>Desenvolvida para dislexia e agilidade visual</p>
+            </div>
+            <button type="button" class="ms-switch" role="switch" aria-checked="false"
+              data-option="dyslexiaFont" aria-label="Fonte Acess\xEDvel Lexend">
+              <span class="ms-switch-thumb"></span>
+            </button>
+          </li>
+          <li class="ms-a11y-option-row">
+            <div class="ms-a11y-option-text">
+              <strong>R\xE9gua de Foco de Leitura</strong>
+              <p>Destaque linha a linha para guiar a aten\xE7\xE3o</p>
+            </div>
+            <button type="button" class="ms-switch" role="switch" aria-checked="false"
+              data-option="readingRuler" aria-label="R\xE9gua de Foco de Leitura">
+              <span class="ms-switch-thumb"></span>
+            </button>
+          </li>
+          <li class="ms-a11y-option-row">
+            <div class="ms-a11y-option-text">
+              <strong>Leitor de Tela por Voz</strong>
+              <p>L\xEA os t\xEDtulos e textos em portugu\xEAs</p>
+            </div>
+            <button type="button" class="ms-btn-ouvir" data-action="speak" aria-label="Ouvir conte\xFAdo principal">
+              Ouvir
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <section class="ms-a11y-section" aria-labelledby="ms-label-more">
+        <h3 id="ms-label-more" class="ms-a11y-section-title">Mais op\xE7\xF5es</h3>
+        <ul class="ms-a11y-option-list">
+          <li class="ms-a11y-option-row">
+            <div class="ms-a11y-option-text"><strong>Destacar links</strong></div>
+            <button type="button" class="ms-switch" role="switch" aria-checked="false"
+              data-option="highlightLinks" aria-label="Destacar links">
+              <span class="ms-switch-thumb"></span>
+            </button>
+          </li>
+          <li class="ms-a11y-option-row">
+            <div class="ms-a11y-option-text"><strong>Espa\xE7amento de texto</strong></div>
+            <button type="button" class="ms-switch" role="switch" aria-checked="false"
+              data-option="textSpacing" aria-label="Espa\xE7amento de texto">
+              <span class="ms-switch-thumb"></span>
+            </button>
+          </li>
+          <li class="ms-a11y-option-row">
+            <div class="ms-a11y-option-text"><strong>Reduzir movimento</strong></div>
+            <button type="button" class="ms-switch" role="switch" aria-checked="false"
+              data-option="reducedMotion" aria-label="Reduzir movimento">
+              <span class="ms-switch-thumb"></span>
+            </button>
+          </li>
+          <li class="ms-a11y-option-row">
+            <div class="ms-a11y-option-text">
+              <strong>Ocultar imagens</strong>
+              <span class="ms-a11y-option-hint">No Modo Simples, imagens somem por padr\xE3o \u2014 desligue para manter</span>
+            </div>
+            <button type="button" class="ms-switch" role="switch" aria-checked="false"
+              data-option="hideImages" aria-label="Ocultar imagens">
+              <span class="ms-switch-thumb"></span>
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <div class="ms-a11y-live" aria-live="polite" aria-atomic="true"></div>
+      <p class="ms-a11y-footer-note">
+        Prefer\xEAncias salvas neste navegador \xB7 Projeto Integrador 2025
+      </p>
+    </div>
+  `;
+    let _releaseFocus = null;
+    panel.querySelector(".ms-a11y-close").addEventListener("click", () => onClose());
+    panel.querySelector('[data-action="modo-simples"]').addEventListener("click", (e) => {
+      const btn = e.currentTarget;
+      const next = btn.getAttribute("aria-checked") !== "true";
+      onToggleModoSimples(next);
+    });
+    panel.querySelectorAll(".ms-segmented .ms-segment").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        onSetOption("textScale", btn.getAttribute("data-value"));
+      });
+    });
+    panel.querySelectorAll(".ms-theme-grid .ms-theme-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        onSetOption("colorTheme", btn.getAttribute("data-value"));
+      });
+    });
+    panel.querySelectorAll(".ms-switch[data-option]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const key = btn.getAttribute("data-option");
+        const next = btn.getAttribute("aria-checked") !== "true";
+        onSetOption(key, next);
+      });
+    });
+    panel.querySelector('[data-action="speak"]').addEventListener("click", () => onSpeak());
+    function sync(s, ui = {}) {
+      var _a, _b;
+      const modoBtn = panel.querySelector('[data-action="modo-simples"]');
+      if (modoBtn) {
+        modoBtn.setAttribute("aria-checked", String(!!s.modoSimples));
+        modoBtn.classList.toggle("ms-switch--on", !!s.modoSimples);
+        modoBtn.setAttribute(
+          "aria-label",
+          s.modoSimples ? "Desativar Modo Simples" : "Ativar Modo Simples"
+        );
+      }
+      const scale = ((_a = s.options) == null ? void 0 : _a.textScale) || "100";
+      panel.querySelectorAll('[data-option="textScale"] .ms-segment').forEach((btn) => {
+        const on = btn.getAttribute("data-value") === scale;
+        btn.setAttribute("aria-checked", String(on));
+        btn.classList.toggle("ms-segment--on", on);
+      });
+      const theme = ((_b = s.options) == null ? void 0 : _b.colorTheme) || "senac";
+      panel.querySelectorAll('[data-option="colorTheme"] .ms-theme-btn').forEach((btn) => {
+        const on = btn.getAttribute("data-value") === theme;
+        btn.setAttribute("aria-checked", String(on));
+        btn.classList.toggle("ms-theme-btn--on", on);
+      });
+      ["dyslexiaFont", "readingRuler", "highlightLinks", "textSpacing", "reducedMotion", "hideImages"].forEach(
+        (key) => {
+          var _a2;
+          const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
+          if (!btn) return;
+          const on = !!((_a2 = s.options) == null ? void 0 : _a2[key]);
+          btn.setAttribute("aria-checked", String(on));
+          btn.classList.toggle("ms-switch--on", on);
+        }
+      );
+      const speakBtn = panel.querySelector('[data-action="speak"]');
+      if (speakBtn && ui.speaking !== void 0) {
+        speakBtn.textContent = ui.speaking ? "Parar" : "Ouvir";
+        speakBtn.setAttribute(
+          "aria-label",
+          ui.speaking ? "Parar leitura" : "Ouvir conte\xFAdo principal"
+        );
+      }
+    }
+    function open() {
+      panel.hidden = false;
+      _releaseFocus = trapFocus(panel);
+      const closeBtn = panel.querySelector(".ms-a11y-close");
+      if (closeBtn) closeBtn.focus();
+    }
+    function close() {
+      panel.hidden = true;
+      if (_releaseFocus) {
+        _releaseFocus();
+        _releaseFocus = null;
+      }
+    }
+    sync(state2);
+    return { element: panel, open, close, sync };
+  }
+
+  // src/ui/sessionChrome.js
+  var SLIDERS_ICON = `
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" focusable="false">
+    <line x1="4" y1="6" x2="20" y2="6"/>
+    <line x1="4" y1="12" x2="20" y2="12"/>
+    <line x1="4" y1="18" x2="20" y2="18"/>
+    <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/>
+    <circle cx="14" cy="12" r="2" fill="currentColor" stroke="none"/>
+    <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
+  </svg>`;
+  function createSessionChrome({
+    onToggleModoSimples,
+    onOpenPanel,
+    onSpeak,
+    onToggleSimpleLanguage,
+    onToggleHideImages
+  }) {
+    const chrome = document.createElement("div");
+    chrome.id = "ms-simples-chrome";
+    chrome.className = "ms-simples-chrome";
+    chrome.innerHTML = `
+    <div class="ms-simples-chrome-inner">
+      <button type="button" class="ms-chrome-icon" data-action="open-panel"
+        aria-label="Abrir painel de acessibilidade" title="Acessibilidade">
+        ${SLIDERS_ICON}
+      </button>
+      <div class="ms-simples-toggle-wrap" data-active="false">
+        <span class="ms-simples-spark" aria-hidden="true">\u2605</span>
+        <div class="ms-simples-toggle-text">
+          <strong>SIMPLES</strong>
+          <span class="ms-simples-sub" data-sub>Acessibilidade Cognitiva</span>
+        </div>
+        <button type="button" class="ms-switch ms-chrome-switch" role="switch" aria-checked="false"
+          data-action="toggle-simples" aria-label="Ativar Modo Simples">
+          <span class="ms-switch-thumb"></span>
+        </button>
+      </div>
+    </div>
+  `;
+    const bar = document.createElement("div");
+    bar.id = "ms-session-bar";
+    bar.className = "ms-session-bar";
+    bar.setAttribute("role", "region");
+    bar.setAttribute("aria-label", "Modo Simples");
+    bar.innerHTML = `
+    <div class="ms-session-bar-inner" data-state="off">
+      <div class="ms-session-off">
+        <p><span aria-hidden="true">\u2605</span> Prefere uma navega\xE7\xE3o mais calma, sem excesso de informa\xE7\xF5es e com textos diretos? Use o interruptor <strong>SIMPLES</strong> no menu.</p>
+      </div>
+      <div class="ms-session-on" hidden>
+        <div class="ms-session-on-top">
+          <div class="ms-session-on-title">
+            <span aria-hidden="true">\u2605</span>
+            <strong>Modo Simples Ativado</strong>
+            <span class="ms-session-badge">Foco na Navega\xE7\xE3o</span>
+          </div>
+          <p class="ms-session-desc" data-session-desc>
+            Exibindo explica\xE7\xF5es em palavras f\xE1ceis, sem termos complicados.
+          </p>
+        </div>
+        <div class="ms-session-actions">
+          <button type="button" class="ms-session-btn ms-session-btn--light" data-action="speak" aria-label="Ouvir p\xE1gina">
+            <span aria-hidden="true">\u{1F50A}</span> <span data-speak-label>Ouvir P\xE1gina</span>
+          </button>
+          <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="lang" aria-pressed="false" aria-label="Alternar linguagem simples">
+            <span aria-hidden="true">\u{1F4C4}</span> Linguagem Simples: <span data-lang-label>DESLIGADA</span>
+          </button>
+          <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="images" aria-pressed="false" aria-label="Mostrar ou ocultar imagens">
+            <span aria-hidden="true">\u{1F5BC}</span> Imagens: <span data-images-label>OCULTAS</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+    _mountChrome(chrome);
+    _mountBar(bar);
+    chrome.querySelector('[data-action="toggle-simples"]').addEventListener("click", (e) => {
+      const on = e.currentTarget.getAttribute("aria-checked") !== "true";
+      onToggleModoSimples(on);
+    });
+    chrome.querySelector('[data-action="open-panel"]').addEventListener("click", () => onOpenPanel());
+    bar.querySelector('[data-action="speak"]').addEventListener("click", () => onSpeak());
+    bar.querySelector('[data-action="lang"]').addEventListener("click", (e) => {
+      const next = e.currentTarget.getAttribute("aria-pressed") !== "true";
+      onToggleSimpleLanguage(next);
+    });
+    bar.querySelector('[data-action="images"]').addEventListener("click", (e) => {
+      const showing = e.currentTarget.getAttribute("aria-pressed") === "true";
+      const nextShow = !showing;
+      if (typeof onToggleHideImages === "function") {
+        onToggleHideImages(!nextShow);
+      }
+    });
+    function sync(s, ui = {}) {
+      var _a, _b;
+      const on = !!s.modoSimples;
+      const sw = chrome.querySelector('[data-action="toggle-simples"]');
+      const wrap = chrome.querySelector(".ms-simples-toggle-wrap");
+      const sub = chrome.querySelector("[data-sub]");
+      if (sw) {
+        sw.setAttribute("aria-checked", String(on));
+        sw.classList.toggle("ms-switch--on", on);
+        sw.setAttribute(
+          "aria-label",
+          on ? "Desativar Modo Simples" : "Ativar Modo Simples"
+        );
+      }
+      if (wrap) wrap.setAttribute("data-active", String(on));
+      if (sub) sub.textContent = on ? "Interface Simplificada" : "Acessibilidade Cognitiva";
+      _placeChrome(chrome, on);
+      const inner = bar.querySelector(".ms-session-bar-inner");
+      const off = bar.querySelector(".ms-session-off");
+      const onBlock = bar.querySelector(".ms-session-on");
+      if (inner) inner.setAttribute("data-state", on ? "on" : "off");
+      if (off) off.hidden = on;
+      if (onBlock) onBlock.hidden = !on;
+      const langOn = !!((_a = s.options) == null ? void 0 : _a.simpleLanguage);
+      const langBtn = bar.querySelector('[data-action="lang"]');
+      const langLabel = bar.querySelector("[data-lang-label]");
+      const desc = bar.querySelector("[data-session-desc]");
+      if (langBtn) {
+        langBtn.setAttribute("aria-pressed", String(langOn));
+        langBtn.classList.toggle("ms-session-btn--active", langOn);
+        langBtn.setAttribute(
+          "aria-label",
+          langOn ? "Linguagem simples: ligada" : "Linguagem simples: desligada"
+        );
+      }
+      if (langLabel) langLabel.textContent = langOn ? "LIGADA" : "DESLIGADA";
+      if (desc) {
+        desc.textContent = langOn ? "Exibindo explica\xE7\xF5es em palavras f\xE1ceis, sem termos complicados." : "Navega\xE7\xE3o mais calma, com bot\xF5es claros e menos distra\xE7\xF5es.";
+      }
+      const hideImgs = !!((_b = s.options) == null ? void 0 : _b.hideImages);
+      const imgBtn = bar.querySelector('[data-action="images"]');
+      const imgLabel = bar.querySelector("[data-images-label]");
+      if (imgBtn) {
+        imgBtn.setAttribute("aria-pressed", String(!hideImgs));
+        imgBtn.classList.toggle("ms-session-btn--active", !hideImgs);
+        imgBtn.setAttribute(
+          "aria-label",
+          hideImgs ? "Mostrar imagens" : "Ocultar imagens"
+        );
+      }
+      if (imgLabel) imgLabel.textContent = hideImgs ? "OCULTAS" : "VIS\xCDVEIS";
+      if (ui.speaking !== void 0) {
+        const speakBtn = bar.querySelector('[data-action="speak"]');
+        const speakLabel = bar.querySelector("[data-speak-label]");
+        if (speakBtn) {
+          speakBtn.classList.toggle("ms-session-btn--speaking", ui.speaking);
+          speakBtn.setAttribute(
+            "aria-label",
+            ui.speaking ? "Parar leitura da p\xE1gina" : "Ouvir p\xE1gina"
+          );
+        }
+        if (speakLabel) speakLabel.textContent = ui.speaking ? "Parar Voz" : "Ouvir P\xE1gina";
+      }
+    }
+    function destroy() {
+      chrome.remove();
+      bar.remove();
+    }
+    return { sync, destroy };
+  }
+  function _mountChrome(chrome) {
+    chrome.classList.remove("ms-simples-chrome--ms-nav", "ms-simples-chrome--fixed");
+    const host = document.querySelector(".site-header .header-inner") || document.querySelector(".cabecalho") || document.querySelector("header .fx.bg27") || document.querySelector("header");
+    if (host) {
+      host.appendChild(chrome);
+    } else {
+      chrome.classList.add("ms-simples-chrome--fixed");
+      document.body.appendChild(chrome);
+    }
+  }
+  function _placeChrome(chrome, modoOn) {
+    if (!modoOn) {
+      _mountChrome(chrome);
+      return;
+    }
+    chrome.classList.remove("ms-simples-chrome--fixed");
+    chrome.classList.add("ms-simples-chrome--ms-nav");
+    const pillsInner = document.querySelector("[data-ms-pills] .ms-pills-nav__inner") || document.querySelector("[data-ms-pills]");
+    if (pillsInner) {
+      pillsInner.appendChild(chrome);
+      return;
+    }
+    const barOnActions = document.querySelector("#ms-session-bar .ms-session-actions");
+    if (barOnActions) {
+      barOnActions.appendChild(chrome);
+      return;
+    }
+    const barInner = document.querySelector("#ms-session-bar .ms-session-bar-inner");
+    if (barInner) {
+      barInner.appendChild(chrome);
+      return;
+    }
+    chrome.classList.add("ms-simples-chrome--fixed");
+    document.body.appendChild(chrome);
+  }
+  function _mountBar(bar) {
+    const header = document.querySelector("header.site-header") || document.querySelector("header");
+    if (header) {
+      header.insertAdjacentElement("afterend", bar);
+      const pills = document.querySelector("[data-ms-pills]");
+      if (pills && bar.nextElementSibling !== pills) {
+        bar.insertAdjacentElement("afterend", pills);
+      }
+      return;
+    }
+    const nav = document.querySelector('nav[aria-label="Menu principal"]') || document.querySelector(".cabecalho__nav") || document.querySelector("nav");
+    if (nav) {
+      nav.insertAdjacentElement("afterend", bar);
+      return;
+    }
+    document.body.prepend(bar);
+  }
+
+  // src/heuristics/scoring.js
+  function scoreElement(element, config = defaults_default) {
+    var _a;
+    const { scoring } = config;
+    let score = 0;
+    const tag = element.tagName.toLowerCase();
+    const role = element.getAttribute("role");
+    if (tag === "main") score += scoring.mainTagBonus;
+    if (role === "main") score += scoring.roleMainBonus;
+    if (tag === "article") score += scoring.articleBonus;
+    if (element.querySelector("h1")) score += scoring.h1Bonus;
+    if (element.querySelector("h2")) score += scoring.h2Bonus;
+    const textLength = ((_a = element.textContent) != null ? _a : "").trim().length;
+    if (textLength >= scoring.minTextLength) {
+      score += scoring.textLengthBonus;
+      if (textLength >= scoring.minTextLength * 3) score += scoring.textLengthBonus;
+    }
+    return score;
+  }
+
+  // src/heuristics/contentDetector.js
+  function detectMainContent(config = defaults_default) {
+    const scored = [];
+    for (const selector of config.mainSelectors) {
+      let matches;
+      try {
+        matches = document.querySelectorAll(selector);
+      } catch (_) {
+        continue;
+      }
+      matches.forEach((el) => {
+        if (scored.some((s) => s.element === el)) return;
+        scored.push({ element: el, score: scoreElement(el, config) });
+      });
+    }
+    if (scored.length === 0) {
+      return { element: document.body, confidence: 0 };
+    }
+    scored.sort((a, b) => b.score - a.score);
+    const best = scored[0];
+    const { scoring } = config;
+    const ideal = scoring.mainTagBonus + scoring.h1Bonus + scoring.textLengthBonus * 2;
+    const confidence = Math.min(best.score / ideal, 1);
+    return { element: best.element, confidence };
+  }
+
+  // src/heuristics/distractionDetector.js
+  function detectDistractions(mainElement, config = defaults_default) {
+    const distractions = [];
+    const isMsChrome = (el) => {
+      var _a, _b;
+      if (!el || !el.id && !el.getAttribute) return false;
+      if (el.id === "ms-container" || el.id === "ms-session-bar" || el.id === "ms-simples-chrome") {
+        return true;
+      }
+      if ((_a = el.hasAttribute) == null ? void 0 : _a.call(el, "data-ms-pills")) return true;
+      if ((_b = el.closest) == null ? void 0 : _b.call(el, "#ms-container, #ms-session-bar, #ms-simples-chrome, [data-ms-pills]")) {
+        return true;
+      }
+      return false;
+    };
+    for (const selector of config.distractionSelectors) {
+      let matches;
+      try {
+        matches = document.querySelectorAll(selector);
+      } catch (_) {
+        continue;
+      }
+      matches.forEach((el) => {
+        if (isMsChrome(el)) return;
+        if (mainElement && el.contains(mainElement)) return;
+        if (mainElement && mainElement.contains(el)) return;
+        if (!distractions.includes(el)) distractions.push(el);
+      });
+    }
+    return distractions;
+  }
+
+  // src/mutator/domMutator.js
+  var PAGE_STYLE_ID = "ms-page-styles";
+  var LEXEND_LINK_ID = "ms-lexend-font";
+  var TEXT_SCALE_CLASSES = [
+    "ms-text-scale-100",
+    "ms-text-scale-125",
+    "ms-text-scale-150",
+    "ms-text-scale-175"
+  ];
+  var THEME_CLASSES = [
+    "ms-theme-senac",
+    "ms-theme-yellowBlack",
+    "ms-theme-darkHigh",
+    "ms-theme-soft"
+  ];
+  var OPTION_FLAG_CLASSES = [
+    "ms-dyslexia-font",
+    "ms-highlight-links",
+    "ms-text-spacing",
+    "ms-reduced-motion",
+    "ms-hide-images",
+    "ms-reading-ruler",
+    "ms-simple-language"
+  ];
+  var _mainElement = null;
+  var _distractionElements = [];
+  function injectPageStyles() {
+    if (document.getElementById(PAGE_STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = PAGE_STYLE_ID;
+    style.textContent = getPageStyles();
+    document.head.appendChild(style);
+  }
+  function ensureLexendFont() {
+    if (typeof document === "undefined") return;
+    if (document.getElementById(LEXEND_LINK_ID)) return;
+    const link = document.createElement("link");
+    link.id = LEXEND_LINK_ID;
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap";
+    document.head.appendChild(link);
+  }
+  function scan(config) {
+    const result = detectMainContent(config);
+    _mainElement = result.element;
+    _distractionElements = detectDistractions(_mainElement, config);
+    return { mainElement: _mainElement, confidence: result.confidence };
+  }
+  function applyOptions(state2) {
+    const html = document.documentElement;
+    const opts = state2.options || {};
+    html.classList.remove(...TEXT_SCALE_CLASSES);
+    const scale = opts.textScale || "100";
+    html.classList.add(`ms-text-scale-${scale}`);
+    html.classList.remove(...THEME_CLASSES);
+    const theme = opts.colorTheme || "senac";
+    html.classList.add(`ms-theme-${theme}`);
+    html.classList.toggle("ms-dyslexia-font", !!opts.dyslexiaFont);
+    html.classList.toggle("ms-highlight-links", !!opts.highlightLinks);
+    html.classList.toggle("ms-text-spacing", !!opts.textSpacing);
+    html.classList.toggle("ms-reduced-motion", !!opts.reducedMotion);
+    html.classList.toggle("ms-hide-images", !!opts.hideImages);
+    html.classList.toggle("ms-reading-ruler", !!opts.readingRuler);
+    html.classList.toggle("ms-simple-language", !!opts.simpleLanguage);
+  }
+  function applyModoSimples(state2, config) {
+    if (!_mainElement) scan(config);
+    if (_mainElement) _mainElement.setAttribute("data-ms-principal", "");
+    _distractionElements.forEach((el) => el.setAttribute("data-ms-hidden", "true"));
+    document.documentElement.classList.add("ms-ativo");
+    applyOptions(state2);
+  }
+  function revertModoSimples() {
+    document.querySelectorAll('[data-ms-hidden="true"]').forEach((el) => {
+      el.removeAttribute("data-ms-hidden");
+    });
+    document.querySelectorAll("[data-ms-principal]").forEach((el) => {
+      el.removeAttribute("data-ms-principal");
+    });
+    document.documentElement.classList.remove("ms-ativo");
+    _mainElement = null;
+    _distractionElements = [];
+  }
+  function revert() {
+    revertModoSimples();
+    document.documentElement.classList.remove(
+      ...TEXT_SCALE_CLASSES,
+      ...THEME_CLASSES,
+      ...OPTION_FLAG_CLASSES
+    );
+  }
+  function setPrincipal(el, config) {
+    document.querySelectorAll("[data-ms-principal]").forEach((node) => {
+      node.removeAttribute("data-ms-principal");
+    });
+    _mainElement = el;
+    el.setAttribute("data-ms-principal", "");
+    _distractionElements = detectDistractions(_mainElement, config);
+    document.querySelectorAll('[data-ms-hidden="true"]').forEach((node) => {
+      node.removeAttribute("data-ms-hidden");
+    });
+    _distractionElements.forEach((node) => node.setAttribute("data-ms-hidden", "true"));
+  }
+  function reprocess(state2, config) {
+    if (!state2.modoSimples) {
+      applyOptions(state2);
+      return;
+    }
+    revertModoSimples();
+    scan(config);
+    applyModoSimples(state2, config);
+  }
+
+  // src/mutator/domObserver.js
+  var _observer = null;
+  var _debounceTimer = null;
+  function startObserving(getState, config) {
+    if (_observer) return;
+    _observer = new MutationObserver((mutations) => {
+      var _a;
+      const hasStructural = mutations.some(
+        (m) => m.type === "childList" && m.addedNodes.length > 0
+      );
+      if (!hasStructural) return;
+      const state2 = getState();
+      if (!state2.modoSimples) return;
+      clearTimeout(_debounceTimer);
+      _debounceTimer = setTimeout(() => {
+        reprocess(getState(), config);
+      }, (_a = config.reprocessDebounce) != null ? _a : 300);
+    });
+    _observer.observe(document.body, { childList: true, subtree: true });
+  }
+  function stopObserving() {
+    if (_observer) {
+      _observer.disconnect();
+      _observer = null;
+    }
+    clearTimeout(_debounceTimer);
+    _debounceTimer = null;
+  }
+
+  // src/features/readingRuler.js
+  var RULER_ID = "ms-reading-ruler";
+  var RULER_HEIGHT = 48;
+  var _ruler = null;
+  var _onMove = null;
+  function startReadingRuler() {
+    if (_ruler) return;
+    _ruler = document.createElement("div");
+    _ruler.id = RULER_ID;
+    _ruler.setAttribute("aria-hidden", "true");
+    Object.assign(_ruler.style, {
+      position: "fixed",
+      left: "0",
+      right: "0",
+      top: "0",
+      height: `${RULER_HEIGHT}px`,
+      pointerEvents: "none",
+      zIndex: "2147483646",
+      background: "rgba(245, 166, 35, 0.22)",
+      borderTop: "2px solid #F5A623",
+      borderBottom: "2px solid #F5A623",
+      boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.35)",
+      transform: "translateY(-100%)",
+      transition: "none"
+    });
+    document.documentElement.appendChild(_ruler);
+    _onMove = (e) => {
+      if (!_ruler) return;
+      const y = e.clientY - RULER_HEIGHT / 2;
+      _ruler.style.transform = `translateY(${Math.max(0, y)}px)`;
+    };
+    document.addEventListener("mousemove", _onMove, { passive: true });
+  }
+  function stopReadingRuler() {
+    if (_onMove) {
+      document.removeEventListener("mousemove", _onMove);
+      _onMove = null;
+    }
+    if (_ruler == null ? void 0 : _ruler.parentNode) {
+      _ruler.parentNode.removeChild(_ruler);
+    }
+    _ruler = null;
+  }
+
+  // src/features/tts.js
+  var _utterance = null;
+  var _speaking = false;
+  var _blocks = [];
+  var _blockIndex = 0;
+  var _activeEl = null;
+  var BLOCK_TAGS = ["h1", "h2", "h3", "h4", "p", "li", "dt", "dd", "figcaption", "blockquote"];
+  function closestSafe(el, selector) {
+    var _a, _b, _c;
+    if (!el) return null;
+    if (typeof el.closest === "function") return el.closest(selector);
+    let node = el;
+    while (node) {
+      if (node.matches && node.matches(selector)) return node;
+      const parts = selector.split(",").map((s) => s.trim());
+      for (const part of parts) {
+        if (part.startsWith(".") && ((_a = node.classList) == null ? void 0 : _a.contains(part.slice(1)))) return node;
+        if (part.startsWith("#") && node.id === part.slice(1)) return node;
+        if (part.startsWith("[") && part.endsWith("]")) {
+          const attr = part.slice(1, -1).split("=")[0];
+          if ((_b = node.hasAttribute) == null ? void 0 : _b.call(node, attr)) return node;
+        }
+        if (/^[a-z][a-z0-9]*$/i.test(part) && ((_c = node.tagName) == null ? void 0 : _c.toLowerCase()) === part.toLowerCase()) {
+          return node;
+        }
+      }
+      node = node.parentElement;
+    }
+    return null;
+  }
+  function getRoot() {
+    return document.querySelector("[data-ms-principal]") || document.querySelector("main") || document.querySelector('[role="main"]') || document.body;
+  }
+  function isVisiblyReadable(el) {
+    if (!el || closestSafe(el, "#ms-container") || closestSafe(el, "#ms-simples-chrome") || closestSafe(el, "#ms-session-bar")) {
+      return false;
+    }
+    if (closestSafe(el, "[data-ms-hidden]")) return false;
+    const html = document.documentElement;
+    const msOn = html.classList.contains("ms-ativo");
+    const simpleLang = html.classList.contains("ms-simple-language");
+    if (msOn && closestSafe(el, ".ms-simple-hide")) return false;
+    if (!msOn && closestSafe(el, ".ms-simple-only")) return false;
+    if (simpleLang && closestSafe(el, "[data-ms-plain]")) return false;
+    if (!simpleLang && closestSafe(el, "[data-ms-simple]")) return false;
+    const text = (el.innerText || el.textContent || "").replace(/\s+/g, " ").trim();
+    return text.length > 0;
+  }
+  function collectBlocks() {
+    const root = getRoot();
+    if (!root) return [];
+    const nodes = [];
+    for (const tag of BLOCK_TAGS) {
+      const found = root.querySelectorAll(tag);
+      for (let i = 0; i < found.length; i++) nodes.push(found[i]);
+    }
+    return nodes.filter((el) => {
+      if (!isVisiblyReadable(el)) return false;
+      let parent = el.parentElement;
+      while (parent && parent !== root) {
+        if (parent.tagName && BLOCK_TAGS.includes(parent.tagName.toLowerCase()) && isVisiblyReadable(parent)) {
+          return false;
+        }
+        parent = parent.parentElement;
+      }
+      return true;
+    });
+  }
+  function clearHighlight() {
+    document.querySelectorAll("[data-ms-tts-active]").forEach((node) => {
+      node.removeAttribute("data-ms-tts-active");
+    });
+    _activeEl = null;
+  }
+  function highlightAndScroll(el) {
+    clearHighlight();
+    el.setAttribute("data-ms-tts-active", "");
+    _activeEl = el;
+    const reduceMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (typeof el.scrollIntoView === "function") {
+      try {
+        el.scrollIntoView({
+          block: "center",
+          behavior: reduceMotion ? "auto" : "smooth"
+        });
+      } catch (_) {
+        el.scrollIntoView(true);
+      }
+    }
+  }
+  function speakBlockAt(index) {
+    if (!_speaking) return;
+    if (index >= _blocks.length) {
+      stopSpeaking();
+      return;
+    }
+    const el = _blocks[index];
+    _blockIndex = index;
+    highlightAndScroll(el);
+    const text = (el.innerText || el.textContent || "").replace(/\s+/g, " ").trim();
+    if (!text) {
+      speakBlockAt(index + 1);
+      return;
+    }
+    _utterance = new SpeechSynthesisUtterance(text);
+    _utterance.lang = "pt-BR";
+    _utterance.rate = 1;
+    _utterance.onend = () => {
+      _utterance = null;
+      if (_speaking) speakBlockAt(index + 1);
+    };
+    _utterance.onerror = () => {
+      _utterance = null;
+      if (_speaking) speakBlockAt(index + 1);
+    };
+    speechSynthesis.speak(_utterance);
+  }
+  function speakMainContent() {
+    if (typeof speechSynthesis === "undefined") return;
+    stopSpeaking();
+    _blocks = collectBlocks();
+    if (!_blocks.length) {
+      const root = getRoot();
+      const text = root ? (root.innerText || root.textContent || "").replace(/\s+/g, " ").trim() : "";
+      if (!text) return;
+      _utterance = new SpeechSynthesisUtterance(text);
+      _utterance.lang = "pt-BR";
+      _utterance.rate = 1;
+      _utterance.onend = () => {
+        _speaking = false;
+        _utterance = null;
+      };
+      _utterance.onerror = () => {
+        _speaking = false;
+        _utterance = null;
+      };
+      _speaking = true;
+      speechSynthesis.speak(_utterance);
+      return;
+    }
+    _speaking = true;
+    speakBlockAt(0);
+  }
+  function stopSpeaking() {
+    _speaking = false;
+    _blocks = [];
+    _blockIndex = 0;
+    clearHighlight();
+    if (typeof speechSynthesis === "undefined") return;
+    speechSynthesis.cancel();
+    _utterance = null;
+  }
+  function isSpeaking() {
+    if (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking) {
+      return true;
+    }
+    return _speaking;
+  }
+
+  // src/features/manualSelect.js
+  var BANNER_ID = "ms-manual-select-banner";
+  var OVERLAY_CLASS = "ms-manual-select-active";
+  var _banner = null;
+  var _onClick = null;
+  var _onKey = null;
+  var _callbacks = null;
+  function escapeIdent(value) {
+    if (typeof CSS !== "undefined" && CSS.escape) return CSS.escape(value);
+    return String(value).replace(/([^\w-])/g, "\\$1");
+  }
+  function buildCssPath(el) {
+    if (!el || el.nodeType !== 1) return "";
+    if (el.id) {
+      return `#${escapeIdent(el.id)}`;
+    }
+    const parts = [];
+    let current = el;
+    const root = typeof document !== "undefined" ? document.documentElement : null;
+    while (current && current.nodeType === 1 && current !== root) {
+      let part = current.tagName.toLowerCase();
+      if (current.id) {
+        parts.unshift(`#${escapeIdent(current.id)}`);
+        break;
+      }
+      const parent = current.parentElement;
+      if (parent && parent.children) {
+        const siblings = Array.from(parent.children).filter(
+          (c) => c.tagName === current.tagName
+        );
+        if (siblings.length > 1) {
+          const index = siblings.indexOf(current) + 1;
+          part += `:nth-of-type(${index})`;
+        }
+      }
+      parts.unshift(part);
+      current = parent;
+    }
+    return parts.join(" > ");
+  }
+  function startManualSelect(opts = {}) {
+    stopManualSelect();
+    _callbacks = opts;
+    _banner = document.createElement("div");
+    _banner.id = BANNER_ID;
+    _banner.setAttribute("role", "status");
+    _banner.setAttribute("aria-live", "polite");
+    Object.assign(_banner.style, {
+      position: "fixed",
+      top: "0",
+      left: "0",
+      right: "0",
+      zIndex: "2147483646",
+      padding: "0.85rem 1.25rem",
+      background: "#0B2C5F",
+      color: "#fff",
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "0.95rem",
+      fontWeight: "600",
+      textAlign: "center",
+      boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
+      cursor: "default"
+    });
+    _banner.textContent = "Clique no conte\xFAdo principal";
+    const cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.textContent = "Cancelar";
+    cancelBtn.setAttribute("aria-label", "Cancelar sele\xE7\xE3o manual");
+    Object.assign(cancelBtn.style, {
+      marginLeft: "1rem",
+      padding: "0.3rem 0.75rem",
+      border: "1px solid rgba(255,255,255,0.5)",
+      borderRadius: "6px",
+      background: "transparent",
+      color: "#fff",
+      cursor: "pointer",
+      font: "inherit",
+      fontSize: "0.85rem"
+    });
+    cancelBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const cb = _callbacks == null ? void 0 : _callbacks.onCancel;
+      stopManualSelect();
+      if (cb) cb();
+    });
+    _banner.appendChild(cancelBtn);
+    document.body.appendChild(_banner);
+    document.documentElement.classList.add(OVERLAY_CLASS);
+    _onClick = (e) => {
+      var _a, _b, _c, _d;
+      if (((_b = (_a = e.target).closest) == null ? void 0 : _b.call(_a, "#ms-container")) || ((_d = (_c = e.target).closest) == null ? void 0 : _d.call(_c, `#${BANNER_ID}`))) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      const el = e.target;
+      if (!el || el === document.documentElement || el === document.body) return;
+      document.querySelectorAll("[data-ms-principal]").forEach((node) => {
+        node.removeAttribute("data-ms-principal");
+      });
+      el.setAttribute("data-ms-principal", "");
+      const path = buildCssPath(el);
+      const cb = _callbacks == null ? void 0 : _callbacks.onSelect;
+      stopManualSelect();
+      if (cb) cb(el, path);
+    };
+    _onKey = (e) => {
+      if (e.key === "Escape") {
+        const cb = _callbacks == null ? void 0 : _callbacks.onCancel;
+        stopManualSelect();
+        if (cb) cb();
+      }
+    };
+    document.addEventListener("click", _onClick, true);
+    document.addEventListener("keydown", _onKey, true);
+  }
+  function stopManualSelect() {
+    if (_onClick) {
+      document.removeEventListener("click", _onClick, true);
+      _onClick = null;
+    }
+    if (_onKey) {
+      document.removeEventListener("keydown", _onKey, true);
+      _onKey = null;
+    }
+    if (_banner == null ? void 0 : _banner.parentNode) {
+      _banner.parentNode.removeChild(_banner);
+    }
+    _banner = null;
+    document.documentElement.classList.remove(OVERLAY_CLASS);
+    _callbacks = null;
+  }
+
+  // src/features/simpleNav.js
+  function normalizeSimpleNav(items) {
+    if (!Array.isArray(items)) return [];
+    return items.map((item) => {
+      var _a, _b;
+      if (!item || typeof item !== "object") return null;
+      const label = String((_a = item.label) != null ? _a : "").trim();
+      const href = String((_b = item.href) != null ? _b : "").trim();
+      if (!label || !href) return null;
+      const short = item.short != null && String(item.short).trim() ? String(item.short).trim() : void 0;
+      return short ? { label, href, short } : { label, href };
+    }).filter(Boolean);
+  }
+  function findHostAuthoredPills() {
+    const all = document.querySelectorAll("[data-ms-pills]");
+    for (const el of all) {
+      if (!el.hasAttribute("data-ms-injected")) return el;
+    }
+    return null;
+  }
+  function createSimpleNav() {
+    let nav = null;
+    function sync(items) {
+      const list = normalizeSimpleNav(items);
+      if (findHostAuthoredPills()) {
+        destroy();
+        return;
+      }
+      if (!list.length) {
+        destroy();
+        return;
+      }
+      if (!nav) {
+        nav = document.createElement("nav");
+        nav.className = "ms-pills-nav ms-simple-only";
+        nav.setAttribute("data-ms-pills", "");
+        nav.setAttribute("data-ms-injected", "");
+        nav.setAttribute("aria-label", "Navega\xE7\xE3o do Modo Simples");
+        const inner2 = document.createElement("div");
+        inner2.className = "ms-pills-nav__inner";
+        nav.appendChild(inner2);
+        _mount(nav);
+      }
+      const inner = nav.querySelector(".ms-pills-nav__inner");
+      if (!inner) return;
+      const chrome = inner.querySelector("#ms-simples-chrome");
+      if (chrome) chrome.remove();
+      inner.innerHTML = "";
+      for (const item of list) {
+        const a = document.createElement("a");
+        a.className = "ms-pill";
+        a.setAttribute("href", item.href);
+        a.href = item.href;
+        if (item.short) {
+          const full = document.createElement("span");
+          full.className = "ms-pill__full";
+          full.textContent = item.label;
+          const short = document.createElement("span");
+          short.className = "ms-pill__short";
+          short.textContent = item.short;
+          a.appendChild(full);
+          a.appendChild(short);
+        } else {
+          a.textContent = item.label;
+        }
+        inner.appendChild(a);
+      }
+      if (chrome) inner.appendChild(chrome);
+      _markCurrent(nav);
+    }
+    function destroy() {
+      if (!nav) return;
+      nav.remove();
+      nav = null;
+    }
+    return { sync, destroy };
+  }
+  function _mount(nav) {
+    const bar = document.getElementById("ms-session-bar");
+    if (bar) {
+      bar.insertAdjacentElement("afterend", nav);
+      return;
+    }
+    const header = document.querySelector("header.site-header") || document.querySelector("header");
+    if (header) {
+      header.insertAdjacentElement("afterend", nav);
+      return;
+    }
+    const chrome = document.getElementById("ms-simples-chrome");
+    if (chrome) {
+      chrome.insertAdjacentElement("afterend", nav);
+      return;
+    }
+    document.body.prepend(nav);
+  }
+  function _markCurrent(nav) {
+    const path = typeof location !== "undefined" && location.pathname || "";
+    const file = path.split("/").pop() || "";
+    const hrefFull = typeof location !== "undefined" && location.href || "";
+    nav.querySelectorAll("a.ms-pill").forEach((a) => {
+      a.removeAttribute("aria-current");
+      const href = a.getAttribute("href") || "";
+      if (!href || href === "#") return;
+      try {
+        const resolved = typeof location !== "undefined" ? new URL(href, location.href) : null;
+        const match = resolved && resolved.href === hrefFull || href === file || href.endsWith("/" + file) || file && href.split("/").pop() === file;
+        if (match) a.setAttribute("aria-current", "page");
+      } catch (_) {
+        if (href === file) a.setAttribute("aria-current", "page");
+      }
+    });
+  }
+
+  // src/modo-simples.js
+  var STATE_KEY = "state";
+  var PRINCIPAL_KEY = "principal";
+  var ModoSimples = class {
+    constructor(userConfig = {}) {
+      this._config = { ...defaults_default, ...userConfig };
+      this._host = null;
+      this._shadow = null;
+      this._fab = null;
+      this._panel = null;
+      this._chrome = null;
+      this._simpleNav = null;
+      this._removeMotionListener = null;
+      this._removeStateListener = null;
+      this._onDocKeydown = null;
+      this._onDocClick = null;
+      this._initialized = false;
+    }
+    // ── Lifecycle ──────────────────────────────────────────────────────────────
+    init() {
+      if (this._initialized) return;
+      this._initialized = true;
+      this._loadPersistedState();
+      injectPageStyles();
+      ensureLexendFont();
+      this._buildUI();
+      this._bindEvents();
+      startObserving(() => state_default.get(), this._config);
+      this._syncReducedMotion();
+      this._removeMotionListener = onReducedMotionChange(() => this._syncReducedMotion());
+      const currentState = state_default.get();
+      applyOptions(currentState);
+      if (currentState.options.readingRuler) {
+        startReadingRuler();
+      }
+      if (currentState.modoSimples) {
+        this._activateModoSimples(currentState, { announce: false });
+      }
+    }
+    destroy() {
+      var _a;
+      stopReadingRuler();
+      stopSpeaking();
+      stopManualSelect();
+      revert();
+      stopObserving();
+      if (this._removeMotionListener) {
+        this._removeMotionListener();
+        this._removeMotionListener = null;
+      }
+      if (this._removeStateListener) {
+        this._removeStateListener();
+        this._removeStateListener = null;
+      }
+      if (this._onDocKeydown) {
+        document.removeEventListener("keydown", this._onDocKeydown);
+        this._onDocKeydown = null;
+      }
+      if (this._onDocClick) {
+        document.removeEventListener("click", this._onDocClick, true);
+        this._onDocClick = null;
+      }
+      if (this._simpleNav) {
+        this._simpleNav.destroy();
+        this._simpleNav = null;
+      }
+      if (this._chrome) {
+        this._chrome.destroy();
+        this._chrome = null;
+      }
+      if ((_a = this._host) == null ? void 0 : _a.parentNode) this._host.parentNode.removeChild(this._host);
+      const pageStyle = document.getElementById("ms-page-styles");
+      if (pageStyle == null ? void 0 : pageStyle.parentNode) pageStyle.parentNode.removeChild(pageStyle);
+      const lexend = document.getElementById("ms-lexend-font");
+      if (lexend == null ? void 0 : lexend.parentNode) lexend.parentNode.removeChild(lexend);
+      state_default.reset();
+      eventBus_default.clearAll();
+      this._initialized = false;
+    }
+    // ── API pública ────────────────────────────────────────────────────────────
+    enable() {
+      this._setModoSimples(true);
+    }
+    disable() {
+      this._setModoSimples(false);
+    }
+    toggle() {
+      this._setModoSimples(!state_default.get().modoSimples);
+    }
+    /**
+     * Ativa/desativa Modo Simples.
+     * Ao ativar: linguagem simples + ocultar imagens (respeita preferência salva de “mostrar imagens”).
+     * Ao desativar: desliga linguagem simples; imagens voltam (MS não deixa “órfã” a flag).
+     * Preferências do painel (tema, escala, Lexend, etc.) permanecem.
+     * @param {boolean} on
+     */
+    _setModoSimples(on) {
+      if (on) {
+        const preferShow = this._loadPreferShowImages();
+        state_default.set({
+          modoSimples: true,
+          options: {
+            simpleLanguage: true,
+            hideImages: !preferShow
+          }
+        });
+      } else {
+        state_default.set({
+          modoSimples: false,
+          options: {
+            simpleLanguage: false,
+            hideImages: false
+          }
+        });
+      }
+    }
+    _loadPreferShowImages() {
+      if (!this._config.persistence) return false;
+      const key = "preferShowImagesInMs";
+      const v = this._config.hostnamePersistence ? persistence_default.loadForHost(key, false) : persistence_default.load(key, false);
+      return !!v;
+    }
+    _savePreferShowImages(show) {
+      if (!this._config.persistence) return;
+      const key = "preferShowImagesInMs";
+      if (this._config.hostnamePersistence) {
+        persistence_default.saveForHost(key, !!show);
+      } else {
+        persistence_default.save(key, !!show);
+      }
+    }
+    configure(patch) {
+      this._config = { ...this._config, ...patch };
+      if (this._initialized && Object.prototype.hasOwnProperty.call(patch, "simpleNav")) {
+        this._syncSimpleNav();
+      }
+    }
+    // ── UI Construction ────────────────────────────────────────────────────────
+    _buildUI() {
+      this._host = document.createElement("div");
+      this._host.id = "ms-container";
+      document.body.appendChild(this._host);
+      this._shadow = this._host.attachShadow({ mode: "open" });
+      const styleEl = document.createElement("style");
+      styleEl.textContent = getUIStyles(this._config.position);
+      this._shadow.appendChild(styleEl);
+      const s = state_default.get();
+      this._panel = createA11yPanel({
+        state: s,
+        onClose: () => this._closePanel(),
+        onToggleModoSimples: (value) => this._setModoSimples(value),
+        onSetOption: (key, value) => {
+          state_default.set({ options: { [key]: value } });
+          if (key === "hideImages" && state_default.get().modoSimples) {
+            this._savePreferShowImages(!value);
+          }
+        },
+        onSpeak: () => this._toggleSpeak()
+      });
+      this._shadow.appendChild(this._panel.element);
+      this._fab = createFab({
+        onClick: () => this._togglePanel()
+      });
+      this._shadow.appendChild(this._fab.element);
+      this._fab.sync({ panelOpen: s.panelOpen });
+      this._panel.sync(s);
+      if (s.panelOpen) this._panel.open();
+      this._chrome = createSessionChrome({
+        onToggleModoSimples: (value) => this._setModoSimples(value),
+        onOpenPanel: () => this._openPanel(),
+        onSpeak: () => this._toggleSpeak(),
+        onToggleSimpleLanguage: (value) => state_default.set({ options: { simpleLanguage: value } }),
+        onToggleHideImages: (hide) => {
+          state_default.set({ options: { hideImages: hide } });
+          if (state_default.get().modoSimples) this._savePreferShowImages(!hide);
+        }
+      });
+      this._chrome.sync(s);
+      this._simpleNav = createSimpleNav();
+      this._syncSimpleNav();
+      this._chrome.sync(s);
+    }
+    _syncSimpleNav() {
+      if (!this._simpleNav) return;
+      this._simpleNav.sync(this._config.simpleNav);
+      if (this._chrome) this._chrome.sync(state_default.get());
+    }
+    // ── Events ─────────────────────────────────────────────────────────────────
+    _bindEvents() {
+      this._onDocKeydown = (e) => {
+        var _a, _b;
+        if (e.key === "Escape" && state_default.get().panelOpen) {
+          this._closePanel();
+          (_b = (_a = this._fab) == null ? void 0 : _a.button) == null ? void 0 : _b.focus();
+        }
+      };
+      document.addEventListener("keydown", this._onDocKeydown);
+      this._onDocClick = (e) => {
+        var _a, _b, _c;
+        if (!state_default.get().panelOpen) return;
+        const path = typeof e.composedPath === "function" ? e.composedPath() : [];
+        if (path.includes(this._host) || path.includes((_a = this._panel) == null ? void 0 : _a.element) || path.includes((_b = this._fab) == null ? void 0 : _b.element)) {
+          return;
+        }
+        if (e.target === this._host) return;
+        if (!((_c = this._host) == null ? void 0 : _c.contains(e.target)) && e.target !== this._host) {
+          this._closePanel();
+        }
+      };
+      document.addEventListener("click", this._onDocClick, true);
+      this._removeStateListener = eventBus_default.on("stateChange", ({ prev, next }) => {
+        this._onStateChange(prev, next);
+      });
+    }
+    // ── Panel management ───────────────────────────────────────────────────────
+    _togglePanel() {
+      state_default.get().panelOpen ? this._closePanel() : this._openPanel();
+    }
+    _openPanel() {
+      state_default.set({ panelOpen: true });
+      this._panel.open();
+      this._fab.sync({ panelOpen: true });
+      announce("Painel de acessibilidade aberto");
+    }
+    _closePanel() {
+      state_default.set({ panelOpen: false });
+      this._panel.close();
+      this._fab.sync({ panelOpen: false });
+    }
+    _toggleSpeak() {
+      if (isSpeaking()) {
+        stopSpeaking();
+        announce("Leitura interrompida");
+        this._syncSpeaking(false);
+      } else {
+        speakMainContent();
+        announce("Lendo conte\xFAdo principal");
+        this._syncSpeaking(true);
+        const check = setInterval(() => {
+          if (!isSpeaking()) {
+            clearInterval(check);
+            this._syncSpeaking(false);
+          }
+        }, 400);
+      }
+    }
+    _syncSpeaking(speaking) {
+      const s = state_default.get();
+      if (this._panel) this._panel.sync(s, { speaking });
+      if (this._chrome) this._chrome.sync(s, { speaking });
+    }
+    // ── Modo Simples activation ────────────────────────────────────────────────
+    _activateModoSimples(currentState, { announce: doAnnounce = true } = {}) {
+      const savedPath = this._loadPrincipalPath();
+      if (savedPath) {
+        try {
+          const el = document.querySelector(savedPath);
+          if (el) {
+            setPrincipal(el, this._config);
+            document.documentElement.classList.add("ms-ativo");
+            applyOptions(currentState);
+            if (doAnnounce) announce("Modo Simples ativado");
+            return;
+          }
+        } catch (_) {
+        }
+      }
+      const { confidence } = scan(this._config);
+      if (confidence < this._config.confidenceThreshold) {
+        applyModoSimples(currentState, this._config);
+        startManualSelect({
+          onSelect: (el, path) => {
+            setPrincipal(el, this._config);
+            this._savePrincipalPath(path);
+            announce("Conte\xFAdo principal definido");
+          },
+          onCancel: () => {
+            announce("Sele\xE7\xE3o manual cancelada");
+          }
+        });
+      } else {
+        applyModoSimples(currentState, this._config);
+      }
+      if (doAnnounce) announce("Modo Simples ativado");
+    }
+    // ── State reactions ────────────────────────────────────────────────────────
+    _onStateChange(prev, next) {
+      if (this._fab) this._fab.sync({ panelOpen: next.panelOpen });
+      if (this._panel) this._panel.sync(next, { speaking: isSpeaking() });
+      if (this._chrome) this._chrome.sync(next, { speaking: isSpeaking() });
+      if (prev.modoSimples !== next.modoSimples) {
+        if (next.modoSimples) {
+          this._activateModoSimples(next);
+        } else {
+          stopManualSelect();
+          revertModoSimples();
+          applyOptions(next);
+          announce("Modo Simples desativado");
+        }
+      }
+      const optionKeys = [
+        "textScale",
+        "colorTheme",
+        "dyslexiaFont",
+        "readingRuler",
+        "highlightLinks",
+        "textSpacing",
+        "reducedMotion",
+        "hideImages",
+        "simpleLanguage"
+      ];
+      const optionChanged = optionKeys.some((k) => prev.options[k] !== next.options[k]);
+      if (optionChanged) {
+        applyOptions(next);
+      }
+      if (prev.options.readingRuler !== next.options.readingRuler) {
+        if (next.options.readingRuler) startReadingRuler();
+        else stopReadingRuler();
+        announce(
+          next.options.readingRuler ? "R\xE9gua de leitura ativada" : "R\xE9gua de leitura desativada"
+        );
+      }
+      const announcements = {
+        dyslexiaFont: ["Fonte Lexend ativada", "Fonte Lexend desativada"],
+        highlightLinks: ["Destaque de links ativado", "Destaque de links desativado"],
+        textSpacing: ["Espa\xE7amento de texto ativado", "Espa\xE7amento de texto desativado"],
+        hideImages: ["Imagens ocultadas", "Imagens vis\xEDveis"],
+        reducedMotion: ["Movimento reduzido ativado", "Movimento reduzido desativado"],
+        simpleLanguage: ["Linguagem simples ligada", "Linguagem simples desligada"]
+      };
+      Object.entries(announcements).forEach(([k, [on, off]]) => {
+        if (prev.options[k] !== next.options[k]) announce(next.options[k] ? on : off);
+      });
+      if (prev.options.textScale !== next.options.textScale) {
+        announce(`Tamanho do texto ${next.options.textScale}%`);
+      }
+      if (prev.options.colorTheme !== next.options.colorTheme) {
+        const labels = {
+          senac: "Cores Senac",
+          yellowBlack: "Amarelo e Preto",
+          darkHigh: "Modo Escuro Alto",
+          soft: "Descanso Suave"
+        };
+        announce(`Tema ${labels[next.options.colorTheme] || next.options.colorTheme}`);
+      }
+      this._persistState(next);
+    }
+    // ── Persistence ────────────────────────────────────────────────────────────
+    _persistState(next) {
+      if (!this._config.persistence) return;
+      const payload = { modoSimples: next.modoSimples, options: next.options };
+      if (this._config.hostnamePersistence) {
+        persistence_default.saveForHost(STATE_KEY, payload);
+      } else {
+        persistence_default.save(STATE_KEY, payload);
+      }
+    }
+    _loadPersistedState() {
+      if (!this._config.persistence) return;
+      const saved = this._config.hostnamePersistence ? persistence_default.loadForHost(STATE_KEY) : persistence_default.load(STATE_KEY);
+      if (!saved) return;
+      const patch = hydratePersistedState(saved);
+      if (patch) state_default.set(patch);
+    }
+    _savePrincipalPath(path) {
+      if (!this._config.persistence || !path) return;
+      if (this._config.hostnamePersistence) {
+        persistence_default.saveForHost(PRINCIPAL_KEY, path);
+      } else {
+        persistence_default.save(PRINCIPAL_KEY, path);
+      }
+    }
+    _loadPrincipalPath() {
+      if (!this._config.persistence) return null;
+      return this._config.hostnamePersistence ? persistence_default.loadForHost(PRINCIPAL_KEY) : persistence_default.load(PRINCIPAL_KEY);
+    }
+    // ── System preferences ─────────────────────────────────────────────────────
+    _syncReducedMotion() {
+      if (prefersReducedMotion()) {
+        state_default.set({ options: { reducedMotion: true } });
+      }
+    }
+  };
+  if (typeof window !== "undefined") {
+    let boot = function() {
+      const instance = new ModoSimples();
+      instance.init();
+      window.ModoSimples = instance;
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", boot);
+    } else {
+      boot();
+    }
+  }
+  var modo_simples_default = ModoSimples;
+})();

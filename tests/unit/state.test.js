@@ -25,23 +25,27 @@ describe('state', () => {
     const s = state.get();
     assert.strictEqual(s.modoSimples, false);
     assert.strictEqual(s.panelOpen, false);
-    assert.strictEqual(s.options.reducedMotion, false);
-    assert.strictEqual(s.options.highContrast, false);
-    assert.strictEqual(s.options.largerText, false);
-    assert.strictEqual(s.options.highlightLinks, false);
+    assert.strictEqual(s.options.textScale, '100');
+    assert.strictEqual(s.options.colorTheme, 'senac');
     assert.strictEqual(s.options.dyslexiaFont, false);
+    assert.strictEqual(s.options.readingRuler, false);
+    assert.strictEqual(s.options.highlightLinks, false);
     assert.strictEqual(s.options.textSpacing, false);
+    assert.strictEqual(s.options.reducedMotion, false);
     assert.strictEqual(s.options.hideImages, false);
+    assert.strictEqual(s.options.simpleLanguage, false);
+    assert.strictEqual(s.options.largerText, undefined);
+    assert.strictEqual(s.options.highContrast, undefined);
   });
 
   it('get() deve retornar uma cópia — mutações externas não afetam o estado', () => {
     const s1 = state.get();
     s1.modoSimples = true;
-    s1.options.highContrast = true;
+    s1.options.dyslexiaFont = true;
 
     const s2 = state.get();
     assert.strictEqual(s2.modoSimples, false);
-    assert.strictEqual(s2.options.highContrast, false);
+    assert.strictEqual(s2.options.dyslexiaFont, false);
   });
 
   // ── set() ─────────────────────────────────────────────────────────────────
@@ -52,10 +56,10 @@ describe('state', () => {
   });
 
   it('set() deve mesclar options sem apagar outros campos', () => {
-    state.set({ options: { highContrast: true } });
+    state.set({ options: { textScale: '150' } });
     const s = state.get();
-    assert.strictEqual(s.options.highContrast, true);
-    assert.strictEqual(s.options.largerText, false, 'largerText deve permanecer false');
+    assert.strictEqual(s.options.textScale, '150');
+    assert.strictEqual(s.options.colorTheme, 'senac', 'colorTheme deve permanecer senac');
     assert.strictEqual(s.options.reducedMotion, false, 'reducedMotion deve permanecer false');
   });
 
@@ -78,7 +82,6 @@ describe('state', () => {
 
     state.set({ modoSimples: true });
 
-    // Modificar o snapshot recebido não deve afetar o estado atual
     nextReceived.modoSimples = false;
     assert.strictEqual(state.get().modoSimples, true);
   });
@@ -86,13 +89,17 @@ describe('state', () => {
   // ── reset() ───────────────────────────────────────────────────────────────
 
   it('reset() deve restaurar o estado inicial', () => {
-    state.set({ modoSimples: true, options: { highContrast: true, largerText: true } });
+    state.set({
+      modoSimples: true,
+      options: { textScale: '175', colorTheme: 'darkHigh', dyslexiaFont: true },
+    });
     state.reset();
 
     const s = state.get();
     assert.strictEqual(s.modoSimples, false);
-    assert.strictEqual(s.options.highContrast, false);
-    assert.strictEqual(s.options.largerText, false);
+    assert.strictEqual(s.options.textScale, '100');
+    assert.strictEqual(s.options.colorTheme, 'senac');
+    assert.strictEqual(s.options.dyslexiaFont, false);
   });
 
   it('reset() deve emitir stateChange', () => {

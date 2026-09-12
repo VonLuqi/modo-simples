@@ -35,6 +35,7 @@ const defaults = {
     '[role="banner"]',
     '[role="contentinfo"]',
     'nav',
+    '.barra-superior',
     '.ad',
     '.ads',
     '.advertisement',
@@ -47,6 +48,8 @@ const defaults = {
     '[class*="promo"]',
     '[class*="carousel"]',
     '[class*="slider"]',
+    '.slider',
+    '.s1',
     'iframe',
   ],
 
@@ -65,6 +68,9 @@ const defaults = {
   /** Persist state (modoSimples on/off + options) across page loads. */
   persistence: true,
 
+  /** Scope persistence keys by hostname (`state:hostname`). */
+  hostnamePersistence: true,
+
   /**
    * Floating button corner position.
    * One of: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
@@ -74,17 +80,21 @@ const defaults = {
   /**
    * Minimum heuristic confidence (0–1) to auto-apply main detection.
    * Below this threshold, a manual-selection fallback is shown instead.
-   * Trade-off: lower values risk mis-detection; higher values over-require
-   * well-structured semantic HTML.
    */
-  confidenceThreshold: 0.6,
+  confidenceThreshold: 0.45,
 
   /**
    * Milliseconds to debounce MutationObserver reprocessing after DOM changes.
-   * Trade-off: too low → expensive re-scans on micro-mutations (SPAs);
-   *            too high → stale state after SPA navigation.
    */
   reprocessDebounce: 300,
+
+  /**
+   * Optional simple-mode nav pills for host pages without markup.
+   * Example: [{ label: 'Início', href: '/' }, { label: 'Ajuda', href: '/ajuda' }]
+   * Ignored when the page already has [data-ms-pills] authored in HTML.
+   * @type {null | { label: string, href: string, short?: string }[]}
+   */
+  simpleNav: null,
 };
 
 export default defaults;

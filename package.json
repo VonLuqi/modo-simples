@@ -1,28 +1,57 @@
 {
   "name": "modo-simples",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Script JavaScript injetável de acessibilidade web — Modo Simples",
   "type": "module",
-  "main": "src/modo-simples.js",
+  "main": "dist/modo-simples.min.js",
+  "module": "src/modo-simples.js",
+  "exports": {
+    ".": {
+      "import": "./src/modo-simples.js",
+      "default": "./dist/modo-simples.min.js"
+    },
+    "./min": "./dist/modo-simples.min.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "LICENSE",
+    "README.md",
+    "doc/09-guia-integracao.md",
+    "doc/13-compatibilidade-browsers.md"
+  ],
   "scripts": {
     "build": "node scripts/bundle.cjs",
     "build:dev": "node scripts/bundle.cjs",
     "watch": "node scripts/bundle.cjs",
     "test": "node scripts/test.cjs",
+    "test:unit": "node scripts/test.cjs --unit",
+    "test:structure": "node scripts/test.cjs --structure",
     "test:watch": "node scripts/test.cjs --watch",
+    "smoke:examples": "node scripts/smoke-examples.cjs",
+    "smoke:assistente": "node scripts/smoke-assistente.cjs",
+    "preview": "npx --yes serve . -l 8765 --no-clipboard",
     "format": "prettier --write .",
-    "prepare": "husky install"
+    "prepare": "node -e \"try{require('child_process').execSync('npx --yes husky install',{stdio:'inherit'});}catch(e){/* husky opcional */}\""
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "cognitive",
+    "modo-simples",
+    "senac"
+  ],
+  "author": "Projeto Integrador 2025 — Modo Simples",
+  "license": "MIT",
   "devDependencies": {
     "esbuild": "^0.25.0",
     "prettier": "^3.7.3",
     "vitest": "^2.0.0"
   },
   "directories": {
-    "example": "examples"
+    "example": "examples",
+    "doc": "doc"
   },
   "repository": {
     "type": "git",

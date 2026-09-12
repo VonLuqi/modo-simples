@@ -21,6 +21,18 @@ export function detectDistractions(mainElement, config = defaults) {
   /** @type {Element[]} */
   const distractions = [];
 
+  const isMsChrome = (el) => {
+    if (!el || !el.id && !el.getAttribute) return false;
+    if (el.id === 'ms-container' || el.id === 'ms-session-bar' || el.id === 'ms-simples-chrome') {
+      return true;
+    }
+    if (el.hasAttribute?.('data-ms-pills')) return true;
+    if (el.closest?.('#ms-container, #ms-session-bar, #ms-simples-chrome, [data-ms-pills]')) {
+      return true;
+    }
+    return false;
+  };
+
   for (const selector of config.distractionSelectors) {
     let matches;
     try {
@@ -31,8 +43,8 @@ export function detectDistractions(mainElement, config = defaults) {
     }
 
     matches.forEach((el) => {
-      // Never hide the Modo Simples UI
-      if (el.id === 'ms-container') return;
+      // Never hide Modo Simples chrome / pills / host UI
+      if (isMsChrome(el)) return;
 
       // Never hide an ancestor of the main content — that would hide the content
       if (mainElement && el.contains(mainElement)) return;

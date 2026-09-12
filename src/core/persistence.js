@@ -50,6 +50,38 @@ const persistence = {
       // Fail silently
     }
   },
+
+  /**
+   * Build a hostname-scoped key: `base:hostname`.
+   * @param {string} base
+   * @returns {string}
+   */
+  hostKey(base) {
+    const host =
+      typeof location !== 'undefined' && location.hostname
+        ? location.hostname
+        : 'local';
+    return `${base}:${host}`;
+  },
+
+  /**
+   * Save a value under a hostname-scoped key.
+   * @param {string} base
+   * @param {*} value
+   */
+  saveForHost(base, value) {
+    this.save(this.hostKey(base), value);
+  },
+
+  /**
+   * Load a value from a hostname-scoped key.
+   * @param {string} base
+   * @param {*} [fallback=null]
+   * @returns {*}
+   */
+  loadForHost(base, fallback = null) {
+    return this.load(this.hostKey(base), fallback);
+  },
 };
 
 export default persistence;

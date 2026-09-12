@@ -1,55 +1,57 @@
 ﻿/**
  * src/modo-simples.js — Orchestrator principal
  *
- * Wires todos os módulos para o menu radial de acessibilidade.
- *
- * Estrutura no Shadow DOM:
- *   #ms-container (host)
- *     └─ shadow root
- *          ├─ <style>  (UI styles)
- *          └─ #ms-radial-root
- *               ├─ #ms-radial-menu  (itens radiais)
- *               ├─ #ms-central-btn  (toggle Modo Simples + acionador do radial)
- *               └─ #ms-help-panel   (painel de ajuda inline)
- *
- * Fluxo de interação:
- *   Clique no #ms-central-btn → abre/fecha o radial se fechado/aberto
- *   Clique em item radial → toggle da opção correspondente
- *   Esc → fecha o radial e devolve foco ao botão central
- *   Estado → persiste no localStorage prefixado com ms_
+ * Wires FAB + painel "Acessibilidade Digital" (Shadow DOM).
  *
  * API pública:
- *   instance.enable()           Ativa Modo Simples
- *   instance.disable()          Desativa Modo Simples
- *   instance.toggle()           Alterna Modo Simples
- *   instance.configure(patch)   Sobrescreve config em runtime
- *   instance.destroy()          Remove completamente da página
+ *   instance.enable() / disable() / toggle() / configure(patch) / destroy()
+ *   configure({ simpleNav: [{ label, href, short? }] }) — pills injetáveis (F5-T11)
  */
 
 import defaults from './config/defaults.js';
 import eventBus from './core/eventBus.js';
 import state from './core/state.js';
 import persistence from './core/persistence.js';
+import { hydratePersistedState } from './core/persistedState.js';
 import { prefersReducedMotion, onReducedMotionChange } from './utils/mediaQuery.js';
 import { announce } from './utils/aria.js';
 import { getUIStyles } from './ui/styles.js';
-import { createCentralToggle } from './ui/centralToggle.js';
-import { createRadialMenu } from './ui/radialMenu.js';
-import { injectPageStyles, scan, apply, revert } from './mutator/domMutator.js';
+import { createFab } from './ui/fab.js';
+import { createA11yPanel } from './ui/a11yPanel.js';
+import { createSessionChrome } from './ui/sessionChrome.js';
+import {
+  injectPageStyles,
+  ensureLexendFont,
+  scan,
+  applyOptions,
+  applyModoSimples,
+  revert,
+  revertModoSimples,
+  setPrincipal,
+} from './mutator/domMutator.js';
 import { startObserving, stopObserving } from './mutator/domObserver.js';
+import { startReadingRuler, stopReadingRuler } from './features/readingRuler.js';
+import { speakMainContent, stopSpeaking, isSpeaking } from './features/tts.js';
+import { startManualSelect, stopManualSelect } from './features/manualSelect.js';
+import { createSimpleNav } from './features/simpleNav.js';
+
+const STATE_KEY = 'state';
+const PRINCIPAL_KEY = 'principal';
 
 class ModoSimples {
   constructor(userConfig = {}) {
     this._config = { ...defaults, ...userConfig };
     this._host = null;
     this._shadow = null;
-    this._centralBtn = null;
-    this._radial = null;
-    this._helpPanel = null;
+    this._fab = null;
+    this._panel = null;
+    this._chrome = null;
+    this._simpleNav = null;
     this._removeMotionListener = null;
     this._removeStateListener = null;
+    this._onDocKeydown = null;
+    this._onDocClick = null;
     this._initialized = false;
-    this._dragCleanup = null;
   }
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -60,6 +62,7 @@ class ModoSimples {
 
     this._loadPersistedState();
     injectPageStyles();
+    ensureLexendFont();
     this._buildUI();
     this._bindEvents();
 
@@ -68,21 +71,52 @@ class ModoSimples {
     this._removeMotionListener = onReducedMotionChange(() => this._syncReducedMotion());
 
     const currentState = state.get();
+    applyOptions(currentState);
+
+    if (currentState.options.readingRuler) {
+      startReadingRuler();
+    }
+
     if (currentState.modoSimples) {
-      scan(this._config);
-      apply(currentState, this._config);
+      this._activateModoSimples(currentState, { announce: false });
     }
   }
 
   destroy() {
+    stopReadingRuler();
+    stopSpeaking();
+    stopManualSelect();
     revert();
     stopObserving();
-    if (this._removeMotionListener) { this._removeMotionListener(); this._removeMotionListener = null; }
-    if (this._removeStateListener)  { this._removeStateListener();  this._removeStateListener  = null; }
-    if (this._dragCleanup)          { this._dragCleanup();          this._dragCleanup          = null; }
+    if (this._removeMotionListener) {
+      this._removeMotionListener();
+      this._removeMotionListener = null;
+    }
+    if (this._removeStateListener) {
+      this._removeStateListener();
+      this._removeStateListener = null;
+    }
+    if (this._onDocKeydown) {
+      document.removeEventListener('keydown', this._onDocKeydown);
+      this._onDocKeydown = null;
+    }
+    if (this._onDocClick) {
+      document.removeEventListener('click', this._onDocClick, true);
+      this._onDocClick = null;
+    }
+    if (this._simpleNav) {
+      this._simpleNav.destroy();
+      this._simpleNav = null;
+    }
+    if (this._chrome) {
+      this._chrome.destroy();
+      this._chrome = null;
+    }
     if (this._host?.parentNode) this._host.parentNode.removeChild(this._host);
     const pageStyle = document.getElementById('ms-page-styles');
     if (pageStyle?.parentNode) pageStyle.parentNode.removeChild(pageStyle);
+    const lexend = document.getElementById('ms-lexend-font');
+    if (lexend?.parentNode) lexend.parentNode.removeChild(lexend);
     state.reset();
     eventBus.clearAll();
     this._initialized = false;
@@ -90,10 +124,67 @@ class ModoSimples {
 
   // ── API pública ────────────────────────────────────────────────────────────
 
-  enable()         { state.set({ modoSimples: true }); }
-  disable()        { state.set({ modoSimples: false }); }
-  toggle()         { state.set({ modoSimples: !state.get().modoSimples }); }
-  configure(patch) { this._config = { ...this._config, ...patch }; }
+  enable() {
+    this._setModoSimples(true);
+  }
+  disable() {
+    this._setModoSimples(false);
+  }
+  toggle() {
+    this._setModoSimples(!state.get().modoSimples);
+  }
+  /**
+   * Ativa/desativa Modo Simples.
+   * Ao ativar: linguagem simples + ocultar imagens (respeita preferência salva de “mostrar imagens”).
+   * Ao desativar: desliga linguagem simples; imagens voltam (MS não deixa “órfã” a flag).
+   * Preferências do painel (tema, escala, Lexend, etc.) permanecem.
+   * @param {boolean} on
+   */
+  _setModoSimples(on) {
+    if (on) {
+      const preferShow = this._loadPreferShowImages();
+      state.set({
+        modoSimples: true,
+        options: {
+          simpleLanguage: true,
+          hideImages: !preferShow,
+        },
+      });
+    } else {
+      state.set({
+        modoSimples: false,
+        options: {
+          simpleLanguage: false,
+          hideImages: false,
+        },
+      });
+    }
+  }
+
+  _loadPreferShowImages() {
+    if (!this._config.persistence) return false;
+    const key = 'preferShowImagesInMs';
+    const v = this._config.hostnamePersistence
+      ? persistence.loadForHost(key, false)
+      : persistence.load(key, false);
+    return !!v;
+  }
+
+  _savePreferShowImages(show) {
+    if (!this._config.persistence) return;
+    const key = 'preferShowImagesInMs';
+    if (this._config.hostnamePersistence) {
+      persistence.saveForHost(key, !!show);
+    } else {
+      persistence.save(key, !!show);
+    }
+  }
+  configure(patch) {
+    this._config = { ...this._config, ...patch };
+    if (this._initialized && Object.prototype.hasOwnProperty.call(patch, 'simpleNav')) {
+      this._syncSimpleNav();
+    }
+  }
 
   // ── UI Construction ────────────────────────────────────────────────────────
 
@@ -110,293 +201,282 @@ class ModoSimples {
 
     const s = state.get();
 
-    this._radial = createRadialMenu({
+    this._panel = createA11yPanel({
       state: s,
-      onToggle: (key, value) => state.set({ options: { [key]: value } }),
-      onHelp: () => this._toggleHelp(),
-      position: this._config.position,
+      onClose: () => this._closePanel(),
+      onToggleModoSimples: (value) => this._setModoSimples(value),
+      onSetOption: (key, value) => {
+        state.set({ options: { [key]: value } });
+        if (key === 'hideImages' && state.get().modoSimples) {
+          this._savePreferShowImages(!value);
+        }
+      },
+      onSpeak: () => this._toggleSpeak(),
     });
-    this._shadow.appendChild(this._radial.element);
+    this._shadow.appendChild(this._panel.element);
 
-    this._centralBtn = createCentralToggle();
-    this._radial.element.appendChild(this._centralBtn.element);
+    this._fab = createFab({
+      onClick: () => this._togglePanel(),
+    });
+    this._shadow.appendChild(this._fab.element);
 
-    this._helpPanel = this._buildHelpPanel();
-    this._radial.element.appendChild(this._helpPanel);
+    this._fab.sync({ panelOpen: s.panelOpen });
+    this._panel.sync(s);
+    if (s.panelOpen) this._panel.open();
 
-    this._centralBtn.sync({ modoSimples: s.modoSimples, radialOpen: s.panelOpen });
-    this._radial.updateItems(s.options);
-    this._initDrag();
+    this._chrome = createSessionChrome({
+      onToggleModoSimples: (value) => this._setModoSimples(value),
+      onOpenPanel: () => this._openPanel(),
+      onSpeak: () => this._toggleSpeak(),
+      onToggleSimpleLanguage: (value) => state.set({ options: { simpleLanguage: value } }),
+      onToggleHideImages: (hide) => {
+        state.set({ options: { hideImages: hide } });
+        if (state.get().modoSimples) this._savePreferShowImages(!hide);
+      },
+    });
+    this._chrome.sync(s);
+
+    this._simpleNav = createSimpleNav();
+    this._syncSimpleNav();
+    // Reposiciona SIMPLES após pills (MS on some com o header)
+    this._chrome.sync(s);
   }
 
-  _buildHelpPanel() {
-    const panel = document.createElement('div');
-    panel.id = 'ms-help-panel';
-    panel.setAttribute('role', 'dialog');
-    panel.setAttribute('aria-modal', 'false');
-    panel.setAttribute('aria-label', 'Ajuda — Modo Simples');
-    panel.hidden = true;
-
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'ms-help-close';
-    closeBtn.type = 'button';
-    closeBtn.setAttribute('aria-label', 'Fechar ajuda');
-    closeBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
-    closeBtn.addEventListener('click', () => { panel.hidden = true; });
-
-    panel.innerHTML = `
-      <h3>Como usar o menu de acessibilidade</h3>
-      <p><strong>Botão central (A):</strong> clique para abrir/fechar as opções. Verde = Modo Simples ativo, Vermelho = inativo.</p>
-      <p><strong>Modo Simples:</strong> remove distrações e centraliza o conteúdo principal.</p>
-      <p><strong>Alto Contraste:</strong> reforça preto/branco para melhor legibilidade.</p>
-      <p><strong>Texto Maior:</strong> aumenta o tamanho da fonte do conteúdo.</p>
-      <p><strong>Reduzir Movimento:</strong> desativa animações e transições da página.</p>
-      <p><strong>Destacar Links:</strong> sublinha e realça todos os links visíveis.</p>
-      <p><strong>Fonte Legível:</strong> aplica uma fonte com maior legibilidade para dislexia.</p>
-      <p><strong>Espaçamento:</strong> aumenta espaço entre linhas, letras e parágrafos.</p>
-      <p><strong>Ocultar Imagens:</strong> esconde imagens decorativas.</p>
-      <p><em>Tecle Esc para fechar o menu. Use Tab ou setas para navegar.</em></p>
-    `;
-    panel.prepend(closeBtn);
-    return panel;
-  }
-
-  // ── Drag to reposition ────────────────────────────────────────────────────
-
-  /**
-   * Permite arrastar o botão central para reposicioná-lo na tela.
-   * Usa pointer events para suporte a mouse e touch.
-   * Após soltar, o botão se encaixa no canto mais próximo (snap-to-corner).
-   */
-  _initDrag() {
-    const root = this._radial.element;  // #ms-radial-root
-    const btn  = this._centralBtn.element;
-    const DRAG_THRESHOLD = 6; // px — mínimo para considerar drag (não click)
-    const MARGIN = 20;        // px — margem das bordas
-
-    let startX = 0, startY = 0, startLeft = 0, startTop = 0;
-    let dragging = false, moved = false;
-
-    const onPointerDown = (e) => {
-      // Somente botão primário / toque
-      if (e.button !== undefined && e.button !== 0) return;
-      startX = e.clientX;
-      startY = e.clientY;
-
-      // Posição atual do root dentro do :host (que cobre o viewport)
-      const rect = root.getBoundingClientRect();
-      startLeft = rect.left;
-      startTop  = rect.top;
-
-      dragging = false;
-      moved = false;
-      root.classList.add('ms-drag-ready');
-      btn.setPointerCapture(e.pointerId);
-
-      e.stopPropagation();
-    };
-
-    const onPointerMove = (e) => {
-      if (!root.classList.contains('ms-drag-ready') && !dragging) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-
-      if (!dragging && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
-
-      // Primeiro movimento significativo
-      if (!dragging) {
-        dragging = true;
-        moved = true;
-        root.classList.remove('ms-drag-ready');
-        root.classList.add('ms-dragging');
-        // Troca para posicionamento absoluto livre
-        root.style.right  = '';
-        root.style.bottom = '';
-        root.style.left   = startLeft + 'px';
-        root.style.top    = startTop  + 'px';
-      }
-
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const sz = root.offsetWidth || 72;
-
-      const newLeft = Math.max(MARGIN, Math.min(vw - sz - MARGIN, startLeft + dx));
-      const newTop  = Math.max(MARGIN, Math.min(vh - sz - MARGIN, startTop  + dy));
-
-      root.style.left = newLeft + 'px';
-      root.style.top  = newTop  + 'px';
-    };
-
-    const onPointerUp = (e) => {
-      if (!root.classList.contains('ms-drag-ready') && !dragging) return;
-      root.classList.remove('ms-drag-ready', 'ms-dragging');
-
-      if (!moved) { dragging = false; return; }
-
-      // Snap para o canto mais próximo
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const sz = root.offsetWidth || 72;
-      const cx = parseFloat(root.style.left) + sz / 2;
-      const cy = parseFloat(root.style.top)  + sz / 2;
-
-      const snapRight  = cx > vw / 2;
-      const snapBottom = cy > vh / 2;
-
-      // Remove posicionamento livre e volta para corner CSS
-      root.style.left   = '';
-      root.style.top    = '';
-      root.style.right  = '';
-      root.style.bottom = '';
-
-      if (snapRight && snapBottom) {
-        root.style.right  = MARGIN + 'px';
-        root.style.bottom = MARGIN + 'px';
-      } else if (!snapRight && snapBottom) {
-        root.style.left   = MARGIN + 'px';
-        root.style.bottom = MARGIN + 'px';
-      } else if (snapRight && !snapBottom) {
-        root.style.right = MARGIN + 'px';
-        root.style.top   = MARGIN + 'px';
-      } else {
-        root.style.left = MARGIN + 'px';
-        root.style.top  = MARGIN + 'px';
-      }
-
-      dragging = false;
-      moved = false;
-    };
-
-    btn.addEventListener('pointerdown', onPointerDown);
-    btn.addEventListener('pointermove', onPointerMove);
-    btn.addEventListener('pointerup',   onPointerUp);
-    btn.addEventListener('pointercancel', onPointerUp);
-
-    // Impede que o drag dispare click
-    btn.addEventListener('click', (e) => {
-      if (moved) { e.stopImmediatePropagation(); moved = false; }
-    }, { capture: true });
-
-    this._dragCleanup = () => {
-      btn.removeEventListener('pointerdown', onPointerDown);
-      btn.removeEventListener('pointermove', onPointerMove);
-      btn.removeEventListener('pointerup',   onPointerUp);
-      btn.removeEventListener('pointercancel', onPointerUp);
-    };
+  _syncSimpleNav() {
+    if (!this._simpleNav) return;
+    this._simpleNav.sync(this._config.simpleNav);
+    if (this._chrome) this._chrome.sync(state.get());
   }
 
   // ── Events ─────────────────────────────────────────────────────────────────
 
   _bindEvents() {
-    this._centralBtn.element.addEventListener('click', () => this._toggleRadial());
-
-    document.addEventListener('keydown', (e) => {
+    this._onDocKeydown = (e) => {
       if (e.key === 'Escape' && state.get().panelOpen) {
-        this._closeRadial();
-        this._centralBtn.element.focus();
+        this._closePanel();
+        this._fab?.button?.focus();
       }
-    });
+    };
+    document.addEventListener('keydown', this._onDocKeydown);
 
-    document.addEventListener('click', (e) => {
+    this._onDocClick = (e) => {
       if (!state.get().panelOpen) return;
-      if (e.target !== this._host && !this._host?.contains(e.target)) {
-        this._closeRadial();
+      const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
+      if (path.includes(this._host) || path.includes(this._panel?.element) || path.includes(this._fab?.element)) {
+        return;
       }
-    }, { capture: true });
+      // Clicks that land on the host (open shadow) still include host in composedPath
+      if (e.target === this._host) return;
+      if (!this._host?.contains(e.target) && e.target !== this._host) {
+        this._closePanel();
+      }
+    };
+    document.addEventListener('click', this._onDocClick, true);
 
     this._removeStateListener = eventBus.on('stateChange', ({ prev, next }) => {
       this._onStateChange(prev, next);
     });
   }
 
-  // ── Radial management ─────────────────────────────────────────────────────
+  // ── Panel management ───────────────────────────────────────────────────────
 
-  _toggleRadial() {
-    state.get().panelOpen ? this._closeRadial() : this._openRadial();
+  _togglePanel() {
+    state.get().panelOpen ? this._closePanel() : this._openPanel();
   }
 
-  _openRadial() {
+  _openPanel() {
     state.set({ panelOpen: true });
-    this._radial.open();
-    this._centralBtn.sync({ modoSimples: state.get().modoSimples, radialOpen: true });
-    announce('Menu de acessibilidade aberto');
+    this._panel.open();
+    this._fab.sync({ panelOpen: true });
+    announce('Painel de acessibilidade aberto');
   }
 
-  _closeRadial() {
+  _closePanel() {
     state.set({ panelOpen: false });
-    this._radial.close();
-    this._centralBtn.sync({ modoSimples: state.get().modoSimples, radialOpen: false });
-    if (this._helpPanel) this._helpPanel.hidden = true;
+    this._panel.close();
+    this._fab.sync({ panelOpen: false });
   }
 
-  _toggleHelp() {
-    if (this._helpPanel) this._helpPanel.hidden = !this._helpPanel.hidden;
+  _toggleSpeak() {
+    if (isSpeaking()) {
+      stopSpeaking();
+      announce('Leitura interrompida');
+      this._syncSpeaking(false);
+    } else {
+      speakMainContent();
+      announce('Lendo conteúdo principal');
+      this._syncSpeaking(true);
+      const check = setInterval(() => {
+        if (!isSpeaking()) {
+          clearInterval(check);
+          this._syncSpeaking(false);
+        }
+      }, 400);
+    }
+  }
+
+  _syncSpeaking(speaking) {
+    const s = state.get();
+    if (this._panel) this._panel.sync(s, { speaking });
+    if (this._chrome) this._chrome.sync(s, { speaking });
+  }
+
+  // ── Modo Simples activation ────────────────────────────────────────────────
+
+  _activateModoSimples(currentState, { announce: doAnnounce = true } = {}) {
+    const savedPath = this._loadPrincipalPath();
+    if (savedPath) {
+      try {
+        const el = document.querySelector(savedPath);
+        if (el) {
+          setPrincipal(el, this._config);
+          document.documentElement.classList.add('ms-ativo');
+          applyOptions(currentState);
+          if (doAnnounce) announce('Modo Simples ativado');
+          return;
+        }
+      } catch (_) {
+        // Invalid saved selector — fall through to scan
+      }
+    }
+
+    const { confidence } = scan(this._config);
+    if (confidence < this._config.confidenceThreshold) {
+      applyModoSimples(currentState, this._config);
+      startManualSelect({
+        onSelect: (el, path) => {
+          setPrincipal(el, this._config);
+          this._savePrincipalPath(path);
+          announce('Conteúdo principal definido');
+        },
+        onCancel: () => {
+          announce('Seleção manual cancelada');
+        },
+      });
+    } else {
+      applyModoSimples(currentState, this._config);
+    }
+
+    if (doAnnounce) announce('Modo Simples ativado');
   }
 
   // ── State reactions ────────────────────────────────────────────────────────
 
   _onStateChange(prev, next) {
-    if (this._centralBtn) {
-      this._centralBtn.sync({ modoSimples: next.modoSimples, radialOpen: next.panelOpen });
-    }
-    if (this._radial) this._radial.updateItems(next.options);
+    if (this._fab) this._fab.sync({ panelOpen: next.panelOpen });
+    if (this._panel) this._panel.sync(next, { speaking: isSpeaking() });
+    if (this._chrome) this._chrome.sync(next, { speaking: isSpeaking() });
 
     if (prev.modoSimples !== next.modoSimples) {
       if (next.modoSimples) {
-        scan(this._config);
-        apply(next, this._config);
-        announce('Modo Simples ativado');
+        this._activateModoSimples(next);
       } else {
-        revert();
+        stopManualSelect();
+        revertModoSimples();
+        applyOptions(next);
         announce('Modo Simples desativado');
       }
     }
 
-    const optionKeys = ['highContrast', 'largerText', 'reducedMotion', 'highlightLinks', 'dyslexiaFont', 'textSpacing', 'hideImages'];
+    const optionKeys = [
+      'textScale',
+      'colorTheme',
+      'dyslexiaFont',
+      'readingRuler',
+      'highlightLinks',
+      'textSpacing',
+      'reducedMotion',
+      'hideImages',
+      'simpleLanguage',
+    ];
     const optionChanged = optionKeys.some((k) => prev.options[k] !== next.options[k]);
-    if (next.modoSimples && optionChanged) { revert(); apply(next, this._config); }
+    if (optionChanged) {
+      applyOptions(next);
+    }
+
+    if (prev.options.readingRuler !== next.options.readingRuler) {
+      if (next.options.readingRuler) startReadingRuler();
+      else stopReadingRuler();
+      announce(
+        next.options.readingRuler
+          ? 'Régua de leitura ativada'
+          : 'Régua de leitura desativada',
+      );
+    }
 
     const announcements = {
-      highContrast:   ['Alto contraste ativado',           'Alto contraste desativado'],
-      largerText:     ['Texto maior ativado',              'Texto maior desativado'],
-      highlightLinks: ['Destaque de links ativado',        'Destaque de links desativado'],
-      dyslexiaFont:   ['Fonte legível ativada',            'Fonte legível desativada'],
-      textSpacing:    ['Espaçamento de texto ativado',     'Espaçamento de texto desativado'],
-      hideImages:     ['Imagens ocultadas',                'Imagens visíveis'],
+      dyslexiaFont: ['Fonte Lexend ativada', 'Fonte Lexend desativada'],
+      highlightLinks: ['Destaque de links ativado', 'Destaque de links desativado'],
+      textSpacing: ['Espaçamento de texto ativado', 'Espaçamento de texto desativado'],
+      hideImages: ['Imagens ocultadas', 'Imagens visíveis'],
+      reducedMotion: ['Movimento reduzido ativado', 'Movimento reduzido desativado'],
+      simpleLanguage: ['Linguagem simples ligada', 'Linguagem simples desligada'],
     };
     Object.entries(announcements).forEach(([k, [on, off]]) => {
       if (prev.options[k] !== next.options[k]) announce(next.options[k] ? on : off);
     });
 
-    if (this._config.persistence) {
-      persistence.save('state', { modoSimples: next.modoSimples, options: next.options });
+    if (prev.options.textScale !== next.options.textScale) {
+      announce(`Tamanho do texto ${next.options.textScale}%`);
     }
+    if (prev.options.colorTheme !== next.options.colorTheme) {
+      const labels = {
+        senac: 'Cores Senac',
+        yellowBlack: 'Amarelo e Preto',
+        darkHigh: 'Modo Escuro Alto',
+        soft: 'Descanso Suave',
+      };
+      announce(`Tema ${labels[next.options.colorTheme] || next.options.colorTheme}`);
+    }
+
+    this._persistState(next);
   }
 
   // ── Persistence ────────────────────────────────────────────────────────────
 
+  _persistState(next) {
+    if (!this._config.persistence) return;
+    const payload = { modoSimples: next.modoSimples, options: next.options };
+    if (this._config.hostnamePersistence) {
+      persistence.saveForHost(STATE_KEY, payload);
+    } else {
+      persistence.save(STATE_KEY, payload);
+    }
+  }
+
   _loadPersistedState() {
     if (!this._config.persistence) return;
-    const saved = persistence.load('state');
+    const saved = this._config.hostnamePersistence
+      ? persistence.loadForHost(STATE_KEY)
+      : persistence.load(STATE_KEY);
     if (!saved) return;
-    state.set({
-      modoSimples: Boolean(saved.modoSimples),
-      options: {
-        highContrast:   Boolean(saved.options?.highContrast),
-        largerText:     Boolean(saved.options?.largerText),
-        reducedMotion:  Boolean(saved.options?.reducedMotion),
-        highlightLinks: Boolean(saved.options?.highlightLinks),
-        dyslexiaFont:   Boolean(saved.options?.dyslexiaFont),
-        textSpacing:    Boolean(saved.options?.textSpacing),
-        hideImages:     Boolean(saved.options?.hideImages),
-      },
-    });
+
+    const patch = hydratePersistedState(saved);
+    if (patch) state.set(patch);
+  }
+
+  _savePrincipalPath(path) {
+    if (!this._config.persistence || !path) return;
+    if (this._config.hostnamePersistence) {
+      persistence.saveForHost(PRINCIPAL_KEY, path);
+    } else {
+      persistence.save(PRINCIPAL_KEY, path);
+    }
+  }
+
+  _loadPrincipalPath() {
+    if (!this._config.persistence) return null;
+    return this._config.hostnamePersistence
+      ? persistence.loadForHost(PRINCIPAL_KEY)
+      : persistence.load(PRINCIPAL_KEY);
   }
 
   // ── System preferences ─────────────────────────────────────────────────────
 
   _syncReducedMotion() {
-    state.set({ options: { reducedMotion: prefersReducedMotion() } });
+    if (prefersReducedMotion()) {
+      state.set({ options: { reducedMotion: true } });
+    }
   }
 }
 
