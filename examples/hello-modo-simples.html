@@ -80,14 +80,9 @@
 
     <footer>Rodapé de exemplo — ocultável no Modo Simples</footer>
 
-    <!--
-      DEV: módulo ES
-      PROD: <script src="../dist/modo-simples.min.js"></script>
-    -->
-    <script type="module">
-      import '../src/modo-simples.js';
-
-      // F5-T11 — pills injetáveis em sites sem markup de pills
+    <!-- Produção / Vercel: servir a raiz do repo (não só examples/) -->
+    <script src="../dist/modo-simples.min.js"></script>
+    <script>
       window.ModoSimples.configure({
         simpleNav: [
           { label: 'Início', href: 'hello-modo-simples.html' },

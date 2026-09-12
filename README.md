@@ -43,7 +43,7 @@ npm run smoke:examples
 # SMOKE_BASE=http://127.0.0.1:8765 npm run smoke:examples         (Unix)
 ```
 
-> Sirva sempre a **raiz do repo** (`npm run preview`), não só a pasta `examples/`: o script aponta para `../src/modo-simples.js`.  
+> Sirva sempre a **raiz do repo** (`npm run preview` ou Vercel Root Directory = `.`), não só a pasta `examples/`: as páginas carregam `../dist/modo-simples.min.js`.  
 > Não use URLs “limpas” sem `.html` (`/contato`) — use `/examples/contato.html`.  
 > Prefira **sempre o mesmo host** (`127.0.0.1` **ou** `localhost`): a persistência é por hostname.
 
@@ -79,11 +79,11 @@ Inventário: [`doc/05-inventario-prototipo.md`](./doc/05-inventario-prototipo.md
 ### Incluir o script
 
 ```html
-<!-- Desenvolvimento (ES module) -->
-<script type="module" src="../src/modo-simples.js"></script>
-
-<!-- Produção (após npm run build) -->
+<!-- Produção / preview (bundle IIFE) -->
 <script src="../dist/modo-simples.min.js"></script>
+
+<!-- Dev com módulos (opcional, requer HTTP na raiz do repo) -->
+<script type="module" src="../src/modo-simples.js"></script>
 ```
 
 O script **auto-inicia** e expõe `window.ModoSimples`.
@@ -163,6 +163,23 @@ Ativar MS também liga linguagem simples e oculta imagens (reativáveis na barra
 Demo mínima: [`examples/hello-modo-simples.html`](./examples/hello-modo-simples.html)  
 Bookmarklet: [`doc/10-bookmarklet.md`](./doc/10-bookmarklet.md)  
 Browsers: [`doc/13-compatibilidade-browsers.md`](./doc/13-compatibilidade-browsers.md)
+
+---
+
+## Deploy (Vercel)
+
+O projeto **precisa** ser publicado com a **raiz do repositório** (onde estão `src/`, `dist/`, `examples/`), **não** com Root Directory = `examples/`.
+
+Se a raiz for só `examples/`, o script `../dist/modo-simples.min.js` (ou `../src/...`) dá **404** — a página carrega sem a lib, e hub/pills/hero aparecem todos juntos (sem `html.ms-ativo`).
+
+No painel Vercel:
+
+1. **Root Directory:** `.` (vazio / repositório)
+2. **Build Command:** `npm run build` (gera/atualiza `dist/`)
+3. **Output Directory:** deixe vazio / `.` (site estático na raiz)
+4. Use a URL canônica: `https://seu-projeto.vercel.app/examples/index.html` (ou `/`, que redireciona)
+
+Arquivo [`vercel.json`](./vercel.json) já define o redirect `/` → `/examples/index.html`.
 
 ---
 

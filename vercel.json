@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": null,
+  "cleanUrls": false,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/examples", "destination": "/examples/index.html" },
+    { "source": "/examples/", "destination": "/examples/index.html" }
+  ],
+  "redirects": [
+    { "source": "/", "destination": "/examples/index.html", "permanent": false }
+  ]
+}

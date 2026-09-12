@@ -85,6 +85,14 @@ npm install  # no clone do repo
 
 Ver [10-bookmarklet.md](./10-bookmarklet.md).
 
+### 2.5 Deploy Vercel
+
+1. Root Directory = **raiz do repo** (não `examples/`)
+2. Build Command = `npm run build`
+3. Output = raiz (estático); ver [`vercel.json`](../vercel.json)
+
+Se publicar só `examples/`, `../dist/modo-simples.min.js` retorna 404 e o Modo Simples **não carrega**.
+
 ---
 
 ## 3. API pública
