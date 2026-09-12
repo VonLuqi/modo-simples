@@ -174,10 +174,11 @@ Se a raiz for só `examples/`, o script `../dist/modo-simples.min.js` (ou `../sr
 
 No painel Vercel:
 
-1. **Root Directory:** `.` (vazio / repositório)
-2. **Build Command:** `npm run build` (gera/atualiza `dist/`)
-3. **Output Directory:** deixe vazio / `.` (site estático na raiz)
-4. Use a URL canônica: `https://seu-projeto.vercel.app/examples/index.html` (ou `/`, que redireciona)
+1. **Framework Preset:** Other / sem framework  
+2. **Root Directory:** `.` (raiz do repositório)  
+3. **Build Command:** `npm run build` (ou deixe o `vercel.json` mandar)  
+4. **Output Directory:** `.` (ponto — **não** `public` nem `examples`)  
+5. Use a URL canônica: `https://seu-projeto.vercel.app/examples/index.html` (ou `/`, que redireciona)
 
 Arquivo [`vercel.json`](./vercel.json) já define o redirect `/` → `/examples/index.html`.
 
