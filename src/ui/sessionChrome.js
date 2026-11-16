@@ -71,11 +71,12 @@ export function createSessionChrome({
   bar.innerHTML = `
     <div class="ms-session-bar-inner" data-state="off">
       <div class="ms-session-off">
-        <p><span aria-hidden="true">★</span> Prefere uma navegação mais calma, sem excesso de informações e com textos diretos? Use o interruptor <strong>SIMPLES</strong> no menu.</p>
+        <p><span aria-hidden="true">★</span> Quer uma navegação mais calma, direta e sem excesso de informação?</p>
+        <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="activate">Ativar Modo Simples</button>
       </div>
       <div class="ms-session-on" hidden>
         <div class="ms-session-on-top">
-          <div class="ms-session-on-title">
+          <div class="ms-session-on-title" tabindex="-1">
             <span aria-hidden="true">★</span>
             <strong>Modo Simples Ativado</strong>
             <span class="ms-session-badge">Foco na Navegação</span>
@@ -94,6 +95,7 @@ export function createSessionChrome({
           <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="images" aria-pressed="false" aria-label="Mostrar ou ocultar imagens">
             <span aria-hidden="true">🖼</span> Imagens: <span data-images-label>OCULTAS</span>
           </button>
+          <button type="button" class="ms-session-btn ms-session-btn--light" data-action="exit">Voltar ao site normal</button>
         </div>
       </div>
     </div>
@@ -112,6 +114,21 @@ export function createSessionChrome({
     .querySelector('[data-action="open-panel"]')
     .addEventListener('click', () => onOpenPanel());
 
+  // Foco: o botão clicado some (bloco off/on troca); leva o foco ao controle que o desfaz.
+  const focusIn = (selector) => {
+    const el = bar.querySelector(selector);
+    if (el && typeof el.focus === 'function') el.focus();
+  };
+  bar
+    .querySelector('[data-action="activate"]')
+    .addEventListener('click', () => {
+      onToggleModoSimples(true);
+      focusIn('.ms-session-on-title');
+    });
+  bar.querySelector('[data-action="exit"]').addEventListener('click', () => {
+    onToggleModoSimples(false);
+    focusIn('[data-action="activate"]');
+  });
   bar
     .querySelector('[data-action="speak"]')
     .addEventListener('click', () => onSpeak());

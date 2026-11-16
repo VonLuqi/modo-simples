@@ -835,7 +835,10 @@ export function getPageStyles() {
       padding: 0.9rem 0;
     }
     .ms-session-off {
-      display: block;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 1rem;
     }
     .ms-session-off[hidden],
     .ms-session-on[hidden] {
@@ -883,6 +886,7 @@ export function getPageStyles() {
       border: none;
       border-radius: 12px;
       padding: 0.55rem 0.95rem;
+      min-height: 44px;
       font-weight: 700;
       cursor: pointer;
       font-size: 0.85rem;

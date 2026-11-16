@@ -220,11 +220,11 @@ describe('createSessionChrome — sync (F5-T09)', () => {
         pageCss.includes('display: none !important'),
       'CSS deve forçar [hidden] sobre display da barra',
     );
+    // Decisão F0 (2026-11-16, supera doc/07 §8): a barra tem CTA Ativar e botão Voltar
     assert.ok(
-      !document.querySelector('[data-action="activate"]') &&
-        !document.querySelector('[data-action="reset"]') &&
-        !document.querySelector('.ms-session-cta'),
-      'Barra não deve ter CTA Ativar nem botão Voltar — só o switch SIMPLES',
+      document.querySelector('[data-action="activate"]') &&
+        document.querySelector('[data-action="exit"]'),
+      'Barra deve ter CTA "Ativar Modo Simples" e botão "Voltar ao site normal"',
     );
     assert.ok(
       pageCss.includes('html.ms-hide-images img:not([data-ms-keep-img])') &&
