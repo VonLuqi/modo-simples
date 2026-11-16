@@ -131,6 +131,27 @@ window.ModoSimples.configure({
 
 Config **antes** do boot: `<script>window.ModoSimplesConfig = { sessionBar: true, mount: { … } }</script>` antes do bundle (ver [`examples/js/ms-config.js`](./examples/js/ms-config.js)).
 
+> `mount` vale quando a barra de sessão é criada (init ou `configure({ sessionBar: true })`); `configure({ mount })` com a barra já criada não a move — use o pré-boot.
+
+### Migração 1.x → 2.0 (breaking)
+
+A lib agora é genérica por padrão: `sessionBar` vem **desligado** (só FAB + painel) e os seletores do Senac saíram dos defaults. Quem dependia da barra de sessão precisa optar antes do bundle:
+
+```html
+<!-- antes de ../dist/modo-simples.min.js -->
+<script>
+  window.ModoSimplesConfig = {
+    sessionBar: true,
+    mount: {
+      chrome: ['.site-header .header-inner', 'header'], // container do switch SIMPLES
+      bar: ['header'], // elemento APÓS o qual a barra entra
+    },
+  };
+</script>
+```
+
+Detalhes e tabela completa de mudanças: [`CHANGELOG.md`](./CHANGELOG.md) · [`doc/09`](./doc/09-guia-integracao.md).
+
 Tabela completa: [`doc/09-guia-integracao.md`](./doc/09-guia-integracao.md#4-configuração-da-lib-defaults--configure).
 
 ### Preferências do usuário (painel)

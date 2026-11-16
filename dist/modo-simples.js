@@ -1,4 +1,4 @@
-/*! modo-simples v1.1.0 | MIT | Script JavaScript injetável de acessibilidade web — Modo Simples */
+/*! modo-simples v2.0.0 | MIT | Script JavaScript injetável de acessibilidade web — Modo Simples */
 (() => {
   // src/config/defaults.js
   var defaults = {

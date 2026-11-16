@@ -184,6 +184,38 @@ O bundle faz auto-boot ao carregar. Para passar config **antes** do init (ex.: `
 
 `configure()` depois do boot continua válido (`simpleNav`, `sessionBar`, `fontUrl`, limiares…), mas chaves lidas só no init (`position`, `persistence`, `hostnamePersistence`, `brand`) precisam vir pelo pré-boot. O protótipo usa [`examples/js/ms-config.js`](../examples/js/ms-config.js).
 
+> **Mount:** `mount` é lido quando a barra de sessão é **criada** (no init, ou ao fazer `configure({ sessionBar: true })`). `configure({ mount })` com a barra já criada **não a move** — para mudar o `mount`, use o pré-boot (`window.ModoSimplesConfig`) ou desligue e religue `sessionBar` no mesmo `configure`.
+
+### Migração 1.x → 2.0
+
+Quebra de compatibilidade: a lib agora é genérica por padrão.
+
+| Antes (1.x)                                                                                                       | Agora (2.0)                                                                                              |
+| ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Barra de sessão (switch SIMPLES + barra âmbar) injetada em todo site                                              | `sessionBar: false` por padrão — só FAB + painel. Reative com `sessionBar: true`                         |
+| Montagem em seletores do Senac (`.site-header .header-inner`, `.cabecalho`, `header .fx.bg27`, `.cabecalho__nav`) | Sem seletor embutido: use `mount: { chrome, bar }`. Sem `mount`: switch fixo + barra no topo do `<body>` |
+| `.barra-superior` e `.s1` em `distractionSelectors`                                                               | Removidos dos defaults (inclua em `distractionSelectors` se o seu site usa)                              |
+| Lexend e Google Fonts no init                                                                                     | Lexend só ao ligar a fonte (`fontUrl`)                                                                   |
+| Painel com marca "Projeto Integrador 2025 • Senac"                                                                | Texto genérico; marca via `brand`                                                                        |
+| Config só via `configure()` depois do boot                                                                        | Também `window.ModoSimplesConfig` antes do bundle                                                        |
+
+Para manter o comportamento antigo (protótipo Senac), defina antes do bundle:
+
+```html
+<!-- antes de ../dist/modo-simples.min.js -->
+<script>
+  window.ModoSimplesConfig = {
+    sessionBar: true,
+    mount: {
+      chrome: ['.site-header .header-inner', 'header'], // container do switch SIMPLES
+      bar: ['header'], // elemento APÓS o qual a barra entra
+    },
+  };
+</script>
+```
+
+O protótipo do repositório faz exatamente isso em [`examples/js/ms-config.js`](../examples/js/ms-config.js).
+
 ### `simpleNav`
 
 ```js
