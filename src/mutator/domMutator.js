@@ -60,17 +60,35 @@ export function injectPageStyles() {
   document.head.appendChild(style);
 }
 
+/** Default Lexend stylesheet (third-party). Requested ONLY when dyslexiaFont is turned on. */
+const DEFAULT_LEXEND_URL =
+  'https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap';
+
+/** @type {string|false|null} null = default URL, string = self-host URL, false = never load */
+let _fontUrl = null;
+
 /**
- * Ensure Lexend is available via Google Fonts link (idempotent).
+ * Configure where Lexend comes from (config.fontUrl).
+ * @param {string|false|null|undefined} url
+ */
+export function setLexendFontUrl(url) {
+  _fontUrl = url === undefined ? null : url;
+}
+
+/**
+ * Lazily load Lexend (idempotent). Never called at init — only when the user
+ * enables dyslexiaFont. fontUrl === false keeps the system fallback stack.
  */
 export function ensureLexendFont() {
   if (typeof document === 'undefined') return;
+  if (_fontUrl === false) return;
   if (document.getElementById(LEXEND_LINK_ID)) return;
   const link = document.createElement('link');
   link.id = LEXEND_LINK_ID;
   link.rel = 'stylesheet';
-  link.href =
-    'https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap';
+  link.crossOrigin = 'anonymous';
+  link.referrerPolicy = 'no-referrer';
+  link.href = _fontUrl || DEFAULT_LEXEND_URL;
   document.head.appendChild(link);
 }
 
@@ -104,6 +122,7 @@ export function applyOptions(state) {
   html.classList.add(`ms-theme-${theme}`);
 
   html.classList.toggle('ms-dyslexia-font', !!opts.dyslexiaFont);
+  if (opts.dyslexiaFont) ensureLexendFont();
   html.classList.toggle('ms-highlight-links', !!opts.highlightLinks);
   html.classList.toggle('ms-text-spacing', !!opts.textSpacing);
   html.classList.toggle('ms-reduced-motion', !!opts.reducedMotion);
@@ -123,7 +142,9 @@ export function applyModoSimples(state, config) {
   if (!_mainElement) scan(config);
 
   if (_mainElement) _mainElement.setAttribute('data-ms-principal', '');
-  _distractionElements.forEach((el) => el.setAttribute('data-ms-hidden', 'true'));
+  _distractionElements.forEach((el) =>
+    el.setAttribute('data-ms-hidden', 'true'),
+  );
 
   document.documentElement.classList.add('ms-ativo');
   applyOptions(state);
@@ -185,7 +206,9 @@ export function setPrincipal(el, config) {
   document.querySelectorAll('[data-ms-hidden="true"]').forEach((node) => {
     node.removeAttribute('data-ms-hidden');
   });
-  _distractionElements.forEach((node) => node.setAttribute('data-ms-hidden', 'true'));
+  _distractionElements.forEach((node) =>
+    node.setAttribute('data-ms-hidden', 'true'),
+  );
 }
 
 /**

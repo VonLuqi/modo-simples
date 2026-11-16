@@ -78,6 +78,14 @@
      */
     reprocessDebounce: 300,
     /**
+     * Lexend font source. Loaded lazily, only when the user turns on the dyslexia font.
+     *   null   → default (Google Fonts, no-referrer) — requested only after the user opts in
+     *   string → self-hosted stylesheet URL
+     *   false  → never load; keep the system fallback stack
+     * @type {null | string | false}
+     */
+    fontUrl: null,
+    /**
      * Optional simple-mode nav pills for host pages without markup.
      * Example: [{ label: 'Início', href: '/' }, { label: 'Ajuda', href: '/ajuda' }]
      * Ignored when the page already has [data-ms-pills] authored in HTML.
@@ -825,8 +833,6 @@
   }
   function getPageStyles() {
     return `
-    @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
-
     /* \u2500\u2500 Hidden distractions (Modo Simples only) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     html.ms-ativo [data-ms-hidden="true"] {
       display: none !important;
@@ -2002,13 +2008,21 @@
     style.textContent = getPageStyles();
     document.head.appendChild(style);
   }
+  var DEFAULT_LEXEND_URL = "https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap";
+  var _fontUrl = null;
+  function setLexendFontUrl(url) {
+    _fontUrl = url === void 0 ? null : url;
+  }
   function ensureLexendFont() {
     if (typeof document === "undefined") return;
+    if (_fontUrl === false) return;
     if (document.getElementById(LEXEND_LINK_ID)) return;
     const link = document.createElement("link");
     link.id = LEXEND_LINK_ID;
     link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap";
+    link.crossOrigin = "anonymous";
+    link.referrerPolicy = "no-referrer";
+    link.href = _fontUrl || DEFAULT_LEXEND_URL;
     document.head.appendChild(link);
   }
   function scan(config) {
@@ -2027,6 +2041,7 @@
     const theme = opts.colorTheme || "senac";
     html.classList.add(`ms-theme-${theme}`);
     html.classList.toggle("ms-dyslexia-font", !!opts.dyslexiaFont);
+    if (opts.dyslexiaFont) ensureLexendFont();
     html.classList.toggle("ms-highlight-links", !!opts.highlightLinks);
     html.classList.toggle("ms-text-spacing", !!opts.textSpacing);
     html.classList.toggle("ms-reduced-motion", !!opts.reducedMotion);
@@ -2584,7 +2599,7 @@
       this._initialized = true;
       this._loadPersistedState();
       injectPageStyles();
-      ensureLexendFont();
+      setLexendFontUrl(this._config.fontUrl);
       this._buildUI();
       this._bindEvents();
       startObserving(() => state_default.get(), this._config);
@@ -2693,6 +2708,9 @@
     }
     configure(patch) {
       this._config = { ...this._config, ...patch };
+      if (Object.prototype.hasOwnProperty.call(patch, "fontUrl")) {
+        setLexendFontUrl(this._config.fontUrl);
+      }
       if (this._initialized && Object.prototype.hasOwnProperty.call(patch, "simpleNav")) {
         this._syncSimpleNav();
       }

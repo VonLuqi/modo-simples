@@ -89,6 +89,15 @@ const defaults = {
   reprocessDebounce: 300,
 
   /**
+   * Lexend font source. Loaded lazily, only when the user turns on the dyslexia font.
+   *   null   → default (Google Fonts, no-referrer) — requested only after the user opts in
+   *   string → self-hosted stylesheet URL
+   *   false  → never load; keep the system fallback stack
+   * @type {null | string | false}
+   */
+  fontUrl: null,
+
+  /**
    * Optional simple-mode nav pills for host pages without markup.
    * Example: [{ label: 'Início', href: '/' }, { label: 'Ajuda', href: '/ajuda' }]
    * Ignored when the page already has [data-ms-pills] authored in HTML.

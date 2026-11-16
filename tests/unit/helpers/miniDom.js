@@ -38,7 +38,8 @@ function createClassList(el) {
 
 function parseAttrs(attrStr, el) {
   if (!attrStr) return;
-  const re = /([a-zA-Z_:][\w:.-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
+  const re =
+    /([a-zA-Z_:][\w:.-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
   let m;
   while ((m = re.exec(attrStr))) {
     const name = m[1];
@@ -61,7 +62,9 @@ function matchesSimple(el, selector) {
   if (!s) return false;
 
   // Compound: tag.class or tag[attr]
-  const attrMatch = s.match(/^([a-z0-9]*)\[([a-zA-Z_:][\w:.-]*)(?:=["']?([^"'\]]*)["']?)?\]$/i);
+  const attrMatch = s.match(
+    /^([a-z0-9]*)\[([a-zA-Z_:][\w:.-]*)(?:=["']?([^"'\]]*)["']?)?\]$/i,
+  );
   if (attrMatch) {
     const [, tag, attr, val] = attrMatch;
     if (tag && el.tagName.toLowerCase() !== tag.toLowerCase()) return false;
@@ -78,15 +81,13 @@ function matchesSimple(el, selector) {
 
   if (s.startsWith('#')) return el.id === s.slice(1);
   if (s.startsWith('.')) return el.classList.contains(s.slice(1));
-  if (/^[a-z][a-z0-9]*$/i.test(s)) return el.tagName.toLowerCase() === s.toLowerCase();
+  if (/^[a-z][a-z0-9]*$/i.test(s))
+    return el.tagName.toLowerCase() === s.toLowerCase();
   return false;
 }
 
 function matchesSelector(el, selector) {
-  const parts = selector
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
+  const parts = selector.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 1) return matchesSimple(el, parts[0]);
 
   // Descendant: A B C — walk ancestors for each prior part
@@ -288,7 +289,9 @@ export function createElement(tagName) {
         stack[stack.length - 1].appendChild(child);
         const selfClosing =
           /\/\s*$/.test(m[2] || '') ||
-          ['br', 'img', 'input', 'hr', 'meta', 'link'].includes(name.toLowerCase());
+          ['br', 'img', 'input', 'hr', 'meta', 'link'].includes(
+            name.toLowerCase(),
+          );
         if (!selfClosing) stack.push(child);
       }
     },
@@ -309,9 +312,12 @@ export function installDocument(extraSetup) {
   const html = createElement('html');
   const body = createElement('body');
   html.appendChild(body);
+  const head = createElement('head');
+  html.appendChild(head);
 
   const doc = {
     documentElement: html,
+    head,
     body,
     createElement,
     getElementById(id) {

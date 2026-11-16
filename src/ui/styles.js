@@ -528,8 +528,6 @@ export function getUIStyles(position = 'bottom-right') {
  */
 export function getPageStyles() {
   return `
-    @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
-
     /* ── Hidden distractions (Modo Simples only) ─────────────────────────── */
     html.ms-ativo [data-ms-hidden="true"] {
       display: none !important;

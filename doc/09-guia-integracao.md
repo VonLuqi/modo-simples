@@ -62,10 +62,10 @@ npm run build
 
 Arquivos gerados (também versionados no repo):
 
-| Arquivo | Uso |
-| --- | --- |
-| `dist/modo-simples.js` | IIFE legível (debug) |
-| `dist/modo-simples.min.js` | Produção |
+| Arquivo                    | Uso                  |
+| -------------------------- | -------------------- |
+| `dist/modo-simples.js`     | IIFE legível (debug) |
+| `dist/modo-simples.min.js` | Produção             |
 
 Target do build: **ES2018** (esbuild). Ver [13-compatibilidade-browsers.md](./13-compatibilidade-browsers.md).
 
@@ -75,11 +75,11 @@ Target do build: **ES2018** (esbuild). Ver [13-compatibilidade-browsers.md](./13
 npm install  # no clone do repo
 ```
 
-| Campo `package.json` | Valor |
-| --- | --- |
-| `main` / `exports["."].default` | `dist/modo-simples.min.js` |
-| `module` / `exports["."].import` | `src/modo-simples.js` |
-| `exports["./min"]` | `dist/modo-simples.min.js` |
+| Campo `package.json`             | Valor                      |
+| -------------------------------- | -------------------------- |
+| `main` / `exports["."].default`  | `dist/modo-simples.min.js` |
+| `module` / `exports["."].import` | `src/modo-simples.js`      |
+| `exports["./min"]`               | `dist/modo-simples.min.js` |
 
 ### 2.4 Bookmarklet
 
@@ -99,13 +99,13 @@ Se publicar só `examples/`, `../dist/modo-simples.min.js` retorna 404 e o Modo 
 
 Após o load, a instância fica em `window.ModoSimples`:
 
-| Método | Descrição |
-| --- | --- |
-| `enable()` | Ativa Modo Simples |
-| `disable()` | Desativa Modo Simples |
-| `toggle()` | Alterna Modo Simples |
+| Método             | Descrição                                                                |
+| ------------------ | ------------------------------------------------------------------------ |
+| `enable()`         | Ativa Modo Simples                                                       |
+| `disable()`        | Desativa Modo Simples                                                    |
+| `toggle()`         | Alterna Modo Simples                                                     |
 | `configure(patch)` | Mescla opções de **configuração da lib** (não as preferências do painel) |
-| `destroy()` | Remove UI, estilos injetados, observers e reseta estado em memória |
+| `destroy()`        | Remove UI, estilos injetados, observers e reseta estado em memória       |
 
 ```js
 window.ModoSimples.enable();
@@ -126,11 +126,11 @@ window.ModoSimples.destroy();
 
 ### Comportamento ao ligar / desligar MS
 
-| Ação | Efeito |
-| --- | --- |
-| `enable()` / SIMPLES on | `simpleLanguage: true`; `hideImages: true` (salvo se o usuário já escolheu “mostrar imagens” no MS) |
-| `disable()` / SIMPLES off | `simpleLanguage: false`; `hideImages: false` |
-| Preferências do painel | Tema, escala, Lexend, régua, links, etc. **permanecem** ao desligar o MS e **persistem** entre páginas |
+| Ação                      | Efeito                                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `enable()` / SIMPLES on   | `simpleLanguage: true`; `hideImages: true` (salvo se o usuário já escolheu “mostrar imagens” no MS)    |
+| `disable()` / SIMPLES off | `simpleLanguage: false`; `hideImages: false`                                                           |
+| Preferências do painel    | Tema, escala, Lexend, régua, links, etc. **permanecem** ao desligar o MS e **persistem** entre páginas |
 
 Ativar/desativar: **só** pelo switch **SIMPLES** (header ou, com MS on, nas pills) ou pelo switch do painel — a barra não tem CTA “Ativar” nem “Voltar ao site”.
 
@@ -140,17 +140,18 @@ Ativar/desativar: **só** pelo switch **SIMPLES** (header ou, com MS on, nas pil
 
 Todas as chaves são opcionais. Fonte: [`src/config/defaults.js`](../src/config/defaults.js).
 
-| Chave | Tipo / default | Descrição |
-| --- | --- | --- |
-| `mainSelectors` | `string[]` | Seletores tentados em ordem para achar o conteúdo principal |
-| `distractionSelectors` | `string[]` | Candidatos a ocultar com MS on (nunca esconde ancestrais/descendentes do principal nem chrome `#ms-*`) |
-| `scoring` | objeto | Pesos da heurística (`mainTagBonus`, `h1Bonus`, `minTextLength`, …) |
-| `persistence` | `true` | Salva estado em `localStorage` |
-| `hostnamePersistence` | `true` | Escopa chaves por hostname (`ms_state:hostname`) |
-| `position` | `'bottom-right'` | Canto do FAB: `bottom-right` \| `bottom-left` \| `top-right` \| `top-left` |
-| `confidenceThreshold` | `0.45` | Abaixo disso, pede seleção manual do conteúdo principal |
-| `reprocessDebounce` | `300` | Debounce (ms) do MutationObserver |
-| `simpleNav` | `null` | Lista de pills `{ label, href, short? }` se a página **não** tiver `[data-ms-pills]` |
+| Chave                  | Tipo / default   | Descrição                                                                                                                                                                                                                                                          |
+| ---------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `mainSelectors`        | `string[]`       | Seletores tentados em ordem para achar o conteúdo principal                                                                                                                                                                                                        |
+| `distractionSelectors` | `string[]`       | Candidatos a ocultar com MS on (nunca esconde ancestrais/descendentes do principal nem chrome `#ms-*`)                                                                                                                                                             |
+| `scoring`              | objeto           | Pesos da heurística (`mainTagBonus`, `h1Bonus`, `minTextLength`, …)                                                                                                                                                                                                |
+| `persistence`          | `true`           | Salva estado em `localStorage`                                                                                                                                                                                                                                     |
+| `hostnamePersistence`  | `true`           | Escopa chaves por hostname (`ms_state:hostname`)                                                                                                                                                                                                                   |
+| `position`             | `'bottom-right'` | Canto do FAB: `bottom-right` \| `bottom-left` \| `top-right` \| `top-left`                                                                                                                                                                                         |
+| `confidenceThreshold`  | `0.45`           | Abaixo disso, pede seleção manual do conteúdo principal                                                                                                                                                                                                            |
+| `reprocessDebounce`    | `300`            | Debounce (ms) do MutationObserver                                                                                                                                                                                                                                  |
+| `fontUrl`              | `null`           | Origem da fonte Lexend, carregada **só quando o usuário liga a fonte** (nenhuma requisição a terceiros no init). `null` = Google Fonts (`crossorigin`, `referrerpolicy=no-referrer`) · `string` = CSS self-hosted · `false` = nunca carrega (usa fonte do sistema) |
+| `simpleNav`            | `null`           | Lista de pills `{ label, href, short? }` se a página **não** tiver `[data-ms-pills]`                                                                                                                                                                               |
 
 ### Defaults de seletores (resumo)
 
@@ -181,29 +182,29 @@ window.ModoSimples.configure({
 
 Controladas pelo painel / barra; salvas automaticamente (se `persistence: true`).
 
-| Chave | Valores | Efeito |
-| --- | --- | --- |
-| `modoSimples` | boolean | Oculta distrações / marca principal / `html.ms-ativo` |
-| `textScale` | `100` `125` `150` `175` | Escala tipográfica |
-| `colorTheme` | `senac` `yellowBlack` `darkHigh` `soft` | Temas de cor |
-| `dyslexiaFont` | boolean | Fonte Lexend |
-| `readingRuler` | boolean | Régua de foco |
-| `simpleLanguage` | boolean | Linguagem simples (barra; ligada ao ativar MS) |
-| `highlightLinks` | boolean | Destaca links |
-| `textSpacing` | boolean | Espaçamento WCAG 1.4.12 |
-| `reducedMotion` | boolean | Reduz animações (também sincroniza com `prefers-reduced-motion`) |
-| `hideImages` | boolean | Oculta `img` / `picture` / `video` / `.home-hero__media` |
+| Chave            | Valores                                 | Efeito                                                           |
+| ---------------- | --------------------------------------- | ---------------------------------------------------------------- |
+| `modoSimples`    | boolean                                 | Oculta distrações / marca principal / `html.ms-ativo`            |
+| `textScale`      | `100` `125` `150` `175`                 | Escala tipográfica                                               |
+| `colorTheme`     | `senac` `yellowBlack` `darkHigh` `soft` | Temas de cor                                                     |
+| `dyslexiaFont`   | boolean                                 | Fonte Lexend                                                     |
+| `readingRuler`   | boolean                                 | Régua de foco                                                    |
+| `simpleLanguage` | boolean                                 | Linguagem simples (barra; ligada ao ativar MS)                   |
+| `highlightLinks` | boolean                                 | Destaca links                                                    |
+| `textSpacing`    | boolean                                 | Espaçamento WCAG 1.4.12                                          |
+| `reducedMotion`  | boolean                                 | Reduz animações (também sincroniza com `prefers-reduced-motion`) |
+| `hideImages`     | boolean                                 | Oculta `img` / `picture` / `video` / `.home-hero__media`         |
 
 ### Persistência
 
-| Item | Detalhe |
-| --- | --- |
-| Chave principal | `ms_state:<hostname>` (ou `ms_state` se `hostnamePersistence: false`) |
-| Conteúdo | `{ modoSimples, options: { … } }` |
-| Principal manual | `ms_principal:<hostname>` (seletor CSS do conteúdo escolhido) |
-| Preferência “mostrar imagens no MS” | `ms_preferShowImagesInMs:<hostname>` |
-| Falha de storage | Silenciosa — a lib continua sem persistir |
-| Hosts diferentes | `localhost` ≠ `127.0.0.1` ≠ IP da rede — cada um tem seu estado |
+| Item                                | Detalhe                                                               |
+| ----------------------------------- | --------------------------------------------------------------------- |
+| Chave principal                     | `ms_state:<hostname>` (ou `ms_state` se `hostnamePersistence: false`) |
+| Conteúdo                            | `{ modoSimples, options: { … } }`                                     |
+| Principal manual                    | `ms_principal:<hostname>` (seletor CSS do conteúdo escolhido)         |
+| Preferência “mostrar imagens no MS” | `ms_preferShowImagesInMs:<hostname>`                                  |
+| Falha de storage                    | Silenciosa — a lib continua sem persistir                             |
+| Hosts diferentes                    | `localhost` ≠ `127.0.0.1` ≠ IP da rede — cada um tem seu estado       |
 
 Preferências do painel (tema, escala, etc.) **persistem entre páginas** mesmo com MS desligado.  
 `simpleLanguage` só é restaurada se o MS estiver ativo.
@@ -214,42 +215,42 @@ Preferências do painel (tema, escala, etc.) **persistem entre páginas** mesmo 
 
 ### No `<html>` (aplicados pela lib)
 
-| Classe | Quando |
-| --- | --- |
-| `ms-ativo` | Modo Simples ligado |
-| `ms-text-scale-{100\|125\|150\|175}` | Escala |
-| `ms-theme-{senac\|yellowBlack\|darkHigh\|soft}` | Tema |
-| `ms-dyslexia-font` | Lexend |
-| `ms-highlight-links` | Links destacados |
-| `ms-text-spacing` | Espaçamento |
-| `ms-reduced-motion` | Menos motion |
-| `ms-hide-images` | Imagens ocultas |
-| `ms-reading-ruler` | Régua ativa |
-| `ms-simple-language` | Linguagem simples |
+| Classe                                          | Quando              |
+| ----------------------------------------------- | ------------------- |
+| `ms-ativo`                                      | Modo Simples ligado |
+| `ms-text-scale-{100\|125\|150\|175}`            | Escala              |
+| `ms-theme-{senac\|yellowBlack\|darkHigh\|soft}` | Tema                |
+| `ms-dyslexia-font`                              | Lexend              |
+| `ms-highlight-links`                            | Links destacados    |
+| `ms-text-spacing`                               | Espaçamento         |
+| `ms-reduced-motion`                             | Menos motion        |
+| `ms-hide-images`                                | Imagens ocultas     |
+| `ms-reading-ruler`                              | Régua ativa         |
+| `ms-simple-language`                            | Linguagem simples   |
 
 ### Marcadores no conteúdo
 
-| Atributo / seletor | Papel |
-| --- | --- |
-| `[data-ms-principal]` | Conteúdo principal detectado ou escolhido |
-| `[data-ms-hidden="true"]` | Distração oculta com MS on |
-| `[data-ms-tts-active]` | Bloco sendo lido pelo TTS |
-| `[data-ms-keep-img]` | Imagem **não** oculta por `hideImages` |
-| `[data-ms-pills]` | Nav de pills (host ou injetada) |
-| `#ms-container` | Host Shadow DOM (painel + FAB) |
-| `#ms-session-bar` | Barra âmbar |
-| `#ms-simples-chrome` | Toggle SIMPLES |
+| Atributo / seletor        | Papel                                     |
+| ------------------------- | ----------------------------------------- |
+| `[data-ms-principal]`     | Conteúdo principal detectado ou escolhido |
+| `[data-ms-hidden="true"]` | Distração oculta com MS on                |
+| `[data-ms-tts-active]`    | Bloco sendo lido pelo TTS                 |
+| `[data-ms-keep-img]`      | Imagem **não** oculta por `hideImages`    |
+| `[data-ms-pills]`         | Nav de pills (host ou injetada)           |
+| `#ms-container`           | Host Shadow DOM (painel + FAB)            |
+| `#ms-session-bar`         | Barra âmbar                               |
+| `#ms-simples-chrome`      | Toggle SIMPLES                            |
 
 ### Markup opcional do host (layout “clean” tipo Senac)
 
 A lib **não** gera hub/pills de marketing sozinha. Para dual markup:
 
-| Classe / atributo | Papel |
-| --- | --- |
-| `.ms-simple-hide` | Some com `html.ms-ativo` (hero, marketing) |
-| `.ms-simple-only` / `.ms-simple-view` | Aparece só com MS on |
-| `data-ms-plain` / `data-ms-simple` | Pares de texto institucional vs linguagem simples |
-| `<main>` ou `[role="main"]` | Melhora heurística e TTS |
+| Classe / atributo                     | Papel                                             |
+| ------------------------------------- | ------------------------------------------------- |
+| `.ms-simple-hide`                     | Some com `html.ms-ativo` (hero, marketing)        |
+| `.ms-simple-only` / `.ms-simple-view` | Aparece só com MS on                              |
+| `data-ms-plain` / `data-ms-simple`    | Pares de texto institucional vs linguagem simples |
+| `<main>` ou `[role="main"]`           | Melhora heurística e TTS                          |
 
 Sem essas classes, sites externos ganham chrome + redução de ruído heurística — **não** um hub Senac automático.
 
@@ -273,38 +274,38 @@ dist/
 
 Fluxo resumido:
 
-1. `init()` carrega estado persistido → injeta CSS de página → monta UI  
-2. `applyOptions()` / `applyModoSimples()` mutam o DOM  
-3. `stateChange` sincroniza painel, barra, persistência e anúncios ARIA  
-4. MutationObserver reprocessa após mudanças no DOM do host  
+1. `init()` carrega estado persistido → injeta CSS de página → monta UI
+2. `applyOptions()` / `applyModoSimples()` mutam o DOM
+3. `stateChange` sincroniza painel, barra, persistência e anúncios ARIA
+4. MutationObserver reprocessa após mudanças no DOM do host
 
 ---
 
 ## 8. Checklist rápido de integração
 
-1. Incluir o script (módulo ou `dist/*.min.js`) via HTTP  
-2. Garantir `<main>` (ou equivalente) com o conteúdo importante  
-3. (Opcional) `configure({ simpleNav, position, … })`  
-4. (Opcional) Dual markup `.ms-simple-hide` / `.ms-simple-view`  
-5. Testar MS on/off, tema, reload em **duas páginas** do mesmo hostname  
-6. Validar leitores de tela / teclado (Esc fecha o painel)  
+1. Incluir o script (módulo ou `dist/*.min.js`) via HTTP
+2. Garantir `<main>` (ou equivalente) com o conteúdo importante
+3. (Opcional) `configure({ simpleNav, position, … })`
+4. (Opcional) Dual markup `.ms-simple-hide` / `.ms-simple-view`
+5. Testar MS on/off, tema, reload em **duas páginas** do mesmo hostname
+6. Validar leitores de tela / teclado (Esc fecha o painel)
 
 ---
 
 ## 9. Limitações conhecidas
 
-| Limitação | Detalhe | Mitigação |
-| --- | --- | --- |
-| CSP / scripts bloqueados | Bookmarklet e `<script>` externo podem falhar | Bundle no mesmo origin |
-| iframes cross-origin | Não altera conteúdo interno | Ocultar iframe não essencial |
-| CSS Modules / classes hash | Seletores genéricos falham | HTML semântico + seleção manual |
-| SPAs muito dinâmicas | Re-render pode exigir reprocessamento | Observer + debounce (já na lib) |
-| Temas agressivos | Usam `!important` | Usuário troca tema; header/chrome têm fundo opaco |
-| Barra / toggle | Dependem de achar `<header>` / `<nav>` | Fallback fixo na lib |
-| TTS | Vozes do SO | Botão Parar; highlight por bloco |
-| `file://` | ES modules não carregam | `npm run preview` ou HTTP |
-| Resumo por IA | Mockup cita “resume” | MVP prioriza/oculta; sem NLP |
-| Hosts misturados | Persistência por hostname | Usar sempre o mesmo host na demo |
+| Limitação                  | Detalhe                                       | Mitigação                                         |
+| -------------------------- | --------------------------------------------- | ------------------------------------------------- |
+| CSP / scripts bloqueados   | Bookmarklet e `<script>` externo podem falhar | Bundle no mesmo origin                            |
+| iframes cross-origin       | Não altera conteúdo interno                   | Ocultar iframe não essencial                      |
+| CSS Modules / classes hash | Seletores genéricos falham                    | HTML semântico + seleção manual                   |
+| SPAs muito dinâmicas       | Re-render pode exigir reprocessamento         | Observer + debounce (já na lib)                   |
+| Temas agressivos           | Usam `!important`                             | Usuário troca tema; header/chrome têm fundo opaco |
+| Barra / toggle             | Dependem de achar `<header>` / `<nav>`        | Fallback fixo na lib                              |
+| TTS                        | Vozes do SO                                   | Botão Parar; highlight por bloco                  |
+| `file://`                  | ES modules não carregam                       | `npm run preview` ou HTTP                         |
+| Resumo por IA              | Mockup cita “resume”                          | MVP prioriza/oculta; sem NLP                      |
+| Hosts misturados           | Persistência por hostname                     | Usar sempre o mesmo host na demo                  |
 
 Validação externa: [validacao-sites.md](./validacao-sites.md).
 
@@ -312,8 +313,8 @@ Validação externa: [validacao-sites.md](./validacao-sites.md).
 
 ## 10. Relação com a proposta
 
-| Ação da proposta | Entrega |
-| --- | --- |
-| Ferramenta aplicável | Script injetável + bookmarklet + `dist/` |
+| Ação da proposta            | Entrega                                              |
+| --------------------------- | ---------------------------------------------------- |
+| Ferramenta aplicável        | Script injetável + bookmarklet + `dist/`             |
 | Modelo para desenvolvedores | Este guia + `hello-modo-simples.html` + API + README |
-| Inclusão cognitiva | Painel + barra SIMPLES (docs 06/07) |
+| Inclusão cognitiva          | Painel + barra SIMPLES (docs 06/07)                  |

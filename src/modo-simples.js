@@ -13,7 +13,10 @@ import eventBus from './core/eventBus.js';
 import state from './core/state.js';
 import persistence from './core/persistence.js';
 import { hydratePersistedState } from './core/persistedState.js';
-import { prefersReducedMotion, onReducedMotionChange } from './utils/mediaQuery.js';
+import {
+  prefersReducedMotion,
+  onReducedMotionChange,
+} from './utils/mediaQuery.js';
 import { announce } from './utils/aria.js';
 import { getUIStyles } from './ui/styles.js';
 import { createFab } from './ui/fab.js';
@@ -21,7 +24,7 @@ import { createA11yPanel } from './ui/a11yPanel.js';
 import { createSessionChrome } from './ui/sessionChrome.js';
 import {
   injectPageStyles,
-  ensureLexendFont,
+  setLexendFontUrl,
   scan,
   applyOptions,
   applyModoSimples,
@@ -30,9 +33,15 @@ import {
   setPrincipal,
 } from './mutator/domMutator.js';
 import { startObserving, stopObserving } from './mutator/domObserver.js';
-import { startReadingRuler, stopReadingRuler } from './features/readingRuler.js';
+import {
+  startReadingRuler,
+  stopReadingRuler,
+} from './features/readingRuler.js';
 import { speakMainContent, stopSpeaking, isSpeaking } from './features/tts.js';
-import { startManualSelect, stopManualSelect } from './features/manualSelect.js';
+import {
+  startManualSelect,
+  stopManualSelect,
+} from './features/manualSelect.js';
 import { createSimpleNav } from './features/simpleNav.js';
 
 const STATE_KEY = 'state';
@@ -62,13 +71,15 @@ class ModoSimples {
 
     this._loadPersistedState();
     injectPageStyles();
-    ensureLexendFont();
+    setLexendFontUrl(this._config.fontUrl);
     this._buildUI();
     this._bindEvents();
 
     startObserving(() => state.get(), this._config);
     this._syncReducedMotion();
-    this._removeMotionListener = onReducedMotionChange(() => this._syncReducedMotion());
+    this._removeMotionListener = onReducedMotionChange(() =>
+      this._syncReducedMotion(),
+    );
 
     const currentState = state.get();
     applyOptions(currentState);
@@ -181,7 +192,13 @@ class ModoSimples {
   }
   configure(patch) {
     this._config = { ...this._config, ...patch };
-    if (this._initialized && Object.prototype.hasOwnProperty.call(patch, 'simpleNav')) {
+    if (Object.prototype.hasOwnProperty.call(patch, 'fontUrl')) {
+      setLexendFontUrl(this._config.fontUrl);
+    }
+    if (
+      this._initialized &&
+      Object.prototype.hasOwnProperty.call(patch, 'simpleNav')
+    ) {
       this._syncSimpleNav();
     }
   }
@@ -228,7 +245,8 @@ class ModoSimples {
       onToggleModoSimples: (value) => this._setModoSimples(value),
       onOpenPanel: () => this._openPanel(),
       onSpeak: () => this._toggleSpeak(),
-      onToggleSimpleLanguage: (value) => state.set({ options: { simpleLanguage: value } }),
+      onToggleSimpleLanguage: (value) =>
+        state.set({ options: { simpleLanguage: value } }),
       onToggleHideImages: (hide) => {
         state.set({ options: { hideImages: hide } });
         if (state.get().modoSimples) this._savePreferShowImages(!hide);
@@ -262,7 +280,11 @@ class ModoSimples {
     this._onDocClick = (e) => {
       if (!state.get().panelOpen) return;
       const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
-      if (path.includes(this._host) || path.includes(this._panel?.element) || path.includes(this._fab?.element)) {
+      if (
+        path.includes(this._host) ||
+        path.includes(this._panel?.element) ||
+        path.includes(this._fab?.element)
+      ) {
         return;
       }
       // Clicks that land on the host (open shadow) still include host in composedPath
@@ -389,7 +411,9 @@ class ModoSimples {
       'hideImages',
       'simpleLanguage',
     ];
-    const optionChanged = optionKeys.some((k) => prev.options[k] !== next.options[k]);
+    const optionChanged = optionKeys.some(
+      (k) => prev.options[k] !== next.options[k],
+    );
     if (optionChanged) {
       applyOptions(next);
     }
@@ -406,14 +430,27 @@ class ModoSimples {
 
     const announcements = {
       dyslexiaFont: ['Fonte Lexend ativada', 'Fonte Lexend desativada'],
-      highlightLinks: ['Destaque de links ativado', 'Destaque de links desativado'],
-      textSpacing: ['Espaçamento de texto ativado', 'Espaçamento de texto desativado'],
+      highlightLinks: [
+        'Destaque de links ativado',
+        'Destaque de links desativado',
+      ],
+      textSpacing: [
+        'Espaçamento de texto ativado',
+        'Espaçamento de texto desativado',
+      ],
       hideImages: ['Imagens ocultadas', 'Imagens visíveis'],
-      reducedMotion: ['Movimento reduzido ativado', 'Movimento reduzido desativado'],
-      simpleLanguage: ['Linguagem simples ligada', 'Linguagem simples desligada'],
+      reducedMotion: [
+        'Movimento reduzido ativado',
+        'Movimento reduzido desativado',
+      ],
+      simpleLanguage: [
+        'Linguagem simples ligada',
+        'Linguagem simples desligada',
+      ],
     };
     Object.entries(announcements).forEach(([k, [on, off]]) => {
-      if (prev.options[k] !== next.options[k]) announce(next.options[k] ? on : off);
+      if (prev.options[k] !== next.options[k])
+        announce(next.options[k] ? on : off);
     });
 
     if (prev.options.textScale !== next.options.textScale) {
@@ -426,7 +463,9 @@ class ModoSimples {
         darkHigh: 'Modo Escuro Alto',
         soft: 'Descanso Suave',
       };
-      announce(`Tema ${labels[next.options.colorTheme] || next.options.colorTheme}`);
+      announce(
+        `Tema ${labels[next.options.colorTheme] || next.options.colorTheme}`,
+      );
     }
 
     this._persistState(next);
