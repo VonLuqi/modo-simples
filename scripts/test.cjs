@@ -42,7 +42,9 @@ if (files.length === 0) {
 const args = [
   '--test',
   ...(isWatch ? ['--watch'] : []),
-  ...(isCoverage ? ['--experimental-test-coverage'] : []),
+  ...(isCoverage
+    ? ['--experimental-test-coverage', '--test-coverage-include=src/**']
+    : []),
   ...files,
 ];
 
