@@ -2052,7 +2052,9 @@
   function applyModoSimples(state2, config) {
     if (!_mainElement) scan(config);
     if (_mainElement) _mainElement.setAttribute("data-ms-principal", "");
-    _distractionElements.forEach((el) => el.setAttribute("data-ms-hidden", "true"));
+    _distractionElements.forEach(
+      (el) => el.setAttribute("data-ms-hidden", "true")
+    );
     document.documentElement.classList.add("ms-ativo");
     applyOptions(state2);
   }
@@ -2085,7 +2087,9 @@
     document.querySelectorAll('[data-ms-hidden="true"]').forEach((node) => {
       node.removeAttribute("data-ms-hidden");
     });
-    _distractionElements.forEach((node) => node.setAttribute("data-ms-hidden", "true"));
+    _distractionElements.forEach(
+      (node) => node.setAttribute("data-ms-hidden", "true")
+    );
   }
   function reprocess(state2, config) {
     if (!state2.modoSimples) {
@@ -2604,7 +2608,9 @@
       this._bindEvents();
       startObserving(() => state_default.get(), this._config);
       this._syncReducedMotion();
-      this._removeMotionListener = onReducedMotionChange(() => this._syncReducedMotion());
+      this._removeMotionListener = onReducedMotionChange(
+        () => this._syncReducedMotion()
+      );
       const currentState = state_default.get();
       applyOptions(currentState);
       if (currentState.options.readingRuler) {
@@ -2889,7 +2895,9 @@
         "hideImages",
         "simpleLanguage"
       ];
-      const optionChanged = optionKeys.some((k) => prev.options[k] !== next.options[k]);
+      const optionChanged = optionKeys.some(
+        (k) => prev.options[k] !== next.options[k]
+      );
       if (optionChanged) {
         applyOptions(next);
       }
@@ -2902,14 +2910,27 @@
       }
       const announcements = {
         dyslexiaFont: ["Fonte Lexend ativada", "Fonte Lexend desativada"],
-        highlightLinks: ["Destaque de links ativado", "Destaque de links desativado"],
-        textSpacing: ["Espa\xE7amento de texto ativado", "Espa\xE7amento de texto desativado"],
+        highlightLinks: [
+          "Destaque de links ativado",
+          "Destaque de links desativado"
+        ],
+        textSpacing: [
+          "Espa\xE7amento de texto ativado",
+          "Espa\xE7amento de texto desativado"
+        ],
         hideImages: ["Imagens ocultadas", "Imagens vis\xEDveis"],
-        reducedMotion: ["Movimento reduzido ativado", "Movimento reduzido desativado"],
-        simpleLanguage: ["Linguagem simples ligada", "Linguagem simples desligada"]
+        reducedMotion: [
+          "Movimento reduzido ativado",
+          "Movimento reduzido desativado"
+        ],
+        simpleLanguage: [
+          "Linguagem simples ligada",
+          "Linguagem simples desligada"
+        ]
       };
       Object.entries(announcements).forEach(([k, [on, off]]) => {
-        if (prev.options[k] !== next.options[k]) announce(next.options[k] ? on : off);
+        if (prev.options[k] !== next.options[k])
+          announce(next.options[k] ? on : off);
       });
       if (prev.options.textScale !== next.options.textScale) {
         announce(`Tamanho do texto ${next.options.textScale}%`);
@@ -2921,7 +2942,9 @@
           darkHigh: "Modo Escuro Alto",
           soft: "Descanso Suave"
         };
-        announce(`Tema ${labels[next.options.colorTheme] || next.options.colorTheme}`);
+        announce(
+          `Tema ${labels[next.options.colorTheme] || next.options.colorTheme}`
+        );
       }
       this._persistState(next);
     }

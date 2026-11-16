@@ -47,6 +47,15 @@ async function build() {
     minify: true,
   });
 
+  // Vercel output (D2): publica só index.html, examples/ e dist/ — nada de doc/, tests/, scripts/…
+  const PUBLIC = path.join(ROOT, 'public');
+  fs.rmSync(PUBLIC, { recursive: true, force: true });
+  fs.mkdirSync(PUBLIC, { recursive: true });
+  fs.copyFileSync(path.join(ROOT, 'index.html'), path.join(PUBLIC, 'index.html'));
+  fs.cpSync(path.join(ROOT, 'examples'), path.join(PUBLIC, 'examples'), { recursive: true });
+  fs.cpSync(DIST, path.join(PUBLIC, 'dist'), { recursive: true });
+  console.log('✓ public/ (index.html, examples/, dist/) — saída do deploy Vercel');
+
   const devKb = (fs.statSync(path.join(DIST, 'modo-simples.js')).size / 1024).toFixed(1);
   const minKb = (fs.statSync(path.join(DIST, 'modo-simples.min.js')).size / 1024).toFixed(1);
   console.log(`✓ dist/modo-simples.js       (${devKb} kB)`);

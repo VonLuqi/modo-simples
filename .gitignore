@@ -20,3 +20,6 @@ _ref-prototipo-senac/
 
 # Variáveis de ambiente (Segurança: nunca enviar senhas)
 .env
+
+# Saída do deploy Vercel (gerada por npm run build)
+public/

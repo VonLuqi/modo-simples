@@ -29,12 +29,12 @@ npm run preview
 
 Abra **`http://127.0.0.1:8765/`** — a raiz (e `/examples`) levam ao protótipo.
 
-| URL | Conteúdo |
-| --- | --- |
-| `http://127.0.0.1:8765/` | Home (via `index.html` na raiz) |
-| `http://127.0.0.1:8765/examples/index.html` | Home Senac (canônica) |
-| `…/examples/psg.html` | Cursos gratuitos (PSG) |
-| `…/examples/hello-modo-simples.html` | Demo mínima da lib |
+| URL                                         | Conteúdo                        |
+| ------------------------------------------- | ------------------------------- |
+| `http://127.0.0.1:8765/`                    | Home (via `index.html` na raiz) |
+| `http://127.0.0.1:8765/examples/index.html` | Home Senac (canônica)           |
+| `…/examples/psg.html`                       | Cursos gratuitos (PSG)          |
+| `…/examples/hello-modo-simples.html`        | Demo mínima da lib              |
 
 ```bash
 npm run smoke:examples
@@ -51,7 +51,7 @@ npm run smoke:examples
 
 ## Protótipo (mapa)
 
-Início · Sobre Nós · Cursos · Gratuitos (PSG) · Unidades · Contato · Área do Aluno · Pesquisar  
+Início · Sobre Nós · Cursos · Gratuitos (PSG) · Unidades · Contato · Área do Aluno · Pesquisar
 
 Com Modo Simples ligado: **pills** + **hub** na home. Demo guiada em 5 passos: [`doc/11-pacote-entrega.md`](./doc/11-pacote-entrega.md#3-guia-de-demo-em-5-passos-banca).
 
@@ -61,16 +61,16 @@ Inventário: [`doc/05-inventario-prototipo.md`](./doc/05-inventario-prototipo.md
 
 ## Comandos
 
-| Comando | Função |
-| --- | --- |
-| `npm run preview` | Serve o projeto na porta 8765 (`/` e `/examples` → home) |
-| `npm test` | Unitários + estruturais |
-| `npm run test:unit` | Só unitários |
-| `npm run test:structure` | Só estrutura do protótipo |
-| `npm run smoke:examples` | Verifica páginas/assets do protótipo |
-| `npm run smoke:assistente` | Smoke do assistente de cursos |
-| `npm run build` | Gera `dist/modo-simples(.min).js` (ES2018) |
-| `npm run format` | Prettier |
+| Comando                    | Função                                                   |
+| -------------------------- | -------------------------------------------------------- |
+| `npm run preview`          | Serve o projeto na porta 8765 (`/` e `/examples` → home) |
+| `npm test`                 | Unitários + estruturais                                  |
+| `npm run test:unit`        | Só unitários                                             |
+| `npm run test:structure`   | Só estrutura do protótipo                                |
+| `npm run smoke:examples`   | Verifica páginas/assets do protótipo                     |
+| `npm run smoke:assistente` | Smoke do assistente de cursos                            |
+| `npm run build`            | Gera `dist/modo-simples(.min).js` (ES2018)               |
+| `npm run format`           | Prettier                                                 |
 
 ---
 
@@ -90,11 +90,11 @@ O script **auto-inicia** e expõe `window.ModoSimples`.
 
 ### API
 
-| Método | Uso |
-| --- | --- |
-| `enable()` / `disable()` / `toggle()` | Liga/desliga Modo Simples |
-| `configure(patch)` | Config da lib (`position`, `simpleNav`, limiares, …) |
-| `destroy()` | Remove UI, estilos e listeners |
+| Método                                | Uso                                                  |
+| ------------------------------------- | ---------------------------------------------------- |
+| `enable()` / `disable()` / `toggle()` | Liga/desliga Modo Simples                            |
+| `configure(patch)`                    | Config da lib (`position`, `simpleNav`, limiares, …) |
+| `destroy()`                           | Remove UI, estilos e listeners                       |
 
 ```js
 window.ModoSimples.enable();
@@ -115,16 +115,16 @@ window.ModoSimples.configure({
 
 ### Configuração principal (`configure` / defaults)
 
-| Chave | Default | Papel |
-| --- | --- | --- |
-| `position` | `bottom-right` | Canto do FAB |
-| `persistence` | `true` | Salva preferências em `localStorage` |
-| `hostnamePersistence` | `true` | Escopo por hostname |
-| `confidenceThreshold` | `0.45` | Abaixo → seleção manual do conteúdo |
-| `reprocessDebounce` | `300` | Debounce do observer (SPA) |
-| `mainSelectors` | `main`, `[role=main]`, … | Onde achar o conteúdo |
-| `distractionSelectors` | `header`, `nav`, `aside`, … | O que ocultar no MS |
-| `simpleNav` | `null` | Pills injetáveis (se não houver `[data-ms-pills]`) |
+| Chave                  | Default                     | Papel                                              |
+| ---------------------- | --------------------------- | -------------------------------------------------- |
+| `position`             | `bottom-right`              | Canto do FAB                                       |
+| `persistence`          | `true`                      | Salva preferências em `localStorage`               |
+| `hostnamePersistence`  | `true`                      | Escopo por hostname                                |
+| `confidenceThreshold`  | `0.45`                      | Abaixo → seleção manual do conteúdo                |
+| `reprocessDebounce`    | `300`                       | Debounce do observer (SPA)                         |
+| `mainSelectors`        | `main`, `[role=main]`, …    | Onde achar o conteúdo                              |
+| `distractionSelectors` | `header`, `nav`, `aside`, … | O que ocultar no MS                                |
+| `simpleNav`            | `null`                      | Pills injetáveis (se não houver `[data-ms-pills]`) |
 
 Tabela completa: [`doc/09-guia-integracao.md`](./doc/09-guia-integracao.md#4-configuração-da-lib-defaults--configure).
 
@@ -145,19 +145,19 @@ Ativar MS também liga linguagem simples e oculta imagens (reativáveis na barra
 <img src="logo.png" alt="Marca" data-ms-keep-img />
 ```
 
-| Marcação | Efeito |
-| --- | --- |
-| `<main>` / `[role="main"]` | Melhora detecção + TTS |
-| `.ms-simple-hide` | Some com MS on |
-| `.ms-simple-only` / `.ms-simple-view` | Aparece só com MS on |
-| `data-ms-plain` / `data-ms-simple` | Pares de linguagem |
-| `data-ms-keep-img` | Não some com “ocultar imagens” |
-| `[data-ms-pills]` | Pills autoradas (a lib não sobrescreve) |
+| Marcação                              | Efeito                                  |
+| ------------------------------------- | --------------------------------------- |
+| `<main>` / `[role="main"]`            | Melhora detecção + TTS                  |
+| `.ms-simple-hide`                     | Some com MS on                          |
+| `.ms-simple-only` / `.ms-simple-view` | Aparece só com MS on                    |
+| `data-ms-plain` / `data-ms-simple`    | Pares de linguagem                      |
+| `data-ms-keep-img`                    | Não some com “ocultar imagens”          |
+| `[data-ms-pills]`                     | Pills autoradas (a lib não sobrescreve) |
 
 ### Controles na UI
 
-- **Ativar/desativar MS:** switch **SIMPLES** (header; com MS on, também nas pills) ou switch do painel  
-- **Barra âmbar:** convite (off) ou Ouvir / Linguagem / Imagens (on) — sem segundo botão de ativar/voltar  
+- **Ativar/desativar MS:** switch **SIMPLES** (header; com MS on, também nas pills) ou switch do painel
+- **Barra âmbar:** convite (off) ou Ouvir / Linguagem / Imagens (on) — sem segundo botão de ativar/voltar
 - **FAB:** abre o painel (Esc fecha)
 
 Demo mínima: [`examples/hello-modo-simples.html`](./examples/hello-modo-simples.html)  
@@ -168,19 +168,19 @@ Browsers: [`doc/13-compatibilidade-browsers.md`](./doc/13-compatibilidade-browse
 
 ## Deploy (Vercel)
 
-O projeto **precisa** ser publicado com a **raiz do repositório** (onde estão `src/`, `dist/`, `examples/`), **não** com Root Directory = `examples/`.
-
-Se a raiz for só `examples/`, o script `../dist/modo-simples.min.js` (ou `../src/...`) dá **404** — a página carrega sem a lib, e hub/pills/hero aparecem todos juntos (sem `html.ms-ativo`).
+O `npm run build` gera `dist/` e também **`public/`** (gitignored) contendo **só** `index.html`, `examples/` e `dist/`. O deploy publica `public/` — `doc/`, `docs/`, `tests/`, `scripts/`, `package.json` e `.husky/` **não** ficam públicos. As páginas continuam carregando `../dist/modo-simples.min.js` (mesma estrutura relativa dentro de `public/`).
 
 No painel Vercel:
 
-1. **Framework Preset:** Other / sem framework  
-2. **Root Directory:** `.` (raiz do repositório)  
-3. **Build Command:** `npm run build` (ou deixe o `vercel.json` mandar)  
-4. **Output Directory:** `.` (ponto — **não** `public` nem `examples`)  
+1. **Framework Preset:** Other / sem framework
+2. **Root Directory:** `.` (raiz do repositório)
+3. **Build Command:** `npm run build` (ou deixe o `vercel.json` mandar)
+4. **Output Directory:** `public` (definido no `vercel.json`)
 5. Use a URL canônica: `https://seu-projeto.vercel.app/examples/index.html` (ou `/`, que redireciona)
 
-Arquivo [`vercel.json`](./vercel.json) já define o redirect `/` → `/examples/index.html`.
+Local: `npm run preview` continua servindo a **raiz do repo** (porta 8765); para conferir o que vai ao ar: `npm run build && npx serve public`.
+
+Arquivo [`vercel.json`](./vercel.json) define o output `public`, o redirect `/` → `/examples/index.html` e headers (`X-Content-Type-Options: nosniff`, `Referrer-Policy`, cache de `/dist/`).
 
 ---
 

@@ -89,9 +89,9 @@ Ver [10-bookmarklet.md](./10-bookmarklet.md).
 
 1. Root Directory = **raiz do repo** (não `examples/`)
 2. Build Command = `npm run build`
-3. Output = raiz (estático); ver [`vercel.json`](../vercel.json)
+3. Output Directory = `public` (gerado pelo build com `index.html`, `examples/` e `dist/`); ver [`vercel.json`](../vercel.json)
 
-Se publicar só `examples/`, `../dist/modo-simples.min.js` retorna 404 e o Modo Simples **não carrega**.
+Se publicar só `examples/` (sem `dist/` ao lado), `../dist/modo-simples.min.js` retorna 404 e o Modo Simples **não carrega**.
 
 ---
 
