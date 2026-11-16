@@ -237,6 +237,7 @@ class ModoSimples {
         }
       },
       onSpeak: () => this._toggleSpeak(),
+      brand: this._config.brand,
     });
     this._shadow.appendChild(this._panel.element);
 
@@ -477,7 +478,7 @@ class ModoSimples {
     }
     if (prev.options.colorTheme !== next.options.colorTheme) {
       const labels = {
-        senac: 'Cores Senac',
+        senac: 'Cores do site',
         yellowBlack: 'Amarelo e Preto',
         darkHigh: 'Modo Escuro Alto',
         soft: 'Descanso Suave',

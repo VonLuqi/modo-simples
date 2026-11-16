@@ -98,6 +98,19 @@
      */
     fontUrl: null,
     /**
+     * Texts of the accessibility panel header/footer. Generic by default; the host sets its own
+     * (pre-boot via window.ModoSimplesConfig — the panel is built at init). Partial overrides merge.
+     *   title    → panel heading
+     *   subtitle → line under the heading ('' hides it)
+     *   footer   → note at the bottom of the panel ('' hides it)
+     * @type {{ title: string, subtitle: string, footer: string }}
+     */
+    brand: {
+      title: "Acessibilidade Digital",
+      subtitle: "",
+      footer: "Prefer\xEAncias salvas neste navegador"
+    },
+    /**
      * Optional simple-mode nav pills for host pages without markup.
      * Example: [{ label: 'Início', href: '/' }, { label: 'Ajuda', href: '/ajuda' }]
      * Ignored when the page already has [data-ms-pills] authored in HTML.
@@ -1452,11 +1465,16 @@
   var TEXT_SCALES = [
     { value: "100", label: "100%", title: "Padr\xE3o" },
     { value: "125", label: "125%", title: "Grande" },
-    { value: "150", label: "150%", title: "Muito +" },
-    { value: "175", label: "175%", title: "Extra" }
+    { value: "150", label: "150%", title: "Maior" },
+    { value: "175", label: "175%", title: "M\xE1ximo" }
   ];
+  var DEFAULT_BRAND = {
+    title: "Acessibilidade Digital",
+    subtitle: "",
+    footer: "Prefer\xEAncias salvas neste navegador"
+  };
   var COLOR_THEMES = [
-    { value: "senac", label: "Cores Senac", sub: "Padr\xE3o" },
+    { value: "senac", label: "Cores do site", sub: "Padr\xE3o" },
     { value: "yellowBlack", label: "Amarelo e Preto", sub: "Alto contraste" },
     { value: "darkHigh", label: "Modo Escuro Alto", sub: "Fundo escuro" },
     { value: "soft", label: "Descanso / Suave", sub: "Baixa intensidade" }
@@ -1466,8 +1484,10 @@
     onClose,
     onToggleModoSimples,
     onSetOption,
-    onSpeak
+    onSpeak,
+    brand
   }) {
+    const texts = { ...DEFAULT_BRAND, ...brand };
     const panel = document.createElement("div");
     panel.id = "ms-a11y-panel";
     panel.className = "ms-a11y-panel";
@@ -1483,8 +1503,8 @@
         </svg>
       </div>
       <div class="ms-a11y-header-text">
-        <h2 id="ms-a11y-title">Acessibilidade Digital</h2>
-        <p class="ms-a11y-subtitle">Projeto Integrador 2025 \u2022 Senac</p>
+        <h2 id="ms-a11y-title"></h2>
+        <p class="ms-a11y-subtitle"></p>
       </div>
       <button type="button" class="ms-a11y-close" aria-label="Fechar painel de acessibilidade">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
@@ -1617,11 +1637,17 @@
       </section>
 
       <div class="ms-a11y-live" aria-live="polite" aria-atomic="true"></div>
-      <p class="ms-a11y-footer-note">
-        Prefer\xEAncias salvas neste navegador \xB7 Projeto Integrador 2025
-      </p>
+      <p class="ms-a11y-footer-note"></p>
     </div>
   `;
+    const setText = (selector, text) => {
+      const el = panel.querySelector(selector);
+      el.textContent = text;
+      el.hidden = !text;
+    };
+    setText("#ms-a11y-title", texts.title || DEFAULT_BRAND.title);
+    setText(".ms-a11y-subtitle", texts.subtitle);
+    setText(".ms-a11y-footer-note", texts.footer);
     let _releaseFocus = null;
     panel.querySelector(".ms-a11y-close").addEventListener("click", () => onClose());
     panel.querySelector('[data-action="modo-simples"]').addEventListener("click", (e) => {
@@ -2805,7 +2831,8 @@
             this._savePreferShowImages(!value);
           }
         },
-        onSpeak: () => this._toggleSpeak()
+        onSpeak: () => this._toggleSpeak(),
+        brand: this._config.brand
       });
       this._shadow.appendChild(this._panel.element);
       this._fab = createFab({
@@ -3011,7 +3038,7 @@
       }
       if (prev.options.colorTheme !== next.options.colorTheme) {
         const labels = {
-          senac: "Cores Senac",
+          senac: "Cores do site",
           yellowBlack: "Amarelo e Preto",
           darkHigh: "Modo Escuro Alto",
           soft: "Descanso Suave"

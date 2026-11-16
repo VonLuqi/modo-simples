@@ -1,8 +1,8 @@
 /**
  * ui/a11yPanel.js
  *
- * Painel "Acessibilidade Digital" — Shadow-DOM friendly panel matching the
- * Senac PI 2025 mockup (header, Modo Simples card, text scale, themes, aids).
+ * Painel de acessibilidade — Shadow-DOM friendly panel (header, Modo Simples card,
+ * text scale, themes, aids). Header/footer texts come from config.brand.
  */
 
 import { trapFocus } from '../utils/focus.js';
@@ -10,12 +10,18 @@ import { trapFocus } from '../utils/focus.js';
 const TEXT_SCALES = [
   { value: '100', label: '100%', title: 'Padrão' },
   { value: '125', label: '125%', title: 'Grande' },
-  { value: '150', label: '150%', title: 'Muito +' },
-  { value: '175', label: '175%', title: 'Extra' },
+  { value: '150', label: '150%', title: 'Maior' },
+  { value: '175', label: '175%', title: 'Máximo' },
 ];
 
+const DEFAULT_BRAND = {
+  title: 'Acessibilidade Digital',
+  subtitle: '',
+  footer: 'Preferências salvas neste navegador',
+};
+
 const COLOR_THEMES = [
-  { value: 'senac', label: 'Cores Senac', sub: 'Padrão' },
+  { value: 'senac', label: 'Cores do site', sub: 'Padrão' },
   { value: 'yellowBlack', label: 'Amarelo e Preto', sub: 'Alto contraste' },
   { value: 'darkHigh', label: 'Modo Escuro Alto', sub: 'Fundo escuro' },
   { value: 'soft', label: 'Descanso / Suave', sub: 'Baixa intensidade' },
@@ -28,6 +34,7 @@ const COLOR_THEMES = [
  * @param {(value: boolean) => void} opts.onToggleModoSimples
  * @param {(key: string, value: *) => void} opts.onSetOption
  * @param {() => void} opts.onSpeak
+ * @param {{ title?: string, subtitle?: string, footer?: string }} [opts.brand]
  * @returns {{ element: HTMLElement, open: () => void, close: () => void, sync: (state: Object) => void }}
  */
 export function createA11yPanel({
@@ -36,7 +43,9 @@ export function createA11yPanel({
   onToggleModoSimples,
   onSetOption,
   onSpeak,
+  brand,
 }) {
+  const texts = { ...DEFAULT_BRAND, ...brand };
   const panel = document.createElement('div');
   panel.id = 'ms-a11y-panel';
   panel.className = 'ms-a11y-panel';
@@ -53,8 +62,8 @@ export function createA11yPanel({
         </svg>
       </div>
       <div class="ms-a11y-header-text">
-        <h2 id="ms-a11y-title">Acessibilidade Digital</h2>
-        <p class="ms-a11y-subtitle">Projeto Integrador 2025 • Senac</p>
+        <h2 id="ms-a11y-title"></h2>
+        <p class="ms-a11y-subtitle"></p>
       </div>
       <button type="button" class="ms-a11y-close" aria-label="Fechar painel de acessibilidade">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
@@ -187,22 +196,34 @@ export function createA11yPanel({
       </section>
 
       <div class="ms-a11y-live" aria-live="polite" aria-atomic="true"></div>
-      <p class="ms-a11y-footer-note">
-        Preferências salvas neste navegador · Projeto Integrador 2025
-      </p>
+      <p class="ms-a11y-footer-note"></p>
     </div>
   `;
+
+  // Textos de marca vêm da config do host: sempre via textContent (nunca no template HTML)
+  const setText = (selector, text) => {
+    const el = panel.querySelector(selector);
+    el.textContent = text;
+    el.hidden = !text;
+  };
+  setText('#ms-a11y-title', texts.title || DEFAULT_BRAND.title); // nome do diálogo nunca vazio
+  setText('.ms-a11y-subtitle', texts.subtitle);
+  setText('.ms-a11y-footer-note', texts.footer);
 
   /** @type {Function|null} */
   let _releaseFocus = null;
 
-  panel.querySelector('.ms-a11y-close').addEventListener('click', () => onClose());
+  panel
+    .querySelector('.ms-a11y-close')
+    .addEventListener('click', () => onClose());
 
-  panel.querySelector('[data-action="modo-simples"]').addEventListener('click', (e) => {
-    const btn = e.currentTarget;
-    const next = btn.getAttribute('aria-checked') !== 'true';
-    onToggleModoSimples(next);
-  });
+  panel
+    .querySelector('[data-action="modo-simples"]')
+    .addEventListener('click', (e) => {
+      const btn = e.currentTarget;
+      const next = btn.getAttribute('aria-checked') !== 'true';
+      onToggleModoSimples(next);
+    });
 
   panel.querySelectorAll('.ms-segmented .ms-segment').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -224,7 +245,9 @@ export function createA11yPanel({
     });
   });
 
-  panel.querySelector('[data-action="speak"]').addEventListener('click', () => onSpeak());
+  panel
+    .querySelector('[data-action="speak"]')
+    .addEventListener('click', () => onSpeak());
 
   /**
    * Sync UI controls with state snapshot.
@@ -243,28 +266,37 @@ export function createA11yPanel({
     }
 
     const scale = s.options?.textScale || '100';
-    panel.querySelectorAll('[data-option="textScale"] .ms-segment').forEach((btn) => {
-      const on = btn.getAttribute('data-value') === scale;
-      btn.setAttribute('aria-checked', String(on));
-      btn.classList.toggle('ms-segment--on', on);
-    });
+    panel
+      .querySelectorAll('[data-option="textScale"] .ms-segment')
+      .forEach((btn) => {
+        const on = btn.getAttribute('data-value') === scale;
+        btn.setAttribute('aria-checked', String(on));
+        btn.classList.toggle('ms-segment--on', on);
+      });
 
     const theme = s.options?.colorTheme || 'senac';
-    panel.querySelectorAll('[data-option="colorTheme"] .ms-theme-btn').forEach((btn) => {
-      const on = btn.getAttribute('data-value') === theme;
-      btn.setAttribute('aria-checked', String(on));
-      btn.classList.toggle('ms-theme-btn--on', on);
-    });
-
-    ['dyslexiaFont', 'readingRuler', 'highlightLinks', 'textSpacing', 'reducedMotion', 'hideImages'].forEach(
-      (key) => {
-        const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
-        if (!btn) return;
-        const on = !!s.options?.[key];
+    panel
+      .querySelectorAll('[data-option="colorTheme"] .ms-theme-btn')
+      .forEach((btn) => {
+        const on = btn.getAttribute('data-value') === theme;
         btn.setAttribute('aria-checked', String(on));
-        btn.classList.toggle('ms-switch--on', on);
-      },
-    );
+        btn.classList.toggle('ms-theme-btn--on', on);
+      });
+
+    [
+      'dyslexiaFont',
+      'readingRuler',
+      'highlightLinks',
+      'textSpacing',
+      'reducedMotion',
+      'hideImages',
+    ].forEach((key) => {
+      const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
+      if (!btn) return;
+      const on = !!s.options?.[key];
+      btn.setAttribute('aria-checked', String(on));
+      btn.classList.toggle('ms-switch--on', on);
+    });
 
     const speakBtn = panel.querySelector('[data-action="speak"]');
     if (speakBtn && ui.speaking !== undefined) {

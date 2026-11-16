@@ -112,6 +112,20 @@ const defaults = {
   fontUrl: null,
 
   /**
+   * Texts of the accessibility panel header/footer. Generic by default; the host sets its own
+   * (pre-boot via window.ModoSimplesConfig — the panel is built at init). Partial overrides merge.
+   *   title    → panel heading
+   *   subtitle → line under the heading ('' hides it)
+   *   footer   → note at the bottom of the panel ('' hides it)
+   * @type {{ title: string, subtitle: string, footer: string }}
+   */
+  brand: {
+    title: 'Acessibilidade Digital',
+    subtitle: '',
+    footer: 'Preferências salvas neste navegador',
+  },
+
+  /**
    * Optional simple-mode nav pills for host pages without markup.
    * Example: [{ label: 'Início', href: '/' }, { label: 'Ajuda', href: '/ajuda' }]
    * Ignored when the page already has [data-ms-pills] authored in HTML.
