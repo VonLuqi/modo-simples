@@ -515,7 +515,7 @@ PRIORIDADE BAIXA (Fase 3)
 
 ### Testes unitários (`tests/unit/`)
 
-Ferramenta: **Vitest** (zero config, compatível com o ecossistema já presente).
+Ferramenta: **node:test** (runner nativo do Node, zero dependências; `scripts/test.cjs`).
 
 | Módulo                   | O que testar                                                        |
 | ------------------------ | ------------------------------------------------------------------- |

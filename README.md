@@ -212,4 +212,4 @@ Arquivo [`vercel.json`](./vercel.json) define o output `public`, o redirect `/` 
 
 ## Padronização
 
-Prettier + Husky + lint-staged. VS Code: format on save (`.vscode/`).
+Prettier + ESLint + Husky 9 + lint-staged. `npm install` ativa o hook (`core.hooksPath=.husky/_`); o `pre-commit` roda lint-staged (prettier + eslint nos `.js`, prettier em `.css`/`.md`) e `npm run test:unit`. Verificações manuais: `npm run lint`, `npm run format:check`, `npm run coverage`. VS Code: format on save (`.vscode/`).

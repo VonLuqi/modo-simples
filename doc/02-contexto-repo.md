@@ -15,23 +15,23 @@ Um **script JavaScript injetável** de acessibilidade cognitiva que adiciona um 
 
 ## 2. Ideia e origem (PI 2025)
 
-| Campo | Valor |
-| --- | --- |
-| UC | Projeto Integrador 2025 |
-| Tema | Acessibilidade para plataformas digitais |
-| Foco do grupo | Modo Simplificado / Modo Simples |
-| Público-alvo | Pessoas com barreira digital (ex.: idosos, TDAH, espectro autista) |
+| Campo         | Valor                                                              |
+| ------------- | ------------------------------------------------------------------ |
+| UC            | Projeto Integrador 2025                                            |
+| Tema          | Acessibilidade para plataformas digitais                           |
+| Foco do grupo | Modo Simplificado / Modo Simples                                   |
+| Público-alvo  | Pessoas com barreira digital (ex.: idosos, TDAH, espectro autista) |
 
 **Objetivo da proposta:** desenvolver uma ferramenta que adapta plataformas existentes (layout e elementos em cena) para uma navegação mais simples, direta e proveitosa — e entregar um **modelo reutilizável** para outros desenvolvedores.
 
 **Tradução no repositório:**
 
-| Intenção | Entrega no repo |
-| --- | --- |
-| Adaptar plataforma existente | Protótipo Senac Minas em `examples/` + mutação não destrutiva do DOM |
-| Facilitar navegação | Ocultar distrações, dual markup, pills/hub MS, assistente de cursos |
-| Modelo para devs | Lib `src/` → bundle `dist/modo-simples(.min).js` + guia + hello + bookmarklet |
-| Inclusão cognitiva | Painel a11y, temas, Lexend, régua, TTS, ARIA, teclado, `prefers-reduced-motion` |
+| Intenção                     | Entrega no repo                                                                 |
+| ---------------------------- | ------------------------------------------------------------------------------- |
+| Adaptar plataforma existente | Protótipo Senac Minas em `examples/` + mutação não destrutiva do DOM            |
+| Facilitar navegação          | Ocultar distrações, dual markup, pills/hub MS, assistente de cursos             |
+| Modelo para devs             | Lib `src/` → bundle `dist/modo-simples(.min).js` + guia + hello + bookmarklet   |
+| Inclusão cognitiva           | Painel a11y, temas, Lexend, régua, TTS, ARIA, teclado, `prefers-reduced-motion` |
 
 Equipe (proposta): Lucas F. S. de Aragão · Márcio J. da Silva Junior · Flavio Magno Fulgencio Junior · Juliana Gomes · Larisse A. de Rezende Silva · Reynaldo J. Lara Rodriguez. Professora: Jô Ferreira.
 
@@ -43,22 +43,22 @@ Equipe (proposta): Lucas F. S. de Aragão · Márcio J. da Silva Junior · Flavi
 
 ### 3.1 Biblioteca (`src/` → `dist/`)
 
-| Capacidade | Detalhe |
-| --- | --- |
-| FAB + painel | Botão flutuante laranja abre o painel **Acessibilidade Digital** (Shadow DOM) |
-| Chrome de sessão | Toggle **SIMPLES** + barra laranja sob o `<nav>` |
-| Modo Simples | Detecta conteúdo principal, oculta distrações, aplica classes/atributos |
-| Dual markup | Host pode marcar `.ms-simple-hide` / `.ms-simple-view.ms-simple-only` |
-| Texto | Escalas 100% / 125% / 150% / 175% |
-| Temas | Senac · Amarelo/Preto · Escuro Alto · Descanso/Suave |
-| Auxílios | Lexend, régua de foco, destaque de links, espaçamento, motion reduzido |
-| Imagens | `hideImages` ligado por padrão ao ativar MS (reativável na barra/painel) |
-| TTS | “Ouvir página” com highlight do bloco atual (`speechSynthesis`) |
-| Seleção manual | Fallback se a heurística de conteúdo principal tiver baixa confiança |
-| Pills injetáveis | `configure({ simpleNav: [...] })` quando a página não tem `[data-ms-pills]` |
-| Persistência | Preferências em `localStorage`, escopadas por hostname |
-| Observer | Reprocessa DOM após mudanças (SPA / conteúdo dinâmico), com debounce |
-| API | `enable()` · `disable()` · `toggle()` · `configure()` · `destroy()` |
+| Capacidade       | Detalhe                                                                       |
+| ---------------- | ----------------------------------------------------------------------------- |
+| FAB + painel     | Botão flutuante laranja abre o painel **Acessibilidade Digital** (Shadow DOM) |
+| Chrome de sessão | Toggle **SIMPLES** + barra laranja sob o `<nav>`                              |
+| Modo Simples     | Detecta conteúdo principal, oculta distrações, aplica classes/atributos       |
+| Dual markup      | Host pode marcar `.ms-simple-hide` / `.ms-simple-view.ms-simple-only`         |
+| Texto            | Escalas 100% / 125% / 150% / 175%                                             |
+| Temas            | Senac · Amarelo/Preto · Escuro Alto · Descanso/Suave                          |
+| Auxílios         | Lexend, régua de foco, destaque de links, espaçamento, motion reduzido        |
+| Imagens          | `hideImages` ligado por padrão ao ativar MS (reativável na barra/painel)      |
+| TTS              | “Ouvir página” com highlight do bloco atual (`speechSynthesis`)               |
+| Seleção manual   | Fallback se a heurística de conteúdo principal tiver baixa confiança          |
+| Pills injetáveis | `configure({ simpleNav: [...] })` quando a página não tem `[data-ms-pills]`   |
+| Persistência     | Preferências em `localStorage`, escopadas por hostname                        |
+| Observer         | Reprocessa DOM após mudanças (SPA / conteúdo dinâmico), com debounce          |
+| API              | `enable()` · `disable()` · `toggle()` · `configure()` · `destroy()`           |
 
 Princípios de desenho:
 
@@ -71,17 +71,17 @@ Princípios de desenho:
 
 **8 páginas no mapa** + demo mínima da lib:
 
-| Página | Arquivo | Notas |
-| --- | --- | --- |
-| Início | `index.html` | Hub MS (cartões) + pills |
-| Sobre Nós | `sobrenos.html` | Dual markup; vídeo vira link no MS |
-| Cursos | `cursos.html` | Assistente guiado |
-| Gratuitos (PSG) | `psg.html` | Assistente PSG |
-| Unidades | `unidades.html` | |
-| Contato | `contato.html` | Atendente |
-| Área do Aluno | `aluno.html` | |
-| Pesquisar | `pesquisa.html` | Fora do mapa de pills MS |
-| Hello MS | `hello-modo-simples.html` | Integração mínima + `simpleNav` |
+| Página          | Arquivo                   | Notas                              |
+| --------------- | ------------------------- | ---------------------------------- |
+| Início          | `index.html`              | Hub MS (cartões) + pills           |
+| Sobre Nós       | `sobrenos.html`           | Dual markup; vídeo vira link no MS |
+| Cursos          | `cursos.html`             | Assistente guiado                  |
+| Gratuitos (PSG) | `psg.html`                | Assistente PSG                     |
+| Unidades        | `unidades.html`           |                                    |
+| Contato         | `contato.html`            | Atendente                          |
+| Área do Aluno   | `aluno.html`              |                                    |
+| Pesquisar       | `pesquisa.html`           | Fora do mapa de pills MS           |
+| Hello MS        | `hello-modo-simples.html` | Integração mínima + `simpleNav`    |
 
 CSS canônico do shell: `examples/CSS/tokens.css` · `shell.css` · `pages.css`.  
 Assets em `examples/img/`. Scripts de página: `examples/js/cursos-data.js`, `cursos-assistente.js`.
@@ -90,21 +90,21 @@ Nav unificada (8 itens) com `aria-current="page"`. Com MS ligado: **pills** + **
 
 ### 3.3 Qualidade, build e demo
 
-| Área | Situação |
-| --- | --- |
-| Build | esbuild IIFE, target **ES2018** → `dist/modo-simples.js` + `.min.js` |
-| Testes | Unitários (Vitest) + estruturais do protótipo (`tests/structure/`) |
-| Smoke | `smoke:examples`, `smoke:assistente` |
-| Preview | `npm run preview` (serve na porta **8765**; `/` via `index.html` → examples) |
-| Sync | `scripts/sync-nav.cjs`, `scripts/sync-ms-pills.cjs` |
-| Docs | Proposta, planos, UI, heurísticas, integração, bookmarklet, banca, browsers |
-| Licença / pacote | MIT · `package.json` com `exports` / `files` para distribuição |
+| Área             | Situação                                                                     |
+| ---------------- | ---------------------------------------------------------------------------- |
+| Build            | esbuild IIFE, target **ES2018** → `dist/modo-simples.js` + `.min.js`         |
+| Testes           | Unitários (`node:test`) + estruturais do protótipo (`tests/structure/`)      |
+| Smoke            | `smoke:examples`, `smoke:assistente`                                         |
+| Preview          | `npm run preview` (serve na porta **8765**; `/` via `index.html` → examples) |
+| Sync             | `scripts/sync-nav.cjs`, `scripts/sync-ms-pills.cjs`                          |
+| Docs             | Proposta, planos, UI, heurísticas, integração, bookmarklet, banca, browsers  |
+| Licença / pacote | MIT · `package.json` com `exports` / `files` para distribuição               |
 
 ### 3.4 Pendências típicas antes da banca (não bloqueiam o código)
 
-1. Tempos reais de ≥ 3 participantes no roteiro de estudo de caso  
-2. Contagens before/after do script de métricas  
-3. Ensaio da demo ao vivo (5 passos em [11-pacote-entrega.md](./11-pacote-entrega.md))  
+1. Tempos reais de ≥ 3 participantes no roteiro de estudo de caso
+2. Contagens before/after do script de métricas
+3. Ensaio da demo ao vivo (5 passos em [11-pacote-entrega.md](./11-pacote-entrega.md))
 4. (Opcional) Publish npm — tag `v1.1.0` já publicada no GitHub
 5. Guia de integração atualizado: [09-guia-integracao.md](./09-guia-integracao.md)
 
@@ -131,31 +131,31 @@ Nav unificada (8 itens) com `aria-current="page"`. Com MS ligado: **pills** + **
 
 ### Módulos (`src/`)
 
-| Pasta / arquivo | Papel |
-| --- | --- |
-| `modo-simples.js` | Orquestrador, lifecycle, API pública, auto-boot |
-| `config/defaults.js` | Seletores, scoring, posição do FAB, `simpleNav`, limiares |
-| `core/state.js` | Store imutável-style + `stateChange` |
-| `core/eventBus.js` | Pub/sub interno |
-| `core/persistence.js` | `localStorage` (+ chave por host) |
-| `heuristics/*` | Conteúdo principal, distrações, pontuação |
-| `mutator/domMutator.js` | Aplicar/reverter MS e opções; estilos de página; Lexend |
-| `mutator/domObserver.js` | MutationObserver com debounce |
-| `ui/fab.js`, `a11yPanel.js`, `sessionChrome.js`, `styles.js` | UI atual (painel modal + barra) |
-| `ui/radialMenu.js` (e afins) | Legado do menu radial — não é a UI alvo da demo |
-| `features/tts.js`, `readingRuler.js`, `simpleNav.js`, `manualSelect.js` | Recursos opcionais |
-| `utils/aria.js`, `focus.js`, `mediaQuery.js` | Anúncios, foco, `prefers-reduced-motion` |
+| Pasta / arquivo                                                         | Papel                                                     |
+| ----------------------------------------------------------------------- | --------------------------------------------------------- |
+| `modo-simples.js`                                                       | Orquestrador, lifecycle, API pública, auto-boot           |
+| `config/defaults.js`                                                    | Seletores, scoring, posição do FAB, `simpleNav`, limiares |
+| `core/state.js`                                                         | Store imutável-style + `stateChange`                      |
+| `core/eventBus.js`                                                      | Pub/sub interno                                           |
+| `core/persistence.js`                                                   | `localStorage` (+ chave por host)                         |
+| `heuristics/*`                                                          | Conteúdo principal, distrações, pontuação                 |
+| `mutator/domMutator.js`                                                 | Aplicar/reverter MS e opções; estilos de página; Lexend   |
+| `mutator/domObserver.js`                                                | MutationObserver com debounce                             |
+| `ui/fab.js`, `a11yPanel.js`, `sessionChrome.js`, `styles.js`            | UI atual (painel modal + barra)                           |
+| `ui/radialMenu.js` (e afins)                                            | Legado do menu radial — não é a UI alvo da demo           |
+| `features/tts.js`, `readingRuler.js`, `simpleNav.js`, `manualSelect.js` | Recursos opcionais                                        |
+| `utils/aria.js`, `focus.js`, `mediaQuery.js`                            | Anúncios, foco, `prefers-reduced-motion`                  |
 
 Plano técnico adicional: [`docs/implementation_plan.md`](../docs/implementation_plan.md).  
 Edges das heurísticas: [08-heuristicas-edges.md](./08-heuristicas-edges.md).
 
 ### Fluxo ao ativar Modo Simples
 
-1. Estado: `modoSimples: true` (+ `simpleLanguage` e `hideImages` por padrão)  
-2. Scan heurístico → conteúdo principal (ou seleção manual)  
-3. Mutator marca/oculta distrações; host pode complementar com dual markup  
-4. Chrome/pills/hub ficam visíveis; classes no `<html>` (ex.: `ms-ativo`)  
-5. Observer mantém comportamento se o DOM mudar  
+1. Estado: `modoSimples: true` (+ `simpleLanguage` e `hideImages` por padrão)
+2. Scan heurístico → conteúdo principal (ou seleção manual)
+3. Mutator marca/oculta distrações; host pode complementar com dual markup
+4. Chrome/pills/hub ficam visíveis; classes no `<html>` (ex.: `ms-ativo`)
+5. Observer mantém comportamento se o DOM mudar
 6. Preferências persistem por hostname
 
 Ao desligar: reverte mutações, reseta linguagem/imagens “órfãs” e temas agressivos voltam ao **Senac**.
@@ -175,7 +175,7 @@ modo-simples/
 │   └── js/                   ← catálogo + assistente de cursos
 ├── scripts/                  ← build, testes, smoke, sync nav/pills
 ├── tests/
-│   ├── unit/                 ← Vitest
+│   ├── unit/                 ← node:test
 │   └── structure/            ← estrutura do protótipo
 ├── doc/                      ← documentação de produto/projeto/entrega
 ├── docs/                     ← plano técnico da lib
@@ -191,19 +191,19 @@ Há também `_ref-prototipo-senac/` (referência/legado de protótipo) — não 
 
 ## 6. Stack e tecnologias
 
-| Camada | Tecnologia |
-| --- | --- |
+| Camada         | Tecnologia                                                  |
+| -------------- | ----------------------------------------------------------- |
 | Runtime da lib | JavaScript moderno (ES modules em dev; IIFE ES2018 em prod) |
-| UI da lib | Shadow DOM + CSS injetado |
-| Persistência | `localStorage` |
-| TTS | Web Speech API (`speechSynthesis`) |
-| Build | **esbuild** |
-| Testes | **Vitest** (+ runner `scripts/test.cjs`) |
-| Formatação | **Prettier** (`semi`, aspas simples, 2 espaços) |
-| Git hooks | **Husky** + **lint-staged** |
-| Preview | `serve` (via `npx`) na porta 8765 |
-| Protótipo | HTML semântico + CSS (tokens/shell/pages) + JS de página |
-| Empacotamento | npm package (`exports`, `files`, `main`/`module`) |
+| UI da lib      | Shadow DOM + CSS injetado                                   |
+| Persistência   | `localStorage`                                              |
+| TTS            | Web Speech API (`speechSynthesis`)                          |
+| Build          | **esbuild**                                                 |
+| Testes         | **node:test** nativo do Node (runner `scripts/test.cjs`)    |
+| Formatação     | **Prettier** (`semi`, aspas simples, 2 espaços)             |
+| Git hooks      | **Husky** + **lint-staged**                                 |
+| Preview        | `serve` (via `npx`) na porta 8765                           |
+| Protótipo      | HTML semântico + CSS (tokens/shell/pages) + JS de página    |
+| Empacotamento  | npm package (`exports`, `files`, `main`/`module`)           |
 
 **Browsers-alvo:** Chrome/Edge e Firefox recentes; Safari 14+ com ressalvas (TTS/vozes do SO). Fora de escopo: IE11 e ambientes sem Shadow DOM / ES2018. Detalhes: [13-compatibilidade-browsers.md](./13-compatibilidade-browsers.md).
 
@@ -248,40 +248,40 @@ Guia completo: [09-guia-integracao.md](./09-guia-integracao.md) · Bookmarklet: 
 
 Contrato útil para o host:
 
-- HTML semântico (`main`, `nav`, `header`, `footer`) melhora a heurística  
-- Dual markup: `.ms-simple-hide` / `.ms-simple-view.ms-simple-only`  
-- Pills autoradas: `[data-ms-pills]` (senão usar `simpleNav`)  
+- HTML semântico (`main`, `nav`, `header`, `footer`) melhora a heurística
+- Dual markup: `.ms-simple-hide` / `.ms-simple-view.ms-simple-only`
+- Pills autoradas: `[data-ms-pills]` (senão usar `simpleNav`)
 - Chrome MS é excluído do mutator (não some ao “esconder distrações”)
 
 ---
 
 ## 8. Documentação (índice mental)
 
-| Doc | Para quê |
-| --- | --- |
-| [01-proposta](./01-proposta.md) | Origem acadêmica e justificativa |
-| **02 (este)** | Visão do repo, stack, o que existe |
-| [03-status](./03-status-implementacao.md) | Checklist de fases |
-| [04-plano](./04-plano-implementacao.md) | Tasks históricas |
-| [05-inventario](./05-inventario-prototipo.md) | Páginas, CSS, scripts do protótipo |
-| [06 / 07](./06-ui-painel-acessibilidade.md) | Specs de painel e barra SIMPLES |
-| [08](./08-heuristicas-edges.md) | Casos-limite das heurísticas |
-| [09 / 10](./09-guia-integracao.md) | Devs externos + bookmarklet |
-| [11](./11-pacote-entrega.md) | Pacote banca / demo em 5 passos |
-| [12](./12-plano-melhorias-ux.md) | Fase 5 UX |
-| [13](./13-compatibilidade-browsers.md) | Browsers e APIs |
-| [estudo-caso / métricas / validação](./estudo-caso-roteiro.md) | Evidências e matriz de sites |
-| [checklists/](./checklists/) | A11y, leitor de tela, estrutura, pixel banca |
+| Doc                                                            | Para quê                                     |
+| -------------------------------------------------------------- | -------------------------------------------- |
+| [01-proposta](./01-proposta.md)                                | Origem acadêmica e justificativa             |
+| **02 (este)**                                                  | Visão do repo, stack, o que existe           |
+| [03-status](./03-status-implementacao.md)                      | Checklist de fases                           |
+| [04-plano](./04-plano-implementacao.md)                        | Tasks históricas                             |
+| [05-inventario](./05-inventario-prototipo.md)                  | Páginas, CSS, scripts do protótipo           |
+| [06 / 07](./06-ui-painel-acessibilidade.md)                    | Specs de painel e barra SIMPLES              |
+| [08](./08-heuristicas-edges.md)                                | Casos-limite das heurísticas                 |
+| [09 / 10](./09-guia-integracao.md)                             | Devs externos + bookmarklet                  |
+| [11](./11-pacote-entrega.md)                                   | Pacote banca / demo em 5 passos              |
+| [12](./12-plano-melhorias-ux.md)                               | Fase 5 UX                                    |
+| [13](./13-compatibilidade-browsers.md)                         | Browsers e APIs                              |
+| [estudo-caso / métricas / validação](./estudo-caso-roteiro.md) | Evidências e matriz de sites                 |
+| [checklists/](./checklists/)                                   | A11y, leitor de tela, estrutura, pixel banca |
 
 ---
 
 ## 9. Convenções para a equipe
 
-1. **Lib em `src/`**, protótipo em `examples/` — não misturar markup Senac com lógica do script.  
-2. Documentação de produto/entrega em **`doc/`**; plano técnico longo em **`docs/`**.  
-3. Não versionar `node_modules/`; `dist/` é gerado localmente (`npm run build`) — está no `.gitignore`.  
-4. Páginas novas: HTML semântico + shell CSS canônico + nav/pills sincronizados (scripts de sync).  
-5. Preferir alterações focadas; UI alvo da demo é **painel + barra**, não o menu radial legado.  
+1. **Lib em `src/`**, protótipo em `examples/` — não misturar markup Senac com lógica do script.
+2. Documentação de produto/entrega em **`doc/`**; plano técnico longo em **`docs/`**.
+3. Não versionar `node_modules/`; `dist/` é gerado localmente (`npm run build`) — está no `.gitignore`.
+4. Páginas novas: HTML semântico + shell CSS canônico + nav/pills sincronizados (scripts de sync).
+5. Preferir alterações focadas; UI alvo da demo é **painel + barra**, não o menu radial legado.
 6. Commits só quando pedidos; formatação via Prettier (hook / format on save no VS Code).
 
 ---
