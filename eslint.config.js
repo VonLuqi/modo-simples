@@ -54,7 +54,7 @@ export default [
     },
   },
   {
-    files: ['eslint.config.js'],
+    files: ['eslint.config.js', 'playwright.config.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',

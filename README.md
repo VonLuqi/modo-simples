@@ -61,16 +61,17 @@ Inventário: [`doc/05-inventario-prototipo.md`](./doc/05-inventario-prototipo.md
 
 ## Comandos
 
-| Comando                    | Função                                                   |
-| -------------------------- | -------------------------------------------------------- |
-| `npm run preview`          | Serve o projeto na porta 8765 (`/` e `/examples` → home) |
-| `npm test`                 | Unitários + estruturais                                  |
-| `npm run test:unit`        | Só unitários                                             |
-| `npm run test:structure`   | Só estrutura do protótipo                                |
-| `npm run smoke:examples`   | Verifica páginas/assets do protótipo                     |
-| `npm run smoke:assistente` | Smoke do assistente de cursos                            |
-| `npm run build`            | Gera `dist/modo-simples(.min).js` (ES2018)               |
-| `npm run format`           | Prettier                                                 |
+| Comando                    | Função                                                           |
+| -------------------------- | ---------------------------------------------------------------- |
+| `npm run preview`          | Serve o projeto na porta 8765 (`/` e `/examples` → home)         |
+| `npm test`                 | Unitários + estruturais                                          |
+| `npm run test:unit`        | Só unitários                                                     |
+| `npm run test:structure`   | Só estrutura do protótipo                                        |
+| `npm run test:e2e`         | Browser real (Chromium) + axe; antes: `npm run test:e2e:install` |
+| `npm run smoke:examples`   | Verifica páginas/assets do protótipo                             |
+| `npm run smoke:assistente` | Smoke do assistente de cursos                                    |
+| `npm run build`            | Gera `dist/modo-simples(.min).js` (ES2018)                       |
+| `npm run format`           | Prettier                                                         |
 
 ---
 

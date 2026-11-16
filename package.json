@@ -29,6 +29,8 @@
     "test": "node scripts/test.cjs",
     "test:unit": "node scripts/test.cjs --unit",
     "test:structure": "node scripts/test.cjs --structure",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium",
     "test:watch": "node scripts/test.cjs --watch",
     "smoke:examples": "node scripts/smoke-examples.cjs",
     "smoke:assistente": "node scripts/smoke-assistente.cjs",
@@ -49,7 +51,9 @@
   "author": "Projeto Integrador 2025 — Modo Simples",
   "license": "MIT",
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.65.1",
     "esbuild": "^0.25.0",
     "eslint": "10.15.0",
     "globals": "17.14.0",

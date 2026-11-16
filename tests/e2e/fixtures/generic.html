@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Página genérica — fixture do Modo Simples</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 0;
+        color: #1a1a1a;
+        background: #fff;
+        line-height: 1.6;
+      }
+      header,
+      nav,
+      main,
+      footer {
+        padding: 16px;
+        max-width: 60rem;
+        margin: 0 auto;
+      }
+      nav a {
+        margin-right: 16px;
+        color: #0b2c5f;
+      }
+      a {
+        color: #0b2c5f;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Host genérico: sem window.ModoSimplesConfig, só o bundle (FAB + painel). -->
+    <header>
+      <p><strong>Escola Exemplo</strong></p>
+    </header>
+    <nav aria-label="Menu principal">
+      <a href="#cursos">Cursos</a>
+      <a href="#contato">Contato</a>
+    </nav>
+    <main>
+      <h1>Bem-vindo à Escola Exemplo</h1>
+      <p>
+        Esta página existe só para testar a biblioteca em um site que não é o
+        protótipo Senac. Ela tem texto suficiente no conteúdo principal para a
+        heurística identificar o que importa e ocultar o resto.
+      </p>
+      <h2 id="cursos">Cursos</h2>
+      <p>
+        Oferecemos cursos de informática, administração e saúde, com turmas de
+        manhã, tarde e noite, para quem quer aprender com calma.
+      </p>
+      <h2 id="contato">Contato</h2>
+      <p>Fale com a secretaria pelo telefone ou venha nos visitar.</p>
+    </main>
+    <footer>
+      <p>Escola Exemplo · todos os direitos reservados</p>
+    </footer>
+    <script src="../../../dist/modo-simples.min.js"></script>
+  </body>
+</html>
