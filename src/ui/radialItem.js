@@ -30,7 +30,14 @@
  * }} opts
  * @returns {{ element: HTMLButtonElement, setChecked: (v: boolean) => void }}
  */
-export function createRadialItem({ id, label, icon, checked = false, angle, onChange }) {
+export function createRadialItem({
+  id,
+  label,
+  icon,
+  checked = false,
+  angle,
+  onChange,
+}) {
   const btn = document.createElement('button');
   btn.id = id;
   btn.type = 'button';

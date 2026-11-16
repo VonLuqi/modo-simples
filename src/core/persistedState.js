@@ -20,8 +20,12 @@ export function hydratePersistedState(saved) {
   return {
     modoSimples,
     options: {
-      textScale: ['100', '125', '150', '175'].includes(textScale) ? textScale : '100',
-      colorTheme: ['senac', 'yellowBlack', 'darkHigh', 'soft'].includes(colorTheme)
+      textScale: ['100', '125', '150', '175'].includes(textScale)
+        ? textScale
+        : '100',
+      colorTheme: ['senac', 'yellowBlack', 'darkHigh', 'soft'].includes(
+        colorTheme,
+      )
         ? colorTheme
         : 'senac',
       dyslexiaFont: Boolean(opts.dyslexiaFont),

@@ -31,7 +31,10 @@ export function createCentralToggle() {
   btn.setAttribute('aria-pressed', 'false');
   btn.setAttribute('aria-expanded', 'false');
   btn.setAttribute('aria-controls', 'ms-radial-menu');
-  btn.setAttribute('aria-label', 'Modo Simples: desativado — abrir menu de acessibilidade');
+  btn.setAttribute(
+    'aria-label',
+    'Modo Simples: desativado — abrir menu de acessibilidade',
+  );
 
   btn.innerHTML = `
     <span class="ms-central-icon" aria-hidden="true">
@@ -52,14 +55,14 @@ export function createCentralToggle() {
     btn.setAttribute('aria-expanded', String(radialOpen));
 
     const statusLabel = modoSimples ? 'ativado' : 'desativado';
-    const menuLabel   = radialOpen ? 'fechar' : 'abrir';
+    const menuLabel = radialOpen ? 'fechar' : 'abrir';
     btn.setAttribute(
       'aria-label',
       `Modo Simples: ${statusLabel} — ${menuLabel} menu de acessibilidade`,
     );
 
     // Color classes drive green (ON) / red (OFF) — also non-color indicator
-    btn.classList.toggle('ms-central--on',  modoSimples);
+    btn.classList.toggle('ms-central--on', modoSimples);
     btn.classList.toggle('ms-central--off', !modoSimples);
     btn.classList.toggle('ms-central--open', radialOpen);
   }

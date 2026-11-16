@@ -55,11 +55,15 @@ const ITEM_COUNT = 8;
  */
 function arcForPosition(position) {
   switch (position) {
-    case 'bottom-left':  return { start: 270, span: 90 };
-    case 'top-right':    return { start:  90, span: 90 };
-    case 'top-left':     return { start:   0, span: 90 };
+    case 'bottom-left':
+      return { start: 270, span: 90 };
+    case 'top-right':
+      return { start: 90, span: 90 };
+    case 'top-left':
+      return { start: 0, span: 90 };
     case 'bottom-right':
-    default:             return { start: 180, span: 90 };
+    default:
+      return { start: 180, span: 90 };
   }
 }
 
@@ -113,7 +117,12 @@ export const RADIAL_ITEMS_DEF = [
   },
 ];
 
-export function createRadialMenu({ state, onToggle, onHelp, position = 'bottom-right' }) {
+export function createRadialMenu({
+  state,
+  onToggle,
+  onHelp,
+  position = 'bottom-right',
+}) {
   const angles = computeAngles(ITEM_COUNT, position);
 
   // ── Container ───────────────────────────────────────────────
@@ -160,15 +169,17 @@ export function createRadialMenu({ state, onToggle, onHelp, position = 'bottom-r
 
   // ── Arrow key navigation ────────────────────────────────────
   menu.addEventListener('keydown', (e) => {
-    if (!['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+    if (!['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(e.key))
+      return;
     e.preventDefault();
 
     const focusable = getFocusable(menu);
     if (!focusable.length) return;
     const idx = focusable.indexOf(document.activeElement);
-    const next = e.key === 'ArrowRight' || e.key === 'ArrowDown'
-      ? (idx + 1) % focusable.length
-      : (idx - 1 + focusable.length) % focusable.length;
+    const next =
+      e.key === 'ArrowRight' || e.key === 'ArrowDown'
+        ? (idx + 1) % focusable.length
+        : (idx - 1 + focusable.length) % focusable.length;
     focusable[next]?.focus();
   });
 
@@ -188,7 +199,10 @@ export function createRadialMenu({ state, onToggle, onHelp, position = 'bottom-r
 
     close() {
       menu.hidden = true;
-      if (removeTrap) { removeTrap(); removeTrap = null; }
+      if (removeTrap) {
+        removeTrap();
+        removeTrap = null;
+      }
     },
 
     /**
@@ -202,6 +216,8 @@ export function createRadialMenu({ state, onToggle, onHelp, position = 'bottom-r
       });
     },
 
-    getItemControls() { return itemControls; },
+    getItemControls() {
+      return itemControls;
+    },
   };
 }

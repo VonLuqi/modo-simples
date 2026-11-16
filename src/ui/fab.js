@@ -65,7 +65,9 @@ export function createFab({ onClick }) {
     btn.setAttribute('aria-expanded', String(panelOpen));
     btn.setAttribute(
       'aria-label',
-      panelOpen ? 'Fechar painel de acessibilidade' : 'Abrir painel de acessibilidade',
+      panelOpen
+        ? 'Fechar painel de acessibilidade'
+        : 'Abrir painel de acessibilidade',
     );
     btn.classList.toggle('ms-fab--open', panelOpen);
     wrap.classList.toggle('ms-fab-wrap--open', panelOpen);

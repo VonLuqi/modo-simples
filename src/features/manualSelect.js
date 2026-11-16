@@ -125,7 +125,10 @@ export function startManualSelect(opts = {}) {
 
   _onClick = (e) => {
     // Ignore clicks on our own UI host / banner
-    if (e.target.closest?.('#ms-container') || e.target.closest?.(`#${BANNER_ID}`)) {
+    if (
+      e.target.closest?.('#ms-container') ||
+      e.target.closest?.(`#${BANNER_ID}`)
+    ) {
       return;
     }
     e.preventDefault();

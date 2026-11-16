@@ -22,12 +22,20 @@ export function detectDistractions(mainElement, config = defaults) {
   const distractions = [];
 
   const isMsChrome = (el) => {
-    if (!el || !el.id && !el.getAttribute) return false;
-    if (el.id === 'ms-container' || el.id === 'ms-session-bar' || el.id === 'ms-simples-chrome') {
+    if (!el || (!el.id && !el.getAttribute)) return false;
+    if (
+      el.id === 'ms-container' ||
+      el.id === 'ms-session-bar' ||
+      el.id === 'ms-simples-chrome'
+    ) {
       return true;
     }
     if (el.hasAttribute?.('data-ms-pills')) return true;
-    if (el.closest?.('#ms-container, #ms-session-bar, #ms-simples-chrome, [data-ms-pills]')) {
+    if (
+      el.closest?.(
+        '#ms-container, #ms-session-bar, #ms-simples-chrome, [data-ms-pills]',
+      )
+    ) {
       return true;
     }
     return false;

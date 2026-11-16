@@ -39,7 +39,8 @@ export function scoreElement(element, config = defaults) {
   if (textLength >= scoring.minTextLength) {
     score += scoring.textLengthBonus;
     // Extra bonus for very text-rich blocks
-    if (textLength >= scoring.minTextLength * 3) score += scoring.textLengthBonus;
+    if (textLength >= scoring.minTextLength * 3)
+      score += scoring.textLengthBonus;
   }
 
   return score;

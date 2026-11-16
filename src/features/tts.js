@@ -14,7 +14,18 @@ let _blockIndex = 0;
 /** @type {Element|null} */
 let _activeEl = null;
 
-const BLOCK_TAGS = ['h1', 'h2', 'h3', 'h4', 'p', 'li', 'dt', 'dd', 'figcaption', 'blockquote'];
+const BLOCK_TAGS = [
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'p',
+  'li',
+  'dt',
+  'dd',
+  'figcaption',
+  'blockquote',
+];
 
 /**
  * @param {Element} el
@@ -31,13 +42,17 @@ function closestSafe(el, selector) {
     // Simple class / id / tag checks when matches is absent
     const parts = selector.split(',').map((s) => s.trim());
     for (const part of parts) {
-      if (part.startsWith('.') && node.classList?.contains(part.slice(1))) return node;
+      if (part.startsWith('.') && node.classList?.contains(part.slice(1)))
+        return node;
       if (part.startsWith('#') && node.id === part.slice(1)) return node;
       if (part.startsWith('[') && part.endsWith(']')) {
         const attr = part.slice(1, -1).split('=')[0];
         if (node.hasAttribute?.(attr)) return node;
       }
-      if (/^[a-z][a-z0-9]*$/i.test(part) && node.tagName?.toLowerCase() === part.toLowerCase()) {
+      if (
+        /^[a-z][a-z0-9]*$/i.test(part) &&
+        node.tagName?.toLowerCase() === part.toLowerCase()
+      ) {
         return node;
       }
     }
@@ -63,7 +78,12 @@ function getRoot() {
  * @returns {boolean}
  */
 function isVisiblyReadable(el) {
-  if (!el || closestSafe(el, '#ms-container') || closestSafe(el, '#ms-simples-chrome') || closestSafe(el, '#ms-session-bar')) {
+  if (
+    !el ||
+    closestSafe(el, '#ms-container') ||
+    closestSafe(el, '#ms-simples-chrome') ||
+    closestSafe(el, '#ms-session-bar')
+  ) {
     return false;
   }
   if (closestSafe(el, '[data-ms-hidden]')) return false;
@@ -78,7 +98,9 @@ function isVisiblyReadable(el) {
   if (simpleLang && closestSafe(el, '[data-ms-plain]')) return false;
   if (!simpleLang && closestSafe(el, '[data-ms-simple]')) return false;
 
-  const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
+  const text = (el.innerText || el.textContent || '')
+    .replace(/\s+/g, ' ')
+    .trim();
   return text.length > 0;
 }
 
@@ -161,7 +183,9 @@ function speakBlockAt(index) {
   _blockIndex = index;
   highlightAndScroll(el);
 
-  const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
+  const text = (el.innerText || el.textContent || '')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (!text) {
     speakBlockAt(index + 1);
     return;

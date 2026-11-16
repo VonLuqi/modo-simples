@@ -22,7 +22,13 @@
  *
  * @returns {{ element: HTMLDivElement, setChecked: (value: boolean) => void }}
  */
-export function createToggle({ id, label, description = '', checked = false, onChange }) {
+export function createToggle({
+  id,
+  label,
+  description = '',
+  checked = false,
+  onChange,
+}) {
   const row = document.createElement('div');
   row.className = 'ms-toggle-row';
 
