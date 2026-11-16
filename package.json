@@ -32,9 +32,12 @@
     "test:watch": "node scripts/test.cjs --watch",
     "smoke:examples": "node scripts/smoke-examples.cjs",
     "smoke:assistente": "node scripts/smoke-assistente.cjs",
-    "preview": "npx --yes serve . -l 8765 --no-clipboard",
+    "preview": "serve . -l 8765 --no-clipboard",
     "format": "prettier --write .",
-    "prepare": "node -e \"try{require('child_process').execSync('npx --yes husky install',{stdio:'inherit'});}catch(e){/* husky opcional */}\""
+    "prepare": "husky",
+    "lint": "eslint .",
+    "format:check": "prettier --check src tests scripts eslint.config.js",
+    "coverage": "node scripts/test.cjs --coverage"
   },
   "keywords": [
     "accessibility",
@@ -46,9 +49,14 @@
   "author": "Projeto Integrador 2025 — Modo Simples",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "esbuild": "^0.25.0",
+    "eslint": "10.15.0",
+    "globals": "17.14.0",
+    "husky": "9.1.7",
+    "lint-staged": "17.6.1",
     "prettier": "^3.7.3",
-    "vitest": "^2.0.0"
+    "serve": "14.2.8"
   },
   "directories": {
     "example": "examples",
@@ -63,6 +71,10 @@
   },
   "homepage": "https://github.com/VonLuqi/modo-simples#readme",
   "lint-staged": {
-    "*.{js,css,md}": "prettier --write"
+    "*.js": [
+      "prettier --write",
+      "eslint --no-warn-ignored"
+    ],
+    "*.{css,md}": "prettier --write"
   }
 }

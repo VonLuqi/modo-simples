@@ -1,3 +1,4 @@
+/* global process */
 /**
  * Lightweight internal event bus.
  *
@@ -52,7 +53,6 @@ const eventBus = {
       try {
         cb(data);
       } catch (err) {
-        // eslint-disable-next-line no-console
         if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
           console.error('[ModoSimples] Event handler error:', err);
         }
