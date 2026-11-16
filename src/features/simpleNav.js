@@ -133,9 +133,7 @@ function _mount(nav) {
     return;
   }
 
-  const header =
-    document.querySelector('header.site-header') ||
-    document.querySelector('header');
+  const header = document.querySelector('header');
   if (header) {
     header.insertAdjacentElement('afterend', nav);
     return;
@@ -165,9 +163,7 @@ function _markCurrent(nav) {
 
     try {
       const resolved =
-        typeof location !== 'undefined'
-          ? new URL(href, location.href)
-          : null;
+        typeof location !== 'undefined' ? new URL(href, location.href) : null;
       const match =
         (resolved && resolved.href === hrefFull) ||
         href === file ||

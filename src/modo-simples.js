@@ -197,6 +197,12 @@ class ModoSimples {
     }
     if (
       this._initialized &&
+      Object.prototype.hasOwnProperty.call(patch, 'sessionBar')
+    ) {
+      this._syncSessionChrome();
+    }
+    if (
+      this._initialized &&
       Object.prototype.hasOwnProperty.call(patch, 'simpleNav')
     ) {
       this._syncSimpleNav();
@@ -241,23 +247,34 @@ class ModoSimples {
     this._panel.sync(s);
     if (s.panelOpen) this._panel.open();
 
-    this._chrome = createSessionChrome({
-      onToggleModoSimples: (value) => this._setModoSimples(value),
-      onOpenPanel: () => this._openPanel(),
-      onSpeak: () => this._toggleSpeak(),
-      onToggleSimpleLanguage: (value) =>
-        state.set({ options: { simpleLanguage: value } }),
-      onToggleHideImages: (hide) => {
-        state.set({ options: { hideImages: hide } });
-        if (state.get().modoSimples) this._savePreferShowImages(!hide);
-      },
-    });
-    this._chrome.sync(s);
+    this._syncSessionChrome();
 
     this._simpleNav = createSimpleNav();
     this._syncSimpleNav();
     // Reposiciona SIMPLES após pills (MS on some com o header)
-    this._chrome.sync(s);
+    if (this._chrome) this._chrome.sync(s);
+  }
+
+  /** Cria/destrói a barra de sessão conforme config.sessionBar (default: desligada). */
+  _syncSessionChrome() {
+    if (this._config.sessionBar && !this._chrome) {
+      this._chrome = createSessionChrome({
+        mount: this._config.mount || {},
+        onToggleModoSimples: (value) => this._setModoSimples(value),
+        onOpenPanel: () => this._openPanel(),
+        onSpeak: () => this._toggleSpeak(),
+        onToggleSimpleLanguage: (value) =>
+          state.set({ options: { simpleLanguage: value } }),
+        onToggleHideImages: (hide) => {
+          state.set({ options: { hideImages: hide } });
+          if (state.get().modoSimples) this._savePreferShowImages(!hide);
+        },
+      });
+      this._chrome.sync(state.get());
+    } else if (!this._config.sessionBar && this._chrome) {
+      this._chrome.destroy();
+      this._chrome = null;
+    }
   }
 
   _syncSimpleNav() {
@@ -519,11 +536,21 @@ class ModoSimples {
   }
 }
 
+/**
+ * Config pré-boot opcional: <script>window.ModoSimplesConfig = { ... }</script> antes do bundle.
+ * @param {{ ModoSimplesConfig?: unknown }} win
+ * @returns {Object}
+ */
+export function readPreBootConfig(win) {
+  const cfg = win && win.ModoSimplesConfig;
+  return cfg && typeof cfg === 'object' ? cfg : {};
+}
+
 // ── Auto-boot ──────────────────────────────────────────────────────────────────
 
 if (typeof window !== 'undefined') {
   function boot() {
-    const instance = new ModoSimples();
+    const instance = new ModoSimples(readPreBootConfig(window));
     instance.init();
     window.ModoSimples = instance;
   }

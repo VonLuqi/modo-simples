@@ -79,7 +79,10 @@ describe('mutator — classes Modo Simples (F5-T09)', () => {
   });
 
   it('applyModoSimples adiciona ms-ativo, marca principal e esconde distrações', () => {
-    applyModoSimples({ options: { textScale: '100', colorTheme: 'senac' } }, configTeste);
+    applyModoSimples(
+      { options: { textScale: '100', colorTheme: 'senac' } },
+      configTeste,
+    );
 
     const html = document.documentElement;
     assert.ok(html.classList.contains('ms-ativo'));
@@ -123,12 +126,18 @@ describe('createFab — aria-expanded (F5-T09)', () => {
     const { button, element, sync } = createFab({ onClick() {} });
 
     assert.equal(button.getAttribute('aria-expanded'), 'false');
-    assert.equal(button.getAttribute('aria-label'), 'Abrir painel de acessibilidade');
+    assert.equal(
+      button.getAttribute('aria-label'),
+      'Abrir painel de acessibilidade',
+    );
     assert.ok(!button.classList.contains('ms-fab--open'));
 
     sync({ panelOpen: true });
     assert.equal(button.getAttribute('aria-expanded'), 'true');
-    assert.equal(button.getAttribute('aria-label'), 'Fechar painel de acessibilidade');
+    assert.equal(
+      button.getAttribute('aria-label'),
+      'Fechar painel de acessibilidade',
+    );
     assert.ok(button.classList.contains('ms-fab--open'));
     assert.ok(element.classList.contains('ms-fab-wrap--open'));
 
@@ -215,9 +224,11 @@ describe('createSessionChrome — sync (F5-T09)', () => {
       'Ocultar imagens deve esconder todas as imgs (sem exceção .brand-logo)',
     );
     assert.ok(
-      pageCss.includes("html.ms-theme-darkHigh .site-header") &&
+      pageCss.includes('html.ms-theme-darkHigh .site-header') &&
         pageCss.includes('background-color: #0f172a !important') &&
-        pageCss.includes("html.ms-theme-darkHigh .main-nav a[aria-current='page']"),
+        pageCss.includes(
+          "html.ms-theme-darkHigh .main-nav a[aria-current='page']",
+        ),
       'Temas devem dar fundo opaco no header e destaque em aria-current',
     );
 
@@ -254,6 +265,7 @@ describe('createSessionChrome — sync (F5-T09)', () => {
 
   it('com MS on reposiciona o switch SIMPLES nas pills (header some)', () => {
     const chrome = createSessionChrome({
+      mount: { chrome: '.site-header .header-inner' },
       onToggleModoSimples() {},
       onOpenPanel() {},
       onSpeak() {},
@@ -276,7 +288,10 @@ describe('createSessionChrome — sync (F5-T09)', () => {
 
     chrome.sync({ modoSimples: true, options: {} });
     assert.equal(switchBtn.getAttribute('aria-checked'), 'true');
-    assert.ok(inner.contains(chromeEl), 'switch deve ir para o nav de pills com MS on');
+    assert.ok(
+      inner.contains(chromeEl),
+      'switch deve ir para o nav de pills com MS on',
+    );
     assert.ok(chromeEl.classList.contains('ms-simples-chrome--ms-nav'));
 
     chrome.sync({ modoSimples: false, options: {} });

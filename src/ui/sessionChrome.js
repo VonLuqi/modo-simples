@@ -22,6 +22,9 @@ const SLIDERS_ICON = `
  * @param {() => void} opts.onSpeak
  * @param {(on: boolean) => void} opts.onToggleSimpleLanguage
  * @param {(hide: boolean) => void} [opts.onToggleHideImages]
+ * @param {{ chrome?: string|string[], bar?: string|string[] }} [opts.mount]
+ *   chrome: container onde entra o switch SIMPLES · bar: elemento APÓS o qual a barra entra
+ *   (seletor ou lista, primeiro que existir). Sem mount: switch fixo + barra no topo do body.
  * @returns {{
  *   sync: (state: Object, ui?: { speaking?: boolean }) => void,
  *   destroy: () => void,
@@ -33,6 +36,7 @@ export function createSessionChrome({
   onSpeak,
   onToggleSimpleLanguage,
   onToggleHideImages,
+  mount = {},
 }) {
   const chrome = document.createElement('div');
   chrome.id = 'ms-simples-chrome';
@@ -93,16 +97,22 @@ export function createSessionChrome({
     </div>
   `;
 
-  _mountChrome(chrome);
-  _mountBar(bar);
+  _mountChrome(chrome, mount);
+  _mountBar(bar, mount);
 
-  chrome.querySelector('[data-action="toggle-simples"]').addEventListener('click', (e) => {
-    const on = e.currentTarget.getAttribute('aria-checked') !== 'true';
-    onToggleModoSimples(on);
-  });
-  chrome.querySelector('[data-action="open-panel"]').addEventListener('click', () => onOpenPanel());
+  chrome
+    .querySelector('[data-action="toggle-simples"]')
+    .addEventListener('click', (e) => {
+      const on = e.currentTarget.getAttribute('aria-checked') !== 'true';
+      onToggleModoSimples(on);
+    });
+  chrome
+    .querySelector('[data-action="open-panel"]')
+    .addEventListener('click', () => onOpenPanel());
 
-  bar.querySelector('[data-action="speak"]').addEventListener('click', () => onSpeak());
+  bar
+    .querySelector('[data-action="speak"]')
+    .addEventListener('click', () => onSpeak());
   bar.querySelector('[data-action="lang"]').addEventListener('click', (e) => {
     const next = e.currentTarget.getAttribute('aria-pressed') !== 'true';
     onToggleSimpleLanguage(next);
@@ -134,10 +144,13 @@ export function createSessionChrome({
       );
     }
     if (wrap) wrap.setAttribute('data-active', String(on));
-    if (sub) sub.textContent = on ? 'Interface Simplificada' : 'Acessibilidade Cognitiva';
+    if (sub)
+      sub.textContent = on
+        ? 'Interface Simplificada'
+        : 'Acessibilidade Cognitiva';
 
     // Header some com MS on (distração) — reposiciona o mesmo switch no nav de pills
-    _placeChrome(chrome, on);
+    _placeChrome(chrome, on, mount);
 
     const inner = bar.querySelector('.ms-session-bar-inner');
     const off = bar.querySelector('.ms-session-off');
@@ -188,7 +201,8 @@ export function createSessionChrome({
           ui.speaking ? 'Parar leitura da página' : 'Ouvir página',
         );
       }
-      if (speakLabel) speakLabel.textContent = ui.speaking ? 'Parar Voz' : 'Ouvir Página';
+      if (speakLabel)
+        speakLabel.textContent = ui.speaking ? 'Parar Voz' : 'Ouvir Página';
     }
   }
 
@@ -200,13 +214,34 @@ export function createSessionChrome({
   return { sync, destroy };
 }
 
-function _mountChrome(chrome) {
-  chrome.classList.remove('ms-simples-chrome--ms-nav', 'ms-simples-chrome--fixed');
-  const host =
-    document.querySelector('.site-header .header-inner') ||
-    document.querySelector('.cabecalho') ||
-    document.querySelector('header .fx.bg27') ||
-    document.querySelector('header');
+/**
+ * Primeiro elemento que casa com um seletor (ou lista de seletores). Seletor inválido é ignorado.
+ * @param {string|string[]|undefined} selectors
+ * @returns {Element|null}
+ */
+function _resolve(selectors) {
+  const list = Array.isArray(selectors)
+    ? selectors
+    : selectors
+      ? [selectors]
+      : [];
+  for (const sel of list) {
+    try {
+      const el = document.querySelector(sel);
+      if (el) return el;
+    } catch (_) {
+      // seletor inválido — tenta o próximo
+    }
+  }
+  return null;
+}
+
+function _mountChrome(chrome, mount) {
+  chrome.classList.remove(
+    'ms-simples-chrome--ms-nav',
+    'ms-simples-chrome--fixed',
+  );
+  const host = _resolve(mount?.chrome);
   if (host) {
     host.appendChild(chrome);
   } else {
@@ -220,9 +255,9 @@ function _mountChrome(chrome) {
  * @param {HTMLElement} chrome
  * @param {boolean} modoOn
  */
-function _placeChrome(chrome, modoOn) {
+function _placeChrome(chrome, modoOn, mount) {
   if (!modoOn) {
-    _mountChrome(chrome);
+    _mountChrome(chrome, mount);
     return;
   }
 
@@ -237,13 +272,17 @@ function _placeChrome(chrome, modoOn) {
     return;
   }
 
-  const barOnActions = document.querySelector('#ms-session-bar .ms-session-actions');
+  const barOnActions = document.querySelector(
+    '#ms-session-bar .ms-session-actions',
+  );
   if (barOnActions) {
     barOnActions.appendChild(chrome);
     return;
   }
 
-  const barInner = document.querySelector('#ms-session-bar .ms-session-bar-inner');
+  const barInner = document.querySelector(
+    '#ms-session-bar .ms-session-bar-inner',
+  );
   if (barInner) {
     barInner.appendChild(chrome);
     return;
@@ -253,23 +292,14 @@ function _placeChrome(chrome, modoOn) {
   document.body.appendChild(chrome);
 }
 
-function _mountBar(bar) {
-  const header = document.querySelector('header.site-header') || document.querySelector('header');
-  if (header) {
-    header.insertAdjacentElement('afterend', bar);
+function _mountBar(bar, mount) {
+  const anchor = _resolve(mount?.bar);
+  if (anchor) {
+    anchor.insertAdjacentElement('afterend', bar);
     const pills = document.querySelector('[data-ms-pills]');
     if (pills && bar.nextElementSibling !== pills) {
       bar.insertAdjacentElement('afterend', pills);
     }
-    return;
-  }
-
-  const nav =
-    document.querySelector('nav[aria-label="Menu principal"]') ||
-    document.querySelector('.cabecalho__nav') ||
-    document.querySelector('nav');
-  if (nav) {
-    nav.insertAdjacentElement('afterend', bar);
     return;
   }
   document.body.prepend(bar);

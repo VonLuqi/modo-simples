@@ -705,7 +705,6 @@ export function getPageStyles() {
     html.ms-hide-images img:not([data-ms-keep-img]),
     html.ms-hide-images picture:not([data-ms-keep-img]),
     html.ms-hide-images video,
-    html.ms-hide-images .home-hero__media,
     html.ms-hide-images [data-ms-deco-img] {
       display: none !important;
     }

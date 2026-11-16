@@ -31,7 +31,6 @@
       '[role="banner"]',
       '[role="contentinfo"]',
       "nav",
-      ".barra-superior",
       ".ad",
       ".ads",
       ".advertisement",
@@ -45,7 +44,6 @@
       '[class*="carousel"]',
       '[class*="slider"]',
       ".slider",
-      ".s1",
       "iframe"
     ],
     /** Scoring weights used by the heuristic engine. */
@@ -77,6 +75,20 @@
      * Milliseconds to debounce MutationObserver reprocessing after DOM changes.
      */
     reprocessDebounce: 300,
+    /**
+     * Session bar (switch SIMPLES + barra "Modo Simples ativado") injected in the host page.
+     * Default false: only the FAB + panel (Shadow DOM) are injected.
+     * @type {boolean}
+     */
+    sessionBar: false,
+    /**
+     * Where the session bar goes (only used when sessionBar is true). Selector or list of
+     * selectors (first match wins). Without mount: switch fixed on screen + bar at top of <body>.
+     *   chrome → container that receives the SIMPLES switch
+     *   bar    → element AFTER which the bar is inserted
+     * @type {null | { chrome?: string|string[], bar?: string|string[] }}
+     */
+    mount: null,
     /**
      * Lexend font source. Loaded lazily, only when the user turns on the dyslexia font.
      *   null   → default (Google Fonts, no-referrer) — requested only after the user opts in
@@ -1010,7 +1022,6 @@
     html.ms-hide-images img:not([data-ms-keep-img]),
     html.ms-hide-images picture:not([data-ms-keep-img]),
     html.ms-hide-images video,
-    html.ms-hide-images .home-hero__media,
     html.ms-hide-images [data-ms-deco-img] {
       display: none !important;
     }
@@ -1696,7 +1707,8 @@
     onOpenPanel,
     onSpeak,
     onToggleSimpleLanguage,
-    onToggleHideImages
+    onToggleHideImages,
+    mount = {}
   }) {
     const chrome = document.createElement("div");
     chrome.id = "ms-simples-chrome";
@@ -1755,8 +1767,8 @@
       </div>
     </div>
   `;
-    _mountChrome(chrome);
-    _mountBar(bar);
+    _mountChrome(chrome, mount);
+    _mountBar(bar, mount);
     chrome.querySelector('[data-action="toggle-simples"]').addEventListener("click", (e) => {
       const on = e.currentTarget.getAttribute("aria-checked") !== "true";
       onToggleModoSimples(on);
@@ -1790,7 +1802,7 @@
       }
       if (wrap) wrap.setAttribute("data-active", String(on));
       if (sub) sub.textContent = on ? "Interface Simplificada" : "Acessibilidade Cognitiva";
-      _placeChrome(chrome, on);
+      _placeChrome(chrome, on, mount);
       const inner = bar.querySelector(".ms-session-bar-inner");
       const off = bar.querySelector(".ms-session-off");
       const onBlock = bar.querySelector(".ms-session-on");
@@ -1844,9 +1856,20 @@
     }
     return { sync, destroy };
   }
-  function _mountChrome(chrome) {
+  function _resolve(selectors) {
+    const list = Array.isArray(selectors) ? selectors : selectors ? [selectors] : [];
+    for (const sel of list) {
+      try {
+        const el = document.querySelector(sel);
+        if (el) return el;
+      } catch (_) {
+      }
+    }
+    return null;
+  }
+  function _mountChrome(chrome, mount) {
     chrome.classList.remove("ms-simples-chrome--ms-nav", "ms-simples-chrome--fixed");
-    const host = document.querySelector(".site-header .header-inner") || document.querySelector(".cabecalho") || document.querySelector("header .fx.bg27") || document.querySelector("header");
+    const host = _resolve(mount == null ? void 0 : mount.chrome);
     if (host) {
       host.appendChild(chrome);
     } else {
@@ -1854,9 +1877,9 @@
       document.body.appendChild(chrome);
     }
   }
-  function _placeChrome(chrome, modoOn) {
+  function _placeChrome(chrome, modoOn, mount) {
     if (!modoOn) {
-      _mountChrome(chrome);
+      _mountChrome(chrome, mount);
       return;
     }
     chrome.classList.remove("ms-simples-chrome--fixed");
@@ -1879,19 +1902,14 @@
     chrome.classList.add("ms-simples-chrome--fixed");
     document.body.appendChild(chrome);
   }
-  function _mountBar(bar) {
-    const header = document.querySelector("header.site-header") || document.querySelector("header");
-    if (header) {
-      header.insertAdjacentElement("afterend", bar);
+  function _mountBar(bar, mount) {
+    const anchor = _resolve(mount == null ? void 0 : mount.bar);
+    if (anchor) {
+      anchor.insertAdjacentElement("afterend", bar);
       const pills = document.querySelector("[data-ms-pills]");
       if (pills && bar.nextElementSibling !== pills) {
         bar.insertAdjacentElement("afterend", pills);
       }
-      return;
-    }
-    const nav = document.querySelector('nav[aria-label="Menu principal"]') || document.querySelector(".cabecalho__nav") || document.querySelector("nav");
-    if (nav) {
-      nav.insertAdjacentElement("afterend", bar);
       return;
     }
     document.body.prepend(bar);
@@ -2549,7 +2567,7 @@
       bar.insertAdjacentElement("afterend", nav);
       return;
     }
-    const header = document.querySelector("header.site-header") || document.querySelector("header");
+    const header = document.querySelector("header");
     if (header) {
       header.insertAdjacentElement("afterend", nav);
       return;
@@ -2717,6 +2735,9 @@
       if (Object.prototype.hasOwnProperty.call(patch, "fontUrl")) {
         setLexendFontUrl(this._config.fontUrl);
       }
+      if (this._initialized && Object.prototype.hasOwnProperty.call(patch, "sessionBar")) {
+        this._syncSessionChrome();
+      }
       if (this._initialized && Object.prototype.hasOwnProperty.call(patch, "simpleNav")) {
         this._syncSimpleNav();
       }
@@ -2751,20 +2772,30 @@
       this._fab.sync({ panelOpen: s.panelOpen });
       this._panel.sync(s);
       if (s.panelOpen) this._panel.open();
-      this._chrome = createSessionChrome({
-        onToggleModoSimples: (value) => this._setModoSimples(value),
-        onOpenPanel: () => this._openPanel(),
-        onSpeak: () => this._toggleSpeak(),
-        onToggleSimpleLanguage: (value) => state_default.set({ options: { simpleLanguage: value } }),
-        onToggleHideImages: (hide) => {
-          state_default.set({ options: { hideImages: hide } });
-          if (state_default.get().modoSimples) this._savePreferShowImages(!hide);
-        }
-      });
-      this._chrome.sync(s);
+      this._syncSessionChrome();
       this._simpleNav = createSimpleNav();
       this._syncSimpleNav();
-      this._chrome.sync(s);
+      if (this._chrome) this._chrome.sync(s);
+    }
+    /** Cria/destrói a barra de sessão conforme config.sessionBar (default: desligada). */
+    _syncSessionChrome() {
+      if (this._config.sessionBar && !this._chrome) {
+        this._chrome = createSessionChrome({
+          mount: this._config.mount || {},
+          onToggleModoSimples: (value) => this._setModoSimples(value),
+          onOpenPanel: () => this._openPanel(),
+          onSpeak: () => this._toggleSpeak(),
+          onToggleSimpleLanguage: (value) => state_default.set({ options: { simpleLanguage: value } }),
+          onToggleHideImages: (hide) => {
+            state_default.set({ options: { hideImages: hide } });
+            if (state_default.get().modoSimples) this._savePreferShowImages(!hide);
+          }
+        });
+        this._chrome.sync(state_default.get());
+      } else if (!this._config.sessionBar && this._chrome) {
+        this._chrome.destroy();
+        this._chrome = null;
+      }
     }
     _syncSimpleNav() {
       if (!this._simpleNav) return;
@@ -2984,9 +3015,13 @@
       }
     }
   };
+  function readPreBootConfig(win) {
+    const cfg = win && win.ModoSimplesConfig;
+    return cfg && typeof cfg === "object" ? cfg : {};
+  }
   if (typeof window !== "undefined") {
     let boot = function() {
-      const instance = new ModoSimples();
+      const instance = new ModoSimples(readPreBootConfig(window));
       instance.init();
       window.ModoSimples = instance;
     };

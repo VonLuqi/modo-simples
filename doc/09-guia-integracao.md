@@ -10,7 +10,7 @@ Versão do pacote: **1.1.0** · UI: [06 painel](./06-ui-painel-acessibilidade.md
 Ao incluir o Modo Simples em uma página (auto-boot):
 
 1. Injeta FAB laranja (abre o painel **Acessibilidade Digital** em Shadow DOM)
-2. Injeta toggle **SIMPLES** no header (ou fixo) + barra âmbar de sessão
+2. (Opt-in, `sessionBar: true`) Injeta toggle **SIMPLES** + barra âmbar de sessão no host — por padrão só FAB + painel
 3. Permite ativar o **Modo Simples** (oculta distrações, destaca conteúdo principal)
 4. Oferece tamanho de texto, temas, Lexend, régua, links, espaçamento, ocultar imagens, TTS
 5. Persiste preferências em `localStorage` (por hostname, se configurado)
@@ -140,18 +140,20 @@ Ativar/desativar: **só** pelo switch **SIMPLES** (header ou, com MS on, nas pil
 
 Todas as chaves são opcionais. Fonte: [`src/config/defaults.js`](../src/config/defaults.js).
 
-| Chave                  | Tipo / default   | Descrição                                                                                                                                                                                                                                                          |
-| ---------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `mainSelectors`        | `string[]`       | Seletores tentados em ordem para achar o conteúdo principal                                                                                                                                                                                                        |
-| `distractionSelectors` | `string[]`       | Candidatos a ocultar com MS on (nunca esconde ancestrais/descendentes do principal nem chrome `#ms-*`)                                                                                                                                                             |
-| `scoring`              | objeto           | Pesos da heurística (`mainTagBonus`, `h1Bonus`, `minTextLength`, …)                                                                                                                                                                                                |
-| `persistence`          | `true`           | Salva estado em `localStorage`                                                                                                                                                                                                                                     |
-| `hostnamePersistence`  | `true`           | Escopa chaves por hostname (`ms_state:hostname`)                                                                                                                                                                                                                   |
-| `position`             | `'bottom-right'` | Canto do FAB: `bottom-right` \| `bottom-left` \| `top-right` \| `top-left`                                                                                                                                                                                         |
-| `confidenceThreshold`  | `0.45`           | Abaixo disso, pede seleção manual do conteúdo principal                                                                                                                                                                                                            |
-| `reprocessDebounce`    | `300`            | Debounce (ms) do MutationObserver                                                                                                                                                                                                                                  |
-| `fontUrl`              | `null`           | Origem da fonte Lexend, carregada **só quando o usuário liga a fonte** (nenhuma requisição a terceiros no init). `null` = Google Fonts (`crossorigin`, `referrerpolicy=no-referrer`) · `string` = CSS self-hosted · `false` = nunca carrega (usa fonte do sistema) |
-| `simpleNav`            | `null`           | Lista de pills `{ label, href, short? }` se a página **não** tiver `[data-ms-pills]`                                                                                                                                                                               |
+| Chave                  | Tipo / default   | Descrição                                                                                                                                                                                                                                                                                                   |
+| ---------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mainSelectors`        | `string[]`       | Seletores tentados em ordem para achar o conteúdo principal                                                                                                                                                                                                                                                 |
+| `distractionSelectors` | `string[]`       | Candidatos a ocultar com MS on (nunca esconde ancestrais/descendentes do principal nem chrome `#ms-*`)                                                                                                                                                                                                      |
+| `scoring`              | objeto           | Pesos da heurística (`mainTagBonus`, `h1Bonus`, `minTextLength`, …)                                                                                                                                                                                                                                         |
+| `persistence`          | `true`           | Salva estado em `localStorage`                                                                                                                                                                                                                                                                              |
+| `hostnamePersistence`  | `true`           | Escopa chaves por hostname (`ms_state:hostname`)                                                                                                                                                                                                                                                            |
+| `position`             | `'bottom-right'` | Canto do FAB: `bottom-right` \| `bottom-left` \| `top-right` \| `top-left`                                                                                                                                                                                                                                  |
+| `confidenceThreshold`  | `0.45`           | Abaixo disso, pede seleção manual do conteúdo principal                                                                                                                                                                                                                                                     |
+| `reprocessDebounce`    | `300`            | Debounce (ms) do MutationObserver                                                                                                                                                                                                                                                                           |
+| `fontUrl`              | `null`           | Origem da fonte Lexend, carregada **só quando o usuário liga a fonte** (nenhuma requisição a terceiros no init). `null` = Google Fonts (`crossorigin`, `referrerpolicy=no-referrer`) · `string` = CSS self-hosted · `false` = nunca carrega (usa fonte do sistema)                                          |
+| `sessionBar`           | `false`          | Barra de sessão no **light DOM** do host (switch SIMPLES + barra "Modo Simples ativado"). Desligada por padrão: só FAB + painel (Shadow DOM) são injetados. Aceita `configure({ sessionBar: true/false })` em runtime                                                                                       |
+| `mount`                | `null`           | Onde a barra de sessão entra (só com `sessionBar: true`): `{ chrome?: seletor \| seletor[], bar?: seletor \| seletor[] }`, primeiro que existir. `chrome` = container do switch SIMPLES · `bar` = elemento **após** o qual a barra é inserida. Sem `mount`: switch fixo na tela + barra no topo do `<body>` |
+| `simpleNav`            | `null`           | Lista de pills `{ label, href, short? }` se a página **não** tiver `[data-ms-pills]`                                                                                                                                                                                                                        |
 
 ### Defaults de seletores (resumo)
 
@@ -160,6 +162,26 @@ Todas as chaves são opcionais. Fonte: [`src/config/defaults.js`](../src/config/
 **Distrações (exemplos):** `header`, `footer`, `aside`, `nav`, banners/ads/sidebars, `iframe`, …
 
 Chrome da lib **nunca** é tratado como distração: `#ms-container`, `#ms-session-bar`, `#ms-simples-chrome`, `[data-ms-pills]`.
+
+### Config pré-boot (`window.ModoSimplesConfig`)
+
+O bundle faz auto-boot ao carregar. Para passar config **antes** do init (ex.: `sessionBar`, `mount`, `position`, `persistence`), defina o objeto antes do `<script>` da lib:
+
+```html
+<script>
+  window.ModoSimplesConfig = {
+    position: 'bottom-left',
+    sessionBar: true,
+    mount: {
+      chrome: ['.site-header .header-inner', 'header'],
+      bar: ['header'],
+    },
+  };
+</script>
+<script src="/dist/modo-simples.min.js"></script>
+```
+
+`configure()` depois do boot continua válido (`simpleNav`, `sessionBar`, `fontUrl`, limiares…), mas chaves lidas só no init (`position`, `persistence`, `hostnamePersistence`) precisam vir pelo pré-boot. O protótipo usa [`examples/js/ms-config.js`](../examples/js/ms-config.js).
 
 ### `simpleNav`
 

@@ -35,7 +35,6 @@ const defaults = {
     '[role="banner"]',
     '[role="contentinfo"]',
     'nav',
-    '.barra-superior',
     '.ad',
     '.ads',
     '.advertisement',
@@ -49,7 +48,6 @@ const defaults = {
     '[class*="carousel"]',
     '[class*="slider"]',
     '.slider',
-    '.s1',
     'iframe',
   ],
 
@@ -87,6 +85,22 @@ const defaults = {
    * Milliseconds to debounce MutationObserver reprocessing after DOM changes.
    */
   reprocessDebounce: 300,
+
+  /**
+   * Session bar (switch SIMPLES + barra "Modo Simples ativado") injected in the host page.
+   * Default false: only the FAB + panel (Shadow DOM) are injected.
+   * @type {boolean}
+   */
+  sessionBar: false,
+
+  /**
+   * Where the session bar goes (only used when sessionBar is true). Selector or list of
+   * selectors (first match wins). Without mount: switch fixed on screen + bar at top of <body>.
+   *   chrome → container that receives the SIMPLES switch
+   *   bar    → element AFTER which the bar is inserted
+   * @type {null | { chrome?: string|string[], bar?: string|string[] }}
+   */
+  mount: null,
 
   /**
    * Lexend font source. Loaded lazily, only when the user turns on the dyslexia font.

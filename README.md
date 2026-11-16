@@ -115,16 +115,21 @@ window.ModoSimples.configure({
 
 ### Configuração principal (`configure` / defaults)
 
-| Chave                  | Default                     | Papel                                              |
-| ---------------------- | --------------------------- | -------------------------------------------------- |
-| `position`             | `bottom-right`              | Canto do FAB                                       |
-| `persistence`          | `true`                      | Salva preferências em `localStorage`               |
-| `hostnamePersistence`  | `true`                      | Escopo por hostname                                |
-| `confidenceThreshold`  | `0.45`                      | Abaixo → seleção manual do conteúdo                |
-| `reprocessDebounce`    | `300`                       | Debounce do observer (SPA)                         |
-| `mainSelectors`        | `main`, `[role=main]`, …    | Onde achar o conteúdo                              |
-| `distractionSelectors` | `header`, `nav`, `aside`, … | O que ocultar no MS                                |
-| `simpleNav`            | `null`                      | Pills injetáveis (se não houver `[data-ms-pills]`) |
+| Chave                  | Default                     | Papel                                                                  |
+| ---------------------- | --------------------------- | ---------------------------------------------------------------------- |
+| `position`             | `bottom-right`              | Canto do FAB                                                           |
+| `persistence`          | `true`                      | Salva preferências em `localStorage`                                   |
+| `hostnamePersistence`  | `true`                      | Escopo por hostname                                                    |
+| `confidenceThreshold`  | `0.45`                      | Abaixo → seleção manual do conteúdo                                    |
+| `reprocessDebounce`    | `300`                       | Debounce do observer (SPA)                                             |
+| `mainSelectors`        | `main`, `[role=main]`, …    | Onde achar o conteúdo                                                  |
+| `distractionSelectors` | `header`, `nav`, `aside`, … | O que ocultar no MS                                                    |
+| `sessionBar`           | `false`                     | Barra de sessão (switch SIMPLES + barra) no host; opt-in               |
+| `mount`                | `null`                      | `{ chrome, bar }` seletores onde montar a barra de sessão              |
+| `fontUrl`              | `null`                      | Lexend sob demanda: `null` Google · `string` self-host · `false` nunca |
+| `simpleNav`            | `null`                      | Pills injetáveis (se não houver `[data-ms-pills]`)                     |
+
+Config **antes** do boot: `<script>window.ModoSimplesConfig = { sessionBar: true, mount: { … } }</script>` antes do bundle (ver [`examples/js/ms-config.js`](./examples/js/ms-config.js)).
 
 Tabela completa: [`doc/09-guia-integracao.md`](./doc/09-guia-integracao.md#4-configuração-da-lib-defaults--configure).
 
