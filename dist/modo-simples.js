@@ -142,7 +142,9 @@
      */
     off(event, callback) {
       if (!this._listeners[event]) return;
-      this._listeners[event] = this._listeners[event].filter((cb) => cb !== callback);
+      this._listeners[event] = this._listeners[event].filter(
+        (cb) => cb !== callback
+      );
     },
     /**
      * Emit an event, invoking all registered callbacks with data.
@@ -314,7 +316,9 @@
       modoSimples,
       options: {
         textScale: ["100", "125", "150", "175"].includes(textScale) ? textScale : "100",
-        colorTheme: ["senac", "yellowBlack", "darkHigh", "soft"].includes(colorTheme) ? colorTheme : "senac",
+        colorTheme: ["senac", "yellowBlack", "darkHigh", "soft"].includes(
+          colorTheme
+        ) ? colorTheme : "senac",
         dyslexiaFont: Boolean(opts.dyslexiaFont),
         readingRuler: Boolean(opts.readingRuler),
         highlightLinks: Boolean(opts.highlightLinks),
@@ -1696,16 +1700,21 @@
         btn.setAttribute("aria-checked", String(on));
         btn.classList.toggle("ms-theme-btn--on", on);
       });
-      ["dyslexiaFont", "readingRuler", "highlightLinks", "textSpacing", "reducedMotion", "hideImages"].forEach(
-        (key) => {
-          var _a2;
-          const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
-          if (!btn) return;
-          const on = !!((_a2 = s.options) == null ? void 0 : _a2[key]);
-          btn.setAttribute("aria-checked", String(on));
-          btn.classList.toggle("ms-switch--on", on);
-        }
-      );
+      [
+        "dyslexiaFont",
+        "readingRuler",
+        "highlightLinks",
+        "textSpacing",
+        "reducedMotion",
+        "hideImages"
+      ].forEach((key) => {
+        var _a2;
+        const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
+        if (!btn) return;
+        const on = !!((_a2 = s.options) == null ? void 0 : _a2[key]);
+        btn.setAttribute("aria-checked", String(on));
+        btn.classList.toggle("ms-switch--on", on);
+      });
       const speakBtn = panel.querySelector('[data-action="speak"]');
       if (speakBtn && ui.speaking !== void 0) {
         speakBtn.textContent = ui.speaking ? "Parar" : "Ouvir";
@@ -1998,7 +2007,8 @@
     const textLength = ((_a = element.textContent) != null ? _a : "").trim().length;
     if (textLength >= scoring.minTextLength) {
       score += scoring.textLengthBonus;
-      if (textLength >= scoring.minTextLength * 3) score += scoring.textLengthBonus;
+      if (textLength >= scoring.minTextLength * 3)
+        score += scoring.textLengthBonus;
     }
     return score;
   }
@@ -2039,7 +2049,10 @@
         return true;
       }
       if ((_a = el.hasAttribute) == null ? void 0 : _a.call(el, "data-ms-pills")) return true;
-      if ((_b = el.closest) == null ? void 0 : _b.call(el, "#ms-container, #ms-session-bar, #ms-simples-chrome, [data-ms-pills]")) {
+      if ((_b = el.closest) == null ? void 0 : _b.call(
+        el,
+        "#ms-container, #ms-session-bar, #ms-simples-chrome, [data-ms-pills]"
+      )) {
         return true;
       }
       return false;
@@ -2266,7 +2279,18 @@
   var _blocks = [];
   var _blockIndex = 0;
   var _activeEl = null;
-  var BLOCK_TAGS = ["h1", "h2", "h3", "h4", "p", "li", "dt", "dd", "figcaption", "blockquote"];
+  var BLOCK_TAGS = [
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "p",
+    "li",
+    "dt",
+    "dd",
+    "figcaption",
+    "blockquote"
+  ];
   function closestSafe(el, selector) {
     var _a, _b, _c;
     if (!el) return null;
@@ -2276,7 +2300,8 @@
       if (node.matches && node.matches(selector)) return node;
       const parts = selector.split(",").map((s) => s.trim());
       for (const part of parts) {
-        if (part.startsWith(".") && ((_a = node.classList) == null ? void 0 : _a.contains(part.slice(1)))) return node;
+        if (part.startsWith(".") && ((_a = node.classList) == null ? void 0 : _a.contains(part.slice(1))))
+          return node;
         if (part.startsWith("#") && node.id === part.slice(1)) return node;
         if (part.startsWith("[") && part.endsWith("]")) {
           const attr = part.slice(1, -1).split("=")[0];
