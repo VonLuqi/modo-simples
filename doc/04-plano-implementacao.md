@@ -20,14 +20,14 @@ Público-alvo da experiência: pessoas com barreira digital (ex.: idosos, TDAH, 
 
 ## 2. Princípios (não negociáveis)
 
-| Princípio | Regra prática |
-| --- | --- |
-| Não destrutivo | Nunca remover nós do DOM; só classes/atributos (`data-ms-*`, `ms-*`) |
-| Reversível | Um clique desfaz tudo |
-| Zero deps no bundle | Bundle final sem dependências de runtime |
-| A11y first | Teclado, foco, ARIA, contraste, `prefers-reduced-motion` |
-| Páginas ≠ biblioteca | Markup em `examples/`; lógica em `src/` |
-| HTML semântico | `header` / `nav` / `main` / `footer` nas páginas novas |
+| Princípio            | Regra prática                                                        |
+| -------------------- | -------------------------------------------------------------------- |
+| Não destrutivo       | Nunca remover nós do DOM; só classes/atributos (`data-ms-*`, `ms-*`) |
+| Reversível           | Um clique desfaz tudo                                                |
+| Zero deps no bundle  | Bundle final sem dependências de runtime                             |
+| A11y first           | Teclado, foco, ARIA, contraste, `prefers-reduced-motion`             |
+| Páginas ≠ biblioteca | Markup em `examples/`; lógica em `src/`                              |
+| HTML semântico       | `header` / `nav` / `main` / `footer` nas páginas novas               |
 
 ---
 
@@ -35,15 +35,15 @@ Público-alvo da experiência: pessoas com barreira digital (ex.: idosos, TDAH, 
 
 Use isto como ponto de partida. Tasks abaixo partem daqui.
 
-| ID base | Entrega | Onde |
-| --- | --- | --- |
-| B01 | Ambiente Prettier + Husky + VS Code | raiz |
-| B02 | Biblioteca: state, eventBus, persistence | `src/core/` |
-| B03 | UI radial + botão central (Shadow DOM) | `src/ui/` |
-| B04 | Heurísticas + DOM mutator + observer | `src/heuristics/`, `src/mutator/` |
-| B05 | Opções (contraste, texto, motion, links, fonte, espaçamento, imagens) | state + styles |
-| B06 | Scripts de build e testes unitários | `scripts/`, `tests/unit/` |
-| B07 | Demo em Sobre Nós / Início / Contato (script módulo) | `examples/*.html` |
+| ID base | Entrega                                                               | Onde                              |
+| ------- | --------------------------------------------------------------------- | --------------------------------- |
+| B01     | Ambiente Prettier + Husky + VS Code                                   | raiz                              |
+| B02     | Biblioteca: state, eventBus, persistence                              | `src/core/`                       |
+| B03     | UI radial + botão central (Shadow DOM)                                | `src/ui/`                         |
+| B04     | Heurísticas + DOM mutator + observer                                  | `src/heuristics/`, `src/mutator/` |
+| B05     | Opções (contraste, texto, motion, links, fonte, espaçamento, imagens) | state + styles                    |
+| B06     | Scripts de build e testes unitários                                   | `scripts/`, `tests/unit/`         |
+| B07     | Demo em Sobre Nós / Início / Contato (script módulo)                  | `examples/*.html`                 |
 
 ---
 
@@ -61,6 +61,7 @@ Critério de conclusão de task: checklist de **Aceite** marcado + atualização
 Objetivo: time na mesma página; inventário do que já existe vs. o que falta nas páginas.
 
 #### F0-T01 — Congelar escopo da entrega do PI
+
 - **Prioridade:** P0
 - **Depende de:** —
 - **Descrição:** Definir o que entra na entrega da UC (MVP do protótipo + lib estável) vs. o que fica como “fase 3 / nice-to-have”.
@@ -71,6 +72,7 @@ Objetivo: time na mesma página; inventário do que já existe vs. o que falta n
 - **Concluído em:** 2026-09-10 — escopo congelado na seção 8 (inclui Pesquisa mínima para evitar 404)
 
 #### F0-T02 — Inventário das páginas da equipe
+
 - **Prioridade:** P0
 - **Depende de:** —
 - **Descrição:** Listar arquivos já no repo (`index`, `contato`, `sobrenos`, CSS, `img/`) e o que ainda falta (`cursos`, `pesquisa`, unificação de estilos/assets).
@@ -81,6 +83,7 @@ Objetivo: time na mesma página; inventário do que já existe vs. o que falta n
 - **Concluído em:** 2026-09-10 — **unificar em `examples/img/`**; `imagem/` legada até F1-T03
 
 #### F0-T03 — Papéis e donos por frente
+
 - **Prioridade:** P0
 - **Depende de:** F0-T01
 - **Descrição:** Atribuir responsável (e backup) por: páginas HTML/CSS, biblioteca JS, testes/a11y, documentação, apresentação.
@@ -88,6 +91,7 @@ Objetivo: time na mesma página; inventário do que já existe vs. o que falta n
   - [x] Tabela de donos preenchida na seção 9 deste doc
 - **Saída:** RACI simples
 - **Concluído em:** 2026-09-10 — proposta inicial por histórico Git; equipe pode ajustar nomes
+
 ---
 
 ### Fase 1 — Protótipo Senac completo e homogêneo (P0) — **CONCLUÍDA** (2026-09-10)
@@ -95,23 +99,29 @@ Objetivo: time na mesma página; inventário do que já existe vs. o que falta n
 Objetivo: site demonstrável de ponta a ponta, sem links quebrados, com markup amigável às heurísticas.
 
 #### F1-T01 — Entregar página **Cursos** ✅
+
 - **Aceite:** todos marcados · `examples/cursos.html` + `CSS/paginas-internas.css`
 
 #### F1-T02 — Entregar página **Pesquisa** ✅
+
 - **Aceite:** `examples/pesquisa.html` com busca local mínima
 
 #### F1-T03 — Unificar navegação e rodapé ✅
+
 - Nav MVP: Início / Sobre Nós / Cursos / Contato + Pesquisar
 - Assets canônicos em `examples/img/`; logo local em todas as páginas
 - Footer simples nas páginas internas + home
 
 #### F1-T04 — Markup semântico ✅
+
 - `<main>` em todas as páginas; labels no formulário de contato; headings/alts revisados
 
 #### F1-T05 — Integrar Modo Simples em todas as páginas ✅
+
 - Snippet `../src/modo-simples.js` nas 5 páginas
 
 #### F1-T06 — Smoke test ✅
+
 - HTTP 200 em páginas/assets/script · checklist: [checklists/smoke-fase1.md](./checklists/smoke-fase1.md)
 
 ---
@@ -121,6 +131,7 @@ Objetivo: site demonstrável de ponta a ponta, sem links quebrados, com markup a
 Objetivo: fechar gaps técnicos da proposta (fallback, confiança, DX de build).
 
 #### F2-T01 — Validar e corrigir build do bundle
+
 - **Prioridade:** P0
 - **Depende de:** —
 - **Descrição:** Rodar `npm install` + `npm run build`; garantir `dist/modo-simples.js` e/ou `.min.js` utilizáveis via `<script>` clássico (não só ES module).
@@ -131,6 +142,7 @@ Objetivo: fechar gaps técnicos da proposta (fallback, confiança, DX de build).
 - **Saída:** fluxo prod documentado
 
 #### F2-T02 — Modo de integração dual (dev vs prod)
+
 - **Prioridade:** P1
 - **Depende de:** F2-T01
 - **Descrição:** Padronizar comentário/snippet nas páginas: módulo ES em dev; `dist/*.min.js` em prod. Opcional: script de preview local (`npx serve examples` ou similar).
@@ -140,6 +152,7 @@ Objetivo: fechar gaps técnicos da proposta (fallback, confiança, DX de build).
 - **Saída:** DX previsível para a equipe
 
 #### F2-T03 — Fallback de seleção manual do conteúdo
+
 - **Prioridade:** P1
 - **Depende de:** —
 - **Descrição:** Quando a confiança da heurística < limiar (`confidenceThreshold`), permitir que o usuário indique o bloco principal (ex.: 1–2 cliques) e persistir a escolha.
@@ -150,6 +163,7 @@ Objetivo: fechar gaps técnicos da proposta (fallback, confiança, DX de build).
 - **Saída:** requisito F9 do plano técnico atendido
 
 #### F2-T04 — Preferências por hostname
+
 - **Prioridade:** P2
 - **Depende de:** F2-T03 (recomendado)
 - **Descrição:** Guardar no `localStorage` seletores/estado por domínio, com prioridade sobre heurística automática.
@@ -159,6 +173,7 @@ Objetivo: fechar gaps técnicos da proposta (fallback, confiança, DX de build).
 - **Saída:** multi-site prático
 
 #### F2-T05 — Melhorar heurísticas (acurácia)
+
 - **Prioridade:** P1
 - **Depende de:** F1-T05
 - **Descrição:** Ajustar scoring/seletores com base em falhas reais no protótipo (carrosséis, sidebars, popups de `index`/`contato`).
@@ -168,15 +183,17 @@ Objetivo: fechar gaps técnicos da proposta (fallback, confiança, DX de build).
 - **Saída:** heurística “boa o suficiente” para demo da UC
 
 #### F2-T06 — Cobertura de testes da biblioteca
+
 - **Prioridade:** P1
 - **Depende de:** F2-T03 (parcial)
 - **Descrição:** Completar unitários faltantes (`contentDetector`, `domMutator`, UI smoke se viável) e manter `npm test` verde.
 - **Aceite:**
-  - [ ] `npm test` passa no CI local
+  - [x] `npm test` passa localmente e no CI (GitHub Actions, `.github/workflows/ci.yml`, job `quality`)
   - [ ] Novos módulos críticos com pelo menos 1 teste de regressão
 - **Saída:** rede de segurança para refactors
 
 #### F2-T07 — Testes de integração (Playwright ou equivalente)
+
 - **Prioridade:** P2
 - **Depende de:** F1-T05, F2-T01
 - **Descrição:** Automatizar: carregar página → botão existe → ativar Modo Simples → atributos `data-ms-*` aplicados → reload restaura estado.
@@ -186,6 +203,7 @@ Objetivo: fechar gaps técnicos da proposta (fallback, confiança, DX de build).
 - **Saída:** regressão automática da demo
 
 #### F2-T08 — Redesenhar UI: painel modal (mockup PI)
+
 - **Prioridade:** P0
 - **Depende de:** —
 - **Spec:** [06-ui-painel-acessibilidade.md](./06-ui-painel-acessibilidade.md)
@@ -198,6 +216,7 @@ Objetivo: fechar gaps técnicos da proposta (fallback, confiança, DX de build).
 - **Saída:** nova UI do widget
 
 #### F2-T09 — Escala de texto 100 / 125 / 150 / 175
+
 - **Prioridade:** P0
 - **Depende de:** F2-T08 (ou em paralelo com state)
 - **Descrição:** Trocar `largerText` boolean por `textScale`; segmented control no painel; CSS correspondente.
@@ -207,6 +226,7 @@ Objetivo: fechar gaps técnicos da proposta (fallback, confiança, DX de build).
   - [ ] Opção selecionada com estilo “ativo” (azul)
 
 #### F2-T10 — Temas de contraste (4 opções)
+
 - **Prioridade:** P0
 - **Depende de:** F2-T08
 - **Descrição:** `colorTheme`: Senac · Amarelo/Preto · Escuro Alto · Descanso/Suave; grid 2×2 no painel.
@@ -216,6 +236,7 @@ Objetivo: fechar gaps técnicos da proposta (fallback, confiança, DX de build).
   - [ ] Tema Senac = default
 
 #### F2-T11 — Régua de foco de leitura
+
 - **Prioridade:** P1
 - **Depende de:** F2-T08
 - **Descrição:** Overlay que destaca a linha sob o cursor/foco para auxílio TDAH/leitura.
@@ -225,6 +246,7 @@ Objetivo: fechar gaps técnicos da proposta (fallback, confiança, DX de build).
   - [ ] Respeita `prefers-reduced-motion` se animar
 
 #### F2-T12 — Botão “Ouvir” (TTS pt-BR)
+
 - **Prioridade:** P1
 - **Depende de:** F2-T08
 - **Descrição:** Usar `speechSynthesis` para ler títulos/textos do conteúdo principal em português.
@@ -234,6 +256,7 @@ Objetivo: fechar gaps técnicos da proposta (fallback, confiança, DX de build).
   - [ ] Permite parar (segundo clique ou botão Parar)
 
 #### F2-T13 — Fonte Lexend (acessível)
+
 - **Prioridade:** P1
 - **Depende de:** F2-T08
 - **Descrição:** Toggle “Fonte Acessível (Lexend)” com stack tipográfica adequada (CDN ou font no bundle).
@@ -243,6 +266,7 @@ Objetivo: fechar gaps técnicos da proposta (fallback, confiança, DX de build).
   - [ ] Persistência
 
 #### F2-T14 — Toggle SIMPLES no header + barra abaixo do nav ✅
+
 #### F2-T15 — Botões da sessão ativa (barra ON) ✅
 
 Implementados via `src/ui/sessionChrome.js` (sincronizados com `modoSimples` / `simpleLanguage` / TTS).
@@ -251,25 +275,25 @@ Implementados via `src/ui/sessionChrome.js` (sincronizados com `modoSimples` / `
 
 ### Fase 3 — Acessibilidade, validação e modelo para devs — **CONCLUÍDA** (2026-09-10)
 
-| Task | Status |
-| --- | --- |
-| F3-T01 Auditoria a11y | ✅ `doc/checklists/a11y-menu.md` + fixes FAB/labels/foco |
-| F3-T02 Leitor de tela | ✅ `doc/checklists/leitor-tela.md` |
-| F3-T03 Matriz sites | ✅ `doc/validacao-sites.md` |
+| Task                   | Status                                                              |
+| ---------------------- | ------------------------------------------------------------------- |
+| F3-T01 Auditoria a11y  | ✅ `doc/checklists/a11y-menu.md` + fixes FAB/labels/foco            |
+| F3-T02 Leitor de tela  | ✅ `doc/checklists/leitor-tela.md`                                  |
+| F3-T03 Matriz sites    | ✅ `doc/validacao-sites.md`                                         |
 | F3-T04 Guia integração | ✅ `doc/09-guia-integracao.md` + `examples/hello-modo-simples.html` |
-| F3-T05 README produto | ✅ |
-| F3-T06 Bookmarklet | ✅ `doc/10-bookmarklet.md` |
+| F3-T05 README produto  | ✅                                                                  |
+| F3-T06 Bookmarklet     | ✅ `doc/10-bookmarklet.md`                                          |
 
 ---
 
 ### Fase 4 — Estudo de caso, métricas e entrega da UC — **CONCLUÍDA** (2026-09-10)
 
-| Task | Status |
-| --- | --- |
-| F4-T01 Roteiro teste usuários | ✅ [estudo-caso-roteiro.md](./estudo-caso-roteiro.md) |
-| F4-T02 Métricas antes/depois | ✅ [metricas-eficacia.md](./metricas-eficacia.md) |
-| F4-T03 Limitações conhecidas | ✅ guia §6 |
-| F4-T04 Pacote entrega / apresentação | ✅ [11-pacote-entrega.md](./11-pacote-entrega.md) |
+| Task                                 | Status                                                |
+| ------------------------------------ | ----------------------------------------------------- |
+| F4-T01 Roteiro teste usuários        | ✅ [estudo-caso-roteiro.md](./estudo-caso-roteiro.md) |
+| F4-T02 Métricas antes/depois         | ✅ [metricas-eficacia.md](./metricas-eficacia.md)     |
+| F4-T03 Limitações conhecidas         | ✅ guia §6                                            |
+| F4-T04 Pacote entrega / apresentação | ✅ [11-pacote-entrega.md](./11-pacote-entrega.md)     |
 
 **Antes da banca:** a equipe preenche os tempos reais de 3 participantes e as contagens do script de métricas (instruções nos docs acima).
 
@@ -277,42 +301,42 @@ Implementados via `src/ui/sessionChrome.js` (sincronizados com `modoSimples` / `
 
 ## 5. Backlog priorizado (visão rápida)
 
-| ID | Task | P | Fase | Status |
-| --- | --- | --- | --- | --- |
-| F0-T01 | Congelar escopo | P0 | 0 | **Feito** |
-| F0-T02 | Inventário páginas/assets | P0 | 0 | **Feito** |
-| F0-T03 | Donos por frente | P0 | 0 | **Feito** |
-| F1-T01 | Página Cursos | P0 | 1 | **Feito** |
-| F1-T02 | Página Pesquisa ou limpar link | P1 | 1 | **Feito** |
-| F1-T03 | Unificar nav/footer/paths | P0 | 1 | **Feito** |
-| F1-T04 | Markup semântico | P0 | 1 | **Feito** |
-| F1-T05 | Script em todas as páginas | P0 | 1 | **Feito** |
-| F1-T06 | Smoke test manual | P0 | 1 | **Feito** (HTTP + checklist) |
-| F2-T01 | Build bundle válido | P0 | 2 | **Feito** |
-| F2-T02 | Snippet dev/prod | P1 | 2 | **Feito** |
-| F2-T03 | Fallback seleção manual | P1 | 2 | **Feito** |
-| F2-T04 | Preferências por hostname | P2 | 2 | **Feito** |
-| F2-T05 | Ajuste de heurísticas no protótipo | P1 | 2 | **Feito** |
-| F2-T06 | Mais testes unitários | P1 | 2 | **Feito** |
-| F2-T07 | Testes integração | P2 | 2 | Adiado |
-| F2-T08 | UI painel mockup PI | P0 | 2 | **Feito** |
-| F2-T09 | Escala texto 100–175% | P0 | 2 | **Feito** |
-| F2-T10 | 4 temas de contraste | P0 | 2 | **Feito** |
-| F2-T11 | Régua de foco | P1 | 2 | **Feito** |
-| F2-T12 | TTS “Ouvir” | P1 | 2 | **Feito** |
-| F2-T13 | Fonte Lexend | P1 | 2 | **Feito** |
-| F2-T14 | Toggle SIMPLES + barra sob o nav | P0 | 2 | **Feito** |
-| F2-T15 | Botões da sessão ativa (barra ON) | P0 | 2 | **Feito** |
-| F3-T01 | Auditoria a11y do widget | P0 | 3 | **Feito** |
-| F3-T02 | Leitor de tela | P1 | 3 | **Feito** |
-| F3-T03 | Matriz sites externos | P2 | 3 | **Feito** |
-| F3-T04 | Guia de integração | P0 | 3 | **Feito** |
-| F3-T05 | README produto | P1 | 3 | **Feito** |
-| F3-T06 | Bookmarklet | P3 | 3 | **Feito** |
-| F4-T01 | Roteiro teste usuários | P1 | 4 | **Feito** |
-| F4-T02 | Métricas antes/depois | P2 | 4 | **Feito** |
-| F4-T03 | Limitações conhecidas | P1 | 4 | **Feito** |
-| F4-T04 | Pacote entrega UC | P0 | 4 | **Feito** |
+| ID     | Task                               | P   | Fase | Status                       |
+| ------ | ---------------------------------- | --- | ---- | ---------------------------- |
+| F0-T01 | Congelar escopo                    | P0  | 0    | **Feito**                    |
+| F0-T02 | Inventário páginas/assets          | P0  | 0    | **Feito**                    |
+| F0-T03 | Donos por frente                   | P0  | 0    | **Feito**                    |
+| F1-T01 | Página Cursos                      | P0  | 1    | **Feito**                    |
+| F1-T02 | Página Pesquisa ou limpar link     | P1  | 1    | **Feito**                    |
+| F1-T03 | Unificar nav/footer/paths          | P0  | 1    | **Feito**                    |
+| F1-T04 | Markup semântico                   | P0  | 1    | **Feito**                    |
+| F1-T05 | Script em todas as páginas         | P0  | 1    | **Feito**                    |
+| F1-T06 | Smoke test manual                  | P0  | 1    | **Feito** (HTTP + checklist) |
+| F2-T01 | Build bundle válido                | P0  | 2    | **Feito**                    |
+| F2-T02 | Snippet dev/prod                   | P1  | 2    | **Feito**                    |
+| F2-T03 | Fallback seleção manual            | P1  | 2    | **Feito**                    |
+| F2-T04 | Preferências por hostname          | P2  | 2    | **Feito**                    |
+| F2-T05 | Ajuste de heurísticas no protótipo | P1  | 2    | **Feito**                    |
+| F2-T06 | Mais testes unitários              | P1  | 2    | **Feito**                    |
+| F2-T07 | Testes integração                  | P2  | 2    | Adiado                       |
+| F2-T08 | UI painel mockup PI                | P0  | 2    | **Feito**                    |
+| F2-T09 | Escala texto 100–175%              | P0  | 2    | **Feito**                    |
+| F2-T10 | 4 temas de contraste               | P0  | 2    | **Feito**                    |
+| F2-T11 | Régua de foco                      | P1  | 2    | **Feito**                    |
+| F2-T12 | TTS “Ouvir”                        | P1  | 2    | **Feito**                    |
+| F2-T13 | Fonte Lexend                       | P1  | 2    | **Feito**                    |
+| F2-T14 | Toggle SIMPLES + barra sob o nav   | P0  | 2    | **Feito**                    |
+| F2-T15 | Botões da sessão ativa (barra ON)  | P0  | 2    | **Feito**                    |
+| F3-T01 | Auditoria a11y do widget           | P0  | 3    | **Feito**                    |
+| F3-T02 | Leitor de tela                     | P1  | 3    | **Feito**                    |
+| F3-T03 | Matriz sites externos              | P2  | 3    | **Feito**                    |
+| F3-T04 | Guia de integração                 | P0  | 3    | **Feito**                    |
+| F3-T05 | README produto                     | P1  | 3    | **Feito**                    |
+| F3-T06 | Bookmarklet                        | P3  | 3    | **Feito**                    |
+| F4-T01 | Roteiro teste usuários             | P1  | 4    | **Feito**                    |
+| F4-T02 | Métricas antes/depois              | P2  | 4    | **Feito**                    |
+| F4-T03 | Limitações conhecidas              | P1  | 4    | **Feito**                    |
+| F4-T04 | Pacote entrega UC                  | P0  | 4    | **Feito**                    |
 
 ---
 
@@ -377,13 +401,13 @@ Qualquer item novo só entra se a equipe reabrir explicitamente este freeze.
 
 ### Páginas obrigatórias (MVP)
 
-| Página | Obrigatória | Notas |
-| --- | --- | --- |
-| Início (`index.html`) | Sim | Já existe |
-| Sobre Nós (`sobrenos.html`) | Sim | Já existe |
-| Cursos (`cursos.html`) | Sim | Criar (F1-T01) |
-| Contato (`contato.html`) | Sim | Já existe |
-| Pesquisa (`pesquisa.html`) | Sim (mínima) | Página simples para não deixar 404; não precisa busca real (F1-T02) |
+| Página                      | Obrigatória  | Notas                                                               |
+| --------------------------- | ------------ | ------------------------------------------------------------------- |
+| Início (`index.html`)       | Sim          | Já existe                                                           |
+| Sobre Nós (`sobrenos.html`) | Sim          | Já existe                                                           |
+| Cursos (`cursos.html`)      | Sim          | Criar (F1-T01)                                                      |
+| Contato (`contato.html`)    | Sim          | Já existe                                                           |
+| Pesquisa (`pesquisa.html`)  | Sim (mínima) | Página simples para não deixar 404; não precisa busca real (F1-T02) |
 
 ### Entra (MVP)
 
@@ -401,7 +425,7 @@ Qualquer item novo só entra se a equipe reabrir explicitamente este freeze.
 
 - Bookmarklet polido
 - Acurácia ≥ 85% em 20 sites externos
-- Playwright completo em CI
+- ~~Playwright completo em CI~~ — feito na F1: job `e2e` do `.github/workflows/ci.yml` (Chromium, desktop + mobile, axe)
 - Preferências por hostname sofisticadas (F2-T04 fica P2 — só se der tempo)
 - Resumo automático por IA do conteúdo (o mockup menciona “resume”; MVP usa heurística de priorização)
 - App nativo / extensões de browser
@@ -419,23 +443,23 @@ Qualquer item novo só entra se a equipe reabrir explicitamente este freeze.
 
 Proposta inicial com base no histórico Git (Lucas → lib; Flavio → páginas). Ajustar se a equipe redistribuir.
 
-| Frente | Responsável | Backup | Notas |
-| --- | --- | --- | --- |
-| Páginas HTML/CSS (`examples/`) | Flavio Magno Fulgencio Junior | Juliana Gomes · Larisse Aparecida de Rezende Silva | Cursos, Pesquisa, unificar nav/assets |
-| Biblioteca JS (`src/`) | Lucas Frederico Soares de Aragão | Márcio José da Silva Junior | Build, heurísticas, fallback, **UI painel (F2-T08+)** |
-| Testes / a11y | Márcio José da Silva Junior | Lucas Frederico Soares de Aragão | Unitários, checklist a11y, smoke |
-| Documentação (`doc/`) | Reynaldo Julio Lara Rodriguez | Lucas Frederico Soares de Aragão | Guia integração, status, inventário |
-| Apresentação / estudo de caso | Juliana Gomes | Larisse Aparecida de Rezende Silva · Flavio | Roteiro usuários, slides, demo |
+| Frente                         | Responsável                      | Backup                                             | Notas                                                 |
+| ------------------------------ | -------------------------------- | -------------------------------------------------- | ----------------------------------------------------- |
+| Páginas HTML/CSS (`examples/`) | Flavio Magno Fulgencio Junior    | Juliana Gomes · Larisse Aparecida de Rezende Silva | Cursos, Pesquisa, unificar nav/assets                 |
+| Biblioteca JS (`src/`)         | Lucas Frederico Soares de Aragão | Márcio José da Silva Junior                        | Build, heurísticas, fallback, **UI painel (F2-T08+)** |
+| Testes / a11y                  | Márcio José da Silva Junior      | Lucas Frederico Soares de Aragão                   | Unitários, checklist a11y, smoke                      |
+| Documentação (`doc/`)          | Reynaldo Julio Lara Rodriguez    | Lucas Frederico Soares de Aragão                   | Guia integração, status, inventário                   |
+| Apresentação / estudo de caso  | Juliana Gomes                    | Larisse Aparecida de Rezende Silva · Flavio        | Roteiro usuários, slides, demo                        |
 
 ### RACI resumido
 
-| Entrega | R | A | C | I |
-| --- | --- | --- | --- | --- |
-| Protótipo páginas | Flavio | Equipe | Juliana, Larisse | Todos |
-| Lib Modo Simples | Lucas | Equipe | Márcio | Todos |
-| Testes / a11y | Márcio | Lucas | Flavio | Todos |
-| Docs | Reynaldo | Lucas | Todos | — |
-| Banca / estudo de caso | Juliana | Equipe | Larisse, Flavio | Todos |
+| Entrega                | R        | A      | C                | I     |
+| ---------------------- | -------- | ------ | ---------------- | ----- |
+| Protótipo páginas      | Flavio   | Equipe | Juliana, Larisse | Todos |
+| Lib Modo Simples       | Lucas    | Equipe | Márcio           | Todos |
+| Testes / a11y          | Márcio   | Lucas  | Flavio           | Todos |
+| Docs                   | Reynaldo | Lucas  | Todos            | —     |
+| Banca / estudo de caso | Juliana  | Equipe | Larisse, Flavio  | Todos |
 
 R = faz · A = responde pela qualidade · C = consulta · I = informado
 
@@ -443,13 +467,13 @@ R = faz · A = responde pela qualidade · C = consulta · I = informado
 
 ## 10. Riscos e mitigações
 
-| Risco | Impacto | Mitigação |
-| --- | --- | --- |
-| Páginas da equipe com layouts muito diferentes | Heurística falha | F1-T04 semântica + F2-T05 ajuste + F2-T03 fallback |
-| Paths de CSS/imagens inconsistentes | Demo quebra | F1-T03 unificação |
-| Build ES module vs IIFE confunde a equipe | Integração falha | F2-T01 + F2-T02 + guia |
-| Prazo curto | Escopo infla | F0-T01 freeze; P3 explícito fora |
-| Pouca evidência de inclusão | Justificativa fraca na banca | F3-T01/T02 + F4-T01 |
+| Risco                                          | Impacto                      | Mitigação                                          |
+| ---------------------------------------------- | ---------------------------- | -------------------------------------------------- |
+| Páginas da equipe com layouts muito diferentes | Heurística falha             | F1-T04 semântica + F2-T05 ajuste + F2-T03 fallback |
+| Paths de CSS/imagens inconsistentes            | Demo quebra                  | F1-T03 unificação                                  |
+| Build ES module vs IIFE confunde a equipe      | Integração falha             | F2-T01 + F2-T02 + guia                             |
+| Prazo curto                                    | Escopo infla                 | F0-T01 freeze; P3 explícito fora                   |
+| Pouca evidência de inclusão                    | Justificativa fraca na banca | F3-T01/T02 + F4-T01                                |
 
 ---
 

@@ -1,5 +1,7 @@
 # Modo Simples
 
+[![CI](https://github.com/VonLuqi/modo-simples/actions/workflows/ci.yml/badge.svg)](https://github.com/VonLuqi/modo-simples/actions/workflows/ci.yml)
+
 Script JavaScript injetável de **acessibilidade cognitiva** (Projeto Integrador 2025 · Senac).  
 Licença **MIT** · versão **1.1.0**.
 
@@ -214,3 +216,14 @@ Arquivo [`vercel.json`](./vercel.json) define o output `public`, o redirect `/` 
 ## Padronização
 
 Prettier + ESLint + Husky 9 + lint-staged. `npm install` ativa o hook (`core.hooksPath=.husky/_`); o `pre-commit` roda lint-staged (prettier + eslint nos `.js`, prettier em `.css`/`.md`) e `npm run test:unit`. Verificações manuais: `npm run lint`, `npm run format:check`, `npm run coverage`. VS Code: format on save (`.vscode/`).
+
+### CI (GitHub Actions)
+
+`.github/workflows/ci.yml` roda em todo `push` e `pull_request` (Node 22, cache npm, um run por branch):
+
+| Job                         | Passos                                                                                                                                                                                                                                |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `quality`                   | `npm ci` → `format:check` → `lint` → `npm test` → `coverage` (resumo no job summary) → `build` + `git diff --exit-code dist src` (dist sem drift) → `npm audit --omit=dev --audit-level=high` → `smoke:examples` + `smoke:assistente` |
+| `e2e` (depois de `quality`) | Playwright + axe em Chromium (desktop + mobile); em falha sobe o artefato `playwright-report`                                                                                                                                         |
+
+O `format:check` roda **antes** do build porque o `prebuild` reformata `src/`. Para reproduzir localmente: `CI=true npm run test:e2e` e os mesmos scripts acima na mesma ordem.
