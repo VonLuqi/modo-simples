@@ -903,6 +903,10 @@ export function getPageStyles() {
       background: #1a1205;
       color: #fff;
     }
+    .ms-session-btn[aria-disabled='true'] {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
     .ms-session-btn--active {
       box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1a1205;
     }

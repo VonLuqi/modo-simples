@@ -340,6 +340,12 @@
     }, 50);
   }
 
+  // src/utils/simpleLanguage.js
+  function hasSimpleLanguagePairs() {
+    if (typeof document === "undefined") return false;
+    return !!(document.querySelector("[data-ms-plain]") && document.querySelector("[data-ms-simple]"));
+  }
+
   // src/ui/styles.js
   function getUIStyles(position = "bottom-right") {
     const isBottom = position.startsWith("bottom");
@@ -1220,6 +1226,10 @@
       background: #1a1205;
       color: #fff;
     }
+    .ms-session-btn[aria-disabled='true'] {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
     .ms-session-btn--active {
       box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1a1205;
     }
@@ -1776,6 +1786,7 @@
     chrome.querySelector('[data-action="open-panel"]').addEventListener("click", () => onOpenPanel());
     bar.querySelector('[data-action="speak"]').addEventListener("click", () => onSpeak());
     bar.querySelector('[data-action="lang"]').addEventListener("click", (e) => {
+      if (e.currentTarget.getAttribute("aria-disabled") === "true") return;
       const next = e.currentTarget.getAttribute("aria-pressed") !== "true";
       onToggleSimpleLanguage(next);
     });
@@ -1801,7 +1812,8 @@
         );
       }
       if (wrap) wrap.setAttribute("data-active", String(on));
-      if (sub) sub.textContent = on ? "Interface Simplificada" : "Acessibilidade Cognitiva";
+      if (sub)
+        sub.textContent = on ? "Interface Simplificada" : "Acessibilidade Cognitiva";
       _placeChrome(chrome, on, mount);
       const inner = bar.querySelector(".ms-session-bar-inner");
       const off = bar.querySelector(".ms-session-off");
@@ -1809,19 +1821,23 @@
       if (inner) inner.setAttribute("data-state", on ? "on" : "off");
       if (off) off.hidden = on;
       if (onBlock) onBlock.hidden = !on;
-      const langOn = !!((_a = s.options) == null ? void 0 : _a.simpleLanguage);
+      const langAvailable = hasSimpleLanguagePairs();
+      const langOn = langAvailable && !!((_a = s.options) == null ? void 0 : _a.simpleLanguage);
       const langBtn = bar.querySelector('[data-action="lang"]');
       const langLabel = bar.querySelector("[data-lang-label]");
       const desc = bar.querySelector("[data-session-desc]");
       if (langBtn) {
         langBtn.setAttribute("aria-pressed", String(langOn));
+        langBtn.setAttribute("aria-disabled", String(!langAvailable));
         langBtn.classList.toggle("ms-session-btn--active", langOn);
         langBtn.setAttribute(
           "aria-label",
-          langOn ? "Linguagem simples: ligada" : "Linguagem simples: desligada"
+          !langAvailable ? "Linguagem simples: indispon\xEDvel nesta p\xE1gina" : langOn ? "Linguagem simples: ligada" : "Linguagem simples: desligada"
         );
       }
-      if (langLabel) langLabel.textContent = langOn ? "LIGADA" : "DESLIGADA";
+      if (langLabel) {
+        langLabel.textContent = !langAvailable ? "Indispon\xEDvel nesta p\xE1gina" : langOn ? "LIGADA" : "DESLIGADA";
+      }
       if (desc) {
         desc.textContent = langOn ? "Exibindo explica\xE7\xF5es em palavras f\xE1ceis, sem termos complicados." : "Navega\xE7\xE3o mais calma, com bot\xF5es claros e menos distra\xE7\xF5es.";
       }
@@ -1847,7 +1863,8 @@
             ui.speaking ? "Parar leitura da p\xE1gina" : "Ouvir p\xE1gina"
           );
         }
-        if (speakLabel) speakLabel.textContent = ui.speaking ? "Parar Voz" : "Ouvir P\xE1gina";
+        if (speakLabel)
+          speakLabel.textContent = ui.speaking ? "Parar Voz" : "Ouvir P\xE1gina";
       }
     }
     function destroy() {
@@ -1868,7 +1885,10 @@
     return null;
   }
   function _mountChrome(chrome, mount) {
-    chrome.classList.remove("ms-simples-chrome--ms-nav", "ms-simples-chrome--fixed");
+    chrome.classList.remove(
+      "ms-simples-chrome--ms-nav",
+      "ms-simples-chrome--fixed"
+    );
     const host = _resolve(mount == null ? void 0 : mount.chrome);
     if (host) {
       host.appendChild(chrome);
@@ -1889,12 +1909,16 @@
       pillsInner.appendChild(chrome);
       return;
     }
-    const barOnActions = document.querySelector("#ms-session-bar .ms-session-actions");
+    const barOnActions = document.querySelector(
+      "#ms-session-bar .ms-session-actions"
+    );
     if (barOnActions) {
       barOnActions.appendChild(chrome);
       return;
     }
-    const barInner = document.querySelector("#ms-session-bar .ms-session-bar-inner");
+    const barInner = document.querySelector(
+      "#ms-session-bar .ms-session-bar-inner"
+    );
     if (barInner) {
       barInner.appendChild(chrome);
       return;
@@ -2701,7 +2725,8 @@
         state_default.set({
           modoSimples: true,
           options: {
-            simpleLanguage: true,
+            // só liga se a página tem pares data-ms-plain/simple (senão não há o que simplificar)
+            simpleLanguage: hasSimpleLanguagePairs(),
             hideImages: !preferShow
           }
         });

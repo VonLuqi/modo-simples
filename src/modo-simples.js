@@ -18,6 +18,7 @@ import {
   onReducedMotionChange,
 } from './utils/mediaQuery.js';
 import { announce } from './utils/aria.js';
+import { hasSimpleLanguagePairs } from './utils/simpleLanguage.js';
 import { getUIStyles } from './ui/styles.js';
 import { createFab } from './ui/fab.js';
 import { createA11yPanel } from './ui/a11yPanel.js';
@@ -157,7 +158,8 @@ class ModoSimples {
       state.set({
         modoSimples: true,
         options: {
-          simpleLanguage: true,
+          // só liga se a página tem pares data-ms-plain/simple (senão não há o que simplificar)
+          simpleLanguage: hasSimpleLanguagePairs(),
           hideImages: !preferShow,
         },
       });

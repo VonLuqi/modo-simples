@@ -5,6 +5,8 @@
  * Injetado no light DOM para participar do layout da página.
  */
 
+import { hasSimpleLanguagePairs } from '../utils/simpleLanguage.js';
+
 const SLIDERS_ICON = `
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" focusable="false">
     <line x1="4" y1="6" x2="20" y2="6"/>
@@ -114,6 +116,8 @@ export function createSessionChrome({
     .querySelector('[data-action="speak"]')
     .addEventListener('click', () => onSpeak());
   bar.querySelector('[data-action="lang"]').addEventListener('click', (e) => {
+    // Sem pares data-ms-plain/simple na página não há o que simplificar (D4)
+    if (e.currentTarget.getAttribute('aria-disabled') === 'true') return;
     const next = e.currentTarget.getAttribute('aria-pressed') !== 'true';
     onToggleSimpleLanguage(next);
   });
@@ -159,19 +163,31 @@ export function createSessionChrome({
     if (off) off.hidden = on;
     if (onBlock) onBlock.hidden = !on;
 
-    const langOn = !!s.options?.simpleLanguage;
+    const langAvailable = hasSimpleLanguagePairs();
+    const langOn = langAvailable && !!s.options?.simpleLanguage;
     const langBtn = bar.querySelector('[data-action="lang"]');
     const langLabel = bar.querySelector('[data-lang-label]');
     const desc = bar.querySelector('[data-session-desc]');
     if (langBtn) {
       langBtn.setAttribute('aria-pressed', String(langOn));
+      langBtn.setAttribute('aria-disabled', String(!langAvailable));
       langBtn.classList.toggle('ms-session-btn--active', langOn);
       langBtn.setAttribute(
         'aria-label',
-        langOn ? 'Linguagem simples: ligada' : 'Linguagem simples: desligada',
+        !langAvailable
+          ? 'Linguagem simples: indisponível nesta página'
+          : langOn
+            ? 'Linguagem simples: ligada'
+            : 'Linguagem simples: desligada',
       );
     }
-    if (langLabel) langLabel.textContent = langOn ? 'LIGADA' : 'DESLIGADA';
+    if (langLabel) {
+      langLabel.textContent = !langAvailable
+        ? 'Indisponível nesta página'
+        : langOn
+          ? 'LIGADA'
+          : 'DESLIGADA';
+    }
     if (desc) {
       desc.textContent = langOn
         ? 'Exibindo explicações em palavras fáceis, sem termos complicados.'

@@ -170,6 +170,14 @@ describe('createSessionChrome — sync (F5-T09)', () => {
     assert.ok(switchBtn);
     assert.ok(document.querySelector('#ms-session-bar'));
 
+    // página com markup duplo plain/simple (senão a lib marca Linguagem Simples indisponível)
+    const plain = createElement('p');
+    plain.setAttribute('data-ms-plain', '');
+    const simple = createElement('p');
+    simple.setAttribute('data-ms-simple', '');
+    document.body.appendChild(plain);
+    document.body.appendChild(simple);
+
     chrome.sync({
       modoSimples: false,
       options: { simpleLanguage: false },

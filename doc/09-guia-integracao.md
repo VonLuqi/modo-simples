@@ -231,6 +231,8 @@ Controladas pelo painel / barra; salvas automaticamente (se `persistence: true`)
 Preferências do painel (tema, escala, etc.) **persistem entre páginas** mesmo com MS desligado.  
 `simpleLanguage` só é restaurada se o MS estiver ativo.
 
+**Linguagem Simples exige markup duplo:** o efeito vem de pares `[data-ms-plain]` (texto padrão) + `[data-ms-simple]` (versão simples) escritos pelo host — a lib não reescreve texto. Sem pelo menos um par de cada na página, o botão da barra mostra **"Indisponível nesta página"** (`aria-disabled`, não alterna) e `enable()` não liga `simpleLanguage`.
+
 ---
 
 ## 6. Classes e atributos no DOM

@@ -150,14 +150,14 @@ Ativar MS também liga linguagem simples e oculta imagens (reativáveis na barra
 <img src="logo.png" alt="Marca" data-ms-keep-img />
 ```
 
-| Marcação                              | Efeito                                  |
-| ------------------------------------- | --------------------------------------- |
-| `<main>` / `[role="main"]`            | Melhora detecção + TTS                  |
-| `.ms-simple-hide`                     | Some com MS on                          |
-| `.ms-simple-only` / `.ms-simple-view` | Aparece só com MS on                    |
-| `data-ms-plain` / `data-ms-simple`    | Pares de linguagem                      |
-| `data-ms-keep-img`                    | Não some com “ocultar imagens”          |
-| `[data-ms-pills]`                     | Pills autoradas (a lib não sobrescreve) |
+| Marcação                              | Efeito                                                                   |
+| ------------------------------------- | ------------------------------------------------------------------------ |
+| `<main>` / `[role="main"]`            | Melhora detecção + TTS                                                   |
+| `.ms-simple-hide`                     | Some com MS on                                                           |
+| `.ms-simple-only` / `.ms-simple-view` | Aparece só com MS on                                                     |
+| `data-ms-plain` / `data-ms-simple`    | Pares de linguagem (sem eles o botão mostra "Indisponível nesta página") |
+| `data-ms-keep-img`                    | Não some com “ocultar imagens”                                           |
+| `[data-ms-pills]`                     | Pills autoradas (a lib não sobrescreve)                                  |
 
 ### Controles na UI
 
