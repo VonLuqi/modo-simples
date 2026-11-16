@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { Window } from 'happy-dom';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -34,42 +35,48 @@ export function readPage(file) {
   };
 }
 
+/** Parser HTML real (happy-dom) — substitui as regex de marcação (Q08). */
+export function parseHtml(html) {
+  const win = new Window();
+  return new win.DOMParser().parseFromString(html, 'text/html');
+}
+
 export function hasTag(html, tag) {
-  return new RegExp(`<${tag}\\b`, 'i').test(html);
+  return !!parseHtml(html).querySelector(tag);
+}
+
+const MAIN_NAV = 'nav[aria-label="Menu principal"]';
+
+export function hasMainNav(html) {
+  return !!parseHtml(html).querySelector(MAIN_NAV);
 }
 
 export function extractMainNavHrefs(html) {
-  const navMatch = html.match(
-    /<nav[^>]*aria-label=["']Menu principal["'][^>]*>([\s\S]*?)<\/nav>/i,
+  const nav = parseHtml(html).querySelector(MAIN_NAV);
+  if (!nav) return null;
+  return [...nav.querySelectorAll('[href]')].map((el) =>
+    el.getAttribute('href'),
   );
-  if (!navMatch) return null;
-  const hrefs = [];
-  const re = /href=["']([^"']+)["']/gi;
-  let m;
-  while ((m = re.exec(navMatch[1]))) {
-    hrefs.push(m[1]);
-  }
-  return hrefs;
 }
 
 export function collectLocalRefs(html) {
   const refs = [];
-  const re = /\b(?:href|src)=["']([^"']+)["']/gi;
-  let m;
-  while ((m = re.exec(html))) {
-    const raw = m[1].trim();
-    if (
-      !raw ||
-      raw.startsWith('#') ||
-      raw.startsWith('mailto:') ||
-      raw.startsWith('tel:') ||
-      raw.startsWith('http://') ||
-      raw.startsWith('https://') ||
-      raw.startsWith('data:')
-    ) {
-      continue;
+  for (const el of parseHtml(html).querySelectorAll('[href], [src]')) {
+    for (const attr of ['href', 'src']) {
+      const raw = (el.getAttribute(attr) || '').trim();
+      if (
+        !raw ||
+        raw.startsWith('#') ||
+        raw.startsWith('mailto:') ||
+        raw.startsWith('tel:') ||
+        raw.startsWith('http://') ||
+        raw.startsWith('https://') ||
+        raw.startsWith('data:')
+      ) {
+        continue;
+      }
+      refs.push(raw);
     }
-    refs.push(raw);
   }
   return refs;
 }
@@ -79,7 +86,7 @@ export function resolveExampleRef(pageFile, raw) {
 }
 
 export function hasModoSimplesScript(html) {
-  return (
-    html.includes('modo-simples.js') || html.includes('modo-simples.min.js')
+  return [...parseHtml(html).querySelectorAll('script[src]')].some((el) =>
+    /modo-simples(\.min)?\.js/.test(el.getAttribute('src')),
   );
 }

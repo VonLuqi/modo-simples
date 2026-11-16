@@ -26,6 +26,7 @@ import {
   ROOT,
   readPage,
   hasTag,
+  hasMainNav,
   extractMainNavHrefs,
   collectLocalRefs,
   resolveExampleRef,
@@ -54,10 +55,7 @@ describe('prototype structure (examples/)', () => {
 
       it('tem header, nav principal, main e footer', () => {
         assert.ok(hasTag(html, 'header'), `${page}: sem <header>`);
-        assert.ok(
-          /aria-label=["']Menu principal["']/i.test(html),
-          `${page}: sem nav Menu principal`,
-        );
+        assert.ok(hasMainNav(html), `${page}: sem nav Menu principal`);
         assert.ok(hasTag(html, 'main'), `${page}: sem <main>`);
         assert.ok(
           hasTag(html, 'footer') || html.includes('site-footer'),
