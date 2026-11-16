@@ -86,12 +86,18 @@ describe('detectDistractions', () => {
 
   it('nunca deve incluir o elemento #ms-container', () => {
     const container = mockEl({ id: 'ms-container' });
-    const anuncio   = mockEl();
+    const anuncio = mockEl();
     setQueryMap({ '.ad': [container, anuncio] });
 
     const resultado = detectDistractions(null, configUm);
-    assert.ok(!resultado.includes(container), '#ms-container não deve ser incluído');
-    assert.ok(resultado.includes(anuncio), 'Outros elementos devem ser incluídos');
+    assert.ok(
+      !resultado.includes(container),
+      '#ms-container não deve ser incluído',
+    );
+    assert.ok(
+      resultado.includes(anuncio),
+      'Outros elementos devem ser incluídos',
+    );
   });
 
   it('nunca deve esconder um ancestral do conteúdo principal', () => {
@@ -103,7 +109,10 @@ describe('detectDistractions', () => {
     setQueryMap({ '.ad': [ancestral] });
 
     const resultado = detectDistractions(principal, configUm);
-    assert.ok(!resultado.includes(ancestral), 'Ancestral do conteúdo não deve ser escondido');
+    assert.ok(
+      !resultado.includes(ancestral),
+      'Ancestral do conteúdo não deve ser escondido',
+    );
   });
 
   it('nunca deve esconder um descendente do conteúdo principal', () => {
@@ -115,7 +124,10 @@ describe('detectDistractions', () => {
     setQueryMap({ '.ad': [descendente] });
 
     const resultado = detectDistractions(principal, configUm);
-    assert.ok(!resultado.includes(descendente), 'Descendente do conteúdo não deve ser escondido');
+    assert.ok(
+      !resultado.includes(descendente),
+      'Descendente do conteúdo não deve ser escondido',
+    );
   });
 
   it('deve deduplicar elementos que aparecem em múltiplos seletores', () => {
@@ -128,7 +140,11 @@ describe('detectDistractions', () => {
 
     const resultado = detectDistractions(null, configDois);
     const ocorrencias = resultado.filter((r) => r === el).length;
-    assert.strictEqual(ocorrencias, 1, 'O elemento não deve aparecer duplicado');
+    assert.strictEqual(
+      ocorrencias,
+      1,
+      'O elemento não deve aparecer duplicado',
+    );
   });
 
   it('deve tolerar seletores CSS malformados sem lançar', () => {
@@ -138,7 +154,10 @@ describe('detectDistractions', () => {
       return { forEach() {} };
     };
 
-    const configInvalido = { ...defaults, distractionSelectors: ['.invalido:::bla'] };
+    const configInvalido = {
+      ...defaults,
+      distractionSelectors: ['.invalido:::bla'],
+    };
     assert.doesNotThrow(() => detectDistractions(null, configInvalido));
     global.document.querySelectorAll = original;
   });

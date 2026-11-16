@@ -85,10 +85,7 @@ describe('prototype structure (examples/)', () => {
       it('assets locais referenciados existem', () => {
         for (const raw of collectLocalRefs(html)) {
           const resolved = resolveExampleRef(page, raw);
-          assert.ok(
-            fs.existsSync(resolved),
-            `${page}: asset ausente → ${raw}`,
-          );
+          assert.ok(fs.existsSync(resolved), `${page}: asset ausente → ${raw}`);
         }
       });
 
@@ -115,10 +112,7 @@ describe('prototype structure (examples/)', () => {
       byPage[page] = hrefs;
 
       for (const href of EXPECTED_NAV) {
-        assert.ok(
-          hrefs.includes(href),
-          `${page}: nav sem link ${href}`,
-        );
+        assert.ok(hrefs.includes(href), `${page}: nav sem link ${href}`);
         assert.ok(
           fs.existsSync(path.join(EXAMPLES, href)),
           `destino inexistente: ${href}`,
@@ -128,11 +122,7 @@ describe('prototype structure (examples/)', () => {
 
     const first = byPage[MAP_PAGES[0]].join('|');
     for (const page of MAP_PAGES.slice(1)) {
-      assert.equal(
-        byPage[page].join('|'),
-        first,
-        `nav divergente em ${page}`,
-      );
+      assert.equal(byPage[page].join('|'), first, `nav divergente em ${page}`);
     }
   });
 
@@ -154,10 +144,7 @@ describe('prototype structure (examples/)', () => {
     ];
     for (const page of pages) {
       const { html } = readPage(page);
-      assert.ok(
-        html.includes('ms-simple-hide'),
-        `${page}: sem ms-simple-hide`,
-      );
+      assert.ok(html.includes('ms-simple-hide'), `${page}: sem ms-simple-hide`);
       assert.ok(
         html.includes('ms-simple-view') && html.includes('ms-simple-only'),
         `${page}: sem ms-simple-view / ms-simple-only`,
@@ -168,7 +155,10 @@ describe('prototype structure (examples/)', () => {
   it('cursos.html e psg.html têm assistente de cursos', () => {
     for (const page of ['cursos.html', 'psg.html']) {
       const { html } = readPage(page);
-      assert.ok(html.includes('curso-assistente'), `${page}: sem #curso-assistente`);
+      assert.ok(
+        html.includes('curso-assistente'),
+        `${page}: sem #curso-assistente`,
+      );
       assert.ok(
         html.includes('cursos-assistente.js'),
         `${page}: sem cursos-assistente.js`,

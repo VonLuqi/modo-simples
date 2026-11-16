@@ -77,7 +77,7 @@ function resolveRef(pageFile, raw) {
 
 function extractMainNavHrefs(html) {
   const navMatch = html.match(
-    /<nav[^>]*aria-label=["']Menu principal["'][^>]*>([\s\S]*?)<\/nav>/i
+    /<nav[^>]*aria-label=["']Menu principal["'][^>]*>([\s\S]*?)<\/nav>/i,
   );
   if (!navMatch) return null;
   const hrefs = [];
@@ -140,7 +140,10 @@ async function main() {
     ok(`página examples/${page}`);
 
     const html = fs.readFileSync(full, 'utf8');
-    if (!html.includes('modo-simples.js') && !html.includes('modo-simples.min.js')) {
+    if (
+      !html.includes('modo-simples.js') &&
+      !html.includes('modo-simples.min.js')
+    ) {
       fail(`${page}: sem script Modo Simples`);
     }
 
@@ -169,7 +172,10 @@ async function main() {
         }
       }
 
-      if (!html.includes('aria-current="page"') && !html.includes("aria-current='page'")) {
+      if (
+        !html.includes('aria-current="page"') &&
+        !html.includes("aria-current='page'")
+      ) {
         fail(`${page}: sem aria-current="page"`);
       }
       if (!html.includes('data-ms-pills') && !html.includes('ms-pills-nav')) {
@@ -182,7 +188,10 @@ async function main() {
         fail('index.html: sem ms-simple-hide no conteúdo padrão');
       }
       if (page === 'cursos.html' || page === 'psg.html') {
-        if (!html.includes('curso-assistente') || !html.includes('cursos-assistente.js')) {
+        if (
+          !html.includes('curso-assistente') ||
+          !html.includes('cursos-assistente.js')
+        ) {
           fail(`${page}: assistente de cursos ausente (F5-T07)`);
         }
         if (!html.includes('cursos-data.js')) {
@@ -206,11 +215,12 @@ async function main() {
       const cur = navByPage[navKeys[i]].join('|');
       if (cur !== baseNav) {
         fail(
-          `Nav divergente: ${navKeys[0]}=[${navByPage[navKeys[0]]}] vs ${navKeys[i]}=[${navByPage[navKeys[i]]}]`
+          `Nav divergente: ${navKeys[0]}=[${navByPage[navKeys[0]]}] vs ${navKeys[i]}=[${navByPage[navKeys[i]]}]`,
         );
       }
     }
-    if (!process.exitCode) ok('nav principal idêntica em todas as páginas do mapa');
+    if (!process.exitCode)
+      ok('nav principal idêntica em todas as páginas do mapa');
   }
 
   const base = process.env.SMOKE_BASE;
@@ -241,7 +251,9 @@ async function main() {
         if (expectOk) {
           if (expectRedirect) {
             if (status !== 200 && status !== 301 && status !== 302) {
-              fail(`HTTP ${status} ${url} (reinicie npm run preview se alterou serve.json)`);
+              fail(
+                `HTTP ${status} ${url} (reinicie npm run preview se alterou serve.json)`,
+              );
             } else {
               ok(`HTTP ${status} ${p}${location ? ' → ' + location : ''}`);
             }
@@ -251,7 +263,10 @@ async function main() {
             ok(`HTTP 200 ${p}`);
           }
         } else if (status === 200) {
-          console.warn('WARN ', `inesperado 200 em ${p} (prefira /examples/...)`);
+          console.warn(
+            'WARN ',
+            `inesperado 200 em ${p} (prefira /examples/...)`,
+          );
         } else {
           ok(`HTTP ${status} ${p} (fora de /examples — esperado falhar)`);
         }
@@ -261,7 +276,7 @@ async function main() {
     }
   } else {
     console.log(
-      '\n(Dica: com o preview no ar, rode SMOKE_BASE=http://127.0.0.1:8765 npm run smoke:examples)'
+      '\n(Dica: com o preview no ar, rode SMOKE_BASE=http://127.0.0.1:8765 npm run smoke:examples)',
     );
   }
 

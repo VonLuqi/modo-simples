@@ -49,13 +49,28 @@ describe('detectDistractions — exclusões MS (F7)', () => {
     const main = document.querySelector('main');
     const list = detectDistractions(main, {
       ...defaults,
-      distractionSelectors: ['header', 'footer', 'nav', '#ms-session-bar', '#ms-simples-chrome'],
+      distractionSelectors: [
+        'header',
+        'footer',
+        'nav',
+        '#ms-session-bar',
+        '#ms-simples-chrome',
+      ],
     });
     const ids = list.map((el) => el.id || el.tagName);
     assert.ok(!list.some((el) => el.id === 'ms-session-bar'));
     assert.ok(!list.some((el) => el.id === 'ms-simples-chrome'));
     assert.ok(!list.some((el) => el.hasAttribute('data-ms-pills')));
-    assert.ok(list.some((el) => el.tagName === 'HEADER' || el.tagName === 'header' || el.id === 'site-header'));
-    assert.ok(ids.includes('FOOTER') || list.some((el) => el.tagName === 'FOOTER'));
+    assert.ok(
+      list.some(
+        (el) =>
+          el.tagName === 'HEADER' ||
+          el.tagName === 'header' ||
+          el.id === 'site-header',
+      ),
+    );
+    assert.ok(
+      ids.includes('FOOTER') || list.some((el) => el.tagName === 'FOOTER'),
+    );
   });
 });

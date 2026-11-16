@@ -19,14 +19,18 @@ describe('eventBus', () => {
 
   it('deve registrar e disparar um evento', () => {
     let chamado = false;
-    eventBus.on('teste', () => { chamado = true; });
+    eventBus.on('teste', () => {
+      chamado = true;
+    });
     eventBus.emit('teste');
     assert.ok(chamado, 'O handler deve ter sido chamado');
   });
 
   it('deve passar o payload para o handler', () => {
     let payload;
-    eventBus.on('dados', (data) => { payload = data; });
+    eventBus.on('dados', (data) => {
+      payload = data;
+    });
     eventBus.emit('dados', { valor: 42 });
     assert.deepEqual(payload, { valor: 42 });
   });
@@ -42,7 +46,9 @@ describe('eventBus', () => {
 
   it('deve remover um handler ao chamar o retorno de on()', () => {
     let chamado = false;
-    const unsub = eventBus.on('remove', () => { chamado = true; });
+    const unsub = eventBus.on('remove', () => {
+      chamado = true;
+    });
     unsub();
     eventBus.emit('remove');
     assert.strictEqual(chamado, false, 'Handler removido não deve ser chamado');
@@ -59,23 +65,32 @@ describe('eventBus', () => {
   });
 
   it('deve silenciar erros lançados por handlers sem propagar', () => {
-    eventBus.on('erro', () => { throw new Error('erro em handler'); });
+    eventBus.on('erro', () => {
+      throw new Error('erro em handler');
+    });
     // Não deve lançar para fora
     assert.doesNotThrow(() => eventBus.emit('erro'));
   });
 
   it('clear() deve remover todos os handlers de um evento', () => {
     let chamado = false;
-    eventBus.on('limpar', () => { chamado = true; });
+    eventBus.on('limpar', () => {
+      chamado = true;
+    });
     eventBus.clear('limpar');
     eventBus.emit('limpar');
     assert.strictEqual(chamado, false);
   });
 
   it('clearAll() deve remover todos os handlers de todos os eventos', () => {
-    let a = false, b = false;
-    eventBus.on('eventoA', () => { a = true; });
-    eventBus.on('eventoB', () => { b = true; });
+    let a = false,
+      b = false;
+    eventBus.on('eventoA', () => {
+      a = true;
+    });
+    eventBus.on('eventoB', () => {
+      b = true;
+    });
     eventBus.clearAll();
     eventBus.emit('eventoA');
     eventBus.emit('eventoB');
@@ -85,7 +100,9 @@ describe('eventBus', () => {
 
   it('não deve disparar eventos de outros canais', () => {
     let chamado = false;
-    eventBus.on('canalA', () => { chamado = true; });
+    eventBus.on('canalA', () => {
+      chamado = true;
+    });
     eventBus.emit('canalB');
     assert.strictEqual(chamado, false);
   });

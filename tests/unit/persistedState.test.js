@@ -26,7 +26,11 @@ describe('hydratePersistedState', () => {
     assert.equal(patch.options.dyslexiaFont, true);
     assert.equal(patch.options.highlightLinks, true);
     assert.equal(patch.options.hideImages, true);
-    assert.equal(patch.options.simpleLanguage, false, 'simpleLanguage não fica órfã sem MS');
+    assert.equal(
+      patch.options.simpleLanguage,
+      false,
+      'simpleLanguage não fica órfã sem MS',
+    );
   });
 
   it('com MS on restaura simpleLanguage e hideImages', () => {

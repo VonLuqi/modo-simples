@@ -63,7 +63,9 @@ beforeEach(() => {
         });
       },
     };
-    globalThis.SpeechSynthesisUtterance = function SpeechSynthesisUtterance(text) {
+    globalThis.SpeechSynthesisUtterance = function SpeechSynthesisUtterance(
+      text,
+    ) {
       this.text = text;
       this.lang = '';
       this.rate = 1;

@@ -15,11 +15,21 @@ import assert from 'node:assert/strict';
 function criarLocalStorageMock() {
   const store = new Map();
   return {
-    getItem(key) { return store.has(key) ? store.get(key) : null; },
-    setItem(key, value) { store.set(key, String(value)); },
-    removeItem(key) { store.delete(key); },
-    clear() { store.clear(); },
-    get _store() { return store; },
+    getItem(key) {
+      return store.has(key) ? store.get(key) : null;
+    },
+    setItem(key, value) {
+      store.set(key, String(value));
+    },
+    removeItem(key) {
+      store.delete(key);
+    },
+    clear() {
+      store.clear();
+    },
+    get _store() {
+      return store;
+    },
   };
 }
 
@@ -59,7 +69,10 @@ describe('persistence', () => {
   it('deve prefixar as chaves automaticamente com ms_', () => {
     persistence.save('teste', 'valor');
     // O valor deve existir na store com prefixo
-    assert.ok(lsMock._store.has('ms_teste'), 'Chave deve existir com prefixo ms_');
+    assert.ok(
+      lsMock._store.has('ms_teste'),
+      'Chave deve existir com prefixo ms_',
+    );
     // E não existir sem prefixo
     assert.strictEqual(lsMock._store.has('teste'), false);
   });
@@ -90,14 +103,18 @@ describe('persistence', () => {
 
   it('save() não deve propagar exceções quando localStorage lança', () => {
     const original = global.localStorage.setItem;
-    global.localStorage.setItem = () => { throw new Error('quota exceeded'); };
+    global.localStorage.setItem = () => {
+      throw new Error('quota exceeded');
+    };
     assert.doesNotThrow(() => persistence.save('qualquer', 1));
     global.localStorage.setItem = original;
   });
 
   it('load() deve retornar o fallback quando localStorage lança', () => {
     const original = global.localStorage.getItem;
-    global.localStorage.getItem = () => { throw new Error('bloqueado'); };
+    global.localStorage.getItem = () => {
+      throw new Error('bloqueado');
+    };
     const result = persistence.load('chave', 'seguro');
     assert.strictEqual(result, 'seguro');
     global.localStorage.getItem = original;

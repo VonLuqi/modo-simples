@@ -59,8 +59,16 @@ describe('state', () => {
     state.set({ options: { textScale: '150' } });
     const s = state.get();
     assert.strictEqual(s.options.textScale, '150');
-    assert.strictEqual(s.options.colorTheme, 'senac', 'colorTheme deve permanecer senac');
-    assert.strictEqual(s.options.reducedMotion, false, 'reducedMotion deve permanecer false');
+    assert.strictEqual(
+      s.options.colorTheme,
+      'senac',
+      'colorTheme deve permanecer senac',
+    );
+    assert.strictEqual(
+      s.options.reducedMotion,
+      false,
+      'reducedMotion deve permanecer false',
+    );
   });
 
   it('set() deve emitir stateChange com prev e next corretos', () => {
@@ -78,7 +86,9 @@ describe('state', () => {
 
   it('o next emitido por stateChange é uma cópia independente', () => {
     let nextReceived;
-    eventBus.on('stateChange', ({ next }) => { nextReceived = next; });
+    eventBus.on('stateChange', ({ next }) => {
+      nextReceived = next;
+    });
 
     state.set({ modoSimples: true });
 
@@ -105,7 +115,9 @@ describe('state', () => {
   it('reset() deve emitir stateChange', () => {
     let emitido = false;
     state.set({ modoSimples: true });
-    eventBus.on('stateChange', () => { emitido = true; });
+    eventBus.on('stateChange', () => {
+      emitido = true;
+    });
     state.reset();
     assert.ok(emitido);
   });

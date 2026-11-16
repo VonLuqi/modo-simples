@@ -36,7 +36,9 @@ describe('normalizeSimpleNav', () => {
 
   it('preserva short opcional', () => {
     assert.deepEqual(
-      normalizeSimpleNav([{ label: 'Cursos Disponíveis', href: 'cursos.html', short: 'Cursos' }]),
+      normalizeSimpleNav([
+        { label: 'Cursos Disponíveis', href: 'cursos.html', short: 'Cursos' },
+      ]),
       [{ label: 'Cursos Disponíveis', href: 'cursos.html', short: 'Cursos' }],
     );
   });
@@ -80,7 +82,10 @@ describe('createSimpleNav', () => {
     const nav = findInjected();
     assert.ok(nav);
     assert.ok(nav.classList.contains('ms-simple-only'));
-    assert.equal(document.getElementById('ms-session-bar').nextElementSibling, nav);
+    assert.equal(
+      document.getElementById('ms-session-bar').nextElementSibling,
+      nav,
+    );
 
     const links = nav.querySelectorAll('a.ms-pill');
     assert.equal(links.length, 2);

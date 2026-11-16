@@ -21,7 +21,11 @@ const PAGES = [
 const PILLS = [
   { href: 'index.html', short: 'Início', full: 'Início / O que precisa?' },
   { href: 'cursos.html', short: 'Cursos', full: 'Cursos Disponíveis' },
-  { href: 'psg.html', short: 'Gratuitos (PSG)', full: 'Cursos 100% Gratuitos (PSG)' },
+  {
+    href: 'psg.html',
+    short: 'Gratuitos (PSG)',
+    full: 'Cursos 100% Gratuitos (PSG)',
+  },
   { href: 'unidades.html', short: 'Unidades', full: 'Onde tem Senac?' },
   { href: 'contato.html', short: 'Atendente', full: 'Falar com Atendente' },
   { href: 'aluno.html', short: 'Área do Aluno', full: 'Área do Aluno' },
@@ -40,8 +44,7 @@ ${links}
     </nav>`;
 }
 
-const blockRe =
-  /\s*<nav class="ms-pills-nav[\s\S]*?<\/nav>\s*/;
+const blockRe = /\s*<nav class="ms-pills-nav[\s\S]*?<\/nav>\s*/;
 
 for (const { file, current } of PAGES) {
   const full = path.join(examples, file);
