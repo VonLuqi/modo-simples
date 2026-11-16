@@ -42,7 +42,7 @@ jobs:
       - name: Testes unitários + estrutura
         run: npm test
 
-      - name: Cobertura (src/)
+      - name: Cobertura (src/ — piso linhas 90, ramos 80, funções 80)
         run: |
           set -o pipefail
           npm run coverage | tee coverage.txt

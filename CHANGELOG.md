@@ -2,6 +2,19 @@
 
 Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Unreleased]
+
+### Qualidade / ferramentas (F1)
+
+- CI no GitHub Actions (`.github/workflows/ci.yml`): format, lint, testes, cobertura com piso (linhas 90 · ramos 80 · funções 80), build sem drift de `dist/`, audit, smokes e e2e Playwright + axe.
+- ESLint (flat config), Husky 9 + lint-staged ativos, `vitest` removido (testes em `node:test`), `npm audit` sem vulnerabilidades.
+- Testes: ciclo de vida da classe, boot com `ModoSimplesConfig`, observer, focus, painel, escaping, e2e em browser real e baseline de acessibilidade por cenário (regra + seletor + página/estado).
+- `npm test` falha se um teste `todo` passar ("IMP-xx fixed: remove todo"): bugs conhecidos IMP-01, IMP-02, IMP-25 e IMP-31 seguem rastreados como `todo` até a correção.
+
+### Encerrado sem correção
+
+- **UX-29** (suposto widget que não respondia ao clique): era o marcador de clique do portal de teste, não um defeito do widget — verificado pelo @UI (T9). Nenhuma mudança de código.
+
 ## [2.0.0] — 2026-11-16
 
 ### Quebra de compatibilidade (breaking)

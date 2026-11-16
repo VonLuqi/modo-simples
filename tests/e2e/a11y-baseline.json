@@ -1,11 +1,16 @@
 {
-  "_doc": "Violações axe conhecidas, rastreadas por achado. Chave = rule + selector. Toda entrada tem correção planejada (F3): remova-a ao corrigir (o e2e avisa 'baseline obsoleta?' quando a violação some). Violação fora desta lista falha o e2e. Obs.: axe não mede contraste de componentes (WCAG 1.4.11): UX-02 é rastreado em behavior.spec.js (test.fail).",
+  "_doc": "Violações axe conhecidas, rastreadas por achado. Chave = rule + selector + cenário (página/estado): a entrada só tolera a violação nos cenários listados em scenarios. Toda entrada tem correção planejada (F3): remova-a ao corrigir (o e2e avisa 'baseline obsoleta?' quando a violação some). Violação fora desta lista falha o e2e. Obs.: axe não mede contraste de componentes (WCAG 1.4.11): UX-02 é rastreado em behavior.spec.js (test.fail).",
   "entries": [
     {
       "finding": "UX-01",
       "rule": "color-contrast",
       "selector": "#ms-container >>> .ms-btn-ouvir",
-      "scenarios": ["generic/panel-fim", "index/panel-fim"],
+      "scenarios": [
+        "generic/panel",
+        "generic/panel-fim",
+        "index/panel",
+        "index/panel-fim"
+      ],
       "note": "Botão Ouvir: branco sobre #F39200 = 2,35:1 (styles.js:452)"
     },
     {

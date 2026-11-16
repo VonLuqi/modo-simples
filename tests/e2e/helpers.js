@@ -119,8 +119,11 @@ export async function expectNoNewViolations(page, testInfo, scenario) {
       const selector = node.target.flat().join(' >>> ');
       const key = keyOf(v.id, selector);
       seen.add(key);
+      // rule + selector + cenário (página/estado): uma entrada não esconde a mesma
+      // violação em outra página ou estado
       const known = BASELINE.entries.find(
-        (e) => keyOf(e.rule, e.selector) === key,
+        (e) =>
+          keyOf(e.rule, e.selector) === key && e.scenarios.includes(scenario),
       );
       if (known) {
         testInfo.annotations.push({
