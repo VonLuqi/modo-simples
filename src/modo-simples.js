@@ -49,6 +49,9 @@ import {
 } from './features/manualSelect.js';
 import { createSimpleNav } from './features/simpleNav.js';
 
+/** Tamanho do texto de um elemento (sem espaços nas pontas). */
+const textLength = (el) => ((el && el.textContent) || '').trim().length;
+
 const STATE_KEY = 'state';
 const PRINCIPAL_KEY = 'principal';
 
@@ -441,20 +444,24 @@ class ModoSimples {
   // ── Modo Simples activation ────────────────────────────────────────────────
 
   _activateModoSimples(currentState, { announce: doAnnounce = true } = {}) {
-    const savedPath = this._loadPrincipalPath();
-    if (savedPath) {
+    const saved = this._loadPrincipal();
+    if (saved) {
+      let el = null;
       try {
-        const el = document.querySelector(savedPath);
-        if (el) {
-          setPrincipal(el, this._config);
-          document.documentElement.classList.add('ms-ativo');
-          applyOptions(currentState);
-          if (doAnnounce) announce('Modo Simples ativado');
-          return;
-        }
+        el = document.querySelector(saved.path);
       } catch (_) {
-        // Invalid saved selector — fall through to scan
+        // Invalid saved selector — discard below
       }
+      if (el && this._isPlausiblePrincipal(el, saved)) {
+        this._savePrincipalPath(saved.path, el); // migra registro antigo (por host) para a página
+        setPrincipal(el, this._config);
+        document.documentElement.classList.add('ms-ativo');
+        applyOptions(currentState);
+        if (doAnnounce) announce('Modo Simples ativado');
+        return;
+      }
+      // caminho inválido, sumiu ou o texto encolheu demais: não é mais a mesma área (IMP-06)
+      this._discardPrincipal();
     }
 
     const { confidence } = scan(this._config);
@@ -463,7 +470,7 @@ class ModoSimples {
       startManualSelect({
         onSelect: (el, path) => {
           setPrincipal(el, this._config);
-          this._savePrincipalPath(path);
+          this._savePrincipalPath(path, el);
           announce('Conteúdo principal definido');
         },
         onCancel: () => {
@@ -601,20 +608,59 @@ class ModoSimples {
     this._reducedMotionUser = typeof rm === 'boolean' ? rm : null;
   }
 
-  _savePrincipalPath(path) {
+  /** Grava o principal escolhido POR PÁGINA, com o tamanho do texto para validar depois. */
+  _savePrincipalPath(path, el) {
     if (!this._config.persistence || !path) return;
+    persistence.saveForPath(PRINCIPAL_KEY, {
+      path,
+      textLen: textLength(el),
+    });
+  }
+
+  /**
+   * Principal salvo para ESTA página. Sem registro de página, aceita o registro antigo (por host,
+   * string) — ele só vale se passar na validação, e é migrado para a página (IMP-06).
+   * @returns {{ path: string, textLen: number|null } | null}
+   */
+  _loadPrincipal() {
+    if (!this._config.persistence) return null;
+    let v = persistence.loadForPath(PRINCIPAL_KEY);
+    if (v == null) {
+      v = this._config.hostnamePersistence
+        ? persistence.loadForHost(PRINCIPAL_KEY)
+        : persistence.load(PRINCIPAL_KEY);
+    }
+    if (typeof v === 'string' && v) return { path: v, textLen: null };
+    if (v && typeof v.path === 'string' && v.path) {
+      return {
+        path: v.path,
+        textLen: Number.isFinite(v.textLen) ? v.textLen : null,
+      };
+    }
+    return null;
+  }
+
+  /** Esquece o principal salvo (página e registro antigo por host). */
+  _discardPrincipal() {
+    if (!this._config.persistence) return;
+    persistence.removeForPath(PRINCIPAL_KEY);
     if (this._config.hostnamePersistence) {
-      persistence.saveForHost(PRINCIPAL_KEY, path);
+      persistence.removeForHost(PRINCIPAL_KEY);
     } else {
-      persistence.save(PRINCIPAL_KEY, path);
+      persistence.remove(PRINCIPAL_KEY);
     }
   }
 
-  _loadPrincipalPath() {
-    if (!this._config.persistence) return null;
-    return this._config.hostnamePersistence
-      ? persistence.loadForHost(PRINCIPAL_KEY)
-      : persistence.load(PRINCIPAL_KEY);
+  /**
+   * O elemento achado pelo caminho salvo ainda parece a área de conteúdo? Exige o mínimo de
+   * texto da heurística (scoring.minTextLength) e, quando conhecido, não menos que metade do
+   * tamanho de quando foi escolhido.
+   */
+  _isPlausiblePrincipal(el, saved) {
+    const len = textLength(el);
+    if (len < this._config.scoring.minTextLength) return false;
+    if (saved.textLen && len < saved.textLen * 0.5) return false;
+    return true;
   }
 
   // ── System preferences ─────────────────────────────────────────────────────

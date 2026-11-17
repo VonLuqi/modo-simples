@@ -2062,10 +2062,10 @@
     if (tag === "article") score += scoring.articleBonus;
     if (element.querySelector("h1")) score += scoring.h1Bonus;
     if (element.querySelector("h2")) score += scoring.h2Bonus;
-    const textLength = ((_a = element.textContent) != null ? _a : "").trim().length;
-    if (textLength >= scoring.minTextLength) {
+    const textLength2 = ((_a = element.textContent) != null ? _a : "").trim().length;
+    if (textLength2 >= scoring.minTextLength) {
       score += scoring.textLengthBonus;
-      if (textLength >= scoring.minTextLength * 3)
+      if (textLength2 >= scoring.minTextLength * 3)
         score += scoring.textLengthBonus;
     }
     return score;
@@ -2849,6 +2849,7 @@
   }
 
   // src/modo-simples.js
+  var textLength = (el) => (el && el.textContent || "").trim().length;
   var STATE_KEY = "state";
   var PRINCIPAL_KEY = "principal";
   var ModoSimples = class {
@@ -3176,19 +3177,22 @@
     }
     // ── Modo Simples activation ────────────────────────────────────────────────
     _activateModoSimples(currentState, { announce: doAnnounce = true } = {}) {
-      const savedPath = this._loadPrincipalPath();
-      if (savedPath) {
+      const saved = this._loadPrincipal();
+      if (saved) {
+        let el = null;
         try {
-          const el = document.querySelector(savedPath);
-          if (el) {
-            setPrincipal(el, this._config);
-            document.documentElement.classList.add("ms-ativo");
-            applyOptions(currentState);
-            if (doAnnounce) announce("Modo Simples ativado");
-            return;
-          }
+          el = document.querySelector(saved.path);
         } catch (_) {
         }
+        if (el && this._isPlausiblePrincipal(el, saved)) {
+          this._savePrincipalPath(saved.path, el);
+          setPrincipal(el, this._config);
+          document.documentElement.classList.add("ms-ativo");
+          applyOptions(currentState);
+          if (doAnnounce) announce("Modo Simples ativado");
+          return;
+        }
+        this._discardPrincipal();
       }
       const { confidence } = scan(this._config);
       if (confidence < this._config.confidenceThreshold) {
@@ -3196,7 +3200,7 @@
         startManualSelect({
           onSelect: (el, path) => {
             setPrincipal(el, this._config);
-            this._savePrincipalPath(path);
+            this._savePrincipalPath(path, el);
             announce("Conte\xFAdo principal definido");
           },
           onCancel: () => {
@@ -3314,17 +3318,54 @@
       const rm = saved.options && saved.options.reducedMotion;
       this._reducedMotionUser = typeof rm === "boolean" ? rm : null;
     }
-    _savePrincipalPath(path) {
+    /** Grava o principal escolhido POR PÁGINA, com o tamanho do texto para validar depois. */
+    _savePrincipalPath(path, el) {
       if (!this._config.persistence || !path) return;
+      persistence_default.saveForPath(PRINCIPAL_KEY, {
+        path,
+        textLen: textLength(el)
+      });
+    }
+    /**
+     * Principal salvo para ESTA página. Sem registro de página, aceita o registro antigo (por host,
+     * string) — ele só vale se passar na validação, e é migrado para a página (IMP-06).
+     * @returns {{ path: string, textLen: number|null } | null}
+     */
+    _loadPrincipal() {
+      if (!this._config.persistence) return null;
+      let v = persistence_default.loadForPath(PRINCIPAL_KEY);
+      if (v == null) {
+        v = this._config.hostnamePersistence ? persistence_default.loadForHost(PRINCIPAL_KEY) : persistence_default.load(PRINCIPAL_KEY);
+      }
+      if (typeof v === "string" && v) return { path: v, textLen: null };
+      if (v && typeof v.path === "string" && v.path) {
+        return {
+          path: v.path,
+          textLen: Number.isFinite(v.textLen) ? v.textLen : null
+        };
+      }
+      return null;
+    }
+    /** Esquece o principal salvo (página e registro antigo por host). */
+    _discardPrincipal() {
+      if (!this._config.persistence) return;
+      persistence_default.removeForPath(PRINCIPAL_KEY);
       if (this._config.hostnamePersistence) {
-        persistence_default.saveForHost(PRINCIPAL_KEY, path);
+        persistence_default.removeForHost(PRINCIPAL_KEY);
       } else {
-        persistence_default.save(PRINCIPAL_KEY, path);
+        persistence_default.remove(PRINCIPAL_KEY);
       }
     }
-    _loadPrincipalPath() {
-      if (!this._config.persistence) return null;
-      return this._config.hostnamePersistence ? persistence_default.loadForHost(PRINCIPAL_KEY) : persistence_default.load(PRINCIPAL_KEY);
+    /**
+     * O elemento achado pelo caminho salvo ainda parece a área de conteúdo? Exige o mínimo de
+     * texto da heurística (scoring.minTextLength) e, quando conhecido, não menos que metade do
+     * tamanho de quando foi escolhido.
+     */
+    _isPlausiblePrincipal(el, saved) {
+      const len = textLength(el);
+      if (len < this._config.scoring.minTextLength) return false;
+      if (saved.textLen && len < saved.textLen * 0.5) return false;
+      return true;
     }
     // ── System preferences ─────────────────────────────────────────────────────
     /**
