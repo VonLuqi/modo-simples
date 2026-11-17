@@ -58,6 +58,15 @@
     html.ms-theme-darkHigh .ms-pills-nav a {
       color: #e2e8f0 !important;
     }
+    /* W4c: pill inativa herdava fundo claro (#eef2f7) com texto claro (~1.1:1) */
+    html.ms-theme-darkHigh .ms-pills-nav .ms-pill:not([aria-current='page']) {
+      background-color: #1e293b !important;
+      color: #e2e8f0 !important;
+      border-color: #94a3b8 !important;
+    }
+    html.ms-theme-darkHigh .ms-pills-nav .ms-pill:not([aria-current='page']):hover {
+      background-color: #334155 !important;
+    }
     html.ms-theme-darkHigh .main-nav a[aria-current='page'],
     html.ms-theme-darkHigh .ms-pill[aria-current='page'] {
       background-color: #38bdf8 !important;
