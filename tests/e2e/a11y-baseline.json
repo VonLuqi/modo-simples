@@ -2,13 +2,6 @@
   "_doc": "Violações axe conhecidas, rastreadas por achado. Chave = rule + selector + cenário (página/estado): a entrada só tolera a violação nos cenários listados em scenarios. Toda entrada tem correção planejada (F3): remova-a ao corrigir (o e2e avisa 'baseline obsoleta?' quando a violação some). Violação fora desta lista falha o e2e. Obs.: axe não mede contraste de componentes (WCAG 1.4.11): UX-02 é rastreado em behavior.spec.js (test.fail).",
   "entries": [
     {
-      "finding": "UX-03",
-      "rule": "color-contrast",
-      "selector": "#ms-container >>> .ms-a11y-footer-note",
-      "scenarios": ["generic/panel-fim", "index/panel-fim"],
-      "note": "Nota do rodapé: #94a3b8 sobre branco = 2,56:1 (styles.js:482)"
-    },
-    {
       "finding": "UX-04",
       "rule": "color-contrast",
       "selector": ".ms-simples-sub",

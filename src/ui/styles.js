@@ -479,7 +479,7 @@ export function getUIStyles(position = 'bottom-right') {
       margin: 0.35rem 0 0;
       text-align: center;
       font-size: 0.68rem;
-      color: #94a3b8;
+      color: #475569;
       line-height: 1.35;
     }
 
