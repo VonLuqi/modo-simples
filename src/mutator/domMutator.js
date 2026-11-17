@@ -72,11 +72,12 @@ export function holdPrincipal(on) {
  * Inject the Modo Simples page CSS into <head>.
  * Idempotent — safe to call multiple times; only injects once.
  * The CSS text comes from the caller (modo-simples.js), so the mutator does not import ui/.
+ * Without CSS nothing is injected (an empty <style> would block the later real call).
  *
  * @param {string} [css]
  */
 export function injectPageStyles(css = '') {
-  if (document.getElementById(PAGE_STYLE_ID)) return;
+  if (!css || document.getElementById(PAGE_STYLE_ID)) return;
   const style = document.createElement('style');
   style.id = PAGE_STYLE_ID;
   style.textContent = css;
