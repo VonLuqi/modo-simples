@@ -33,6 +33,43 @@ beforeEach(() => {
 });
 afterEach(() => env.restore());
 
+describe('UX-09 — foco do switch sobrevive ao re-parent do chrome', () => {
+  it('ligar MS move o chrome para as pills e o foco continua no switch', () => {
+    document.body.innerHTML =
+      '<header id="h"></header><nav data-ms-pills><div class="ms-pills-nav__inner"></div></nav>';
+    const chrome = montarChrome({
+      mount: { chrome: '#h' },
+    });
+    chrome.sync(estado({}, false));
+    const sw = document.querySelector('[data-action="toggle-simples"]');
+    sw.focus();
+    assert.equal(document.activeElement, sw);
+
+    chrome.sync(estado({}, true));
+    const wrap = document.getElementById('ms-simples-chrome');
+    assert.ok(wrap.parentElement.classList.contains('ms-pills-nav__inner'));
+    assert.equal(document.activeElement, sw);
+    chrome.destroy();
+  });
+
+  it('sync repetido com o pai já correto não re-anexa o nó', () => {
+    document.body.innerHTML = '<header id="h"></header>';
+    const chrome = montarChrome({ mount: { chrome: '#h' } });
+    chrome.sync(estado({}, false));
+    const wrap = document.getElementById('ms-simples-chrome');
+    let moves = 0;
+    const orig = wrap.parentElement.appendChild.bind(wrap.parentElement);
+    wrap.parentElement.appendChild = (n) => {
+      moves += 1;
+      return orig(n);
+    };
+    chrome.sync(estado({ textScale: '125' }, false));
+    chrome.sync(estado({ textScale: '150' }, false));
+    assert.equal(moves, 0);
+    chrome.destroy();
+  });
+});
+
 describe('UX-11 — nome estável + estado por atributo', () => {
   it('switch do chrome e do painel não trocam de rótulo ao ligar/desligar', () => {
     const chrome = montarChrome();

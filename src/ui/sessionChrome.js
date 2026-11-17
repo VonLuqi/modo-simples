@@ -255,6 +255,20 @@ function _resolve(selectors) {
   return null;
 }
 
+/**
+ * Move o chrome só se o pai mudou; se o foco estava dentro (re-parent o desfaz), devolve-o.
+ * @param {HTMLElement} chrome
+ * @param {Element} parent
+ */
+function _moveChrome(chrome, parent) {
+  if (chrome.parentElement === parent) return;
+  const focused = chrome.contains(document.activeElement)
+    ? document.activeElement
+    : null;
+  parent.appendChild(chrome);
+  if (focused) focused.focus();
+}
+
 function _mountChrome(chrome, mount) {
   chrome.classList.remove(
     'ms-simples-chrome--ms-nav',
@@ -262,10 +276,10 @@ function _mountChrome(chrome, mount) {
   );
   const host = _resolve(mount?.chrome);
   if (host) {
-    host.appendChild(chrome);
+    _moveChrome(chrome, host);
   } else {
     chrome.classList.add('ms-simples-chrome--fixed');
-    document.body.appendChild(chrome);
+    _moveChrome(chrome, document.body);
   }
 }
 
@@ -287,7 +301,7 @@ function _placeChrome(chrome, modoOn, mount) {
     document.querySelector('[data-ms-pills] .ms-pills-nav__inner') ||
     document.querySelector('[data-ms-pills]');
   if (pillsInner) {
-    pillsInner.appendChild(chrome);
+    _moveChrome(chrome, pillsInner);
     return;
   }
 
@@ -295,7 +309,7 @@ function _placeChrome(chrome, modoOn, mount) {
     '#ms-session-bar .ms-session-actions',
   );
   if (barOnActions) {
-    barOnActions.appendChild(chrome);
+    _moveChrome(chrome, barOnActions);
     return;
   }
 
@@ -303,12 +317,12 @@ function _placeChrome(chrome, modoOn, mount) {
     '#ms-session-bar .ms-session-bar-inner',
   );
   if (barInner) {
-    barInner.appendChild(chrome);
+    _moveChrome(chrome, barInner);
     return;
   }
 
   chrome.classList.add('ms-simples-chrome--fixed');
-  document.body.appendChild(chrome);
+  _moveChrome(chrome, document.body);
 }
 
 function _mountBar(bar, mount) {
