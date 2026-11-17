@@ -1190,7 +1190,7 @@
     /* \u2500\u2500 Lexend / dyslexia font \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     html.ms-dyslexia-font,
     html.ms-dyslexia-font body,
-    html.ms-dyslexia-font body *:not(#ms-container):not(#ms-container *):not([class~="icon"]):not([class^="icon-"]):not([class*=" icon-"]):not([class*="fa-"]):not(.fa):not(.fas):not(.far):not(.fab):not(.material-icons):not(code):not(pre):not(kbd):not(samp) {
+    html.ms-dyslexia-font body *:not(#ms-container):not(#ms-container *):not([class~="icon"]):not([class^="icon-"]):not([class*=" icon-"]):not([class*="icon_"]):not([class*="-icon"]):not([class*="_icon"]):not([class*="glyphicon"]):not([class*="fa-"]):not(.fa):not(.fas):not(.far):not(.fab):not(.material-icons):not(code):not(pre):not(kbd):not(samp) {
       font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif !important;
       letter-spacing: 0.02em !important;
       word-spacing: 0.08em !important;
@@ -3523,10 +3523,15 @@
           const { clientX, clientY } = e;
           const retargeted = e.target === document.body || e.target === document.documentElement;
           this._closePanel();
-          if (retargeted && e.detail > 0) {
+          if (retargeted && e.isTrusted && e.detail > 0) {
             const alvo = document.elementFromPoint(clientX, clientY);
             if (alvo && alvo !== document.body && alvo !== document.documentElement) {
               alvo.click();
+              if (alvo.matches(
+                'input, select, textarea, [contenteditable]:not([contenteditable="false"])'
+              )) {
+                alvo.focus();
+              }
             }
           }
         }
