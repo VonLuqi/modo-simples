@@ -79,6 +79,21 @@ describe('Desligar tudo', () => {
     assert.equal(saved.options.dyslexiaFont, false);
     assert.equal(saved.options.reducedMotion, null); // volta a seguir o SO
   });
+
+  it('esquece a preferência "mostrar imagens no Modo Simples" (L3)', () => {
+    boot();
+    inst.enable();
+    // MS ligado: desligar "ocultar imagens" grava a preferência
+    panel().querySelector('.ms-switch[data-option="hideImages"]').click();
+    assert.equal(stored('preferShowImagesInMs'), 'true');
+
+    panel().querySelector('[data-action="reset-all"]').click();
+    assert.equal(stored('preferShowImagesInMs'), null);
+
+    // religar o MS volta a ocultar imagens (padrão), sem a preferência antiga
+    inst.enable();
+    assert.equal(state.get().options.hideImages, true);
+  });
 });
 
 describe('Lado do painel', () => {

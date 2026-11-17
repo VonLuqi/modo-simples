@@ -7,6 +7,7 @@
 
 import state from '../core/state.js';
 import eventBus from '../core/eventBus.js';
+import persistence from '../core/persistence.js';
 import { announce } from '../utils/aria.js';
 import { getUIStyles } from './styles.js';
 import { createFab } from './fab.js';
@@ -306,6 +307,14 @@ export function resetAll(ms) {
   if (state.get().modoSimples) ms._setModoSimples(false);
   state.set({ options: { ...RESET_OPTIONS } });
   ms._syncReducedMotion();
+  // página como sem o widget: também esquece a preferência "mostrar imagens no Modo Simples"
+  if (ms._config.persistence) {
+    if (ms._config.hostnamePersistence) {
+      persistence.removeForHost('preferShowImagesInMs');
+    } else {
+      persistence.remove('preferShowImagesInMs');
+    }
+  }
   announce(S.announceResetAll);
 }
 

@@ -3757,6 +3757,13 @@
     if (state_default.get().modoSimples) ms._setModoSimples(false);
     state_default.set({ options: { ...RESET_OPTIONS } });
     ms._syncReducedMotion();
+    if (ms._config.persistence) {
+      if (ms._config.hostnamePersistence) {
+        persistence_default.removeForHost("preferShowImagesInMs");
+      } else {
+        persistence_default.remove("preferShowImagesInMs");
+      }
+    }
     announce(STRINGS.announceResetAll);
   }
   function movePanelSide(ms) {

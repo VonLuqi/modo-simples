@@ -82,6 +82,38 @@ test.describe('Modo Simples: ligar e desligar', () => {
       .boundingBox();
     expect(tile.height).toBeGreaterThanOrEqual(44);
     expect(tile.width).toBeGreaterThanOrEqual(44);
+
+    // WCAG 2.5.8: o centro e os pontos a (h/2 - 4)px do centro acertam o próprio tile
+    // (ou um descendente) — nada sobreposto rouba o toque. Seções recolhidas são abertas antes.
+    await page.evaluate(() => {
+      const root = document.querySelector('#ms-container').shadowRoot;
+      root
+        .querySelectorAll('.ms-a11y-section-toggle[aria-expanded="false"]')
+        .forEach((b) => b.click());
+    });
+    const falhas = await page.evaluate(() => {
+      const root = document.querySelector('#ms-container').shadowRoot;
+      const tiles = [...root.querySelectorAll('.ms-tile')];
+      const out = [];
+      for (const t of tiles) {
+        t.scrollIntoView({ block: 'center' });
+        const r = t.getBoundingClientRect();
+        const x = r.x + r.width / 2;
+        const cy = r.y + r.height / 2;
+        const d = r.height / 2 - 4;
+        for (const y of [cy, cy - d, cy + d]) {
+          const hit = root.elementFromPoint(x, y);
+          if (!hit || (hit !== t && !t.contains(hit))) {
+            out.push(
+              `${t.getAttribute('data-option') || t.dataset.action}@${y}`,
+            );
+          }
+        }
+      }
+      return { n: tiles.length, out };
+    });
+    expect(falhas.n).toBeGreaterThan(0);
+    expect(falhas.out).toEqual([]);
   });
 
   test('pela API window.ModoSimples: enable / disable / toggle', async ({

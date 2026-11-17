@@ -151,6 +151,93 @@ describe('FAB', () => {
   });
 });
 
+/**
+ * Guarda estática dos templates do painel (renderSection/CONTROLS/switchTile/...): lista cada
+ * `${expr}` (inclusive aninhados) fora da lista permitida. Expressões externas com templates
+ * aninhados só passam no formato exato conhecido (o aninhado é checado por si).
+ */
+const ALLOWED_PANEL_EXPR = [
+  /^S\.\w+$/, // textos estáticos de ui/strings.js
+  /^(CHECK|CHEVRON|SLIDERS_ICON)$/, // ícones
+  /^svgIcon\('[^'`$]*'\)$/,
+  /^radioHead\('[\w-]+', S\.\w+, '\w+'\)$/, // id literal, título estático, chave da opção
+  /^(option|id|title|label|desc|icon|inner|open|key)$/, // parâmetros dos helpers
+  /^sec\.(id|title|icon)$/,
+  /^[st]\.(value|label|title|sub)$/, // TEXT_SCALES / COLOR_THEMES
+  /^CONTROLS\[k\]\.html$/,
+  /^blocks\.join\(''\)$/,
+  /^SECTIONS\.map\(renderSection\)\.join\(''\)$/,
+  /^open \? '' : ' hidden'$/,
+  /^desc \? `[^`$]*` : ''$/, // externo com aninhado: formato exato
+  /^(TEXT_SCALES|COLOR_THEMES)\.map\(\s*\([st]\) => `[^`$]*`,?\s*\)\.join\(''\)$/,
+];
+
+/** Todas as expressões `${...}` do texto; nas externas, as aninhadas somem (são listadas à parte). */
+function panelExprs(src) {
+  const out = [];
+  const scan = (s) => {
+    let stripped = '';
+    let i = 0;
+    while (i < s.length) {
+      if (s[i] === '$' && s[i + 1] === '{') {
+        let depth = 1;
+        let j = i + 2;
+        while (j < s.length && depth) {
+          if (s[j] === '{') depth++;
+          else if (s[j] === '}') depth--;
+          j++;
+        }
+        out.push(scan(s.slice(i + 2, j - 1)).trim());
+        i = j;
+      } else {
+        stripped += s[i++];
+      }
+    }
+    return stripped;
+  };
+  scan(src);
+  return out;
+}
+
+const offendersOf = (src) =>
+  panelExprs(src).filter((e) => !ALLOWED_PANEL_EXPR.some((re) => re.test(e)));
+
+describe('escaping (Q14): templates do painel (F6 QA M1)', () => {
+  it('renderSection/CONTROLS/switchTile só interpolam constantes internas', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const src = fs.readFileSync(
+      path.resolve(import.meta.dirname, '../../src/ui/a11yPanel.js'),
+      'utf8',
+    );
+    // do primeiro helper de template até o fim do innerHTML do painel (antes dos textContent)
+    const ini = src.indexOf('const svgIcon');
+    const fim = src.indexOf('// Textos de marca');
+    assert.ok(ini > 0 && fim > ini);
+    const trecho = src.slice(ini, fim);
+    assert.ok(
+      panelExprs(trecho).length > 20,
+      'a guarda precisa enxergar os templates',
+    );
+    assert.deepEqual(offendersOf(trecho), []);
+  });
+
+  it('autoteste: a guarda pega interpolação de variável do host', () => {
+    assert.deepEqual(offendersOf('x = `<b>${host.x}</b>`'), ['host.x']);
+    assert.deepEqual(offendersOf("x = `${desc ? host.x : ''}`"), [
+      "desc ? host.x : ''",
+    ]);
+    assert.deepEqual(
+      offendersOf("x = `${desc ? `<i>${config.brand}</i>` : ''}`"),
+      ['config.brand'],
+    );
+    assert.deepEqual(
+      offendersOf('x = `<b>${S.panelSimpleTitle}</b>${CHECK}`'),
+      [],
+    );
+  });
+});
+
 describe('escaping (Q14): strings de config/host nunca viram HTML', () => {
   it('config.brand entra como texto no painel', () => {
     const panel = montarPainel({
