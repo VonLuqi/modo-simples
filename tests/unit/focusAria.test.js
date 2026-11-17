@@ -111,3 +111,64 @@ describe('UX-11 — nome estável + estado por atributo', () => {
     chrome.destroy();
   });
 });
+
+describe('UX-10 — radiogroup com roving tabindex e setas', () => {
+  function painel() {
+    const calls = [];
+    const panel = createA11yPanel({
+      state: estado(),
+      onClose() {},
+      onToggleModoSimples() {},
+      onSetOption: (k, v) => calls.push([k, v]),
+      onSpeak() {},
+    });
+    document.body.appendChild(panel.element);
+    return { panel, calls };
+  }
+  const tecla = (el, key) => {
+    const ev = new window.KeyboardEvent('keydown', {
+      key,
+      bubbles: true,
+      cancelable: true,
+    });
+    el.dispatchEvent(ev);
+    return ev;
+  };
+
+  it('só o rádio marcado fica na ordem de Tab (tabindex 0), os outros -1', () => {
+    const { panel } = painel();
+    const groups = panel.element.querySelectorAll('[role="radiogroup"]');
+    assert.equal(groups.length, 2);
+    for (const group of groups) {
+      const radios = [...group.querySelectorAll('[role="radio"]')];
+      const tabbable = radios.filter((r) => r.getAttribute('tabindex') === '0');
+      assert.equal(tabbable.length, 1);
+      assert.equal(tabbable[0].getAttribute('aria-checked'), 'true');
+    }
+  });
+
+  it('setas movem foco e selecionam; Home/End e wrap; tabindex acompanha o estado', () => {
+    const { panel, calls } = painel();
+    const group = panel.element.querySelector('[data-option="textScale"]');
+    const radios = [...group.querySelectorAll('[role="radio"]')];
+    radios[0].focus();
+    const ev = tecla(radios[0], 'ArrowRight');
+    assert.equal(ev.defaultPrevented, true);
+    assert.equal(document.activeElement, radios[1]);
+    assert.deepEqual(calls.at(-1), [
+      'textScale',
+      radios[1].getAttribute('data-value'),
+    ]);
+
+    tecla(radios[0], 'ArrowLeft'); // do primeiro volta ao último
+    assert.equal(document.activeElement, radios.at(-1));
+    tecla(radios.at(-1), 'Home');
+    assert.equal(document.activeElement, radios[0]);
+    tecla(radios[0], 'End');
+    assert.equal(document.activeElement, radios.at(-1));
+
+    panel.sync(estado({ textScale: radios[1].getAttribute('data-value') }));
+    assert.equal(radios[1].getAttribute('tabindex'), '0');
+    assert.equal(radios[0].getAttribute('tabindex'), '-1');
+  });
+});

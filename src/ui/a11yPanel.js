@@ -237,6 +237,26 @@ export function createA11yPanel({
     });
   });
 
+  // UX-10: radiogroup (APG) — roving tabindex (em sync) + setas movem e selecionam
+  panel.querySelectorAll('[role="radiogroup"]').forEach((group) => {
+    group.addEventListener('keydown', (e) => {
+      const radios = [...group.querySelectorAll('[role="radio"]')];
+      const i = radios.indexOf(e.target);
+      if (i < 0) return;
+      const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[
+        e.key
+      ];
+      let next;
+      if (step) next = radios[(i + step + radios.length) % radios.length];
+      else if (e.key === 'Home') next = radios[0];
+      else if (e.key === 'End') next = radios[radios.length - 1];
+      if (!next) return;
+      e.preventDefault();
+      next.focus();
+      next.click();
+    });
+  });
+
   panel.querySelectorAll('.ms-switch[data-option]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const key = btn.getAttribute('data-option');
@@ -267,6 +287,7 @@ export function createA11yPanel({
       .forEach((btn) => {
         const on = btn.getAttribute('data-value') === scale;
         btn.setAttribute('aria-checked', String(on));
+        btn.setAttribute('tabindex', on ? '0' : '-1');
         btn.classList.toggle('ms-segment--on', on);
       });
 
@@ -276,6 +297,7 @@ export function createA11yPanel({
       .forEach((btn) => {
         const on = btn.getAttribute('data-value') === theme;
         btn.setAttribute('aria-checked', String(on));
+        btn.setAttribute('tabindex', on ? '0' : '-1');
         btn.classList.toggle('ms-theme-btn--on', on);
       });
 
