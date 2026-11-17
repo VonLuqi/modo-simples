@@ -224,15 +224,9 @@ test.describe('estado visual do FAB e do painel', () => {
     await expect(page.locator('.ms-fab-icon--open')).toBeHidden();
   });
 
-  test('UX-05: o painel cabe inteiro na janela (falha esperada no mobile até a F3)', async ({
+  test('UX-05: o painel cabe inteiro na janela (390x844 no mobile)', async ({
     site,
-  }, testInfo) => {
-    // Corte do painel no topo em 390px (styles.js:487). Quando a F3 corrigir, este teste passa
-    // e o Playwright acusa "expected to fail" → remova a linha test.fail.
-    test.fail(
-      testInfo.project.name === 'mobile',
-      'UX-05: painel cortado em 390px (F3)',
-    );
+  }) => {
     const { page } = site;
     await page.goto(GENERIC);
     await waitForLib(page);

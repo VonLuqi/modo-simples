@@ -486,7 +486,8 @@ export function getUIStyles(position = 'bottom-right') {
     @media (max-width: 480px) {
       #ms-a11y-panel {
         width: calc(100vw - 1rem);
-        max-height: calc(100vh - 6rem);
+        max-height: calc(100vh - 124px - 2.5rem);
+        max-height: calc(100dvh - 124px - 2.5rem);
         right: 0.5rem !important;
         left: 0.5rem !important;
         transform-origin: bottom center;
