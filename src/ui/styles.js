@@ -909,9 +909,6 @@ export function getPageStyles() {
       gap: 0.35rem;
       transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     }
-    .ms-session-btn:hover {
-      transform: translateY(-1px);
-    }
     .ms-session-btn--light {
       background: #fff;
       color: #1a1205;
@@ -1010,7 +1007,6 @@ export function getPageStyles() {
     .ms-pills-nav[data-ms-injected] .ms-pill:hover {
       background: #e2e8f0;
       text-decoration: none;
-      transform: translateY(-1px);
       box-shadow: 0 2px 6px rgb(11 44 95 / 10%);
     }
     .ms-pills-nav[data-ms-injected] .ms-pill[aria-current='page'] {

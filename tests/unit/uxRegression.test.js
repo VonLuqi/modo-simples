@@ -340,3 +340,17 @@ describe('CSS da lib: tamanho mínimo de texto (UX-15)', () => {
     assert.deepEqual(pequenos, []);
   });
 });
+
+describe('CSS da lib: sem salto no hover (UX-17)', () => {
+  it('botões da barra e pills não se deslocam no :hover', () => {
+    const css = getPageStyles();
+    const hovers = css.match(/[^{}]*:hover\s*\{[^}]*\}/g) || [];
+    const comLift = hovers.filter(
+      (r) =>
+        /\.ms-session-btn|\.ms-pill/.test(r) &&
+        /translateY\(-/.test(r) &&
+        !/transform:\s*none/.test(r),
+    );
+    assert.deepEqual(comLift, []);
+  });
+});
