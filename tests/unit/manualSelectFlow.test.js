@@ -64,7 +64,7 @@ describe('seleção manual com confiança baixa (IMP-22)', () => {
     assert.ok(document.documentElement.classList.contains('ms-ativo'));
   });
 
-  it('cancelar pelo botão: nada fica oculto e o modo continua ligado (página inteira)', () => {
+  it('cancelar pelo botão: modo ligado, SEM principal e nada oculto', () => {
     baixaConfianca();
     const cancelar = banner().querySelector('button');
     clicar(cancelar);
@@ -73,9 +73,10 @@ describe('seleção manual com confiança baixa (IMP-22)', () => {
     assert.equal(hidden().length, 0, 'cancelar não pode deixar nada oculto');
     assert.equal(state.get().modoSimples, true);
     assert.ok(document.documentElement.classList.contains('ms-ativo'));
-    assert.ok(
-      document.body.hasAttribute('data-ms-principal'),
-      'sem escolha, o principal é a página inteira (body)',
+    assert.equal(
+      document.querySelectorAll('[data-ms-principal]').length,
+      0,
+      'sem escolha não há principal (nem body: o max-width do principal estreitaria a página)',
     );
   });
 
@@ -86,6 +87,49 @@ describe('seleção manual com confiança baixa (IMP-22)', () => {
     );
     assert.equal(banner(), null);
     assert.equal(hidden().length, 0);
+    assert.equal(document.querySelectorAll('[data-ms-principal]').length, 0);
+  });
+
+  it('cancelar não persiste nada como principal', () => {
+    inst?.destroy();
+    inst = new ModoSimples({ confidenceThreshold: 2 }); // com persistência
+    inst.init();
+    inst.enable();
+    clicar(banner().querySelector('button'));
+    const keys = Object.keys(localStorage).filter((k) =>
+      k.startsWith('ms_principal'),
+    );
+    assert.deepEqual(keys, []);
+  });
+
+  it('depois de cancelar, mutação do host NÃO escolhe um principal sozinha', async () => {
+    inst?.destroy();
+    inst = new ModoSimples({
+      confidenceThreshold: 2,
+      persistence: false,
+      reprocessDebounce: 20,
+    });
+    inst.init();
+    inst.enable();
+    clicar(banner().querySelector('button'));
+
+    const novo = document.createElement('div');
+    novo.className = 'ad novo';
+    novo.textContent = 'slide do carrossel';
+    document.body.appendChild(novo);
+    await env.wait(150);
+
+    assert.equal(document.querySelectorAll('[data-ms-principal]').length, 0);
+    assert.equal(hidden().length, 0);
+    assert.ok(document.documentElement.classList.contains('ms-ativo'));
+  });
+
+  it('desligar e ligar de novo recomeça a seleção após um cancelamento', () => {
+    baixaConfianca();
+    clicar(banner().querySelector('button'));
+    inst.disable();
+    inst.enable();
+    assert.ok(banner(), 'a seleção manual reabre');
   });
 
   it('desligar o modo durante a seleção fecha o banner sem aplicar nada', () => {

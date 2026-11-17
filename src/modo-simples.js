@@ -478,9 +478,9 @@ class ModoSimples {
           announce('Conteúdo principal definido');
         },
         onCancel: () => {
-          // sem escolha: a página inteira é o principal (nada oculto); não é persistido
-          setPrincipal(document.body, this._config);
-          applyModoSimples(state.get(), this._config);
+          // sem escolha: ms-ativo + opções, SEM principal (nada marcado nem oculto) e nada
+          // persistido. O hold continua: o observer não escolhe por conta própria; só uma nova
+          // seleção ou desligar/ligar o MS muda isso.
           announce('Seleção manual cancelada');
         },
       });

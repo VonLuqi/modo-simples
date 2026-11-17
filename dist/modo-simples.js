@@ -3321,8 +3321,6 @@
             announce("Conte\xFAdo principal definido");
           },
           onCancel: () => {
-            setPrincipal(document.body, this._config);
-            applyModoSimples(state_default.get(), this._config);
             announce("Sele\xE7\xE3o manual cancelada");
           }
         });
