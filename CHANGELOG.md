@@ -106,6 +106,10 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **A-12** — pesos do `scoring` e `confidenceThreshold` documentados em `doc/08-heuristicas-edges.md` e nos comentários de `defaults.js`/`scoring.js`. `dist/modo-simples.js` reconstruído (só comentários); `.min.js` idêntico.
 - **e2e (QA R78)** — `panel-focus.spec.js`: o skip silencioso quando o ícone `open-panel` não aparece virou `expect(icone).toBeVisible()`; se o ícone sumir, o teste falha em vez de passar sem rodar.
 
+### Testes (F4b)
+
+- **A-04** — 54 testes de casos de borda para `contentDetector`, `domObserver`, `mediaQuery`, `readingRuler`, `focus` e `a11yPanel` (rede de segurança para F4c/F4d); nenhum bug encontrado, `src/` e `dist/` intactos. A afirmação "0 testes" do diagnóstico inicial estava desatualizada: os módulos já tinham testes, agora com cobertura de ramos maior.
+
 ### Encerrado sem correção
 
 - **UX-29** (suposto widget que não respondia ao clique): era o marcador de clique do portal de teste, não um defeito do widget — verificado pelo @UI (T9). Nenhuma mudança de código.
