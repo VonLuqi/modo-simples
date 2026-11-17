@@ -69,7 +69,7 @@ export function getUIStyles(position = 'bottom-right') {
       position: relative;
       background: #0B2C5F;
       color: #fff;
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-weight: 700;
       padding: 0.45rem 0.8rem;
       border-radius: 999px;
@@ -222,7 +222,7 @@ export function getUIStyles(position = 'bottom-right') {
     }
     .ms-a11y-subtitle {
       margin: 0.2rem 0 0;
-      font-size: 0.72rem;
+      font-size: 0.8125rem;
       opacity: 0.85;
       color: #fff;
     }
@@ -294,7 +294,7 @@ export function getUIStyles(position = 'bottom-right') {
     }
     .ms-a11y-section-title {
       margin: 0 0 0.65rem;
-      font-size: 0.72rem;
+      font-size: 0.8125rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
@@ -380,12 +380,12 @@ export function getUIStyles(position = 'bottom-right') {
       background: linear-gradient(90deg, #f5efe0 50%, #5c4a32 50%);
     }
     .ms-theme-label {
-      font-size: 0.72rem;
+      font-size: 0.8125rem;
       font-weight: 700;
       line-height: 1.2;
     }
     .ms-theme-sub {
-      font-size: 0.65rem;
+      font-size: 0.8125rem;
       color: #64748b;
     }
 
@@ -412,14 +412,14 @@ export function getUIStyles(position = 'bottom-right') {
     .ms-a11y-option-hint {
       display: block;
       margin-top: 0.2rem;
-      font-size: 0.72rem;
+      font-size: 0.8125rem;
       font-weight: 500;
       color: #64748b;
       line-height: 1.35;
     }
     .ms-a11y-option-text p {
       margin: 0.15rem 0 0;
-      font-size: 0.72rem;
+      font-size: 0.8125rem;
       color: #64748b;
       line-height: 1.35;
     }
@@ -487,7 +487,7 @@ export function getUIStyles(position = 'bottom-right') {
     .ms-a11y-footer-note {
       margin: 0.35rem 0 0;
       text-align: center;
-      font-size: 0.68rem;
+      font-size: 0.8125rem;
       color: #475569;
       line-height: 1.35;
     }
@@ -506,7 +506,7 @@ export function getUIStyles(position = 'bottom-right') {
         white-space: normal;
         text-align: center;
         border-radius: 14px;
-        font-size: 0.68rem;
+        font-size: 0.75rem;
       }
     }
 
@@ -805,7 +805,7 @@ export function getPageStyles() {
       color: #0b2c5f;
     }
     .ms-simples-sub {
-      font-size: 0.65rem;
+      font-size: 0.75rem;
       color: #475569;
       font-weight: 600;
     }
@@ -883,7 +883,7 @@ export function getPageStyles() {
       color: #fff;
       border-radius: 999px;
       padding: 0.22rem 0.7rem;
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-weight: 700;
     }
     .ms-session-desc {

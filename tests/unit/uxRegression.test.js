@@ -14,7 +14,7 @@ import {
 } from '../../src/mutator/domMutator.js';
 import { createFab } from '../../src/ui/fab.js';
 import { createSessionChrome } from '../../src/ui/sessionChrome.js';
-import { getPageStyles } from '../../src/ui/styles.js';
+import { getPageStyles, getUIStyles } from '../../src/ui/styles.js';
 import defaults from '../../src/config/defaults.js';
 
 const configTeste = {
@@ -328,5 +328,15 @@ describe('createSessionChrome — sync (F5-T09)', () => {
     );
 
     chrome.destroy();
+  });
+});
+
+describe('CSS da lib: tamanho mínimo de texto (UX-15)', () => {
+  it('nenhuma regra usa font-size abaixo de 0.75rem (12px)', () => {
+    const css = getUIStyles() + getPageStyles();
+    const pequenos = [...css.matchAll(/font-size:\s*(\d*\.?\d+)rem/g)]
+      .map((m) => Number(m[1]))
+      .filter((v) => v < 0.75);
+    assert.deepEqual(pequenos, []);
   });
 });
