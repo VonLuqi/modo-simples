@@ -56,7 +56,7 @@ export function createSessionChrome({
           <span class="ms-simples-sub" data-sub>Acessibilidade Cognitiva</span>
         </div>
         <button type="button" class="ms-switch ms-chrome-switch" role="switch" aria-checked="false"
-          data-action="toggle-simples" aria-label="Ativar Modo Simples">
+          data-action="toggle-simples" aria-label="Modo Simples">
           <span class="ms-switch-thumb"></span>
         </button>
       </div>
@@ -89,11 +89,11 @@ export function createSessionChrome({
           <button type="button" class="ms-session-btn ms-session-btn--light" data-action="speak" aria-label="Ouvir página">
             <span aria-hidden="true">🔊</span> <span data-speak-label>Ouvir Página</span>
           </button>
-          <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="lang" aria-pressed="false" aria-label="Alternar linguagem simples">
-            <span aria-hidden="true">📄</span> Linguagem Simples: <span data-lang-label>DESLIGADA</span>
+          <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="lang" aria-pressed="false">
+            <span aria-hidden="true">📄</span> Linguagem Simples: <span data-lang-label aria-hidden="true">DESLIGADA</span>
           </button>
-          <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="images" aria-pressed="false" aria-label="Mostrar ou ocultar imagens">
-            <span aria-hidden="true">🖼</span> Imagens: <span data-images-label>OCULTAS</span>
+          <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="images" aria-pressed="false">
+            <span aria-hidden="true">🖼</span> Imagens: <span data-images-label aria-hidden="true">OCULTAS</span>
           </button>
           <button type="button" class="ms-session-btn ms-session-btn--light" data-action="exit">Voltar ao site normal</button>
         </div>
@@ -159,10 +159,6 @@ export function createSessionChrome({
     if (sw) {
       sw.setAttribute('aria-checked', String(on));
       sw.classList.toggle('ms-switch--on', on);
-      sw.setAttribute(
-        'aria-label',
-        on ? 'Desativar Modo Simples' : 'Ativar Modo Simples',
-      );
     }
     if (wrap) wrap.setAttribute('data-active', String(on));
     if (sub)
@@ -189,16 +185,10 @@ export function createSessionChrome({
       langBtn.setAttribute('aria-pressed', String(langOn));
       langBtn.setAttribute('aria-disabled', String(!langAvailable));
       langBtn.classList.toggle('ms-session-btn--active', langOn);
-      langBtn.setAttribute(
-        'aria-label',
-        !langAvailable
-          ? 'Linguagem simples: indisponível nesta página'
-          : langOn
-            ? 'Linguagem simples: ligada'
-            : 'Linguagem simples: desligada',
-      );
     }
     if (langLabel) {
+      // Estado vai por aria-pressed; só o aviso "Indisponível" precisa ser lido
+      langLabel.setAttribute('aria-hidden', String(langAvailable));
       langLabel.textContent = !langAvailable
         ? 'Indisponível nesta página'
         : langOn
@@ -217,10 +207,6 @@ export function createSessionChrome({
     if (imgBtn) {
       imgBtn.setAttribute('aria-pressed', String(!hideImgs));
       imgBtn.classList.toggle('ms-session-btn--active', !hideImgs);
-      imgBtn.setAttribute(
-        'aria-label',
-        hideImgs ? 'Mostrar imagens' : 'Ocultar imagens',
-      );
     }
     if (imgLabel) imgLabel.textContent = hideImgs ? 'OCULTAS' : 'VISÍVEIS';
 

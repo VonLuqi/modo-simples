@@ -81,7 +81,7 @@ export function createA11yPanel({
             <p>Oculta distrações visuais, aumenta botões e resume conteúdos essenciais.</p>
           </div>
           <button type="button" class="ms-switch" role="switch" aria-checked="false"
-            data-action="modo-simples" aria-label="Ativar Modo Simples">
+            data-action="modo-simples" aria-label="Modo Simples">
             <span class="ms-switch-thumb"></span>
           </button>
         </div>
@@ -259,10 +259,6 @@ export function createA11yPanel({
     if (modoBtn) {
       modoBtn.setAttribute('aria-checked', String(!!s.modoSimples));
       modoBtn.classList.toggle('ms-switch--on', !!s.modoSimples);
-      modoBtn.setAttribute(
-        'aria-label',
-        s.modoSimples ? 'Desativar Modo Simples' : 'Ativar Modo Simples',
-      );
     }
 
     const scale = s.options?.textScale || '100';

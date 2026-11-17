@@ -63,7 +63,8 @@ describe('botão Linguagem Simples na barra de sessão (D4)', () => {
     assert.equal(label.textContent, 'Indisponível nesta página');
     assert.equal(btn.getAttribute('aria-disabled'), 'true');
     assert.equal(btn.getAttribute('aria-pressed'), 'false');
-    assert.ok(btn.getAttribute('aria-label').includes('indisponível'));
+    // UX-11: sem aria-label dinâmico; o aviso fica lido porque o rótulo não é aria-hidden
+    assert.equal(label.getAttribute('aria-hidden'), 'false');
     assert.ok(!desc.textContent.includes('palavras fáceis'));
     chrome.destroy();
   });
