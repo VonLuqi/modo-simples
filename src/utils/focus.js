@@ -45,7 +45,7 @@ export function trapFocus(container) {
     if (e.key !== 'Tab') return;
 
     const focusable = getFocusable(container);
-    if (focusable.length < 2) return; // Nothing meaningful to trap
+    if (!focusable.length) return;
 
     const root = container.getRootNode();
     // When inside a shadow root, shadowRoot.activeElement holds the real focus
@@ -54,6 +54,16 @@ export function trapFocus(container) {
 
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
+
+    // Foco fora do painel (clicou na página e deu Tab) ou no próprio contêiner:
+    // Tab entra pelo primeiro, Shift+Tab pelo último (UX-13)
+    if (!active || active === container || !container.contains(active)) {
+      e.preventDefault();
+      (e.shiftKey ? last : first).focus();
+      return;
+    }
+
+    if (focusable.length < 2) return; // Nothing meaningful to trap
 
     if (e.shiftKey && active === first) {
       e.preventDefault();
@@ -64,6 +74,7 @@ export function trapFocus(container) {
     }
   }
 
-  container.addEventListener('keydown', handleKeydown);
-  return () => container.removeEventListener('keydown', handleKeydown);
+  // No document (não no contêiner): só assim o Tab com foco fora do painel é visto
+  document.addEventListener('keydown', handleKeydown);
+  return () => document.removeEventListener('keydown', handleKeydown);
 }

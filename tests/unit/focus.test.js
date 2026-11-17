@@ -85,6 +85,32 @@ describe('trapFocus', () => {
     release();
   });
 
+  it('UX-13: Tab com foco fora do painel entra pelo primeiro; Shift+Tab pelo último', () => {
+    const fora = document.createElement('button');
+    document.body.appendChild(fora);
+    const release = trapFocus(box);
+
+    fora.focus();
+    const ev = tab(false);
+    assert.equal(ev.defaultPrevented, true);
+    assert.equal(document.activeElement.id, 'a');
+
+    fora.focus();
+    assert.equal(tab(true).defaultPrevented, true);
+    assert.equal(document.activeElement.id, 'g');
+    release();
+  });
+
+  it('UX-13: foco no próprio contêiner (tabindex -1) + Shift+Tab vai ao último', () => {
+    box.setAttribute('tabindex', '-1');
+    const release = trapFocus(box);
+    box.focus();
+    assert.equal(document.activeElement, box);
+    assert.equal(tab(true).defaultPrevented, true);
+    assert.equal(document.activeElement.id, 'g');
+    release();
+  });
+
   it('com menos de 2 focáveis não prende nada', () => {
     box.innerHTML = '<button id="so">só</button>';
     mostrar(box.querySelector('#so'));
