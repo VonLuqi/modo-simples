@@ -814,6 +814,7 @@ export function getPageStyles() {
     }
     .ms-simples-toggle-wrap {
       display: flex;
+      min-width: 0;
       align-items: center;
       gap: calc(0.55 * var(--ms-u));
       padding: calc(0.4 * var(--ms-u)) calc(0.7 * var(--ms-u)) calc(0.4 * var(--ms-u)) calc(0.75 * var(--ms-u));
@@ -990,10 +991,12 @@ export function getPageStyles() {
       }
       .ms-session-actions {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: calc(0.4 * var(--ms-u));
       }
       .ms-session-actions .ms-session-btn {
+        min-width: 0;
+        overflow-wrap: anywhere;
         flex-direction: column;
         justify-content: center;
         gap: calc(0.15 * var(--ms-u));
@@ -1064,13 +1067,21 @@ export function getPageStyles() {
     @media (max-width: 720px) {
       .ms-pills-nav .ms-pills-nav__inner {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: calc(0.5 * var(--ms-u));
       }
       .ms-pills-nav .ms-pill {
         justify-content: center;
         text-align: center;
         white-space: normal;
+        overflow-wrap: anywhere;
+        min-width: 0;
+        padding-inline: calc(0.25 * var(--ms-u));
+      }
+    }
+    @media (min-width: 360px) and (max-width: 720px) {
+      .ms-pills-nav .ms-pills-nav__inner {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
     }
 
