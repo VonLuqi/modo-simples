@@ -571,7 +571,9 @@
       white-space: nowrap;
       max-width: min(240px, 72vw);
       line-height: 1.25;
-      animation: ms-fab-tip-in 0.38s ease both;
+      animation:
+        ms-fab-tip-in 0.38s ease both,
+        ms-fab-tip-out 0.4s ease 6s forwards;
     }
     .ms-fab-tip::after {
       content: '';
@@ -594,6 +596,13 @@
       to {
         opacity: 1;
         transform: translateY(0);
+      }
+    }
+
+    @keyframes ms-fab-tip-out {
+      to {
+        opacity: 0;
+        visibility: hidden;
       }
     }
 
@@ -913,7 +922,7 @@
       height: 26px;
       border-radius: 999px;
       border: none;
-      background: #cbd5e1;
+      background: #64748b;
       padding: 3px;
       cursor: pointer;
       position: relative;
@@ -947,7 +956,7 @@
       border-radius: 8px;
       padding: 0.45rem 0.9rem;
       background: var(--ms-orange);
-      color: #fff;
+      color: #1a1205;
       font: inherit;
       font-size: 0.82rem;
       font-weight: 700;
@@ -971,26 +980,32 @@
       margin: 0.35rem 0 0;
       text-align: center;
       font-size: 0.68rem;
-      color: #94a3b8;
+      color: #475569;
       line-height: 1.35;
     }
 
     @media (max-width: 480px) {
       #ms-a11y-panel {
         width: calc(100vw - 1rem);
-        max-height: calc(100vh - 6rem);
+        max-height: calc(100vh - 124px - 2.5rem);
+        max-height: calc(100dvh - 124px - 2.5rem);
         right: 0.5rem !important;
         left: 0.5rem !important;
         transform-origin: bottom center;
       }
       .ms-fab-tip {
         max-width: min(180px, 62vw);
+        white-space: normal;
+        text-align: center;
+        border-radius: 14px;
         font-size: 0.68rem;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .ms-fab-tip,
+      .ms-fab-tip {
+        animation: ms-fab-tip-out 0.01s linear 6s forwards !important;
+      }
       #ms-a11y-panel,
       .ms-a11y-panel {
         animation: none !important;
@@ -1275,7 +1290,7 @@
     }
     .ms-simples-sub {
       font-size: 0.65rem;
-      color: #64748b;
+      color: #475569;
       font-weight: 600;
     }
     .ms-chrome-switch {
@@ -1283,7 +1298,7 @@
       height: 26px;
       border-radius: 999px;
       border: none;
-      background: #cbd5e1;
+      background: #64748b;
       padding: 3px;
       cursor: pointer;
     }
@@ -1298,7 +1313,7 @@
     }
     .ms-chrome-switch.ms-switch--on,
     .ms-chrome-switch[aria-checked="true"] {
-      background: #f39200;
+      background: #8a5500;
     }
     .ms-chrome-switch.ms-switch--on .ms-switch-thumb,
     .ms-chrome-switch[aria-checked="true"] .ms-switch-thumb {
@@ -1518,6 +1533,7 @@
   }
 
   // src/ui/fab.js
+  var TIP_SEEN_KEY = "fabTipSeen";
   function createFab({ onClick }) {
     const wrap = document.createElement("div");
     wrap.className = "ms-fab-wrap";
@@ -1526,6 +1542,15 @@
     tip.className = "ms-fab-tip";
     tip.id = "ms-fab-tip";
     tip.textContent = "Acessibilidade & Modo Simples";
+    tip.setAttribute("aria-hidden", "true");
+    function dismissTip() {
+      tip.hidden = true;
+      persistence_default.save(TIP_SEEN_KEY, true);
+    }
+    tip.hidden = persistence_default.load(TIP_SEEN_KEY, false) === true;
+    tip.addEventListener("animationend", (e) => {
+      if (e.animationName === "ms-fab-tip-out") dismissTip();
+    });
     const btn = document.createElement("button");
     btn.id = "ms-fab";
     btn.type = "button";
@@ -1533,7 +1558,6 @@
     btn.setAttribute("aria-expanded", "false");
     btn.setAttribute("aria-controls", "ms-a11y-panel");
     btn.setAttribute("aria-haspopup", "dialog");
-    btn.setAttribute("aria-describedby", "ms-fab-tip");
     btn.setAttribute("aria-label", "Abrir painel de acessibilidade");
     const iconOpen = `
     <svg class="ms-fab-icon ms-fab-icon--open" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" focusable="false">
@@ -1563,11 +1587,11 @@
       );
       btn.classList.toggle("ms-fab--open", panelOpen);
       wrap.classList.toggle("ms-fab-wrap--open", panelOpen);
-      tip.hidden = panelOpen;
+      if (panelOpen) dismissTip();
       const openIcon = btn.querySelector(".ms-fab-icon--open");
       const closeIcon = btn.querySelector(".ms-fab-icon--close");
-      if (openIcon) openIcon.hidden = panelOpen;
-      if (closeIcon) closeIcon.hidden = !panelOpen;
+      if (openIcon) openIcon.toggleAttribute("hidden", panelOpen);
+      if (closeIcon) closeIcon.toggleAttribute("hidden", !panelOpen);
     }
     sync({ panelOpen: false });
     return { element: wrap, button: btn, sync };
@@ -1669,7 +1693,7 @@
             <p>Oculta distra\xE7\xF5es visuais, aumenta bot\xF5es e resume conte\xFAdos essenciais.</p>
           </div>
           <button type="button" class="ms-switch" role="switch" aria-checked="false"
-            data-action="modo-simples" aria-label="Ativar Modo Simples">
+            data-action="modo-simples" aria-label="Modo Simples">
             <span class="ms-switch-thumb"></span>
           </button>
         </div>
@@ -1812,6 +1836,22 @@
         onSetOption("colorTheme", btn.getAttribute("data-value"));
       });
     });
+    panel.querySelectorAll('[role="radiogroup"]').forEach((group) => {
+      group.addEventListener("keydown", (e) => {
+        const radios = [...group.querySelectorAll('[role="radio"]')];
+        const i = radios.indexOf(e.target);
+        if (i < 0) return;
+        const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+        let next;
+        if (step) next = radios[(i + step + radios.length) % radios.length];
+        else if (e.key === "Home") next = radios[0];
+        else if (e.key === "End") next = radios[radios.length - 1];
+        if (!next) return;
+        e.preventDefault();
+        next.focus();
+        next.click();
+      });
+    });
     panel.querySelectorAll(".ms-switch[data-option]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const key = btn.getAttribute("data-option");
@@ -1826,21 +1866,19 @@
       if (modoBtn) {
         modoBtn.setAttribute("aria-checked", String(!!s.modoSimples));
         modoBtn.classList.toggle("ms-switch--on", !!s.modoSimples);
-        modoBtn.setAttribute(
-          "aria-label",
-          s.modoSimples ? "Desativar Modo Simples" : "Ativar Modo Simples"
-        );
       }
       const scale = ((_a = s.options) == null ? void 0 : _a.textScale) || "100";
       panel.querySelectorAll('[data-option="textScale"] .ms-segment').forEach((btn) => {
         const on = btn.getAttribute("data-value") === scale;
         btn.setAttribute("aria-checked", String(on));
+        btn.setAttribute("tabindex", on ? "0" : "-1");
         btn.classList.toggle("ms-segment--on", on);
       });
       const theme = ((_b = s.options) == null ? void 0 : _b.colorTheme) || "senac";
       panel.querySelectorAll('[data-option="colorTheme"] .ms-theme-btn').forEach((btn) => {
         const on = btn.getAttribute("data-value") === theme;
         btn.setAttribute("aria-checked", String(on));
+        btn.setAttribute("tabindex", on ? "0" : "-1");
         btn.classList.toggle("ms-theme-btn--on", on);
       });
       [
@@ -1918,7 +1956,7 @@
           <span class="ms-simples-sub" data-sub>Acessibilidade Cognitiva</span>
         </div>
         <button type="button" class="ms-switch ms-chrome-switch" role="switch" aria-checked="false"
-          data-action="toggle-simples" aria-label="Ativar Modo Simples">
+          data-action="toggle-simples" aria-label="Modo Simples">
           <span class="ms-switch-thumb"></span>
         </button>
       </div>
@@ -1950,11 +1988,11 @@
           <button type="button" class="ms-session-btn ms-session-btn--light" data-action="speak" aria-label="Ouvir p\xE1gina">
             <span aria-hidden="true">\u{1F50A}</span> <span data-speak-label>Ouvir P\xE1gina</span>
           </button>
-          <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="lang" aria-pressed="false" aria-label="Alternar linguagem simples">
-            <span aria-hidden="true">\u{1F4C4}</span> Linguagem Simples: <span data-lang-label>DESLIGADA</span>
+          <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="lang" aria-pressed="false">
+            <span aria-hidden="true">\u{1F4C4}</span> Linguagem Simples: <span data-lang-label aria-hidden="true">DESLIGADA</span>
           </button>
-          <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="images" aria-pressed="false" aria-label="Mostrar ou ocultar imagens">
-            <span aria-hidden="true">\u{1F5BC}</span> Imagens: <span data-images-label>OCULTAS</span>
+          <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="images" aria-pressed="false">
+            <span aria-hidden="true">\u{1F5BC}</span> Imagens: <span data-images-label aria-hidden="true">OCULTAS</span>
           </button>
           <button type="button" class="ms-session-btn ms-session-btn--light" data-action="exit">Voltar ao site normal</button>
         </div>
@@ -2002,10 +2040,6 @@
       if (sw) {
         sw.setAttribute("aria-checked", String(on));
         sw.classList.toggle("ms-switch--on", on);
-        sw.setAttribute(
-          "aria-label",
-          on ? "Desativar Modo Simples" : "Ativar Modo Simples"
-        );
       }
       if (wrap) wrap.setAttribute("data-active", String(on));
       if (sub)
@@ -2026,12 +2060,9 @@
         langBtn.setAttribute("aria-pressed", String(langOn));
         langBtn.setAttribute("aria-disabled", String(!langAvailable));
         langBtn.classList.toggle("ms-session-btn--active", langOn);
-        langBtn.setAttribute(
-          "aria-label",
-          !langAvailable ? "Linguagem simples: indispon\xEDvel nesta p\xE1gina" : langOn ? "Linguagem simples: ligada" : "Linguagem simples: desligada"
-        );
       }
       if (langLabel) {
+        langLabel.setAttribute("aria-hidden", String(langAvailable));
         langLabel.textContent = !langAvailable ? "Indispon\xEDvel nesta p\xE1gina" : langOn ? "LIGADA" : "DESLIGADA";
       }
       if (desc) {
@@ -2043,10 +2074,6 @@
       if (imgBtn) {
         imgBtn.setAttribute("aria-pressed", String(!hideImgs));
         imgBtn.classList.toggle("ms-session-btn--active", !hideImgs);
-        imgBtn.setAttribute(
-          "aria-label",
-          hideImgs ? "Mostrar imagens" : "Ocultar imagens"
-        );
       }
       if (imgLabel) imgLabel.textContent = hideImgs ? "OCULTAS" : "VIS\xCDVEIS";
       if (ui.speaking !== void 0) {
@@ -2080,6 +2107,12 @@
     }
     return null;
   }
+  function _moveChrome(chrome, parent) {
+    if (chrome.parentElement === parent) return;
+    const focused = chrome.contains(document.activeElement) ? document.activeElement : null;
+    parent.appendChild(chrome);
+    if (focused) focused.focus();
+  }
   function _mountChrome(chrome, mount) {
     chrome.classList.remove(
       "ms-simples-chrome--ms-nav",
@@ -2087,10 +2120,10 @@
     );
     const host = _resolve(mount == null ? void 0 : mount.chrome);
     if (host) {
-      host.appendChild(chrome);
+      _moveChrome(chrome, host);
     } else {
       chrome.classList.add("ms-simples-chrome--fixed");
-      document.body.appendChild(chrome);
+      _moveChrome(chrome, document.body);
     }
   }
   function _placeChrome(chrome, modoOn, mount) {
@@ -2102,25 +2135,25 @@
     chrome.classList.add("ms-simples-chrome--ms-nav");
     const pillsInner = document.querySelector("[data-ms-pills] .ms-pills-nav__inner") || document.querySelector("[data-ms-pills]");
     if (pillsInner) {
-      pillsInner.appendChild(chrome);
+      _moveChrome(chrome, pillsInner);
       return;
     }
     const barOnActions = document.querySelector(
       "#ms-session-bar .ms-session-actions"
     );
     if (barOnActions) {
-      barOnActions.appendChild(chrome);
+      _moveChrome(chrome, barOnActions);
       return;
     }
     const barInner = document.querySelector(
       "#ms-session-bar .ms-session-bar-inner"
     );
     if (barInner) {
-      barInner.appendChild(chrome);
+      _moveChrome(chrome, barInner);
       return;
     }
     chrome.classList.add("ms-simples-chrome--fixed");
-    document.body.appendChild(chrome);
+    _moveChrome(chrome, document.body);
   }
   function _mountBar(bar, mount) {
     const anchor = _resolve(mount == null ? void 0 : mount.bar);
@@ -2168,13 +2201,31 @@
 
   // src/features/manualSelect.js
   var BANNER_ID = "ms-manual-select-banner";
+  var HIGHLIGHT_ID = "ms-manual-select-highlight";
   var OVERLAY_CLASS = "ms-manual-select-active";
+  var INSTRUCTION = "Clique ou toque no conte\xFAdo principal. Teclado: Tab escolhe, \u2191 \u2193 ampliam ou reduzem, Enter confirma, Esc cancela.";
+  var CANDIDATE_SELECTOR = 'main, [role="main"], article, section, aside, div';
+  var MIN_W = 120;
+  var MIN_H = 60;
   var _banner = null;
+  var _status = null;
+  var _highlight = null;
+  var _current = null;
+  var _prevFocus = null;
   var _onClick = null;
   var _onKey = null;
   var _onPointer = null;
+  var _onTouch = null;
+  var _onOver = null;
   var _callbacks = null;
-  var POINTER_EVENTS = ["pointerdown", "pointerup", "mousedown", "mouseup"];
+  var POINTER_EVENTS = [
+    "pointerdown",
+    "pointerup",
+    "mousedown",
+    "mouseup",
+    "contextmenu"
+  ];
+  var TOUCH_EVENTS = ["touchstart", "touchend"];
   function escapeIdent(value) {
     if (typeof CSS !== "undefined" && CSS.escape) return CSS.escape(value);
     return String(value).replace(/([^\w-])/g, "\\$1");
@@ -2208,13 +2259,71 @@
     }
     return parts.join(" > ");
   }
+  function isOwnUi(el) {
+    var _a, _b, _c;
+    return !!(((_a = el == null ? void 0 : el.closest) == null ? void 0 : _a.call(el, "#ms-container")) || ((_b = el == null ? void 0 : el.closest) == null ? void 0 : _b.call(el, `#${BANNER_ID}`)) || ((_c = el == null ? void 0 : el.closest) == null ? void 0 : _c.call(el, `#${HIGHLIGHT_ID}`)));
+  }
+  function isCandidate(el) {
+    if (!el || el === document.documentElement || el === document.body) {
+      return false;
+    }
+    if (isOwnUi(el)) return false;
+    const r = el.getBoundingClientRect();
+    return r.width >= MIN_W && r.height >= MIN_H;
+  }
+  function describe(el) {
+    const tag = el.tagName.toLowerCase();
+    const name = el.getAttribute("aria-label") || el.id || (el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 40);
+    return name ? `${tag}: ${name}` : tag;
+  }
+  function setCurrent(el) {
+    _current = el;
+    if (!_highlight || !_status) return;
+    if (!el) {
+      _highlight.style.display = "none";
+      _status.textContent = "";
+      return;
+    }
+    const r = el.getBoundingClientRect();
+    Object.assign(_highlight.style, {
+      display: "block",
+      top: `${r.top + window.scrollY}px`,
+      left: `${r.left + window.scrollX}px`,
+      width: `${r.width}px`,
+      height: `${r.height}px`
+    });
+    _status.textContent = ` Escolha atual: ${describe(el)}.`;
+  }
+  function cycleCandidate(step) {
+    var _a;
+    const list = Array.from(document.querySelectorAll(CANDIDATE_SELECTOR)).filter(
+      isCandidate
+    );
+    if (!list.length) return;
+    const i = _current ? list.indexOf(_current) : -1;
+    const next = i < 0 ? step > 0 ? list[0] : list[list.length - 1] : list[(i + step + list.length) % list.length];
+    (_a = next.scrollIntoView) == null ? void 0 : _a.call(next, { block: "nearest" });
+    setCurrent(next);
+  }
+  function confirmSelect(el) {
+    document.querySelectorAll("[data-ms-principal]").forEach((node) => {
+      node.removeAttribute("data-ms-principal");
+    });
+    el.setAttribute("data-ms-principal", "");
+    const path = buildCssPath(el);
+    const cb = _callbacks == null ? void 0 : _callbacks.onSelect;
+    stopManualSelect();
+    if (cb) cb(el, path);
+  }
   function startManualSelect(opts = {}) {
     stopManualSelect();
     _callbacks = opts;
+    _prevFocus = document.activeElement;
     _banner = document.createElement("div");
     _banner.id = BANNER_ID;
     _banner.setAttribute("role", "status");
     _banner.setAttribute("aria-live", "polite");
+    _banner.tabIndex = -1;
     Object.assign(_banner.style, {
       position: "fixed",
       top: "0",
@@ -2231,7 +2340,9 @@
       boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
       cursor: "default"
     });
-    _banner.textContent = "Clique no conte\xFAdo principal";
+    _banner.append(INSTRUCTION);
+    _status = document.createElement("span");
+    _banner.appendChild(_status);
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
     cancelBtn.textContent = "Cancelar";
@@ -2255,53 +2366,96 @@
     });
     _banner.appendChild(cancelBtn);
     document.body.appendChild(_banner);
+    _highlight = document.createElement("div");
+    _highlight.id = HIGHLIGHT_ID;
+    _highlight.setAttribute("aria-hidden", "true");
+    Object.assign(_highlight.style, {
+      display: "none",
+      position: "absolute",
+      zIndex: "2147483645",
+      pointerEvents: "none",
+      outline: "3px solid #F39200",
+      outlineOffset: "-3px",
+      background: "rgba(243, 146, 0, 0.12)"
+    });
+    document.documentElement.appendChild(_highlight);
     document.documentElement.classList.add(OVERLAY_CLASS);
+    _banner.focus();
     _onClick = (e) => {
-      var _a, _b, _c, _d;
-      if (((_b = (_a = e.target).closest) == null ? void 0 : _b.call(_a, "#ms-container")) || ((_d = (_c = e.target).closest) == null ? void 0 : _d.call(_c, `#${BANNER_ID}`))) {
-        return;
-      }
+      if (isOwnUi(e.target)) return;
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
       const el = e.target;
       if (!el || el === document.documentElement || el === document.body) return;
-      document.querySelectorAll("[data-ms-principal]").forEach((node) => {
-        node.removeAttribute("data-ms-principal");
-      });
-      el.setAttribute("data-ms-principal", "");
-      const path = buildCssPath(el);
-      const cb = _callbacks == null ? void 0 : _callbacks.onSelect;
-      stopManualSelect();
-      if (cb) cb(el, path);
+      confirmSelect(el);
     };
     _onKey = (e) => {
-      if (e.key === "Escape") {
+      var _a, _b, _c, _d;
+      const inBanner = (_b = (_a = e.target) == null ? void 0 : _a.closest) == null ? void 0 : _b.call(_a, `#${BANNER_ID}`);
+      const consume = () => {
         e.preventDefault();
         e.stopImmediatePropagation();
+      };
+      if (e.key === "Escape") {
+        consume();
         const cb = _callbacks == null ? void 0 : _callbacks.onCancel;
         stopManualSelect();
         if (cb) cb();
+        return;
+      }
+      if ((_d = (_c = e.target) == null ? void 0 : _c.closest) == null ? void 0 : _d.call(_c, "#ms-container")) return;
+      if (e.key === "Tab") {
+        consume();
+        cycleCandidate(e.shiftKey ? -1 : 1);
+      } else if (inBanner && e.target !== _banner) {
+        return;
+      } else if (e.key === "ArrowUp") {
+        consume();
+        const parent = _current == null ? void 0 : _current.parentElement;
+        if (!_current) cycleCandidate(1);
+        else if (parent && isCandidate(parent)) setCurrent(parent);
+      } else if (e.key === "ArrowDown") {
+        consume();
+        if (!_current) cycleCandidate(1);
+        else {
+          const child = Array.from(_current.children).find(isCandidate);
+          if (child) setCurrent(child);
+        }
+      } else if (e.key === "Enter") {
+        consume();
+        if (_current) confirmSelect(_current);
       }
     };
     _onPointer = (e) => {
-      var _a, _b, _c, _d;
-      if (((_b = (_a = e.target).closest) == null ? void 0 : _b.call(_a, "#ms-container")) || ((_d = (_c = e.target).closest) == null ? void 0 : _d.call(_c, `#${BANNER_ID}`))) {
-        return;
-      }
+      if (isOwnUi(e.target)) return;
       e.preventDefault();
       e.stopImmediatePropagation();
     };
+    _onTouch = (e) => {
+      if (isOwnUi(e.target)) return;
+      e.stopImmediatePropagation();
+    };
+    _onOver = (e) => {
+      const el = e.target;
+      if (el && !isOwnUi(el) && el !== document.documentElement) setCurrent(el);
+    };
     document.addEventListener("click", _onClick, true);
     document.addEventListener("keydown", _onKey, true);
+    document.addEventListener("mouseover", _onOver, true);
     for (const type of POINTER_EVENTS) {
       document.addEventListener(type, _onPointer, true);
+    }
+    for (const type of TOUCH_EVENTS) {
+      document.addEventListener(type, _onTouch, { capture: true, passive: true });
     }
   }
   function isManualSelectActive() {
     return _onClick !== null;
   }
   function stopManualSelect() {
+    var _a;
+    const wasActive = _onClick !== null;
     if (_onClick) {
       document.removeEventListener("click", _onClick, true);
       _onClick = null;
@@ -2310,18 +2464,36 @@
       document.removeEventListener("keydown", _onKey, true);
       _onKey = null;
     }
+    if (_onOver) {
+      document.removeEventListener("mouseover", _onOver, true);
+      _onOver = null;
+    }
     if (_onPointer) {
       for (const type of POINTER_EVENTS) {
         document.removeEventListener(type, _onPointer, true);
       }
       _onPointer = null;
     }
+    if (_onTouch) {
+      for (const type of TOUCH_EVENTS) {
+        document.removeEventListener(type, _onTouch, true);
+      }
+      _onTouch = null;
+    }
     if (_banner == null ? void 0 : _banner.parentNode) {
       _banner.parentNode.removeChild(_banner);
     }
+    if (_highlight == null ? void 0 : _highlight.parentNode) {
+      _highlight.parentNode.removeChild(_highlight);
+    }
     _banner = null;
+    _status = null;
+    _highlight = null;
+    _current = null;
     document.documentElement.classList.remove(OVERLAY_CLASS);
     _callbacks = null;
+    if (wasActive && (_prevFocus == null ? void 0 : _prevFocus.isConnected)) (_a = _prevFocus.focus) == null ? void 0 : _a.call(_prevFocus);
+    _prevFocus = null;
   }
 
   // src/mutator/domMutator.js
@@ -2572,7 +2744,22 @@
   var RULER_ID = "ms-reading-ruler";
   var RULER_HEIGHT = 48;
   var _ruler = null;
-  var _onMove = null;
+  var _raf = null;
+  var _pendingY = 0;
+  var _onPointer2 = null;
+  var _onTouch2 = null;
+  var _onFocus = null;
+  function moveTo(clientY) {
+    _pendingY = clientY;
+    if (_raf !== null) return;
+    _raf = requestAnimationFrame(() => {
+      _raf = null;
+      if (!_ruler) return;
+      const y = _pendingY - RULER_HEIGHT / 2;
+      _ruler.style.transform = `translateY(${Math.max(0, y)}px)`;
+      _ruler.style.visibility = "visible";
+    });
+  }
   function startReadingRuler() {
     if (_ruler) return;
     _ruler = document.createElement("div");
@@ -2591,20 +2778,45 @@
       borderBottom: "2px solid #F5A623",
       boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.35)",
       transform: "translateY(-100%)",
-      transition: "none"
+      transition: "none",
+      // sem posição conhecida não há janela: não escurece a página (IMP-08)
+      visibility: "hidden"
     });
     document.documentElement.appendChild(_ruler);
-    _onMove = (e) => {
-      if (!_ruler) return;
-      const y = e.clientY - RULER_HEIGHT / 2;
-      _ruler.style.transform = `translateY(${Math.max(0, y)}px)`;
+    _onPointer2 = (e) => moveTo(e.clientY);
+    _onTouch2 = (e) => {
+      var _a;
+      const t = (_a = e.touches) == null ? void 0 : _a[0];
+      if (t) moveTo(t.clientY);
     };
-    document.addEventListener("mousemove", _onMove, { passive: true });
+    _onFocus = (e) => {
+      const el = e.target;
+      if (!(el == null ? void 0 : el.getBoundingClientRect) || el === document.body) return;
+      const r = el.getBoundingClientRect();
+      moveTo(r.top + r.height / 2);
+    };
+    document.addEventListener("pointermove", _onPointer2, { passive: true });
+    document.addEventListener("touchstart", _onTouch2, { passive: true });
+    document.addEventListener("touchmove", _onTouch2, { passive: true });
+    document.addEventListener("focusin", _onFocus);
   }
   function stopReadingRuler() {
-    if (_onMove) {
-      document.removeEventListener("mousemove", _onMove);
-      _onMove = null;
+    if (_onPointer2) {
+      document.removeEventListener("pointermove", _onPointer2);
+      _onPointer2 = null;
+    }
+    if (_onTouch2) {
+      document.removeEventListener("touchstart", _onTouch2);
+      document.removeEventListener("touchmove", _onTouch2);
+      _onTouch2 = null;
+    }
+    if (_onFocus) {
+      document.removeEventListener("focusin", _onFocus);
+      _onFocus = null;
+    }
+    if (_raf !== null) {
+      cancelAnimationFrame(_raf);
+      _raf = null;
     }
     if (_ruler == null ? void 0 : _ruler.parentNode) {
       _ruler.parentNode.removeChild(_ruler);
