@@ -389,13 +389,27 @@
   }
 
   // src/utils/mediaQuery.js
+  function match(query) {
+    return typeof window !== "undefined" && typeof window.matchMedia === "function" ? window.matchMedia(query) : null;
+  }
   function prefersReducedMotion() {
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mq = match("(prefers-reduced-motion: reduce)");
+    return !!(mq && mq.matches);
   }
   function onReducedMotionChange(callback) {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    mq.addEventListener("change", callback);
-    return () => mq.removeEventListener("change", callback);
+    const mq = match("(prefers-reduced-motion: reduce)");
+    if (!mq) return () => {
+    };
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", callback);
+      return () => mq.removeEventListener("change", callback);
+    }
+    if (typeof mq.addListener === "function") {
+      mq.addListener(callback);
+      return () => mq.removeListener(callback);
+    }
+    return () => {
+    };
   }
 
   // src/utils/aria.js
@@ -2939,8 +2953,8 @@
       if (!href || href === "#") return;
       try {
         const resolved = typeof location !== "undefined" ? new URL(href, location.href) : null;
-        const match = resolved && resolved.href === hrefFull || href === file || href.endsWith("/" + file) || file && href.split("/").pop() === file;
-        if (match) a.setAttribute("aria-current", "page");
+        const match2 = resolved && resolved.href === hrefFull || href === file || href.endsWith("/" + file) || file && href.split("/").pop() === file;
+        if (match2) a.setAttribute("aria-current", "page");
       } catch (_) {
         if (href === file) a.setAttribute("aria-current", "page");
       }
