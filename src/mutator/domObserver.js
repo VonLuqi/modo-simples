@@ -53,6 +53,47 @@ let _observer = null;
 
 /** @type {ReturnType<typeof setTimeout>|null} */
 let _debounceTimer = null;
+/** Quando a rajada atual de mutações começou (base do maxWait). */
+let _pendingSince = 0;
+/** @type {number|null} */
+let _idleHandle = null;
+
+const DEFAULT_DEBOUNCE = 300;
+const DEFAULT_MAX_WAIT = 1500;
+
+/**
+ * Debounce com teto (IMP-03): espera `debounce` ms de silêncio, mas nunca mais que
+ * `maxWait` ms desde a primeira mutação da rajada — em páginas que mutam sem parar
+ * (carrossel, chat, ticker) o reprocess ainda roda.
+ */
+function schedule(run, debounce, maxWait) {
+  const now = Date.now();
+  if (_debounceTimer === null) _pendingSince = now;
+  clearTimeout(_debounceTimer);
+  const remaining = Math.max(0, maxWait - (now - _pendingSince));
+  _debounceTimer = setTimeout(
+    () => {
+      _debounceTimer = null;
+      runWhenIdle(run);
+    },
+    Math.min(debounce, remaining),
+  );
+}
+
+/** Roda no ócio do navegador quando possível (não compete com o render). */
+function runWhenIdle(fn) {
+  if (typeof requestIdleCallback === 'function') {
+    _idleHandle = requestIdleCallback(
+      () => {
+        _idleHandle = null;
+        fn();
+      },
+      { timeout: 500 },
+    );
+  } else {
+    fn();
+  }
+}
 
 /**
  * Start observing document.body for structural changes.
@@ -72,10 +113,13 @@ export function startObserving(getState, config) {
     const state = getState();
     if (!state.modoSimples) return;
 
-    clearTimeout(_debounceTimer);
-    _debounceTimer = setTimeout(() => {
-      reprocess(getState(), config);
-    }, config.reprocessDebounce ?? 300);
+    schedule(
+      () => {
+        if (_observer) reprocess(getState(), config);
+      },
+      config.reprocessDebounce ?? DEFAULT_DEBOUNCE,
+      config.reprocessMaxWait ?? DEFAULT_MAX_WAIT,
+    );
   });
 
   _observer.observe(document.body, { childList: true, subtree: true });
@@ -92,4 +136,8 @@ export function stopObserving() {
   }
   clearTimeout(_debounceTimer);
   _debounceTimer = null;
+  if (_idleHandle !== null && typeof cancelIdleCallback === 'function') {
+    cancelIdleCallback(_idleHandle);
+  }
+  _idleHandle = null;
 }

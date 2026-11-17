@@ -87,6 +87,12 @@ const defaults = {
   reprocessDebounce: 300,
 
   /**
+   * Teto (ms) de espera do debounce: com mutações contínuas o reprocess roda pelo menos
+   * a cada reprocessMaxWait ms (evita "starvation" em páginas que mutam sem parar).
+   */
+  reprocessMaxWait: 1500,
+
+  /**
    * Session bar (switch SIMPLES + barra "Modo Simples ativado") injected in the host page.
    * Default false: only the FAB + panel (Shadow DOM) are injected.
    * @type {boolean}

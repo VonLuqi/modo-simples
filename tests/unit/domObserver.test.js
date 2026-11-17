@@ -145,6 +145,67 @@ describe('startObserving / stopObserving', () => {
   });
 });
 
+describe('maxWait e ócio (IMP-03)', () => {
+  it('mutação contínua não adia o reprocess para sempre', async () => {
+    startObserving(() => ({ modoSimples: true, options: {} }), {
+      ...config,
+      reprocessDebounce: 100,
+      reprocessMaxWait: 250,
+    });
+    // uma mutação a cada 40 ms (< debounce): sem maxWait o timer nunca dispararia
+    const timer = setInterval(() => addAd('tick'), 40);
+    await env.wait(450);
+    const durante = reprocessCount;
+    clearInterval(timer);
+    assert.ok(
+      durante >= 1,
+      `reprocess deveria ter rodado durante a rajada (${durante})`,
+    );
+  });
+
+  it('sem mutação contínua o debounce normal continua valendo (1 reprocess)', async () => {
+    startObserving(() => ({ modoSimples: true, options: {} }), {
+      ...config,
+      reprocessDebounce: 50,
+      reprocessMaxWait: 5000,
+    });
+    addAd();
+    await env.wait(250);
+    assert.equal(reprocessCount, 1);
+  });
+
+  it('usa requestIdleCallback quando existe e cancela no stopObserving', async () => {
+    let idleCalls = 0;
+    const cancelled = [];
+    globalThis.requestIdleCallback = (cb) => {
+      idleCalls += 1;
+      return setTimeout(cb, 100); // ócio "demorado"
+    };
+    globalThis.cancelIdleCallback = (id) => {
+      cancelled.push(id);
+      clearTimeout(id);
+    };
+    try {
+      start();
+      addAd();
+      await env.wait(DEBOUNCE + 200);
+      assert.equal(idleCalls, 1);
+      assert.ok(reprocessCount >= 1);
+
+      // pendente no ócio → stopObserving cancela
+      reprocessCount = 0;
+      addAd();
+      await env.wait(DEBOUNCE + 5);
+      stopObserving();
+      await env.wait(30);
+      assert.equal(reprocessCount, 0);
+    } finally {
+      delete globalThis.requestIdleCallback;
+      delete globalThis.cancelIdleCallback;
+    }
+  });
+});
+
 describe('regressões do observer (F2)', () => {
   it('nós da própria lib (announce) não disparam reprocess (IMP-01)', async () => {
     start();

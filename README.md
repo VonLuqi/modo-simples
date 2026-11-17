@@ -125,6 +125,7 @@ window.ModoSimples.configure({
 | `hostnamePersistence`  | `true`                      | Escopo por hostname                                                    |
 | `confidenceThreshold`  | `0.45`                      | Abaixo → seleção manual do conteúdo                                    |
 | `reprocessDebounce`    | `300`                       | Debounce do observer (SPA)                                             |
+| `reprocessMaxWait`     | `1500`                      | Teto do debounce (mutação contínua ainda reprocessa)                   |
 | `mainSelectors`        | `main`, `[role=main]`, …    | Onde achar o conteúdo                                                  |
 | `distractionSelectors` | `header`, `nav`, `aside`, … | O que ocultar no MS                                                    |
 | `sessionBar`           | `false`                     | Barra de sessão (switch SIMPLES + barra) no host; opt-in               |

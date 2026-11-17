@@ -76,6 +76,11 @@
      */
     reprocessDebounce: 300,
     /**
+     * Teto (ms) de espera do debounce: com mutações contínuas o reprocess roda pelo menos
+     * a cada reprocessMaxWait ms (evita "starvation" em páginas que mutam sem parar).
+     */
+    reprocessMaxWait: 1500,
+    /**
      * Session bar (switch SIMPLES + barra "Modo Simples ativado") injected in the host page.
      * Default false: only the FAB + panel (Shadow DOM) are injected.
      * @type {boolean}
@@ -2380,17 +2385,50 @@
   }
   var _observer = null;
   var _debounceTimer = null;
+  var _pendingSince = 0;
+  var _idleHandle = null;
+  var DEFAULT_DEBOUNCE = 300;
+  var DEFAULT_MAX_WAIT = 1500;
+  function schedule(run, debounce, maxWait) {
+    const now = Date.now();
+    if (_debounceTimer === null) _pendingSince = now;
+    clearTimeout(_debounceTimer);
+    const remaining = Math.max(0, maxWait - (now - _pendingSince));
+    _debounceTimer = setTimeout(
+      () => {
+        _debounceTimer = null;
+        runWhenIdle(run);
+      },
+      Math.min(debounce, remaining)
+    );
+  }
+  function runWhenIdle(fn) {
+    if (typeof requestIdleCallback === "function") {
+      _idleHandle = requestIdleCallback(
+        () => {
+          _idleHandle = null;
+          fn();
+        },
+        { timeout: 500 }
+      );
+    } else {
+      fn();
+    }
+  }
   function startObserving(getState, config) {
     if (_observer) return;
     _observer = new MutationObserver((mutations) => {
-      var _a;
+      var _a, _b;
       if (!mutations.some(isRelevantMutation)) return;
       const state2 = getState();
       if (!state2.modoSimples) return;
-      clearTimeout(_debounceTimer);
-      _debounceTimer = setTimeout(() => {
-        reprocess(getState(), config);
-      }, (_a = config.reprocessDebounce) != null ? _a : 300);
+      schedule(
+        () => {
+          if (_observer) reprocess(getState(), config);
+        },
+        (_a = config.reprocessDebounce) != null ? _a : DEFAULT_DEBOUNCE,
+        (_b = config.reprocessMaxWait) != null ? _b : DEFAULT_MAX_WAIT
+      );
     });
     _observer.observe(document.body, { childList: true, subtree: true });
   }
@@ -2401,6 +2439,10 @@
     }
     clearTimeout(_debounceTimer);
     _debounceTimer = null;
+    if (_idleHandle !== null && typeof cancelIdleCallback === "function") {
+      cancelIdleCallback(_idleHandle);
+    }
+    _idleHandle = null;
   }
 
   // src/features/readingRuler.js
