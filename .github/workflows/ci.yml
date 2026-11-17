@@ -55,10 +55,11 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       # dist/ é versionado: o build tem que reproduzir exatamente o que foi commitado
+      # bundle.cjs direto (não npm run build): o prebuild roda prettier --write em src/
       - name: Build + dist sem drift
         run: |
-          npm run build
-          git diff --exit-code dist src
+          node scripts/bundle.cjs
+          git diff --exit-code dist
 
       - name: Auditoria de dependências (produção, nível high)
         run: npm audit --omit=dev --audit-level=high
