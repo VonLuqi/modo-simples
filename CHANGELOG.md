@@ -94,6 +94,17 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **UX-14 (protótipo)** — textos das pills e dos cards do hub do protótipo ficam com ≥12px mesmo com html a 62,5%.
 - **UX-06 (doc)** — guia de integração (doc/09) avisa do empate de especificidade de .ms-pills-nav .ms-pill com CSS do host.
 
+### Higiene (F4a)
+
+- **A-01** — removidos os seis arquivos legados sem importadores de `src/ui/` (`radialMenu`, `radialItem`, `panel`, `toggle`, `centralToggle`, `button`); o bundle não muda.
+- **A-05** — `docs/implementation_plan.md` (plano técnico legado, conteúdo distinto de `doc/04`) movido para `doc/arquivo/`; links de `doc/02`, `doc/04` e README corrigidos.
+- **A-06** — `graphify-out/` no `.gitignore`.
+- **A-07** — `npm run watch` agora observa `src/` de verdade (esbuild `context().watch()` via `bundle.cjs --watch`); `build:dev` inalterado.
+- **A-08** — `vercel.json` e `serve.json` ficam os dois (ferramentas diferentes); novo teste estrutural garante rewrites/redirects idênticos.
+- **A-09** — já atendido: `.husky/pre-commit` roda lint-staged e `npm run test:unit` (sem mudança).
+- **A-10** — CI: `node scripts/bundle.cjs && git diff --exit-code dist` (sem `prebuild`/prettier, que reescreve `src/`).
+- **A-12** — pesos do `scoring` e `confidenceThreshold` documentados em `doc/08-heuristicas-edges.md` e nos comentários de `defaults.js`/`scoring.js`. `dist/modo-simples.js` reconstruído (só comentários); `.min.js` idêntico.
+
 ### Encerrado sem correção
 
 - **UX-29** (suposto widget que não respondia ao clique): era o marcador de clique do portal de teste, não um defeito do widget — verificado pelo @UI (T9). Nenhuma mudança de código.
