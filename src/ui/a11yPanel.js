@@ -76,7 +76,7 @@ export function createA11yPanel({
       <div class="ms-a11y-card ms-a11y-card--simple" data-section="modo-simples">
         <div class="ms-a11y-card-row">
           <div class="ms-a11y-card-text">
-            <span class="ms-a11y-card-star" aria-hidden="true">★</span>
+            <span class="ms-a11y-card-star" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
             <strong>Modo Simples (Recomendado)</strong>
             <p>Oculta distrações visuais, aumenta botões e resume conteúdos essenciais.</p>
           </div>
@@ -89,7 +89,7 @@ export function createA11yPanel({
 
       <section class="ms-a11y-section" aria-labelledby="ms-label-text">
         <h3 id="ms-label-text" class="ms-a11y-section-title">
-          <span aria-hidden="true">T</span> Tamanho do texto
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg></span> Tamanho do texto
         </h3>
         <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-text" data-option="textScale">
           ${TEXT_SCALES.map(
@@ -105,7 +105,7 @@ export function createA11yPanel({
 
       <section class="ms-a11y-section" aria-labelledby="ms-label-theme">
         <h3 id="ms-label-theme" class="ms-a11y-section-title">
-          <span aria-hidden="true">◉</span> Contraste e cores
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg></span> Contraste e cores
         </h3>
         <div class="ms-theme-grid" role="radiogroup" aria-labelledby="ms-label-theme" data-option="colorTheme">
           ${COLOR_THEMES.map(
@@ -123,7 +123,7 @@ export function createA11yPanel({
 
       <section class="ms-a11y-section" aria-labelledby="ms-label-cognitive">
         <h3 id="ms-label-cognitive" class="ms-a11y-section-title">
-          <span aria-hidden="true">▣</span> Auxílio cognitivo &amp; TDAH
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10h16"/><path d="M10 10v10"/></svg></span> Auxílio cognitivo &amp; TDAH
         </h3>
         <ul class="ms-a11y-option-list">
           <li class="ms-a11y-option-row">

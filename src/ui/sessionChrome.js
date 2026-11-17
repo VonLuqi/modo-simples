@@ -50,7 +50,7 @@ export function createSessionChrome({
         ${SLIDERS_ICON}
       </button>
       <div class="ms-simples-toggle-wrap" data-active="false">
-        <span class="ms-simples-spark" aria-hidden="true">★</span>
+        <span class="ms-simples-spark" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
         <div class="ms-simples-toggle-text">
           <strong>SIMPLES</strong>
           <span class="ms-simples-sub" data-sub>Acessibilidade Cognitiva</span>
@@ -71,13 +71,13 @@ export function createSessionChrome({
   bar.innerHTML = `
     <div class="ms-session-bar-inner" data-state="off">
       <div class="ms-session-off">
-        <p><span aria-hidden="true">★</span> Quer uma navegação mais calma, direta e sem excesso de informação?</p>
+        <p><span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span> Quer uma navegação mais calma, direta e sem excesso de informação?</p>
         <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="activate">Ativar Modo Simples</button>
       </div>
       <div class="ms-session-on" hidden>
         <div class="ms-session-on-top">
           <div class="ms-session-on-title" tabindex="-1">
-            <span aria-hidden="true">★</span>
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
             <strong>Modo Simples Ativado</strong>
             <span class="ms-session-badge">Foco na Navegação</span>
           </div>
@@ -87,13 +87,13 @@ export function createSessionChrome({
         </div>
         <div class="ms-session-actions">
           <button type="button" class="ms-session-btn ms-session-btn--light" data-action="speak" aria-label="Ouvir página">
-            <span aria-hidden="true">🔊</span> <span data-speak-label>Ouvir Página</span>
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></span> <span data-speak-label>Ouvir Página</span>
           </button>
           <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="lang" aria-pressed="false">
-            <span aria-hidden="true">📄</span> Linguagem Simples: <span data-lang-label aria-hidden="true">DESLIGADA</span>
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg></span> Linguagem Simples: <span data-lang-label aria-hidden="true">DESLIGADA</span>
           </button>
           <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="images" aria-pressed="false">
-            <span aria-hidden="true">🖼</span> Imagens: <span data-images-label aria-hidden="true">OCULTAS</span>
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/></svg></span> Imagens: <span data-images-label aria-hidden="true">OCULTAS</span>
           </button>
           <button type="button" class="ms-session-btn ms-session-btn--light" data-action="exit">Voltar ao site normal</button>
         </div>

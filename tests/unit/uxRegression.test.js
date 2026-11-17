@@ -4,6 +4,7 @@
 
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import { createElement, installDocument } from './helpers/miniDom.js';
 import {
@@ -373,6 +374,23 @@ describe('CSS da lib: fonte e espaçamento do texto (IMP-09, IMP-21)', () => {
       'label',
     ]) {
       assert.ok(seletor.includes(`html.ms-text-spacing ${t}`), `falta ${t}`);
+    }
+  });
+});
+
+describe('ícones da lib são SVG, não emoji/glifos (UX-22)', () => {
+  it('sessionChrome.js e a11yPanel.js não têm emoji nem glifos de ícone', () => {
+    const proibidos = /[\u{1F300}-\u{1FAFF}★◉▣]/u;
+    for (const f of ['sessionChrome.js', 'a11yPanel.js']) {
+      const src = readFileSync(
+        new URL(`../../src/ui/${f}`, import.meta.url),
+        'utf8',
+      );
+      assert.equal(proibidos.test(src), false, `${f} ainda tem emoji/glifo`);
+      assert.ok(
+        /<svg[^>]*aria-hidden="true"[^>]*focusable="false"/.test(src),
+        `${f} deve ter SVG aria-hidden/focusable=false`,
+      );
     }
   });
 });
