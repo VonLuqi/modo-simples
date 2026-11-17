@@ -3821,9 +3821,11 @@
     _takeHideImagesBeforeMs() {
       return takeHideImagesBeforeMs(this);
     }
+    /** Delegate: ver loadPreferShowImages() em src/core/instancePersistence.js. */
     _loadPreferShowImages() {
       return loadPreferShowImages(this);
     }
+    /** Delegate: ver savePreferShowImages() em src/core/instancePersistence.js. */
     _savePreferShowImages(show) {
       savePreferShowImages(this, show);
     }
@@ -3843,38 +3845,48 @@
       }
     }
     // ── UI Construction ────────────────────────────────────────────────────────
+    /** Delegate: ver buildUI() em src/ui/binding.js. */
     _buildUI() {
       buildUI(this);
     }
+    /** Delegate: ver syncSessionChrome() em src/ui/binding.js. */
     _syncSessionChrome() {
       syncSessionChrome(this);
     }
+    /** Delegate: ver syncSimpleNav() em src/ui/binding.js. */
     _syncSimpleNav() {
       syncSimpleNav(this);
     }
     // ── Events ─────────────────────────────────────────────────────────────────
+    /** Delegate: ver bindEvents() em src/ui/binding.js. */
     _bindEvents() {
       bindEvents(this);
     }
     // ── Panel management ───────────────────────────────────────────────────────
+    /** Delegate: ver togglePanel() em src/ui/binding.js. */
     _togglePanel() {
       togglePanel(this);
     }
+    /** Delegate: ver openPanel() em src/ui/binding.js. */
     _openPanel() {
       openPanel(this);
     }
+    /** Delegate: ver setPageInert() em src/ui/binding.js. */
     _setPageInert(on) {
       setPageInert(this, on);
     }
+    /** Delegate: ver inertSibling() em src/ui/binding.js. */
     _inertSibling(el) {
       inertSibling(this, el);
     }
+    /** Delegate: ver closePanel() em src/ui/binding.js. */
     _closePanel() {
       closePanel(this);
     }
     _toggleSpeak() {
       toggleSpeak();
     }
+    /** Delegate: ver syncSpeaking() em src/ui/binding.js. */
     _syncSpeaking(speaking) {
       syncSpeaking(this, speaking);
     }
@@ -3961,9 +3973,11 @@
       this._persistState(next);
     }
     // ── Persistence ────────────────────────────────────────────────────────────
+    /** Delegate: ver persistState() em src/core/instancePersistence.js. */
     _persistState(next) {
       persistState(this, next);
     }
+    /** Delegate: ver loadPersistedState() em src/core/instancePersistence.js. */
     _loadPersistedState() {
       loadPersistedState(this);
     }
