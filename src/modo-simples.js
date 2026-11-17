@@ -414,7 +414,7 @@ class ModoSimples {
         const retargeted =
           e.target === document.body || e.target === document.documentElement;
         this._closePanel();
-        if (retargeted && e.detail > 0) {
+        if (retargeted && e.isTrusted && e.detail > 0) {
           const alvo = document.elementFromPoint(clientX, clientY);
           if (
             alvo &&
@@ -422,6 +422,14 @@ class ModoSimples {
             alvo !== document.documentElement
           ) {
             alvo.click();
+            // click() sintético não dá foco: campo de formulário recebe foco no lugar do FAB
+            if (
+              alvo.matches(
+                'input, select, textarea, [contenteditable]:not([contenteditable="false"])',
+              )
+            ) {
+              alvo.focus();
+            }
           }
         }
       }
