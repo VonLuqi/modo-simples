@@ -200,7 +200,7 @@ Browsers: [`doc/13-compatibilidade-browsers.md`](./doc/13-compatibilidade-browse
 
 ## Deploy (Vercel)
 
-O `npm run build` gera `dist/` e também **`public/`** (gitignored) contendo **só** `index.html`, `examples/` e `dist/`. O deploy publica `public/` — `doc/`, `docs/`, `tests/`, `scripts/`, `package.json` e `.husky/` **não** ficam públicos. As páginas continuam carregando `../dist/modo-simples.min.js` (mesma estrutura relativa dentro de `public/`).
+O `npm run build` gera `dist/` e também **`public/`** (gitignored) contendo **só** `index.html`, `examples/` e `dist/`. O deploy publica `public/` — `doc/`, `tests/`, `scripts/`, `package.json` e `.husky/` **não** ficam públicos. As páginas continuam carregando `../dist/modo-simples.min.js` (mesma estrutura relativa dentro de `public/`).
 
 No painel Vercel:
 
