@@ -130,6 +130,7 @@ class ModoSimples {
     stopReadingRuler();
     stopSpeaking();
     stopManualSelect();
+    this._setPageInert(false);
     revert();
     stopObserving();
     if (this._removeMotionListener) {
@@ -327,7 +328,10 @@ class ModoSimples {
 
     this._fab.sync({ panelOpen: s.panelOpen });
     this._panel.sync(s);
-    if (s.panelOpen) this._panel.open();
+    if (s.panelOpen) {
+      this._panel.open();
+      this._setPageInert(true);
+    }
 
     this._syncSessionChrome();
 
@@ -421,13 +425,41 @@ class ModoSimples {
     }
     state.set({ panelOpen: true });
     this._panel.open();
+    this._setPageInert(true);
     this._fab.sync({ panelOpen: true });
     announce('Painel de acessibilidade aberto');
+  }
+
+  /**
+   * aria-modal não esconde a página de ninguém: enquanto o painel está aberto, os irmãos do
+   * host no <body> ficam `inert` (sem foco, clique ou leitura). Só desfaz o que ela mesma fez.
+   * @param {boolean} on
+   */
+  _setPageInert(on) {
+    for (const el of this._inerted || []) el.removeAttribute('inert');
+    this._inerted = [];
+    if (!on) return;
+    for (const el of document.body.children) {
+      // fora do inert: o host, o que já era inert e os nós da própria lib que precisam
+      // continuar vivos (anúncios de leitor de tela, seleção manual)
+      if (
+        el === this._host ||
+        el.hasAttribute('inert') ||
+        el.hasAttribute('data-ms-live') ||
+        el.id === 'ms-manual-select-banner' ||
+        el.id === 'ms-manual-select-highlight'
+      ) {
+        continue;
+      }
+      el.setAttribute('inert', '');
+      this._inerted.push(el);
+    }
   }
 
   _closePanel() {
     state.set({ panelOpen: false });
     this._panel.close();
+    this._setPageInert(false);
     this._fab.sync({ panelOpen: false });
     // Botão X, clique fora ou Esc: o foco volta ao opener (sem roubá-lo da seleção manual)
     if (!isManualSelectActive()) {
@@ -487,8 +519,10 @@ class ModoSimples {
       document.documentElement.classList.add('ms-ativo');
       applyOptions(currentState);
       holdPrincipal(true); // o observer não aplica a heurística incerta enquanto isso
+      this._setPageInert(false); // a página precisa receber o clique/foco da escolha
       startManualSelect({
         onSelect: (el, path) => {
+          this._setPageInert(state.get().panelOpen);
           setPrincipal(el, this._config);
           this._savePrincipalPath(path, el);
           applyModoSimples(state.get(), this._config);
@@ -498,6 +532,7 @@ class ModoSimples {
           // sem escolha: ms-ativo + opções, SEM principal (nada marcado nem oculto) e nada
           // persistido. O hold continua: o observer não escolhe por conta própria; só uma nova
           // seleção ou desligar/ligar o MS muda isso.
+          this._setPageInert(state.get().panelOpen);
           announce('Seleção manual cancelada');
         },
       });
