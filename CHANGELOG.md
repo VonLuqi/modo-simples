@@ -20,7 +20,7 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **IMP-16** — o observer enxerga o config atual depois de `configure()`.
 - **IMP-37** — uma varredura do DOM por lista de seletores (antes ~23), resultado idêntico.
 - **IMP-23** — boot idempotente (script duas vezes não duplica a UI); `destroy()` só desfaz o que é da instância.
-- **IMP-25** — o polling do fim da fala é limpo no `destroy()`.
+- **IMP-25** — sem polling: o estado "lendo/parado" da UI vem dos eventos do TTS (`onSpeakingChange`); nenhum `setInterval` na leitura.
 - **IMP-31** — `configure({ position })` reposiciona o FAB em runtime.
 - **IMP-14** — `prefers-reduced-motion` é valor derivado: não é gravado como escolha do usuário e acompanha o SO.
 - **IMP-17** — desligar o Modo Simples restaura a escolha de imagens de antes.
@@ -29,6 +29,13 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **IMP-06** — o principal manual vale por página e é validado antes de reaplicar.
 - **IMP-05** — escala de texto a 100% não adiciona classe/regra: `html { font-size: 62.5% }` do host deixa de ser sobrescrito.
 - **IMP-32** — opt-out do auto-boot (`data-ms-autoboot="false"` / `ModoSimplesConfig.autoboot=false`), `window.ModoSimplesClass`/`ModoSimplesBoot`, `sideEffects` no `package.json`; `examples/hello-modo-simples.html` passou a usar config pré-boot.
+- **IMP-13** — leitura (TTS): eventos de uma fala antiga não avançam a fila da nova (token de geração); reiniciar ou parar e ouvir de novo não pula nem duplica blocos.
+- **IMP-38** — leitura (TTS): coleta de blocos sem reflow (legibilidade calculada uma vez por bloco) e falas de até 200 caracteres, por frase e depois por palavra.
+- **IMP-22** — seleção manual (confiança baixa): nada é ocultado antes de o usuário confirmar; cancelar (botão ou Esc) mantém a página inteira, sem persistir.
+- **IMP-29** — seleção manual consome o evento uma vez: Esc, clique, `mousedown`/`pointerdown` não vazam para o host nem fecham o painel junto.
+- **IMP-42** — `simpleNav` só aceita `href` relativo, `http(s):`, `mailto:` e `tel:`; `javascript:`, `data:` e outros esquemas são descartados.
+- **IMP-28** — sem `window.matchMedia` as preferências valem como "não pediu" e `MediaQueryList` antigo (Safari < 14) usa `addListener`.
+- **IMP-43** — documentado em `doc/09`: os `data-ms-*` do host são só marcadores booleanos (presença do atributo), sem valores interpretados.
 
 ### Encerrado sem correção
 

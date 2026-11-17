@@ -331,6 +331,8 @@ A lib **não** gera hub/pills de marketing sozinha. Para dual markup:
 
 Sem essas classes, sites externos ganham chrome + redução de ruído heurística — **não** um hub Senac automático.
 
+**Os `data-ms-*` do host são só marcadores (flags):** a lib olha se o atributo **existe**, nunca lê nem interpreta o valor (por isso `data-ms-plain=""` e `data-ms-plain="qualquer coisa"` valem igual). Nenhum valor de atributo vira HTML, seletor ou código. Isso vale para `data-ms-plain`, `data-ms-simple`, `data-ms-pills` e `data-ms-keep-img`.
+
 ---
 
 ## 7. Arquitetura (para implementação)
