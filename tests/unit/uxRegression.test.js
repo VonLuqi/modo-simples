@@ -357,6 +357,24 @@ describe('CSS da lib: fonte e espaçamento do texto (IMP-09, IMP-21)', () => {
       assert.ok(seletor.includes(`:not(${ex})`), `falta :not(${ex})`);
     }
   });
+
+  it('espaçamento de texto cobre títulos, tabelas, dl, blockquote e label (IMP-21)', () => {
+    const css = getPageStyles();
+    const i = css.indexOf('html.ms-text-spacing body');
+    const seletor = css.slice(i, css.indexOf('{', i));
+    for (const t of [
+      'h1',
+      'h6',
+      'td',
+      'th',
+      'dd',
+      'dt',
+      'blockquote',
+      'label',
+    ]) {
+      assert.ok(seletor.includes(`html.ms-text-spacing ${t}`), `falta ${t}`);
+    }
+  });
 });
 
 describe('CSS da lib: sem salto no hover (UX-17)', () => {
