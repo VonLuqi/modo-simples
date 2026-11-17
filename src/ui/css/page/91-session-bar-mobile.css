@@ -37,6 +37,21 @@
         width: 1.35em;
         height: 1.35em;
       }
+      /* W4b: a 175% o rótulo quebrava letra a letra (barra 235px); 2 colunas, sem ícone, palavra inteira por linha */
+      html.ms-text-scale-175 .ms-session-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: calc(0.2 * var(--ms-u));
+      }
+      html.ms-text-scale-175 .ms-session-bar-inner { padding: calc(0.25 * var(--ms-u)) 0; }
+      html.ms-text-scale-175 .ms-session-on-top { margin-bottom: calc(0.2 * var(--ms-u)); }
+      html.ms-text-scale-175 #ms-simples-chrome.ms-simples-chrome--ms-nav { padding-top: calc(0.2 * var(--ms-u)); }
+      html.ms-text-scale-175 .ms-simples-toggle-wrap { padding-block: calc(0.2 * var(--ms-u)); }
+      html.ms-text-scale-175 .ms-session-actions .ms-session-btn {
+        overflow-wrap: normal;
+      }
+      html.ms-text-scale-175 .ms-session-actions .ms-session-btn svg {
+        display: none;
+      }
     }
 
     html.ms-simple-language [data-ms-principal],

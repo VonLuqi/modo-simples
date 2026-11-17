@@ -83,6 +83,47 @@ test.describe('W2 mobile — widget com html { font-size: 62.5% } no host', () =
     });
   }
 
+  test('W4a/W4b: 320x568 a 175% — chrome cabe na largura e barra+chrome ≤ 50% da altura', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await ligarMS(page);
+    await page.evaluate(() =>
+      document.documentElement.classList.add('ms-text-scale-175'),
+    );
+    const r = await page.evaluate(() => {
+      const wrap = document.querySelector('.ms-simples-toggle-wrap');
+      const btns = [
+        ...document.querySelectorAll('#ms-session-bar .ms-session-btn'),
+      ].filter((b) => b.offsetParent !== null);
+      return {
+        wrapRight: wrap.getBoundingClientRect().right,
+        wrapOverflow: wrap.scrollWidth - wrap.clientWidth,
+        docOverflow:
+          document.documentElement.scrollWidth -
+          document.documentElement.clientWidth,
+        btnMenor44: btns.filter((b) => b.getBoundingClientRect().height < 43.5)
+          .length,
+        btnOverflow: btns.filter((b) => b.scrollWidth > b.clientWidth + 1)
+          .length,
+        total:
+          document.querySelector('#ms-session-bar').getBoundingClientRect()
+            .height +
+          document.querySelector('#ms-simples-chrome').getBoundingClientRect()
+            .height,
+      };
+    });
+    expect(r.wrapRight).toBeLessThanOrEqual(320);
+    expect(r.wrapOverflow).toBeLessThanOrEqual(0);
+    expect(r.docOverflow).toBe(0);
+    expect(r.btnOverflow).toBe(0);
+    expect(r.btnMenor44).toBe(0);
+    expect(r.total).toBeLessThanOrEqual(568 * 0.5);
+  });
+
   test('UX-14: a 320x568 (equivale a 400% de zoom) o painel cabe na janela', async ({
     site,
   }) => {
