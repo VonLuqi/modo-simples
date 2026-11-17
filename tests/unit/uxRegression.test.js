@@ -148,7 +148,25 @@ describe('createFab — aria-expanded (F5-T09)', () => {
 
     sync({ panelOpen: false });
     assert.equal(button.getAttribute('aria-expanded'), 'false');
-    assert.equal(tip.hidden, false);
+    // UX-08: depois de visto (aqui, ao abrir o painel) a dica não volta
+    assert.equal(tip.hidden, true);
+  });
+
+  it('dica: só na primeira visita, sem aria-describedby (UX-08)', () => {
+    const store = new Map();
+    global.localStorage = {
+      getItem: (k) => (store.has(k) ? store.get(k) : null),
+      setItem: (k, v) => store.set(k, String(v)),
+      removeItem: (k) => store.delete(k),
+    };
+    const first = createFab({ onClick() {} });
+    assert.equal(first.element.querySelector('.ms-fab-tip').hidden, false);
+    assert.equal(first.button.hasAttribute('aria-describedby'), false);
+
+    first.sync({ panelOpen: true });
+    const again = createFab({ onClick() {} });
+    assert.equal(again.element.querySelector('.ms-fab-tip').hidden, true);
+    delete global.localStorage;
   });
 });
 

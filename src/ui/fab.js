@@ -5,6 +5,10 @@
  * Ícone sliders (fechado) / X (aberto) + tip “Acessibilidade & Modo Simples”.
  */
 
+import persistence from '../core/persistence.js';
+
+const TIP_SEEN_KEY = 'fabTipSeen';
+
 /**
  * @param {{ onClick: () => void }} opts
  * @returns {{
@@ -22,6 +26,18 @@ export function createFab({ onClick }) {
   tip.className = 'ms-fab-tip';
   tip.id = 'ms-fab-tip';
   tip.textContent = 'Acessibilidade & Modo Simples';
+  tip.setAttribute('aria-hidden', 'true');
+
+  // UX-08: a dica aparece só na primeira visita; some sozinha após 6s (animação CSS)
+  // ou ao abrir o painel, e não volta mais.
+  function dismissTip() {
+    tip.hidden = true;
+    persistence.save(TIP_SEEN_KEY, true);
+  }
+  tip.hidden = persistence.load(TIP_SEEN_KEY, false) === true;
+  tip.addEventListener('animationend', (e) => {
+    if (e.animationName === 'ms-fab-tip-out') dismissTip();
+  });
 
   const btn = document.createElement('button');
   btn.id = 'ms-fab';
@@ -30,7 +46,6 @@ export function createFab({ onClick }) {
   btn.setAttribute('aria-expanded', 'false');
   btn.setAttribute('aria-controls', 'ms-a11y-panel');
   btn.setAttribute('aria-haspopup', 'dialog');
-  btn.setAttribute('aria-describedby', 'ms-fab-tip');
   btn.setAttribute('aria-label', 'Abrir painel de acessibilidade');
 
   const iconOpen = `
@@ -71,7 +86,7 @@ export function createFab({ onClick }) {
     );
     btn.classList.toggle('ms-fab--open', panelOpen);
     wrap.classList.toggle('ms-fab-wrap--open', panelOpen);
-    tip.hidden = panelOpen;
+    if (panelOpen) dismissTip();
 
     const openIcon = btn.querySelector('.ms-fab-icon--open');
     const closeIcon = btn.querySelector('.ms-fab-icon--close');

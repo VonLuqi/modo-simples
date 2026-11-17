@@ -79,7 +79,9 @@ export function getUIStyles(position = 'bottom-right') {
       white-space: nowrap;
       max-width: min(240px, 72vw);
       line-height: 1.25;
-      animation: ms-fab-tip-in 0.38s ease both;
+      animation:
+        ms-fab-tip-in 0.38s ease both,
+        ms-fab-tip-out 0.4s ease 6s forwards;
     }
     .ms-fab-tip::after {
       content: '';
@@ -102,6 +104,13 @@ export function getUIStyles(position = 'bottom-right') {
       to {
         opacity: 1;
         transform: translateY(0);
+      }
+    }
+
+    @keyframes ms-fab-tip-out {
+      to {
+        opacity: 0;
+        visibility: hidden;
       }
     }
 
@@ -494,12 +503,17 @@ export function getUIStyles(position = 'bottom-right') {
       }
       .ms-fab-tip {
         max-width: min(180px, 62vw);
+        white-space: normal;
+        text-align: center;
+        border-radius: 14px;
         font-size: 0.68rem;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .ms-fab-tip,
+      .ms-fab-tip {
+        animation: ms-fab-tip-out 0.01s linear 6s forwards !important;
+      }
       #ms-a11y-panel,
       .ms-a11y-panel {
         animation: none !important;
