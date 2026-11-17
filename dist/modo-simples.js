@@ -2569,6 +2569,7 @@
   var _blocks = [];
   var _blockIndex = 0;
   var _activeEl = null;
+  var _runId = 0;
   var BLOCK_TAGS = [
     "h1",
     "h2",
@@ -2665,8 +2666,8 @@
       }
     }
   }
-  function speakBlockAt(index) {
-    if (!_speaking) return;
+  function speakBlockAt(index, run) {
+    if (!_speaking || run !== _runId) return;
     if (index >= _blocks.length) {
       stopSpeaking();
       return;
@@ -2676,49 +2677,51 @@
     highlightAndScroll(el);
     const text = (el.innerText || el.textContent || "").replace(/\s+/g, " ").trim();
     if (!text) {
-      speakBlockAt(index + 1);
+      speakBlockAt(index + 1, run);
       return;
     }
-    _utterance = new SpeechSynthesisUtterance(text);
-    _utterance.lang = "pt-BR";
-    _utterance.rate = 1;
-    _utterance.onend = () => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    _utterance = utterance;
+    utterance.lang = "pt-BR";
+    utterance.rate = 1;
+    const next = () => {
+      if (run !== _runId) return;
       _utterance = null;
-      if (_speaking) speakBlockAt(index + 1);
+      if (_speaking) speakBlockAt(index + 1, run);
     };
-    _utterance.onerror = () => {
-      _utterance = null;
-      if (_speaking) speakBlockAt(index + 1);
-    };
+    utterance.onend = next;
+    utterance.onerror = next;
     speechSynthesis.speak(_utterance);
   }
   function speakMainContent() {
     if (typeof speechSynthesis === "undefined") return;
     stopSpeaking();
+    const run = _runId;
     _blocks = collectBlocks();
     if (!_blocks.length) {
       const root = getRoot();
       const text = root ? (root.innerText || root.textContent || "").replace(/\s+/g, " ").trim() : "";
       if (!text) return;
-      _utterance = new SpeechSynthesisUtterance(text);
-      _utterance.lang = "pt-BR";
-      _utterance.rate = 1;
-      _utterance.onend = () => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      _utterance = utterance;
+      utterance.lang = "pt-BR";
+      utterance.rate = 1;
+      const done = () => {
+        if (run !== _runId) return;
         _speaking = false;
         _utterance = null;
       };
-      _utterance.onerror = () => {
-        _speaking = false;
-        _utterance = null;
-      };
+      utterance.onend = done;
+      utterance.onerror = done;
       _speaking = true;
-      speechSynthesis.speak(_utterance);
+      speechSynthesis.speak(utterance);
       return;
     }
     _speaking = true;
-    speakBlockAt(0);
+    speakBlockAt(0, run);
   }
   function stopSpeaking() {
+    _runId += 1;
     _speaking = false;
     _blocks = [];
     _blockIndex = 0;

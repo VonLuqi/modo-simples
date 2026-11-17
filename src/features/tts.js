@@ -13,6 +13,11 @@ let _blocks = [];
 let _blockIndex = 0;
 /** @type {Element|null} */
 let _activeEl = null;
+/**
+ * Geração da leitura. speechSynthesis.cancel() dispara onerror do utterance antigo de forma
+ * assíncrona; sem este token o handler velho avançava a fila da leitura nova (IMP-13).
+ */
+let _runId = 0;
 
 const BLOCK_TAGS = [
   'h1',
@@ -171,8 +176,8 @@ function highlightAndScroll(el) {
 /**
  * Speak the next block in the queue.
  */
-function speakBlockAt(index) {
-  if (!_speaking) return;
+function speakBlockAt(index, run) {
+  if (!_speaking || run !== _runId) return;
 
   if (index >= _blocks.length) {
     stopSpeaking();
@@ -187,21 +192,21 @@ function speakBlockAt(index) {
     .replace(/\s+/g, ' ')
     .trim();
   if (!text) {
-    speakBlockAt(index + 1);
+    speakBlockAt(index + 1, run);
     return;
   }
 
-  _utterance = new SpeechSynthesisUtterance(text);
-  _utterance.lang = 'pt-BR';
-  _utterance.rate = 1;
-  _utterance.onend = () => {
+  const utterance = new SpeechSynthesisUtterance(text);
+  _utterance = utterance;
+  utterance.lang = 'pt-BR';
+  utterance.rate = 1;
+  const next = () => {
+    if (run !== _runId) return; // evento de uma leitura antiga: ignora (IMP-13)
     _utterance = null;
-    if (_speaking) speakBlockAt(index + 1);
+    if (_speaking) speakBlockAt(index + 1, run);
   };
-  _utterance.onerror = () => {
-    _utterance = null;
-    if (_speaking) speakBlockAt(index + 1);
-  };
+  utterance.onend = next;
+  utterance.onerror = next;
 
   speechSynthesis.speak(_utterance);
 }
@@ -215,6 +220,7 @@ export function speakMainContent() {
 
   stopSpeaking();
 
+  const run = _runId; // stopSpeaking() acima já abriu uma nova geração
   _blocks = collectBlocks();
   if (!_blocks.length) {
     // Fallback: whole region as one utterance (no highlight target)
@@ -224,30 +230,31 @@ export function speakMainContent() {
       : '';
     if (!text) return;
 
-    _utterance = new SpeechSynthesisUtterance(text);
-    _utterance.lang = 'pt-BR';
-    _utterance.rate = 1;
-    _utterance.onend = () => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    _utterance = utterance;
+    utterance.lang = 'pt-BR';
+    utterance.rate = 1;
+    const done = () => {
+      if (run !== _runId) return; // evento de uma leitura antiga (IMP-13)
       _speaking = false;
       _utterance = null;
     };
-    _utterance.onerror = () => {
-      _speaking = false;
-      _utterance = null;
-    };
+    utterance.onend = done;
+    utterance.onerror = done;
     _speaking = true;
-    speechSynthesis.speak(_utterance);
+    speechSynthesis.speak(utterance);
     return;
   }
 
   _speaking = true;
-  speakBlockAt(0);
+  speakBlockAt(0, run);
 }
 
 /**
  * Cancel any ongoing speech and clear highlight.
  */
 export function stopSpeaking() {
+  _runId += 1; // invalida qualquer evento pendente da leitura que está sendo parada
   _speaking = false;
   _blocks = [];
   _blockIndex = 0;
