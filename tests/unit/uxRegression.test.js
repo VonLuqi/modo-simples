@@ -163,7 +163,7 @@ describe('createFab — aria-expanded (F5-T09)', () => {
     assert.equal(first.element.querySelector('.ms-fab-tip').hidden, false);
     assert.equal(first.button.hasAttribute('aria-describedby'), false);
 
-    first.sync({ panelOpen: true });
+    // QA LOW-3: sem abrir o painel nem esperar a animação, a 2ª visita já não vê a dica
     const again = createFab({ onClick() {} });
     assert.equal(again.element.querySelector('.ms-fab-tip').hidden, true);
     delete global.localStorage;

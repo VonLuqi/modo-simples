@@ -35,6 +35,8 @@ export function createFab({ onClick }) {
     persistence.save(TIP_SEEN_KEY, true);
   }
   tip.hidden = persistence.load(TIP_SEEN_KEY, false) === true;
+  // LOW-3: marca como vista já ao mostrar (sair da página antes dos 6s não repete a dica)
+  if (!tip.hidden) persistence.save(TIP_SEEN_KEY, true);
   tip.addEventListener('animationend', (e) => {
     if (e.animationName === 'ms-fab-tip-out') dismissTip();
   });

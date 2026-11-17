@@ -263,4 +263,17 @@ test.describe('estado visual do FAB e do painel', () => {
     expect(box.y).toBeGreaterThanOrEqual(0);
     expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
   });
+
+  test('UX-08 (QA LOW-3): recarregar antes dos 6s não mostra a dica de novo', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await expect(page.locator('.ms-fab-tip')).toBeVisible();
+
+    await page.reload();
+    await waitForLib(page);
+    await expect(page.locator('.ms-fab-tip')).toBeHidden();
+  });
 });
