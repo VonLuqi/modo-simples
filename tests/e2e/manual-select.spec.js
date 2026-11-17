@@ -131,9 +131,35 @@ test.describe('seleção manual — teclado e toque (IMP-07)', () => {
 
     await page.keyboard.press('Enter');
     await expect(page.locator(BANNER)).toBeVisible();
+    await page.keyboard.press('Shift+Tab'); // do início volta ao Cancelar (LOW-1)
+    await expect(page.locator(`${BANNER} button`)).toBeFocused();
     await page.keyboard.press('Shift+Tab');
     await expect(page.locator(BANNER)).toContainText('Escolha atual:');
     await page.keyboard.press('Escape');
+    await expect(page.locator(BANNER)).toHaveCount(0);
+    await expect(principais(page)).toHaveCount(0);
+  });
+
+  test('Cancelar é alcançável por Tab e Enter nele cancela sem escolher (QA R34 LOW-1)', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(PAGE);
+    await waitForLib(page);
+    await page.evaluate(() => window.ModoSimples.enable());
+
+    const cancelar = page.locator(`${BANNER} button`);
+    for (let i = 0; i < 8; i++) {
+      await page.keyboard.press('Tab');
+      if (await cancelar.evaluate((el) => el === document.activeElement)) break;
+    }
+    await expect(cancelar).toBeFocused();
+    await page.keyboard.press('Tab'); // o ciclo volta ao primeiro candidato
+    await expect(page.locator(BANNER)).toContainText('Escolha atual:');
+    await page.keyboard.press('Shift+Tab');
+    await expect(cancelar).toBeFocused();
+
+    await page.keyboard.press('Enter');
     await expect(page.locator(BANNER)).toHaveCount(0);
     await expect(principais(page)).toHaveCount(0);
   });

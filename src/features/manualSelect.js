@@ -26,6 +26,8 @@ let _highlight = null;
 let _current = null;
 /** @type {Element|null} */
 let _prevFocus = null;
+/** @type {HTMLElement|null} */
+let _cancel = null;
 /** @type {((e: MouseEvent) => void)|null} */
 let _onClick = null;
 /** @type {((e: KeyboardEvent) => void)|null} */
@@ -158,8 +160,18 @@ function cycleCandidate(step) {
   const list = Array.from(document.querySelectorAll(CANDIDATE_SELECTOR)).filter(
     isCandidate,
   );
-  if (!list.length) return;
+  // O botão Cancelar é a última parada do ciclo (e a primeira para Shift+Tab) — QA R34 LOW-1
+  const onCancel = document.activeElement === _cancel;
   const i = _current ? list.indexOf(_current) : -1;
+  const goCancel =
+    !list.length ||
+    (!onCancel && step > 0 && i === list.length - 1) ||
+    (!onCancel && step < 0 && i <= 0);
+  if (goCancel) {
+    setCurrent(null);
+    _cancel?.focus();
+    return;
+  }
   const next =
     i < 0
       ? step > 0
@@ -168,6 +180,7 @@ function cycleCandidate(step) {
       : list[(i + step + list.length) % list.length];
   next.scrollIntoView?.({ block: 'nearest' });
   setCurrent(next);
+  _banner?.focus(); // devolve o foco ao banner: Enter/↑/↓ valem para o candidato, não para o Cancelar
 }
 
 /** Confirma `el` como conteúdo principal e encerra a seleção. */
@@ -246,6 +259,7 @@ export function startManualSelect(opts = {}) {
     if (cb) cb();
   });
   _banner.appendChild(cancelBtn);
+  _cancel = cancelBtn;
   document.body.appendChild(_banner);
 
   _highlight = document.createElement('div');
@@ -389,6 +403,7 @@ export function stopManualSelect() {
   _banner = null;
   _status = null;
   _highlight = null;
+  _cancel = null;
   _current = null;
   document.documentElement.classList.remove(OVERLAY_CLASS);
   _callbacks = null;
