@@ -31,6 +31,18 @@
     if (!nav.contains(e.target)) setOpen(false);
   });
 
+  // Tab para fora do nav (foco vai para a página) fecha o menu.
+  nav.addEventListener('focusout', function (e) {
+    if (e.relatedTarget && !nav.contains(e.relatedTarget)) setOpen(false);
+  });
+
+  // Ao voltar para a faixa larga (nav em linha), zera o estado do botão.
+  window
+    .matchMedia('(min-width: 1101px)')
+    .addEventListener('change', function (e) {
+      if (e.matches) setOpen(false);
+    });
+
   list.addEventListener('click', function (e) {
     if (e.target.closest && e.target.closest('a')) setOpen(false);
   });

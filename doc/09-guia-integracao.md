@@ -388,6 +388,8 @@ Fluxo resumido:
 
 Validação externa: [validacao-sites.md](./validacao-sites.md).
 
+**Risco de integração — pills do UX-06 vs. CSS do host.** `.ms-pills-nav .ms-pill` (em `src/ui/styles.js`) tem especificidade `(0,2,0)` e não usa `!important`. Regras do host com a mesma especificidade (por exemplo `white-space: nowrap` ou `overflow` no nav) empatam com ela e vencem conforme a ordem das folhas; quando o host vence, as pills voltam ao comportamento antigo de rolagem horizontal. Mitigação: não deixar o CSS do host que toca essas pills carregar depois do CSS da lib com a mesma especificidade — escopar ou elevar a especificidade dessas regras do host — e validar em 390px.
+
 ---
 
 ## 10. Relação com a proposta

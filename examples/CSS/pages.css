@@ -838,7 +838,7 @@ html.ms-ativo .ms-pills-nav {
   background: #eef2f7;
   color: var(--senac-blue-deep);
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: max(0.82rem, 12px);
   text-decoration: none;
   border: 2px solid transparent;
   white-space: nowrap;
@@ -946,7 +946,7 @@ html.ms-ativo .ms-pills-nav {
 }
 
 .ms-hub-card__opt {
-  font-size: 0.72rem;
+  font-size: max(0.72rem, 12px);
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -982,12 +982,12 @@ html.ms-ativo .ms-pills-nav {
 .ms-hub-card p {
   margin: 0;
   flex: 1;
-  font-size: 0.92rem;
+  font-size: max(0.92rem, 12px);
   color: var(--ms-text-muted);
 }
 
 .ms-hub-card__cta {
-  font-size: 0.88rem;
+  font-size: max(0.88rem, 12px);
   font-weight: 700;
   color: var(--senac-blue);
 }

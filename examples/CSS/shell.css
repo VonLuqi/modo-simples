@@ -322,7 +322,8 @@ body > main,
   /* Cabeçalho compacto: só "Entrar" na faixa de cima; marca + Menu + busca e o switch SIMPLES embaixo */
   .site-header__top {
     justify-content: flex-end;
-    padding: 0.15rem 0;
+    padding: 0;
+    border-bottom: 0;
   }
 
   .site-header__top p,
@@ -331,13 +332,13 @@ body > main,
   }
 
   .site-header__actions .btn {
-    min-height: 34px;
+    min-height: 44px;
     padding-block: 0.15rem;
   }
 
   .header-inner {
     gap: 0.2rem 0.5rem;
-    padding: 0.2rem 0 0.2rem;
+    padding: 0;
   }
 
   .brand span {

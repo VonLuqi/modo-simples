@@ -103,4 +103,51 @@ test.describe('menu recolhível (estreito)', () => {
     await page.locator(TOGGLE).click();
     expect(await topoMain()).toBe(antes);
   });
+
+  test('"Entrar" tem ≥44px de altura e o cabeçalho segue ≤140px', async ({
+    site,
+  }, testInfo) => {
+    const { page } = site;
+    await page.goto('/examples/cursos.html');
+    await waitForLib(page);
+    const entrar = page.locator('.site-header__actions .btn', {
+      hasText: 'Entrar',
+    });
+    const box = await entrar.boundingBox();
+    testInfo.annotations.push({
+      type: 'entrar-height-390',
+      description: `${box.height}px`,
+    });
+    console.log(`Entrar 390x844: ${box.height}px`);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    const altura = await page
+      .locator(HEADER)
+      .evaluate((h) => Math.round(h.getBoundingClientRect().height));
+    console.log(`header com Entrar 44px: ${altura}px`);
+    expect(altura).toBeLessThanOrEqual(140);
+  });
+
+  test('Tab para fora do último item fecha o menu', async ({ site }) => {
+    const { page } = site;
+    await page.goto(INDEX);
+    await waitForLib(page);
+    const menu = page.locator(TOGGLE);
+    await menu.click();
+    await expect(menu).toHaveAttribute('aria-expanded', 'true');
+    await page.locator('.main-nav li:last-child a').focus();
+    await page.keyboard.press('Tab');
+    await expect(menu).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator(LIST)).toBeHidden();
+  });
+
+  test('redimensionar para 1200px zera aria-expanded', async ({ site }) => {
+    const { page } = site;
+    await page.goto(INDEX);
+    await waitForLib(page);
+    const menu = page.locator(TOGGLE);
+    await menu.click();
+    await expect(menu).toHaveAttribute('aria-expanded', 'true');
+    await page.setViewportSize({ width: 1200, height: 800 });
+    await expect(menu).toHaveAttribute('aria-expanded', 'false');
+  });
 });
