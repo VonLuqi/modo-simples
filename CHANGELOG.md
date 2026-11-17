@@ -77,6 +77,7 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **LOW-3** — com o painel aberto, filhos do `<body>` que chegam depois também ficam `inert`; regiões `aria-live` do site não ficam `inert` (o leitor de tela continua anunciando).
 - **LOW-4** — a fonte Lexend só exclui classes de ícone de verdade (`icon`, `icon-*`), não qualquer classe que contenha "icon" (ex.: `silicon`, `iconic`).
 - **LOW-5** — removido o `:hover` redundante do bloco `prefers-reduced-motion` (o hover não tem `transform` desde o UX-17).
+- **MED-2 / LOW-A (QA T66)** — o clique repassado só vale se for do usuário (`isTrusted`) e, se o alvo for um campo de formulário, ele recebe o foco (antes o foco ia para o FAB); a Lexend também exclui `glyphicon`, `*-icon`, `*_icon` e `icon_*` (fontes de ícone voltavam a virar tofu).
 
 ### Corrigido (W2 mobile)
 

@@ -129,3 +129,24 @@ test('clique fora com o painel aberto fecha e também chega ao alvo (LOW QA T46)
   await expect(page.locator('#ms-a11y-panel')).toBeHidden();
   expect(await page.evaluate(() => window.__nota)).toBe(1);
 });
+
+test('clique fora num campo de formulário: painel fecha e o campo fica com o foco (MED-2 QA T66)', async ({
+  site,
+}) => {
+  const { page } = site;
+  await page.goto(INDEX);
+  await waitForLib(page);
+  await page.evaluate(() => {
+    const i = document.createElement('input');
+    i.id = 'campo-doc';
+    i.style.cssText = 'position:fixed;top:8px;left:8px;z-index:9999';
+    document.body.appendChild(i);
+  });
+  await openPanel(page);
+
+  const box = await page.locator('#campo-doc').boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+
+  await expect(page.locator('#ms-a11y-panel')).toBeHidden();
+  await expect(page.locator('#campo-doc')).toBeFocused();
+});
