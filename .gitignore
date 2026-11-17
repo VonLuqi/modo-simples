@@ -30,3 +30,6 @@ playwright-report/
 
 # Artefatos FUSE/NTFS (arquivo aberto e apagado) — nunca versionar
 .fuse_hidden*
+
+# Grafo local (graphify)
+graphify-out/
