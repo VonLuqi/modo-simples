@@ -931,26 +931,69 @@
       background: #8a5500;
     }
 
-    /* \u2500\u2500 Sections \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    /* \u2500\u2500 Sections (sanfona) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     .ms-a11y-section {
       background: #fff;
       border-radius: 10px;
-      padding: calc(0.75 * var(--ms-u)) calc(0.85 * var(--ms-u));
       margin-bottom: calc(0.75 * var(--ms-u));
       border: 1px solid #e8eaef;
     }
     .ms-a11y-section-title {
-      margin: 0 0 calc(0.65 * var(--ms-u));
+      margin: 0;
       font-size: calc(0.8125 * var(--ms-u));
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
       color: var(--ms-blue);
+    }
+    .ms-a11y-section-toggle {
       display: flex;
       align-items: center;
       gap: calc(0.35 * var(--ms-u));
+      width: 100%;
+      min-height: 44px;
+      padding: calc(0.75 * var(--ms-u)) calc(0.85 * var(--ms-u));
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      letter-spacing: inherit;
+      text-transform: inherit;
+      text-align: start;
+      cursor: pointer;
     }
-
+    .ms-a11y-section-toggle:focus-visible {
+      outline: 2px solid var(--ms-orange);
+      outline-offset: -2px;
+    }
+    .ms-a11y-section-name {
+      flex: 1;
+    }
+    .ms-a11y-section-chevron {
+      display: inline-flex;
+      transition: transform 0.15s ease-out;
+    }
+    .ms-a11y-section-toggle[aria-expanded="true"] .ms-a11y-section-chevron {
+      transform: rotate(180deg);
+    }
+    .ms-a11y-section-body {
+      padding: 0 calc(0.85 * var(--ms-u)) calc(0.75 * var(--ms-u));
+    }
+    .ms-a11y-control-label {
+      margin: 0 0 calc(0.5 * var(--ms-u));
+      font-size: calc(0.8125 * var(--ms-u));
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .ms-a11y-section .ms-a11y-section-body > * + * {
+      margin-top: calc(0.75 * var(--ms-u));
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ms-a11y-section-chevron {
+        transition: none;
+      }
+    }
     /* \u2500\u2500 Segmented text scale \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     .ms-segmented {
       display: grid;
@@ -1825,7 +1868,6 @@
     panelTextSizeItemLabel: "Tamanho do texto",
     panelThemeTitle: "Contraste e cores",
     panelThemeItemLabel: "Tema",
-    panelCognitiveTitle: "Aux\xEDlio cognitivo &amp; TDAH",
     panelDyslexiaTitle: "Fonte Acess\xEDvel (Lexend)",
     panelDyslexiaDesc: "Desenvolvida para dislexia e agilidade visual",
     panelDyslexiaLabel: "Fonte Acess\xEDvel Lexend",
@@ -1835,7 +1877,9 @@
     panelVoiceDesc: "L\xEA os t\xEDtulos e textos em portugu\xEAs",
     panelVoiceLabel: "Ouvir conte\xFAdo principal",
     panelVoiceButton: "Ouvir",
-    panelMoreTitle: "Mais op\xE7\xF5es",
+    sectionTextTitle: "Texto e leitura",
+    sectionColorsTitle: "Cores e destaque",
+    sectionMotionTitle: "Movimento e imagens",
     panelHighlightLinks: "Destacar links",
     panelTextSpacing: "Espa\xE7amento de texto",
     panelReducedMotion: "Reduzir movimento",
@@ -2015,6 +2059,165 @@
     { value: "darkHigh", label: STRINGS.themeDarkHigh, sub: STRINGS.themeDarkHighSub },
     { value: "soft", label: STRINGS.themeSoft, sub: STRINGS.themeSoftSub }
   ];
+  var svgIcon = (inner) => `<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${inner}</svg>`;
+  var CHEVRON = svgIcon('<path d="m6 9 6 6 6-6"/>');
+  var switchRow = ({ option, title, label, desc, hint }) => `
+          <li class="ms-a11y-option-row">
+            <div class="ms-a11y-option-text">
+              <strong>${title}</strong>${desc ? `
+              <p>${desc}</p>` : ""}${hint ? `
+              <span class="ms-a11y-option-hint">${hint}</span>` : ""}
+            </div>
+            <button type="button" class="ms-switch" role="switch" aria-checked="false"
+              data-option="${option}" aria-label="${label}">
+              <span class="ms-switch-thumb"></span>
+            </button>
+          </li>`;
+  var CONTROLS = {
+    textScale: {
+      block: true,
+      html: `
+        <p id="ms-label-text" class="ms-a11y-control-label">${STRINGS.panelTextSizeTitle}</p>
+        <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-text" data-option="textScale">
+          ${TEXT_SCALES.map(
+        (s) => `
+            <button type="button" role="radio" class="ms-segment"
+              data-value="${s.value}" aria-checked="false"
+              aria-label="${STRINGS.panelTextSizeItemLabel} ${s.label} \u2014 ${s.title}" title="${s.title}">
+              ${s.label}
+            </button>`
+      ).join("")}
+        </div>`
+    },
+    colorTheme: {
+      block: true,
+      html: `
+        <p id="ms-label-theme" class="ms-a11y-control-label">${STRINGS.panelThemeTitle}</p>
+        <div class="ms-theme-grid" role="radiogroup" aria-labelledby="ms-label-theme" data-option="colorTheme">
+          ${COLOR_THEMES.map(
+        (t) => `
+            <button type="button" role="radio" class="ms-theme-btn ms-theme-btn--${t.value}"
+              data-value="${t.value}" aria-checked="false"
+              aria-label="${STRINGS.panelThemeItemLabel} ${t.label} \u2014 ${t.sub}">
+              <span class="ms-theme-swatch" aria-hidden="true"></span>
+              <span class="ms-theme-label">${t.label}</span>
+              <span class="ms-theme-sub">${t.sub}</span>
+            </button>`
+      ).join("")}
+        </div>`
+    },
+    dyslexiaFont: {
+      html: switchRow({
+        option: "dyslexiaFont",
+        title: STRINGS.panelDyslexiaTitle,
+        label: STRINGS.panelDyslexiaLabel,
+        desc: STRINGS.panelDyslexiaDesc
+      })
+    },
+    readingRuler: {
+      html: switchRow({
+        option: "readingRuler",
+        title: STRINGS.panelRulerTitle,
+        label: STRINGS.panelRulerTitle,
+        desc: STRINGS.panelRulerDesc
+      })
+    },
+    speak: {
+      html: `
+          <li class="ms-a11y-option-row">
+            <div class="ms-a11y-option-text">
+              <strong>${STRINGS.panelVoiceTitle}</strong>
+              <p>${STRINGS.panelVoiceDesc}</p>
+            </div>
+            <button type="button" class="ms-btn-ouvir" data-action="speak" aria-label="${STRINGS.panelVoiceLabel}">
+              ${STRINGS.panelVoiceButton}
+            </button>
+          </li>`
+    },
+    highlightLinks: {
+      html: switchRow({
+        option: "highlightLinks",
+        title: STRINGS.panelHighlightLinks,
+        label: STRINGS.panelHighlightLinks
+      })
+    },
+    textSpacing: {
+      html: switchRow({
+        option: "textSpacing",
+        title: STRINGS.panelTextSpacing,
+        label: STRINGS.panelTextSpacing
+      })
+    },
+    reducedMotion: {
+      html: switchRow({
+        option: "reducedMotion",
+        title: STRINGS.panelReducedMotion,
+        label: STRINGS.panelReducedMotion
+      })
+    },
+    hideImages: {
+      html: switchRow({
+        option: "hideImages",
+        title: STRINGS.panelHideImages,
+        label: STRINGS.panelHideImages,
+        hint: STRINGS.panelHideImagesHint
+      })
+    }
+  };
+  var SECTIONS = [
+    {
+      id: "text",
+      title: STRINGS.sectionTextTitle,
+      icon: svgIcon(
+        '<path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/>'
+      ),
+      controls: [
+        "textScale",
+        "dyslexiaFont",
+        "textSpacing",
+        "readingRuler",
+        "speak"
+      ]
+    },
+    {
+      id: "colors",
+      title: STRINGS.sectionColorsTitle,
+      icon: svgIcon(
+        '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/>'
+      ),
+      controls: ["colorTheme", "highlightLinks"]
+    },
+    {
+      id: "motion",
+      title: STRINGS.sectionMotionTitle,
+      icon: svgIcon(
+        '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>'
+      ),
+      controls: ["reducedMotion", "hideImages"]
+    }
+  ];
+  function renderSection(sec, index) {
+    const open = index === 0;
+    const items = sec.controls.map((k) => CONTROLS[k]);
+    const blocks = items.filter((c) => c.block).map((c) => c.html);
+    const rows = items.filter((c) => !c.block).map((c) => c.html);
+    return `
+      <section class="ms-a11y-section" data-section-id="${sec.id}">
+        <h3 class="ms-a11y-section-title">
+          <button type="button" class="ms-a11y-section-toggle" id="ms-sec-${sec.id}-btn"
+            aria-expanded="${open}" aria-controls="ms-sec-${sec.id}-body">
+            <span aria-hidden="true">${sec.icon}</span>
+            <span class="ms-a11y-section-name">${sec.title}</span>
+            <span class="ms-a11y-section-chevron" aria-hidden="true">${CHEVRON}</span>
+          </button>
+        </h3>
+        <div class="ms-a11y-section-body" id="ms-sec-${sec.id}-body" role="region"
+          aria-labelledby="ms-sec-${sec.id}-btn"${open ? "" : " hidden"}>${blocks.join("")}${rows.length ? `
+        <ul class="ms-a11y-option-list">${rows.join("")}
+        </ul>` : ""}
+        </div>
+      </section>`;
+  }
   function createA11yPanel({
     state: state2,
     onClose,
@@ -2063,114 +2266,7 @@
           </button>
         </div>
       </div>
-
-      <section class="ms-a11y-section" aria-labelledby="ms-label-text">
-        <h3 id="ms-label-text" class="ms-a11y-section-title">
-          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg></span> ${STRINGS.panelTextSizeTitle}
-        </h3>
-        <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-text" data-option="textScale">
-          ${TEXT_SCALES.map(
-      (s) => `
-            <button type="button" role="radio" class="ms-segment"
-              data-value="${s.value}" aria-checked="false"
-              aria-label="${STRINGS.panelTextSizeItemLabel} ${s.label} \u2014 ${s.title}" title="${s.title}">
-              ${s.label}
-            </button>`
-    ).join("")}
-        </div>
-      </section>
-
-      <section class="ms-a11y-section" aria-labelledby="ms-label-theme">
-        <h3 id="ms-label-theme" class="ms-a11y-section-title">
-          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg></span> ${STRINGS.panelThemeTitle}
-        </h3>
-        <div class="ms-theme-grid" role="radiogroup" aria-labelledby="ms-label-theme" data-option="colorTheme">
-          ${COLOR_THEMES.map(
-      (t) => `
-            <button type="button" role="radio" class="ms-theme-btn ms-theme-btn--${t.value}"
-              data-value="${t.value}" aria-checked="false"
-              aria-label="${STRINGS.panelThemeItemLabel} ${t.label} \u2014 ${t.sub}">
-              <span class="ms-theme-swatch" aria-hidden="true"></span>
-              <span class="ms-theme-label">${t.label}</span>
-              <span class="ms-theme-sub">${t.sub}</span>
-            </button>`
-    ).join("")}
-        </div>
-      </section>
-
-      <section class="ms-a11y-section" aria-labelledby="ms-label-cognitive">
-        <h3 id="ms-label-cognitive" class="ms-a11y-section-title">
-          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10h16"/><path d="M10 10v10"/></svg></span> ${STRINGS.panelCognitiveTitle}
-        </h3>
-        <ul class="ms-a11y-option-list">
-          <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text">
-              <strong>${STRINGS.panelDyslexiaTitle}</strong>
-              <p>${STRINGS.panelDyslexiaDesc}</p>
-            </div>
-            <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="dyslexiaFont" aria-label="${STRINGS.panelDyslexiaLabel}">
-              <span class="ms-switch-thumb"></span>
-            </button>
-          </li>
-          <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text">
-              <strong>${STRINGS.panelRulerTitle}</strong>
-              <p>${STRINGS.panelRulerDesc}</p>
-            </div>
-            <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="readingRuler" aria-label="${STRINGS.panelRulerTitle}">
-              <span class="ms-switch-thumb"></span>
-            </button>
-          </li>
-          <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text">
-              <strong>${STRINGS.panelVoiceTitle}</strong>
-              <p>${STRINGS.panelVoiceDesc}</p>
-            </div>
-            <button type="button" class="ms-btn-ouvir" data-action="speak" aria-label="${STRINGS.panelVoiceLabel}">
-              ${STRINGS.panelVoiceButton}
-            </button>
-          </li>
-        </ul>
-      </section>
-
-      <section class="ms-a11y-section" aria-labelledby="ms-label-more">
-        <h3 id="ms-label-more" class="ms-a11y-section-title">${STRINGS.panelMoreTitle}</h3>
-        <ul class="ms-a11y-option-list">
-          <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text"><strong>${STRINGS.panelHighlightLinks}</strong></div>
-            <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="highlightLinks" aria-label="${STRINGS.panelHighlightLinks}">
-              <span class="ms-switch-thumb"></span>
-            </button>
-          </li>
-          <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text"><strong>${STRINGS.panelTextSpacing}</strong></div>
-            <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="textSpacing" aria-label="${STRINGS.panelTextSpacing}">
-              <span class="ms-switch-thumb"></span>
-            </button>
-          </li>
-          <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text"><strong>${STRINGS.panelReducedMotion}</strong></div>
-            <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="reducedMotion" aria-label="${STRINGS.panelReducedMotion}">
-              <span class="ms-switch-thumb"></span>
-            </button>
-          </li>
-          <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text">
-              <strong>${STRINGS.panelHideImages}</strong>
-              <span class="ms-a11y-option-hint">${STRINGS.panelHideImagesHint}</span>
-            </div>
-            <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="hideImages" aria-label="${STRINGS.panelHideImages}">
-              <span class="ms-switch-thumb"></span>
-            </button>
-          </li>
-        </ul>
-      </section>
+      ${SECTIONS.map(renderSection).join("")}
 
       <div class="ms-a11y-live" aria-live="polite" aria-atomic="true"></div>
       <p class="ms-a11y-footer-note"></p>
@@ -2185,6 +2281,13 @@
     setText(".ms-a11y-subtitle", texts.subtitle);
     setText(".ms-a11y-footer-note", texts.footer);
     let _releaseFocus = null;
+    panel.querySelectorAll(".ms-a11y-section-toggle").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const open2 = btn.getAttribute("aria-expanded") !== "true";
+        btn.setAttribute("aria-expanded", String(open2));
+        panel.querySelector(`#${btn.getAttribute("aria-controls")}`).hidden = !open2;
+      });
+    });
     panel.querySelector(".ms-a11y-close").addEventListener("click", () => onClose());
     panel.querySelector('[data-action="modo-simples"]').addEventListener("click", (e) => {
       const btn = e.currentTarget;

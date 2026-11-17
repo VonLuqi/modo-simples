@@ -181,6 +181,7 @@ describe('escaping (Q14): strings de config/host nunca viram HTML', () => {
     const root = path.resolve(import.meta.dirname, '../../src/ui');
     const permitidas = new Set([
       'SLIDERS_ICON',
+      "SECTIONS.map(renderSection).join('')", // F6b: seções estáticas, sem dado do host
       'iconOpen',
       'iconClose',
       't.value',

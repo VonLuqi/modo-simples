@@ -257,26 +257,69 @@ export const UI_CSS = `
       background: #8a5500;
     }
 
-    /* ── Sections ────────────────────────────────────────────────────────── */
+    /* ── Sections (sanfona) ──────────────────────────────────────────────── */
     .ms-a11y-section {
       background: #fff;
       border-radius: 10px;
-      padding: calc(0.75 * var(--ms-u)) calc(0.85 * var(--ms-u));
       margin-bottom: calc(0.75 * var(--ms-u));
       border: 1px solid #e8eaef;
     }
     .ms-a11y-section-title {
-      margin: 0 0 calc(0.65 * var(--ms-u));
+      margin: 0;
       font-size: calc(0.8125 * var(--ms-u));
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
       color: var(--ms-blue);
+    }
+    .ms-a11y-section-toggle {
       display: flex;
       align-items: center;
       gap: calc(0.35 * var(--ms-u));
+      width: 100%;
+      min-height: 44px;
+      padding: calc(0.75 * var(--ms-u)) calc(0.85 * var(--ms-u));
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      letter-spacing: inherit;
+      text-transform: inherit;
+      text-align: start;
+      cursor: pointer;
     }
-
+    .ms-a11y-section-toggle:focus-visible {
+      outline: 2px solid var(--ms-orange);
+      outline-offset: -2px;
+    }
+    .ms-a11y-section-name {
+      flex: 1;
+    }
+    .ms-a11y-section-chevron {
+      display: inline-flex;
+      transition: transform 0.15s ease-out;
+    }
+    .ms-a11y-section-toggle[aria-expanded="true"] .ms-a11y-section-chevron {
+      transform: rotate(180deg);
+    }
+    .ms-a11y-section-body {
+      padding: 0 calc(0.85 * var(--ms-u)) calc(0.75 * var(--ms-u));
+    }
+    .ms-a11y-control-label {
+      margin: 0 0 calc(0.5 * var(--ms-u));
+      font-size: calc(0.8125 * var(--ms-u));
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .ms-a11y-section .ms-a11y-section-body > * + * {
+      margin-top: calc(0.75 * var(--ms-u));
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ms-a11y-section-chevron {
+        transition: none;
+      }
+    }
     /* ── Segmented text scale ────────────────────────────────────────────── */
     .ms-segmented {
       display: grid;
