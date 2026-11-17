@@ -51,6 +51,7 @@ export function announce(message, politeness = 'polite') {
   live.setAttribute('role', 'status');
   live.setAttribute('aria-live', politeness);
   live.setAttribute('aria-atomic', 'true');
+  live.setAttribute('data-ms-live', ''); // marca nó da lib: o observer ignora (IMP-01)
 
   // Visually hidden but accessible to AT
   live.style.cssText =

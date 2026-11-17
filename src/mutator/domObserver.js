@@ -17,6 +17,37 @@ import { reprocess } from './domMutator.js';
  * When it's off, mutations are ignored to avoid any performance cost.
  */
 
+/** Nós criados pela própria lib: mutações neles nunca devem disparar reprocess (IMP-01). */
+const OWN_SELECTOR = [
+  '#ms-container',
+  '#ms-session-bar',
+  '#ms-simples-chrome',
+  '#ms-manual-select-banner',
+  '#ms-reading-ruler',
+  '[data-ms-pills][data-ms-injected]',
+  '[data-ms-live]',
+].join(',');
+
+/** @param {Node|null} node */
+function isOwnNode(node) {
+  return (
+    !!node &&
+    node.nodeType === 1 &&
+    typeof node.closest === 'function' &&
+    !!node.closest(OWN_SELECTOR)
+  );
+}
+
+/** Mutação relevante = adicionou algum nó do host (fora dos nós da lib). */
+function isRelevantMutation(m) {
+  if (m.type !== 'childList' || m.addedNodes.length === 0) return false;
+  if (isOwnNode(m.target)) return false;
+  for (const node of m.addedNodes) {
+    if (!isOwnNode(node)) return true;
+  }
+  return false;
+}
+
 /** @type {MutationObserver|null} */
 let _observer = null;
 
@@ -34,11 +65,8 @@ export function startObserving(getState, config) {
   if (_observer) return; // Already running
 
   _observer = new MutationObserver((mutations) => {
-    // Only care about structural changes (added/removed nodes)
-    const hasStructural = mutations.some(
-      (m) => m.type === 'childList' && m.addedNodes.length > 0,
-    );
-    if (!hasStructural) return;
+    // Só interessam nós ADICIONADOS do host (nós da própria lib são ignorados)
+    if (!mutations.some(isRelevantMutation)) return;
 
     // Only reprocess if Modo Simples is currently active
     const state = getState();

@@ -347,6 +347,7 @@
     live.setAttribute("role", "status");
     live.setAttribute("aria-live", politeness);
     live.setAttribute("aria-atomic", "true");
+    live.setAttribute("data-ms-live", "");
     live.style.cssText = "position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;";
     document.body.appendChild(live);
     setTimeout(() => {
@@ -2201,16 +2202,33 @@
   }
 
   // src/mutator/domObserver.js
+  var OWN_SELECTOR = [
+    "#ms-container",
+    "#ms-session-bar",
+    "#ms-simples-chrome",
+    "#ms-manual-select-banner",
+    "#ms-reading-ruler",
+    "[data-ms-pills][data-ms-injected]",
+    "[data-ms-live]"
+  ].join(",");
+  function isOwnNode(node) {
+    return !!node && node.nodeType === 1 && typeof node.closest === "function" && !!node.closest(OWN_SELECTOR);
+  }
+  function isRelevantMutation(m) {
+    if (m.type !== "childList" || m.addedNodes.length === 0) return false;
+    if (isOwnNode(m.target)) return false;
+    for (const node of m.addedNodes) {
+      if (!isOwnNode(node)) return true;
+    }
+    return false;
+  }
   var _observer = null;
   var _debounceTimer = null;
   function startObserving(getState, config) {
     if (_observer) return;
     _observer = new MutationObserver((mutations) => {
       var _a;
-      const hasStructural = mutations.some(
-        (m) => m.type === "childList" && m.addedNodes.length > 0
-      );
-      if (!hasStructural) return;
+      if (!mutations.some(isRelevantMutation)) return;
       const state2 = getState();
       if (!state2.modoSimples) return;
       clearTimeout(_debounceTimer);

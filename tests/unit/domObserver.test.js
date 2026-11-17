@@ -145,18 +145,34 @@ describe('startObserving / stopObserving', () => {
 });
 
 describe('bugs conhecidos (Fase 2)', () => {
-  it(
-    'nós da própria lib (announce) não disparam reprocess (IMP-01)',
-    {
-      todo: 'IMP-01 — announce() anexa <div> ao body e o observer reprocessa tudo',
-    },
-    async () => {
-      start();
-      announce('Painel de acessibilidade aberto');
-      await settle();
-      assert.equal(reprocessCount, 0);
-    },
-  );
+  it('nós da própria lib (announce) não disparam reprocess (IMP-01)', async () => {
+    start();
+    announce('Painel de acessibilidade aberto');
+    await settle();
+    assert.equal(reprocessCount, 0);
+  });
+
+  it('nós injetados pela lib (host, barra, pills injetadas, régua) não disparam reprocess (IMP-01)', async () => {
+    start();
+    for (const html of [
+      '<div id="ms-container"></div>',
+      '<div id="ms-session-bar"></div>',
+      '<nav data-ms-pills data-ms-injected></nav>',
+      '<div id="ms-reading-ruler"></div>',
+    ]) {
+      document.body.insertAdjacentHTML('beforeend', html);
+    }
+    await settle();
+    assert.equal(reprocessCount, 0);
+  });
+
+  it('nó do host adicionado junto com um anúncio da lib ainda reprocessa', async () => {
+    start();
+    announce('x');
+    addAd();
+    await settle();
+    assert.equal(reprocessCount > 0, true);
+  });
 
   it(
     'o principal escolhido manualmente sobrevive ao reprocess (IMP-02)',
