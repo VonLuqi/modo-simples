@@ -51,7 +51,7 @@ export function getUIStyles(position = 'bottom-right') {
       --ms-simple-bg: #FFF8E7;
       --ms-simple-border: #F39200;
       --ms-panel-radius: 14px;
-      --ms-u: 16px;
+      --ms-u: calc(16px * var(--ms-scale, 1));
       --ms-font: 'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif;
       font-family: var(--ms-font);
       font-size: 15px;
@@ -575,9 +575,9 @@ export function getPageStyles() {
     }
 
     /* ── Text scale (independent of ms-ativo) ─────────────────────────────── */
-    html.ms-text-scale-125 { font-size: 125%; }
-    html.ms-text-scale-150 { font-size: 150%; }
-    html.ms-text-scale-175 { font-size: 175%; }
+    html.ms-text-scale-125 { font-size: 125%; --ms-scale: 1.25; }
+    html.ms-text-scale-150 { font-size: 150%; --ms-scale: 1.5; }
+    html.ms-text-scale-175 { font-size: 175%; --ms-scale: 1.75; }
 
     /* ── Color themes ────────────────────────────────────────────────────── */
     html.ms-theme-yellowBlack,
@@ -761,7 +761,7 @@ export function getPageStyles() {
     #ms-simples-chrome,
     #ms-session-bar,
     .ms-pills-nav {
-      --ms-u: 16px;
+      --ms-u: calc(16px * var(--ms-scale, 1));
     }
     #ms-simples-chrome {
       display: flex;

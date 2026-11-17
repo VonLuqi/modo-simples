@@ -350,10 +350,22 @@ describe('CSS da lib: tamanho mínimo de texto (UX-15)', () => {
 describe('CSS da lib: independente do html { font-size } do host (UX-14)', () => {
   it('o widget usa var(--ms-u) (16px), não rem', () => {
     const ui = getUIStyles();
-    assert.ok(ui.includes('--ms-u: 16px'));
+    assert.ok(ui.includes('--ms-u: calc(16px * var(--ms-scale, 1))'));
     assert.equal(/\d\s*rem\b/.test(ui), false, 'rem no CSS do shadow DOM');
 
     const pagina = getPageStyles();
+    for (const [n, f] of [
+      ['125', '1.25'],
+      ['150', '1.5'],
+      ['175', '1.75'],
+    ]) {
+      assert.ok(
+        pagina.includes(
+          `html.ms-text-scale-${n} { font-size: ${n}%; --ms-scale: ${f}; }`,
+        ),
+        `--ms-scale ausente em ms-text-scale-${n}`,
+      );
+    }
     const i = pagina.indexOf('#ms-simples-chrome,\n    #ms-session-bar');
     assert.ok(i >= 0, 'falta a âncora --ms-u no chrome/barra/pills');
     assert.equal(
