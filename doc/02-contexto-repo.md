@@ -141,7 +141,7 @@ Nav unificada (8 itens) com `aria-current="page"`. Com MS ligado: **pills** + **
 | `heuristics/*`                                                          | Conteúdo principal, distrações, pontuação                 |
 | `mutator/domMutator.js`                                                 | Aplicar/reverter MS e opções; estilos de página; Lexend   |
 | `mutator/domObserver.js`                                                | MutationObserver com debounce                             |
-| `ui/fab.js`, `a11yPanel.js`, `sessionChrome.js`, `styles.js`            | UI atual (painel modal + barra)                           |
+| `ui/fab.js`, `a11yPanel.js`, `sessionChrome.js`, `styles.js`            | UI atual (painel modal + barra); CSS em `ui/css/`         |
 | `features/tts.js`, `readingRuler.js`, `simpleNav.js`, `manualSelect.js` | Recursos opcionais                                        |
 | `utils/aria.js`, `focus.js`, `mediaQuery.js`                            | Anúncios, foco, `prefers-reduced-motion`                  |
 
