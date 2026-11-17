@@ -29,7 +29,7 @@
     "prebuild": "prettier --write src",
     "build": "node scripts/bundle.cjs",
     "build:dev": "node scripts/bundle.cjs",
-    "watch": "node scripts/bundle.cjs",
+    "watch": "node scripts/bundle.cjs --watch",
     "test": "node scripts/test.cjs",
     "test:unit": "node scripts/test.cjs --unit",
     "test:structure": "node scripts/test.cjs --structure",

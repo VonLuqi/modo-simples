@@ -74,6 +74,22 @@ async function build() {
   console.log(`✓ dist/modo-simples.js       (${devKb} kB)`);
   console.log(`✓ dist/modo-simples.min.js   (${minKb} kB)`);
   console.log('\nBuild concluído com sucesso.');
+
+  // --watch: reconstrói dist/ a cada mudança em src/ (npm run watch)
+  if (process.argv.includes('--watch')) {
+    for (const [file, minify] of [
+      ['modo-simples.js', false],
+      ['modo-simples.min.js', true],
+    ]) {
+      const ctx = await esbuild.context({
+        ...shared,
+        outfile: path.join(DIST, file),
+        minify,
+      });
+      await ctx.watch();
+    }
+    console.log('\nObservando src/ (Ctrl+C para sair)...');
+  }
 }
 
 build().catch((err) => {
