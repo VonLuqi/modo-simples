@@ -266,7 +266,16 @@ function _moveChrome(chrome, parent) {
     ? document.activeElement
     : null;
   parent.appendChild(chrome);
-  if (focused) focused.focus();
+  if (!focused) return;
+  focused.focus();
+  // O destino pode estar display:none até o <html> trocar ms-ativo (logo depois do sync):
+  // focus() é no-op nesse caso; tenta de novo quando ele já estiver visível (QA R34 HIGH-1)
+  if (
+    document.activeElement !== focused &&
+    typeof requestAnimationFrame === 'function'
+  ) {
+    requestAnimationFrame(() => focused.focus());
+  }
 }
 
 function _mountChrome(chrome, mount) {
