@@ -10,15 +10,22 @@
 
 import defaults from './config/defaults.js';
 import { mergeConfig } from './config/mergeConfig.js';
-import { detectMainContent } from './heuristics/contentDetector.js';
 import eventBus from './core/eventBus.js';
 import state from './core/state.js';
 import { diffStateAnnouncements } from './core/announcements.js';
-import persistence from './core/persistence.js';
 import {
-  hydratePersistedState,
-  SCHEMA_VERSION,
-} from './core/persistedState.js';
+  saveHideImagesBeforeMs,
+  takeHideImagesBeforeMs,
+  loadPreferShowImages,
+  savePreferShowImages,
+  persistState,
+  loadPersistedState,
+  savePrincipalPath,
+  loadPrincipal,
+  discardPrincipal,
+  isPlausiblePrincipal,
+  legacyHintFits,
+} from './core/instancePersistence.js';
 import {
   prefersReducedMotion,
   onReducedMotionChange,
@@ -57,12 +64,6 @@ import {
   isManualSelectActive,
 } from './features/manualSelect.js';
 import { createSimpleNav } from './features/simpleNav.js';
-
-/** Tamanho do texto de um elemento (sem espaços nas pontas). */
-const textLength = (el) => ((el && el.textContent) || '').trim().length;
-
-const STATE_KEY = 'state';
-const PRINCIPAL_KEY = 'principal';
 
 class ModoSimples {
   constructor(userConfig = {}) {
@@ -229,54 +230,20 @@ class ModoSimples {
 
   /** Guarda (memória + storage) se as imagens estavam ocultas antes de ligar o MS. */
   _saveHideImagesBeforeMs(hide) {
-    this._hideImagesBeforeMs = !!hide;
-    if (!this._config.persistence) return;
-    const key = 'hideImagesBeforeMs';
-    if (this._config.hostnamePersistence) {
-      persistence.saveForHost(key, !!hide);
-    } else {
-      persistence.save(key, !!hide);
-    }
+    saveHideImagesBeforeMs(this, hide);
   }
 
   /** Lê e esquece o valor guardado; sem registro (ex.: MS já estava ligado) = imagens visíveis. */
   _takeHideImagesBeforeMs() {
-    let hide = this._hideImagesBeforeMs;
-    if (hide === null && this._config.persistence) {
-      const key = 'hideImagesBeforeMs';
-      hide = this._config.hostnamePersistence
-        ? persistence.loadForHost(key, null)
-        : persistence.load(key, null);
-    }
-    this._hideImagesBeforeMs = null;
-    if (this._config.persistence) {
-      const key = 'hideImagesBeforeMs';
-      if (this._config.hostnamePersistence) {
-        persistence.removeForHost(key);
-      } else {
-        persistence.remove(key);
-      }
-    }
-    return !!hide;
+    return takeHideImagesBeforeMs(this);
   }
 
   _loadPreferShowImages() {
-    if (!this._config.persistence) return false;
-    const key = 'preferShowImagesInMs';
-    const v = this._config.hostnamePersistence
-      ? persistence.loadForHost(key, false)
-      : persistence.load(key, false);
-    return !!v;
+    return loadPreferShowImages(this);
   }
 
   _savePreferShowImages(show) {
-    if (!this._config.persistence) return;
-    const key = 'preferShowImagesInMs';
-    if (this._config.hostnamePersistence) {
-      persistence.saveForHost(key, !!show);
-    } else {
-      persistence.save(key, !!show);
-    }
+    savePreferShowImages(this, show);
   }
   configure(patch) {
     this._config = mergeConfig(this._config, patch);
@@ -646,48 +613,16 @@ class ModoSimples {
   // ── Persistence ────────────────────────────────────────────────────────────
 
   _persistState(next) {
-    if (!this._config.persistence) return;
-    const payload = {
-      v: SCHEMA_VERSION,
-      modoSimples: next.modoSimples,
-      // reducedMotion só é gravado quando o usuário escolheu (null = derivado do SO)
-      options: { ...next.options, reducedMotion: this._reducedMotionUser },
-    };
-    // localStorage é síncrono: só grava quando o que é persistido de fato mudou (IMP-39);
-    // abrir/fechar o painel, por exemplo, não altera o payload
-    const json = JSON.stringify(payload);
-    if (json === this._lastPersisted) return;
-    this._lastPersisted = json;
-    if (this._config.hostnamePersistence) {
-      persistence.saveForHost(STATE_KEY, payload);
-    } else {
-      persistence.save(STATE_KEY, payload);
-    }
+    persistState(this, next);
   }
 
   _loadPersistedState() {
-    if (!this._config.persistence) return;
-    const saved = this._config.hostnamePersistence
-      ? persistence.loadForHost(STATE_KEY)
-      : persistence.load(STATE_KEY);
-    if (!saved) return;
-
-    const patch = hydratePersistedState(saved);
-    if (patch) state.set(patch);
-    // Payload v0 (sem v) gravava o reducedMotion DERIVADO (sempre false por padrão): não é escolha
-    // do usuário. Tratá-lo como escolha ignoraria o SO de todo mundo que atualizou de 1.x/2.0.
-    const rm = saved.options && saved.options.reducedMotion;
-    const isUserChoice = saved.v >= 1 && typeof rm === 'boolean';
-    this._reducedMotionUser = isUserChoice ? rm : null;
+    loadPersistedState(this);
   }
 
   /** Grava o principal escolhido POR PÁGINA, com o tamanho do texto para validar depois. */
   _savePrincipalPath(path, el) {
-    if (!this._config.persistence || !path) return;
-    persistence.saveForPath(PRINCIPAL_KEY, {
-      path,
-      textLen: textLength(el),
-    });
+    savePrincipalPath(this, path, el);
   }
 
   /**
@@ -696,25 +631,7 @@ class ModoSimples {
    * @returns {{ path: string, textLen: number|null, legacy: boolean } | null}
    */
   _loadPrincipal() {
-    if (!this._config.persistence) return null;
-    let v = persistence.loadForPath(PRINCIPAL_KEY);
-    const viaHost = v == null; // sem registro da página: cai no registro antigo, por host
-    if (viaHost) {
-      v = this._config.hostnamePersistence
-        ? persistence.loadForHost(PRINCIPAL_KEY)
-        : persistence.load(PRINCIPAL_KEY);
-    }
-    if (typeof v === 'string' && v) {
-      return { path: v, textLen: null, legacy: true };
-    }
-    if (v && typeof v.path === 'string' && v.path) {
-      return {
-        path: v.path,
-        textLen: Number.isFinite(v.textLen) ? v.textLen : null,
-        legacy: viaHost,
-      };
-    }
-    return null;
+    return loadPrincipal(this);
   }
 
   /**
@@ -722,8 +639,7 @@ class ModoSimples {
    * ele é só uma dica, e falhar numa página não diz nada sobre as outras.
    */
   _discardPrincipal() {
-    if (!this._config.persistence) return;
-    persistence.removeForPath(PRINCIPAL_KEY);
+    discardPrincipal(this);
   }
 
   /**
@@ -732,11 +648,7 @@ class ModoSimples {
    * tamanho de quando foi escolhido.
    */
   _isPlausiblePrincipal(el, saved) {
-    const len = textLength(el);
-    if (len < this._config.scoring.minTextLength) return false;
-    if (saved.textLen && len < saved.textLen * 0.5) return false;
-    if (saved.legacy) return this._legacyHintFits(el, len);
-    return true;
+    return isPlausiblePrincipal(this, el, saved);
   }
 
   /**
@@ -745,11 +657,7 @@ class ModoSimples {
    * candidato dela (< 50% do texto) — outra página do host com a mesma estrutura de caminho.
    */
   _legacyHintFits(el, len) {
-    const { element, confidence } = detectMainContent(this._config);
-    if (confidence < this._config.confidenceThreshold || element === el) {
-      return true;
-    }
-    return len >= textLength(element) * 0.5;
+    return legacyHintFits(this, el, len);
   }
 
   // ── System preferences ─────────────────────────────────────────────────────
