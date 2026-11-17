@@ -750,7 +750,7 @@ html.ms-simple-language main.page-main {
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--ms-orange-brand);
+  color: var(--ms-orange-text);
 }
 
 .ms-simple-view h1,
@@ -842,7 +842,10 @@ html.ms-ativo .ms-pills-nav {
   text-decoration: none;
   border: 2px solid transparent;
   white-space: nowrap;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease,
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease,
     box-shadow 0.15s ease;
 }
 
@@ -894,7 +897,7 @@ html.ms-ativo .ms-pills-nav {
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--ms-orange-brand);
+  color: var(--ms-orange-text);
   margin-bottom: 0.35rem;
 }
 
@@ -931,7 +934,9 @@ html.ms-ativo .ms-pills-nav {
   color: inherit;
   box-shadow: var(--ms-shadow);
   min-height: 10rem;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .ms-hub-card:hover {
@@ -965,7 +970,7 @@ html.ms-ativo .ms-pills-nav {
 }
 
 .ms-hub-card__opt--project {
-  color: var(--senac-blue-mid);
+  color: var(--senac-blue);
 }
 
 .ms-hub-card h2 {

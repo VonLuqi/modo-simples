@@ -791,7 +791,7 @@ export function getPageStyles() {
     }
     .ms-simples-sub {
       font-size: 0.65rem;
-      color: #64748b;
+      color: #475569;
       font-weight: 600;
     }
     .ms-chrome-switch {

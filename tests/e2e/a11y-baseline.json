@@ -1,26 +1,4 @@
 {
-  "_doc": "Violações axe conhecidas, rastreadas por achado. Chave = rule + selector + cenário (página/estado): a entrada só tolera a violação nos cenários listados em scenarios. Toda entrada tem correção planejada (F3): remova-a ao corrigir (o e2e avisa 'baseline obsoleta?' quando a violação some). Violação fora desta lista falha o e2e. Obs.: axe não mede contraste de componentes (WCAG 1.4.11): UX-02 é rastreado em behavior.spec.js (test.fail).",
-  "entries": [
-    {
-      "finding": "UX-04",
-      "rule": "color-contrast",
-      "selector": ".ms-simples-sub",
-      "scenarios": ["index/ms-on"],
-      "note": "Subtítulo do interruptor SIMPLES: #64748b sobre #fff8e7 = 4,49:1 a 10,4px (styles.js:793). Cai na auditoria de texto de baixo contraste do UX-04/UX-15"
-    },
-    {
-      "finding": "UX-04",
-      "rule": "color-contrast",
-      "selector": ".eyebrow",
-      "scenarios": ["index/ms-on"],
-      "note": "Host (protótipo): .eyebrow laranja #f39200 sobre branco = 2,35:1 (examples/CSS/pages.css). Texto laranja no hub"
-    },
-    {
-      "finding": "UX-04",
-      "rule": "color-contrast",
-      "selector": ".ms-hub-card__opt--project",
-      "scenarios": ["index/ms-on"],
-      "note": "Host (protótipo): azul #2979bb sobre #f0f7ff = 4,27:1 (examples/CSS/pages.css)"
-    }
-  ]
+  "_doc": "Violações axe conhecidas, rastreadas por achado. Chave = rule + selector + cenário (página/estado): a entrada só tolera a violação nos cenários listados em scenarios. Toda entrada tem correção planejada (F3): remova-a ao corrigir (o e2e avisa 'baseline obsoleta?' quando a violação some). Violação fora desta lista falha o e2e. Obs.: axe não mede contraste de componentes (WCAG 1.4.11): UX-02 é rastreado em behavior.spec.js.",
+  "entries": []
 }
