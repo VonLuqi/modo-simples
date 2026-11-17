@@ -37,4 +37,23 @@ test.describe('W2 mobile — barra do Modo Simples', () => {
       );
     expect(menores).toBe(0);
   });
+
+  test('UX-07: a barra segue ≤ 120px com fonte de fallback larga (não depende das métricas da fonte do runner)', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await ligarMS(page);
+    // CI sem Lexend/Noto cai em system-ui largo (DejaVu): o título quebrava em 2 linhas (+31px)
+    await page.addStyleTag({
+      content:
+        "#ms-session-bar, #ms-session-bar * { font-family: 'DejaVu Sans', sans-serif !important; }",
+    });
+    const h = await page
+      .locator('#ms-session-bar')
+      .evaluate((el) => el.getBoundingClientRect().height);
+    expect(h).toBeLessThanOrEqual(120);
+  });
 });
