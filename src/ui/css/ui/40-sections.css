@@ -48,13 +48,10 @@
       padding: 0 calc(0.85 * var(--ms-u)) calc(0.75 * var(--ms-u));
     }
     .ms-a11y-control-label {
-      margin: 0 0 calc(0.5 * var(--ms-u));
+      margin: 0;
       font-size: calc(0.8125 * var(--ms-u));
       font-weight: 700;
       color: #1e293b;
-    }
-    .ms-a11y-section .ms-a11y-section-body > * + * {
-      margin-top: calc(0.75 * var(--ms-u));
     }
     @media (prefers-reduced-motion: reduce) {
       .ms-a11y-section-chevron {

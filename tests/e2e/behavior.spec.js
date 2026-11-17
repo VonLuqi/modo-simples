@@ -76,18 +76,12 @@ test.describe('Modo Simples: ligar e desligar', () => {
     const seg = await page.locator('.ms-segment').first().boundingBox();
     expect(seg.height).toBeGreaterThanOrEqual(44);
 
-    const acertaPainel = await page
+    // F6c: o switch do painel virou tile — o próprio bloco é a área de toque (≥ 44px)
+    const tile = await page
       .locator('.ms-switch[data-option="dyslexiaFont"]')
-      .evaluate((s) => {
-        s.scrollIntoView({ block: 'center' });
-        const r = s.getBoundingClientRect();
-        const x = r.x + r.width / 2;
-        const root = s.getRootNode();
-        return [r.y - 8, r.y + r.height + 8].map(
-          (y) => root.elementFromPoint(x, y) === s,
-        );
-      });
-    expect(acertaPainel).toEqual([true, true]);
+      .boundingBox();
+    expect(tile.height).toBeGreaterThanOrEqual(44);
+    expect(tile.width).toBeGreaterThanOrEqual(44);
   });
 
   test('pela API window.ModoSimples: enable / disable / toggle', async ({
@@ -218,7 +212,8 @@ test.describe('contraste de componentes (WCAG 1.4.11): o axe não mede', () => {
   test('UX-02: trilho do interruptor desligado contra o fundo do painel ≥ 3:1', async ({
     site,
   }) => {
-    // Regressão do UX-02: trilho #64748b sobre branco = 4,76:1 (antes #cbd5e1 = 1,48:1).
+    // Regressão do UX-02: contorno #64748b sobre branco = 4,76:1 (antes #cbd5e1 = 1,48:1).
+    // F6c: o switch virou tile; o limite visível do controle é a borda (WCAG 1.4.11).
     const { page } = site;
     await page.goto(GENERIC);
     await waitForLib(page);
@@ -237,7 +232,7 @@ test.describe('contraste de componentes (WCAG 1.4.11): o axe não mede', () => {
           bg = bg.parentElement;
         }
         return {
-          trilho: getComputedStyle(el).backgroundColor,
+          trilho: getComputedStyle(el).borderTopColor,
           fundo: bg
             ? getComputedStyle(bg).backgroundColor
             : 'rgb(255, 255, 255)',

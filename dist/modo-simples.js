@@ -981,13 +981,10 @@
       padding: 0 calc(0.85 * var(--ms-u)) calc(0.75 * var(--ms-u));
     }
     .ms-a11y-control-label {
-      margin: 0 0 calc(0.5 * var(--ms-u));
+      margin: 0;
       font-size: calc(0.8125 * var(--ms-u));
       font-weight: 700;
       color: #1e293b;
-    }
-    .ms-a11y-section .ms-a11y-section-body > * + * {
-      margin-top: calc(0.75 * var(--ms-u));
     }
     @media (prefers-reduced-motion: reduce) {
       .ms-a11y-section-chevron {
@@ -1154,6 +1151,94 @@
       outline: 2px solid var(--ms-orange);
       outline-offset: 2px;
     }
+
+    /* \u2500\u2500 Grade de blocos (F6c): 3 colunas; radiogroups ocupam a linha inteira \u2500\u2500 */
+    .ms-a11y-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(calc(5.4 * var(--ms-u)), 1fr));
+      gap: calc(0.5 * var(--ms-u));
+    }
+    .ms-a11y-block--wide { grid-column: 1 / -1; min-width: 0; }
+    .ms-a11y-control-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: calc(0.5 * var(--ms-u));
+      margin-bottom: calc(0.5 * var(--ms-u));
+    }
+    .ms-a11y-control-state {
+      font-size: calc(0.8125 * var(--ms-u));
+      font-weight: 700;
+      color: var(--ms-blue);
+      text-align: end;
+    }
+
+    .ms-switch.ms-tile,
+    .ms-btn-ouvir.ms-tile {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: calc(0.2 * var(--ms-u));
+      width: auto;
+      height: auto;
+      min-height: 44px;
+      padding: calc(0.6 * var(--ms-u)) calc(0.15 * var(--ms-u));
+      border: 2px solid #64748b;
+      border-radius: 10px;
+      background: #fff;
+      color: #1e293b;
+      font: inherit;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+    .ms-switch.ms-tile::after { content: none; }
+    .ms-tile-icon {
+      display: inline-flex;
+      font-size: calc(1.4 * var(--ms-u));
+    }
+    .ms-tile-label {
+      font-size: calc(0.8125 * var(--ms-u));
+      font-weight: 700;
+      line-height: 1.25;
+      overflow-wrap: break-word;
+      hyphens: auto;
+    }
+    .ms-tile-state {
+      font-size: calc(0.75 * var(--ms-u));
+      font-weight: 600;
+      color: #475569;
+    }
+    .ms-tile-check {
+      display: none;
+      position: absolute;
+      top: calc(0.25 * var(--ms-u));
+      right: calc(0.25 * var(--ms-u));
+      font-size: calc(0.9 * var(--ms-u));
+      color: var(--ms-blue);
+    }
+    /* Ligado: borda azul + fundo + \u2713 + texto "Ligado" (nunca s\xF3 cor) */
+    .ms-switch.ms-tile[aria-checked="true"] {
+      background: #e8f0fb;
+      border-color: var(--ms-blue);
+      box-shadow: 0 0 0 1px var(--ms-blue);
+    }
+    .ms-switch.ms-tile[aria-checked="true"] .ms-tile-state {
+      color: var(--ms-blue);
+    }
+    .ms-switch.ms-tile[aria-checked="true"] .ms-tile-check { display: inline-flex; }
+    .ms-switch.ms-tile:focus-visible,
+    .ms-btn-ouvir.ms-tile:focus-visible {
+      outline: 2px solid var(--ms-orange);
+      outline-offset: 2px;
+    }
+    .ms-btn-ouvir.ms-tile {
+      background: var(--ms-orange);
+      border-color: var(--ms-orange);
+      color: #1a1205;
+    }
+    .ms-btn-ouvir.ms-tile:hover { background: var(--ms-orange-dark); }
 
     .ms-btn-ouvir {
       flex-shrink: 0;
@@ -1877,6 +1962,10 @@
     panelVoiceDesc: "L\xEA os t\xEDtulos e textos em portugu\xEAs",
     panelVoiceLabel: "Ouvir conte\xFAdo principal",
     panelVoiceButton: "Ouvir",
+    panelVoiceStopButton: "Parar",
+    panelVoiceStopLabel: "Parar leitura",
+    stateOn: "Ligado",
+    stateOff: "Desligado",
     sectionTextTitle: "Texto e leitura",
     sectionColorsTitle: "Cores e destaque",
     sectionMotionTitle: "Movimento e imagens",
@@ -2061,23 +2150,14 @@
   ];
   var svgIcon = (inner) => `<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${inner}</svg>`;
   var CHEVRON = svgIcon('<path d="m6 9 6 6 6-6"/>');
-  var switchRow = ({ option, title, label, desc, hint }) => `
-          <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text">
-              <strong>${title}</strong>${desc ? `
-              <p>${desc}</p>` : ""}${hint ? `
-              <span class="ms-a11y-option-hint">${hint}</span>` : ""}
-            </div>
-            <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="${option}" aria-label="${label}">
-              <span class="ms-switch-thumb"></span>
-            </button>
-          </li>`;
+  var CHECK = svgIcon('<path d="m5 12.5 4.5 4.5L19 7.5"/>');
+  var switchTile = ({ option, title, label, desc, icon }) => `<button type="button" class="ms-switch ms-tile" role="switch" aria-checked="false" data-option="${option}" aria-label="${label}"${desc ? ` aria-describedby="ms-desc-${option}"` : ""}><span class="ms-tile-icon" aria-hidden="true">${icon}</span><span class="ms-tile-label">${title}</span><span class="ms-tile-state" data-state aria-hidden="true">${STRINGS.stateOff}</span><span class="ms-tile-check" aria-hidden="true">${CHECK}</span>${desc ? `<span id="ms-desc-${option}" hidden>${desc}</span>` : ""}</button>`;
+  var radioHead = (id, title, option) => `<div class="ms-a11y-control-head"><p id="${id}" class="ms-a11y-control-label">${title}</p><span class="ms-a11y-control-state" data-state-for="${option}" aria-hidden="true"></span></div>`;
   var CONTROLS = {
     textScale: {
-      block: true,
+      wide: true,
       html: `
-        <p id="ms-label-text" class="ms-a11y-control-label">${STRINGS.panelTextSizeTitle}</p>
+        ${radioHead("ms-label-text", STRINGS.panelTextSizeTitle, "textScale")}
         <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-text" data-option="textScale">
           ${TEXT_SCALES.map(
         (s) => `
@@ -2090,9 +2170,9 @@
         </div>`
     },
     colorTheme: {
-      block: true,
+      wide: true,
       html: `
-        <p id="ms-label-theme" class="ms-a11y-control-label">${STRINGS.panelThemeTitle}</p>
+        ${radioHead("ms-label-theme", STRINGS.panelThemeTitle, "colorTheme")}
         <div class="ms-theme-grid" role="radiogroup" aria-labelledby="ms-label-theme" data-option="colorTheme">
           ${COLOR_THEMES.map(
         (t) => `
@@ -2107,60 +2187,69 @@
         </div>`
     },
     dyslexiaFont: {
-      html: switchRow({
+      html: switchTile({
         option: "dyslexiaFont",
         title: STRINGS.panelDyslexiaTitle,
         label: STRINGS.panelDyslexiaLabel,
-        desc: STRINGS.panelDyslexiaDesc
+        desc: STRINGS.panelDyslexiaDesc,
+        icon: svgIcon(
+          '<path d="M4 19 10 5l6 14"/><path d="M6.5 14h7"/><path d="M19 9v10"/>'
+        )
       })
     },
     readingRuler: {
-      html: switchRow({
+      html: switchTile({
         option: "readingRuler",
         title: STRINGS.panelRulerTitle,
         label: STRINGS.panelRulerTitle,
-        desc: STRINGS.panelRulerDesc
+        desc: STRINGS.panelRulerDesc,
+        icon: svgIcon(
+          '<path d="M4 8h16"/><rect x="4" y="11" width="16" height="3" rx="1" fill="currentColor"/><path d="M4 18h16"/>'
+        )
       })
     },
     speak: {
-      html: `
-          <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text">
-              <strong>${STRINGS.panelVoiceTitle}</strong>
-              <p>${STRINGS.panelVoiceDesc}</p>
-            </div>
-            <button type="button" class="ms-btn-ouvir" data-action="speak" aria-label="${STRINGS.panelVoiceLabel}">
-              ${STRINGS.panelVoiceButton}
-            </button>
-          </li>`
+      html: `<button type="button" class="ms-btn-ouvir ms-tile" data-action="speak" aria-label="${STRINGS.panelVoiceLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>')}</span><span class="ms-tile-label" data-speak-text>${STRINGS.panelVoiceButton}</span></button>`
     },
     highlightLinks: {
-      html: switchRow({
+      html: switchTile({
         option: "highlightLinks",
         title: STRINGS.panelHighlightLinks,
-        label: STRINGS.panelHighlightLinks
+        label: STRINGS.panelHighlightLinks,
+        icon: svgIcon(
+          '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'
+        )
       })
     },
     textSpacing: {
-      html: switchRow({
+      html: switchTile({
         option: "textSpacing",
         title: STRINGS.panelTextSpacing,
-        label: STRINGS.panelTextSpacing
+        label: STRINGS.panelTextSpacing,
+        icon: svgIcon(
+          '<path d="M4 4v16"/><path d="M20 4v16"/><path d="m8 12h8"/><path d="m10 9-3 3 3 3"/><path d="m14 9 3 3-3 3"/>'
+        )
       })
     },
     reducedMotion: {
-      html: switchRow({
+      html: switchTile({
         option: "reducedMotion",
         title: STRINGS.panelReducedMotion,
-        label: STRINGS.panelReducedMotion
+        label: STRINGS.panelReducedMotion,
+        icon: svgIcon(
+          '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'
+        )
       })
     },
     hideImages: {
-      html: switchRow({
+      html: switchTile({
         option: "hideImages",
         title: STRINGS.panelHideImages,
         label: STRINGS.panelHideImages,
-        hint: STRINGS.panelHideImagesHint
+        desc: STRINGS.panelHideImagesHint,
+        icon: svgIcon(
+          '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>'
+        )
       })
     }
   };
@@ -2198,9 +2287,9 @@
   ];
   function renderSection(sec, index) {
     const open = index === 0;
-    const items = sec.controls.map((k) => CONTROLS[k]);
-    const blocks = items.filter((c) => c.block).map((c) => c.html);
-    const rows = items.filter((c) => !c.block).map((c) => c.html);
+    const blocks = sec.controls.map(
+      (k) => CONTROLS[k].wide ? `<div class="ms-a11y-block ms-a11y-block--wide">${CONTROLS[k].html}</div>` : CONTROLS[k].html
+    );
     return `
       <section class="ms-a11y-section" data-section-id="${sec.id}">
         <h3 class="ms-a11y-section-title">
@@ -2212,9 +2301,9 @@
           </button>
         </h3>
         <div class="ms-a11y-section-body" id="ms-sec-${sec.id}-body" role="region"
-          aria-labelledby="ms-sec-${sec.id}-btn"${open ? "" : " hidden"}>${blocks.join("")}${rows.length ? `
-        <ul class="ms-a11y-option-list">${rows.join("")}
-        </ul>` : ""}
+          aria-labelledby="ms-sec-${sec.id}-btn"${open ? "" : " hidden"}>
+          <div class="ms-a11y-grid">${blocks.join("")}
+          </div>
         </div>
       </section>`;
   }
@@ -2329,7 +2418,7 @@
     });
     panel.querySelector('[data-action="speak"]').addEventListener("click", () => onSpeak());
     function sync(s, ui = {}) {
-      var _a, _b;
+      var _a, _b, _c, _d;
       const modoBtn = panel.querySelector('[data-action="modo-simples"]');
       if (modoBtn) {
         modoBtn.setAttribute("aria-checked", String(!!s.modoSimples));
@@ -2363,13 +2452,28 @@
         const on = !!((_a2 = s.options) == null ? void 0 : _a2[key]);
         btn.setAttribute("aria-checked", String(on));
         btn.classList.toggle("ms-switch--on", on);
+        const st = btn.querySelector("[data-state]");
+        if (st) st.textContent = on ? STRINGS.stateOn : STRINGS.stateOff;
       });
+      const setState = (key, text) => {
+        const el = panel.querySelector(`[data-state-for="${key}"]`);
+        if (el) el.textContent = text;
+      };
+      const curScale = TEXT_SCALES.find((x) => x.value === scale);
+      setState(
+        "textScale",
+        curScale ? `${curScale.label} \xB7 ${curScale.title}` : `${scale}%`
+      );
+      setState(
+        "colorTheme",
+        (_d = (_c = COLOR_THEMES.find((x) => x.value === theme)) == null ? void 0 : _c.label) != null ? _d : theme
+      );
       const speakBtn = panel.querySelector('[data-action="speak"]');
       if (speakBtn && ui.speaking !== void 0) {
-        speakBtn.textContent = ui.speaking ? "Parar" : "Ouvir";
+        speakBtn.querySelector("[data-speak-text]").textContent = ui.speaking ? STRINGS.panelVoiceStopButton : STRINGS.panelVoiceButton;
         speakBtn.setAttribute(
           "aria-label",
-          ui.speaking ? "Parar leitura" : "Ouvir conte\xFAdo principal"
+          ui.speaking ? STRINGS.panelVoiceStopLabel : STRINGS.panelVoiceLabel
         );
       }
     }

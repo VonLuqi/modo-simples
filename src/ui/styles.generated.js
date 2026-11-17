@@ -307,13 +307,10 @@ export const UI_CSS = `
       padding: 0 calc(0.85 * var(--ms-u)) calc(0.75 * var(--ms-u));
     }
     .ms-a11y-control-label {
-      margin: 0 0 calc(0.5 * var(--ms-u));
+      margin: 0;
       font-size: calc(0.8125 * var(--ms-u));
       font-weight: 700;
       color: #1e293b;
-    }
-    .ms-a11y-section .ms-a11y-section-body > * + * {
-      margin-top: calc(0.75 * var(--ms-u));
     }
     @media (prefers-reduced-motion: reduce) {
       .ms-a11y-section-chevron {
@@ -480,6 +477,94 @@ export const UI_CSS = `
       outline: 2px solid var(--ms-orange);
       outline-offset: 2px;
     }
+
+    /* ── Grade de blocos (F6c): 3 colunas; radiogroups ocupam a linha inteira ── */
+    .ms-a11y-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(calc(5.4 * var(--ms-u)), 1fr));
+      gap: calc(0.5 * var(--ms-u));
+    }
+    .ms-a11y-block--wide { grid-column: 1 / -1; min-width: 0; }
+    .ms-a11y-control-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: calc(0.5 * var(--ms-u));
+      margin-bottom: calc(0.5 * var(--ms-u));
+    }
+    .ms-a11y-control-state {
+      font-size: calc(0.8125 * var(--ms-u));
+      font-weight: 700;
+      color: var(--ms-blue);
+      text-align: end;
+    }
+
+    .ms-switch.ms-tile,
+    .ms-btn-ouvir.ms-tile {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: calc(0.2 * var(--ms-u));
+      width: auto;
+      height: auto;
+      min-height: 44px;
+      padding: calc(0.6 * var(--ms-u)) calc(0.15 * var(--ms-u));
+      border: 2px solid #64748b;
+      border-radius: 10px;
+      background: #fff;
+      color: #1e293b;
+      font: inherit;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+    .ms-switch.ms-tile::after { content: none; }
+    .ms-tile-icon {
+      display: inline-flex;
+      font-size: calc(1.4 * var(--ms-u));
+    }
+    .ms-tile-label {
+      font-size: calc(0.8125 * var(--ms-u));
+      font-weight: 700;
+      line-height: 1.25;
+      overflow-wrap: break-word;
+      hyphens: auto;
+    }
+    .ms-tile-state {
+      font-size: calc(0.75 * var(--ms-u));
+      font-weight: 600;
+      color: #475569;
+    }
+    .ms-tile-check {
+      display: none;
+      position: absolute;
+      top: calc(0.25 * var(--ms-u));
+      right: calc(0.25 * var(--ms-u));
+      font-size: calc(0.9 * var(--ms-u));
+      color: var(--ms-blue);
+    }
+    /* Ligado: borda azul + fundo + ✓ + texto "Ligado" (nunca só cor) */
+    .ms-switch.ms-tile[aria-checked="true"] {
+      background: #e8f0fb;
+      border-color: var(--ms-blue);
+      box-shadow: 0 0 0 1px var(--ms-blue);
+    }
+    .ms-switch.ms-tile[aria-checked="true"] .ms-tile-state {
+      color: var(--ms-blue);
+    }
+    .ms-switch.ms-tile[aria-checked="true"] .ms-tile-check { display: inline-flex; }
+    .ms-switch.ms-tile:focus-visible,
+    .ms-btn-ouvir.ms-tile:focus-visible {
+      outline: 2px solid var(--ms-orange);
+      outline-offset: 2px;
+    }
+    .ms-btn-ouvir.ms-tile {
+      background: var(--ms-orange);
+      border-color: var(--ms-orange);
+      color: #1a1205;
+    }
+    .ms-btn-ouvir.ms-tile:hover { background: var(--ms-orange-dark); }
 
     .ms-btn-ouvir {
       flex-shrink: 0;

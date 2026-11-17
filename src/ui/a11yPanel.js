@@ -36,27 +36,25 @@ const svgIcon = (inner) =>
   `<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${inner}</svg>`;
 
 const CHEVRON = svgIcon('<path d="m6 9 6 6 6-6"/>');
+const CHECK = svgIcon('<path d="m5 12.5 4.5 4.5L19 7.5"/>');
 
-const switchRow = ({ option, title, label, desc, hint }) => `
-          <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text">
-              <strong>${title}</strong>${desc ? `\n              <p>${desc}</p>` : ''}${hint ? `\n              <span class="ms-a11y-option-hint">${hint}</span>` : ''}
-            </div>
-            <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="${option}" aria-label="${label}">
-              <span class="ms-switch-thumb"></span>
-            </button>
-          </li>`;
+// Sem espaços entre os filhos: o textContent do tile de fala vira só o rótulo ("Ouvir"/"Parar")
+// Estado (Ligado/Desligado) é aria-hidden: aria-checked já o anuncia; o nome não o repete.
+const switchTile = ({ option, title, label, desc, icon }) =>
+  `<button type="button" class="ms-switch ms-tile" role="switch" aria-checked="false" data-option="${option}" aria-label="${label}"${desc ? ` aria-describedby="ms-desc-${option}"` : ''}><span class="ms-tile-icon" aria-hidden="true">${icon}</span><span class="ms-tile-label">${title}</span><span class="ms-tile-state" data-state aria-hidden="true">${S.stateOff}</span><span class="ms-tile-check" aria-hidden="true">${CHECK}</span>${desc ? `<span id="ms-desc-${option}" hidden>${desc}</span>` : ''}</button>`;
+
+const radioHead = (id, title, option) =>
+  `<div class="ms-a11y-control-head"><p id="${id}" class="ms-a11y-control-label">${title}</p><span class="ms-a11y-control-state" data-state-for="${option}" aria-hidden="true"></span></div>`;
 
 /**
- * Controles do painel. `block` = fora da lista de switches (radiogroup com rótulo próprio);
- * os demais viram <li> da lista da seção. A ordem vem de SECTIONS[].controls.
+ * Controles do painel, em blocos de uma grade de 3 colunas. `wide` = linha inteira
+ * (radiogroup com texto de estado); os demais são tiles. A ordem vem de SECTIONS[].controls.
  */
 const CONTROLS = {
   textScale: {
-    block: true,
+    wide: true,
     html: `
-        <p id="ms-label-text" class="ms-a11y-control-label">${S.panelTextSizeTitle}</p>
+        ${radioHead('ms-label-text', S.panelTextSizeTitle, 'textScale')}
         <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-text" data-option="textScale">
           ${TEXT_SCALES.map(
             (s) => `
@@ -69,9 +67,9 @@ const CONTROLS = {
         </div>`,
   },
   colorTheme: {
-    block: true,
+    wide: true,
     html: `
-        <p id="ms-label-theme" class="ms-a11y-control-label">${S.panelThemeTitle}</p>
+        ${radioHead('ms-label-theme', S.panelThemeTitle, 'colorTheme')}
         <div class="ms-theme-grid" role="radiogroup" aria-labelledby="ms-label-theme" data-option="colorTheme">
           ${COLOR_THEMES.map(
             (t) => `
@@ -86,60 +84,69 @@ const CONTROLS = {
         </div>`,
   },
   dyslexiaFont: {
-    html: switchRow({
+    html: switchTile({
       option: 'dyslexiaFont',
       title: S.panelDyslexiaTitle,
       label: S.panelDyslexiaLabel,
       desc: S.panelDyslexiaDesc,
+      icon: svgIcon(
+        '<path d="M4 19 10 5l6 14"/><path d="M6.5 14h7"/><path d="M19 9v10"/>',
+      ),
     }),
   },
   readingRuler: {
-    html: switchRow({
+    html: switchTile({
       option: 'readingRuler',
       title: S.panelRulerTitle,
       label: S.panelRulerTitle,
       desc: S.panelRulerDesc,
+      icon: svgIcon(
+        '<path d="M4 8h16"/><rect x="4" y="11" width="16" height="3" rx="1" fill="currentColor"/><path d="M4 18h16"/>',
+      ),
     }),
   },
   speak: {
-    html: `
-          <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text">
-              <strong>${S.panelVoiceTitle}</strong>
-              <p>${S.panelVoiceDesc}</p>
-            </div>
-            <button type="button" class="ms-btn-ouvir" data-action="speak" aria-label="${S.panelVoiceLabel}">
-              ${S.panelVoiceButton}
-            </button>
-          </li>`,
+    html: `<button type="button" class="ms-btn-ouvir ms-tile" data-action="speak" aria-label="${S.panelVoiceLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>')}</span><span class="ms-tile-label" data-speak-text>${S.panelVoiceButton}</span></button>`,
   },
   highlightLinks: {
-    html: switchRow({
+    html: switchTile({
       option: 'highlightLinks',
       title: S.panelHighlightLinks,
       label: S.panelHighlightLinks,
+      icon: svgIcon(
+        '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+      ),
     }),
   },
   textSpacing: {
-    html: switchRow({
+    html: switchTile({
       option: 'textSpacing',
       title: S.panelTextSpacing,
       label: S.panelTextSpacing,
+      icon: svgIcon(
+        '<path d="M4 4v16"/><path d="M20 4v16"/><path d="m8 12h8"/><path d="m10 9-3 3 3 3"/><path d="m14 9 3 3-3 3"/>',
+      ),
     }),
   },
   reducedMotion: {
-    html: switchRow({
+    html: switchTile({
       option: 'reducedMotion',
       title: S.panelReducedMotion,
       label: S.panelReducedMotion,
+      icon: svgIcon(
+        '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>',
+      ),
     }),
   },
   hideImages: {
-    html: switchRow({
+    html: switchTile({
       option: 'hideImages',
       title: S.panelHideImages,
       label: S.panelHideImages,
-      hint: S.panelHideImagesHint,
+      desc: S.panelHideImagesHint,
+      icon: svgIcon(
+        '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>',
+      ),
     }),
   },
 };
@@ -183,9 +190,11 @@ const SECTIONS = [
 
 function renderSection(sec, index) {
   const open = index === 0;
-  const items = sec.controls.map((k) => CONTROLS[k]);
-  const blocks = items.filter((c) => c.block).map((c) => c.html);
-  const rows = items.filter((c) => !c.block).map((c) => c.html);
+  const blocks = sec.controls.map((k) =>
+    CONTROLS[k].wide
+      ? `<div class="ms-a11y-block ms-a11y-block--wide">${CONTROLS[k].html}</div>`
+      : CONTROLS[k].html,
+  );
   return `
       <section class="ms-a11y-section" data-section-id="${sec.id}">
         <h3 class="ms-a11y-section-title">
@@ -197,13 +206,9 @@ function renderSection(sec, index) {
           </button>
         </h3>
         <div class="ms-a11y-section-body" id="ms-sec-${sec.id}-body" role="region"
-          aria-labelledby="ms-sec-${sec.id}-btn"${open ? '' : ' hidden'}>${blocks.join('')}${
-            rows.length
-              ? `
-        <ul class="ms-a11y-option-list">${rows.join('')}
-        </ul>`
-              : ''
-          }
+          aria-labelledby="ms-sec-${sec.id}-btn"${open ? '' : ' hidden'}>
+          <div class="ms-a11y-grid">${blocks.join('')}
+          </div>
         </div>
       </section>`;
 }
@@ -398,14 +403,33 @@ export function createA11yPanel({
       const on = !!s.options?.[key];
       btn.setAttribute('aria-checked', String(on));
       btn.classList.toggle('ms-switch--on', on);
+      const st = btn.querySelector('[data-state]');
+      if (st) st.textContent = on ? S.stateOn : S.stateOff;
     });
+
+    // Texto de estado dos radiogroups (valor atual); aria-hidden: aria-checked já o anuncia
+    const setState = (key, text) => {
+      const el = panel.querySelector(`[data-state-for="${key}"]`);
+      if (el) el.textContent = text;
+    };
+    const curScale = TEXT_SCALES.find((x) => x.value === scale);
+    setState(
+      'textScale',
+      curScale ? `${curScale.label} · ${curScale.title}` : `${scale}%`,
+    );
+    setState(
+      'colorTheme',
+      COLOR_THEMES.find((x) => x.value === theme)?.label ?? theme,
+    );
 
     const speakBtn = panel.querySelector('[data-action="speak"]');
     if (speakBtn && ui.speaking !== undefined) {
-      speakBtn.textContent = ui.speaking ? 'Parar' : 'Ouvir';
+      speakBtn.querySelector('[data-speak-text]').textContent = ui.speaking
+        ? S.panelVoiceStopButton
+        : S.panelVoiceButton;
       speakBtn.setAttribute(
         'aria-label',
-        ui.speaking ? 'Parar leitura' : 'Ouvir conteúdo principal',
+        ui.speaking ? S.panelVoiceStopLabel : S.panelVoiceLabel,
       );
     }
   }
