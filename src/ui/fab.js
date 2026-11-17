@@ -6,6 +6,7 @@
  */
 
 import persistence from '../core/persistence.js';
+import { STRINGS as S } from './strings.js';
 
 const TIP_SEEN_KEY = 'fabTipSeen';
 
@@ -25,7 +26,7 @@ export function createFab({ onClick }) {
   const tip = document.createElement('span');
   tip.className = 'ms-fab-tip';
   tip.id = 'ms-fab-tip';
-  tip.textContent = 'Acessibilidade & Modo Simples';
+  tip.textContent = S.fabTip;
   tip.setAttribute('aria-hidden', 'true');
 
   // UX-08: a dica aparece só na primeira visita; some sozinha após 6s (animação CSS)
@@ -48,7 +49,7 @@ export function createFab({ onClick }) {
   btn.setAttribute('aria-expanded', 'false');
   btn.setAttribute('aria-controls', 'ms-a11y-panel');
   btn.setAttribute('aria-haspopup', 'dialog');
-  btn.setAttribute('aria-label', 'Abrir painel de acessibilidade');
+  btn.setAttribute('aria-label', S.fabOpenLabel);
 
   const iconOpen = `
     <svg class="ms-fab-icon ms-fab-icon--open" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" focusable="false">
@@ -82,9 +83,7 @@ export function createFab({ onClick }) {
     btn.setAttribute('aria-expanded', String(panelOpen));
     btn.setAttribute(
       'aria-label',
-      panelOpen
-        ? 'Fechar painel de acessibilidade'
-        : 'Abrir painel de acessibilidade',
+      panelOpen ? S.fabCloseLabel : S.fabOpenLabel,
     );
     btn.classList.toggle('ms-fab--open', panelOpen);
     wrap.classList.toggle('ms-fab-wrap--open', panelOpen);

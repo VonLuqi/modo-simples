@@ -196,7 +196,9 @@ describe('escaping (Q14): strings de config/host nunca viram HTML', () => {
       const blocos = src.match(/innerHTML\s*=\s*`[\s\S]*?`/g) || [];
       for (const bloco of blocos) {
         for (const m of bloco.matchAll(/\$\{([^}]+)\}/g)) {
-          if (!permitidas.has(m[1].trim()))
+          // S.<chave>: constantes estáticas de ui/strings.js (F6a)
+          const expr = m[1].trim();
+          if (!permitidas.has(expr) && !/^S\.\w+$/.test(expr))
             offenders.push(`${file}: \${${m[1]}}`);
         }
       }

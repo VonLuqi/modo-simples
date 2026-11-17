@@ -1810,6 +1810,82 @@
     return PAGE_CSS;
   }
 
+  // src/ui/strings.js
+  var STRINGS = Object.freeze({
+    // fab.js
+    fabTip: "Acessibilidade & Modo Simples",
+    fabOpenLabel: "Abrir painel de acessibilidade",
+    fabCloseLabel: "Fechar painel de acessibilidade",
+    // a11yPanel.js
+    panelCloseLabel: "Fechar painel de acessibilidade",
+    panelSimpleTitle: "Modo Simples (Recomendado)",
+    panelSimpleDesc: "Oculta distra\xE7\xF5es visuais, aumenta bot\xF5es e resume conte\xFAdos essenciais.",
+    panelSimpleSwitchLabel: "Modo Simples",
+    panelTextSizeTitle: "Tamanho do texto",
+    panelTextSizeItemLabel: "Tamanho do texto",
+    panelThemeTitle: "Contraste e cores",
+    panelThemeItemLabel: "Tema",
+    panelCognitiveTitle: "Aux\xEDlio cognitivo &amp; TDAH",
+    panelDyslexiaTitle: "Fonte Acess\xEDvel (Lexend)",
+    panelDyslexiaDesc: "Desenvolvida para dislexia e agilidade visual",
+    panelDyslexiaLabel: "Fonte Acess\xEDvel Lexend",
+    panelRulerTitle: "R\xE9gua de Foco de Leitura",
+    panelRulerDesc: "Destaque linha a linha para guiar a aten\xE7\xE3o",
+    panelVoiceTitle: "Leitor de Tela por Voz",
+    panelVoiceDesc: "L\xEA os t\xEDtulos e textos em portugu\xEAs",
+    panelVoiceLabel: "Ouvir conte\xFAdo principal",
+    panelVoiceButton: "Ouvir",
+    panelMoreTitle: "Mais op\xE7\xF5es",
+    panelHighlightLinks: "Destacar links",
+    panelTextSpacing: "Espa\xE7amento de texto",
+    panelReducedMotion: "Reduzir movimento",
+    panelHideImages: "Ocultar imagens",
+    panelHideImagesHint: "No Modo Simples, imagens somem por padr\xE3o \u2014 desligue para manter",
+    panelDefaultTitle: "Acessibilidade Digital",
+    panelDefaultFooter: "Prefer\xEAncias salvas neste navegador",
+    scaleDefault: "Padr\xE3o",
+    scaleLarge: "Grande",
+    scaleLarger: "Maior",
+    scaleMax: "M\xE1ximo",
+    themeSite: "Cores do site",
+    themeSiteSub: "Padr\xE3o",
+    themeYellowBlack: "Amarelo e Preto",
+    themeYellowBlackSub: "Alto contraste",
+    themeDarkHigh: "Modo Escuro Alto",
+    themeDarkHighSub: "Fundo escuro",
+    themeSoft: "Descanso / Suave",
+    themeSoftSub: "Baixa intensidade",
+    // sessionChrome.js
+    sessionOpenPanelLabel: "Abrir painel de acessibilidade",
+    sessionOpenPanelTitle: "Acessibilidade",
+    sessionBrand: "SIMPLES",
+    sessionSubOff: "Acessibilidade Cognitiva",
+    sessionSubOn: "Interface Simplificada",
+    sessionSwitchLabel: "Modo Simples",
+    sessionBarLabel: "Modo Simples",
+    sessionOffPrompt: "Quer uma navega\xE7\xE3o mais calma, direta e sem excesso de informa\xE7\xE3o?",
+    sessionActivate: "Ativar Modo Simples",
+    sessionOnTitle: "Modo Simples",
+    sessionOnSrSuffix: " ativado",
+    sessionBadge: "Foco na Navega\xE7\xE3o",
+    sessionDescSimple: "Exibindo explica\xE7\xF5es em palavras f\xE1ceis, sem termos complicados.",
+    sessionDescCalm: "Navega\xE7\xE3o mais calma, com bot\xF5es claros e menos distra\xE7\xF5es.",
+    sessionSpeakLabel: "Ouvir p\xE1gina",
+    sessionSpeakText: "Ouvir P\xE1gina",
+    sessionStopLabel: "Parar leitura da p\xE1gina",
+    sessionStopText: "Parar Voz",
+    sessionLangPre: "Linguagem ",
+    sessionLangMain: "Simples",
+    sessionLangOn: "LIGADA",
+    sessionLangOff: "DESLIGADA",
+    sessionLangUnavailable: "Indispon\xEDvel nesta p\xE1gina",
+    sessionImages: "Imagens",
+    sessionImagesHidden: "OCULTAS",
+    sessionImagesVisible: "VIS\xCDVEIS",
+    sessionExit: "Voltar",
+    sessionExitPost: " ao site normal"
+  });
+
   // src/ui/fab.js
   var TIP_SEEN_KEY = "fabTipSeen";
   function createFab({ onClick }) {
@@ -1819,7 +1895,7 @@
     const tip = document.createElement("span");
     tip.className = "ms-fab-tip";
     tip.id = "ms-fab-tip";
-    tip.textContent = "Acessibilidade & Modo Simples";
+    tip.textContent = STRINGS.fabTip;
     tip.setAttribute("aria-hidden", "true");
     function dismissTip() {
       tip.hidden = true;
@@ -1837,7 +1913,7 @@
     btn.setAttribute("aria-expanded", "false");
     btn.setAttribute("aria-controls", "ms-a11y-panel");
     btn.setAttribute("aria-haspopup", "dialog");
-    btn.setAttribute("aria-label", "Abrir painel de acessibilidade");
+    btn.setAttribute("aria-label", STRINGS.fabOpenLabel);
     const iconOpen = `
     <svg class="ms-fab-icon ms-fab-icon--open" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" focusable="false">
       <line x1="4" y1="6" x2="20" y2="6"/>
@@ -1862,7 +1938,7 @@
       btn.setAttribute("aria-expanded", String(panelOpen));
       btn.setAttribute(
         "aria-label",
-        panelOpen ? "Fechar painel de acessibilidade" : "Abrir painel de acessibilidade"
+        panelOpen ? STRINGS.fabCloseLabel : STRINGS.fabOpenLabel
       );
       btn.classList.toggle("ms-fab--open", panelOpen);
       wrap.classList.toggle("ms-fab-wrap--open", panelOpen);
@@ -1919,21 +1995,25 @@
 
   // src/ui/a11yPanel.js
   var TEXT_SCALES = [
-    { value: "100", label: "100%", title: "Padr\xE3o" },
-    { value: "125", label: "125%", title: "Grande" },
-    { value: "150", label: "150%", title: "Maior" },
-    { value: "175", label: "175%", title: "M\xE1ximo" }
+    { value: "100", label: "100%", title: STRINGS.scaleDefault },
+    { value: "125", label: "125%", title: STRINGS.scaleLarge },
+    { value: "150", label: "150%", title: STRINGS.scaleLarger },
+    { value: "175", label: "175%", title: STRINGS.scaleMax }
   ];
   var DEFAULT_BRAND = {
-    title: "Acessibilidade Digital",
+    title: STRINGS.panelDefaultTitle,
     subtitle: "",
-    footer: "Prefer\xEAncias salvas neste navegador"
+    footer: STRINGS.panelDefaultFooter
   };
   var COLOR_THEMES = [
-    { value: "senac", label: "Cores do site", sub: "Padr\xE3o" },
-    { value: "yellowBlack", label: "Amarelo e Preto", sub: "Alto contraste" },
-    { value: "darkHigh", label: "Modo Escuro Alto", sub: "Fundo escuro" },
-    { value: "soft", label: "Descanso / Suave", sub: "Baixa intensidade" }
+    { value: "senac", label: STRINGS.themeSite, sub: STRINGS.themeSiteSub },
+    {
+      value: "yellowBlack",
+      label: STRINGS.themeYellowBlack,
+      sub: STRINGS.themeYellowBlackSub
+    },
+    { value: "darkHigh", label: STRINGS.themeDarkHigh, sub: STRINGS.themeDarkHighSub },
+    { value: "soft", label: STRINGS.themeSoft, sub: STRINGS.themeSoftSub }
   ];
   function createA11yPanel({
     state: state2,
@@ -1962,7 +2042,7 @@
         <h2 id="ms-a11y-title"></h2>
         <p class="ms-a11y-subtitle"></p>
       </div>
-      <button type="button" class="ms-a11y-close" aria-label="Fechar painel de acessibilidade">
+      <button type="button" class="ms-a11y-close" aria-label="${STRINGS.panelCloseLabel}">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
           <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
         </svg>
@@ -1974,11 +2054,11 @@
         <div class="ms-a11y-card-row">
           <div class="ms-a11y-card-text">
             <span class="ms-a11y-card-star" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
-            <strong>Modo Simples (Recomendado)</strong>
-            <p>Oculta distra\xE7\xF5es visuais, aumenta bot\xF5es e resume conte\xFAdos essenciais.</p>
+            <strong>${STRINGS.panelSimpleTitle}</strong>
+            <p>${STRINGS.panelSimpleDesc}</p>
           </div>
           <button type="button" class="ms-switch" role="switch" aria-checked="false"
-            data-action="modo-simples" aria-label="Modo Simples">
+            data-action="modo-simples" aria-label="${STRINGS.panelSimpleSwitchLabel}">
             <span class="ms-switch-thumb"></span>
           </button>
         </div>
@@ -1986,14 +2066,14 @@
 
       <section class="ms-a11y-section" aria-labelledby="ms-label-text">
         <h3 id="ms-label-text" class="ms-a11y-section-title">
-          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg></span> Tamanho do texto
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg></span> ${STRINGS.panelTextSizeTitle}
         </h3>
         <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-text" data-option="textScale">
           ${TEXT_SCALES.map(
       (s) => `
             <button type="button" role="radio" class="ms-segment"
               data-value="${s.value}" aria-checked="false"
-              aria-label="Tamanho do texto ${s.label} \u2014 ${s.title}" title="${s.title}">
+              aria-label="${STRINGS.panelTextSizeItemLabel} ${s.label} \u2014 ${s.title}" title="${s.title}">
               ${s.label}
             </button>`
     ).join("")}
@@ -2002,14 +2082,14 @@
 
       <section class="ms-a11y-section" aria-labelledby="ms-label-theme">
         <h3 id="ms-label-theme" class="ms-a11y-section-title">
-          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg></span> Contraste e cores
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg></span> ${STRINGS.panelThemeTitle}
         </h3>
         <div class="ms-theme-grid" role="radiogroup" aria-labelledby="ms-label-theme" data-option="colorTheme">
           ${COLOR_THEMES.map(
       (t) => `
             <button type="button" role="radio" class="ms-theme-btn ms-theme-btn--${t.value}"
               data-value="${t.value}" aria-checked="false"
-              aria-label="Tema ${t.label} \u2014 ${t.sub}">
+              aria-label="${STRINGS.panelThemeItemLabel} ${t.label} \u2014 ${t.sub}">
               <span class="ms-theme-swatch" aria-hidden="true"></span>
               <span class="ms-theme-label">${t.label}</span>
               <span class="ms-theme-sub">${t.sub}</span>
@@ -2020,72 +2100,72 @@
 
       <section class="ms-a11y-section" aria-labelledby="ms-label-cognitive">
         <h3 id="ms-label-cognitive" class="ms-a11y-section-title">
-          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10h16"/><path d="M10 10v10"/></svg></span> Aux\xEDlio cognitivo &amp; TDAH
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10h16"/><path d="M10 10v10"/></svg></span> ${STRINGS.panelCognitiveTitle}
         </h3>
         <ul class="ms-a11y-option-list">
           <li class="ms-a11y-option-row">
             <div class="ms-a11y-option-text">
-              <strong>Fonte Acess\xEDvel (Lexend)</strong>
-              <p>Desenvolvida para dislexia e agilidade visual</p>
+              <strong>${STRINGS.panelDyslexiaTitle}</strong>
+              <p>${STRINGS.panelDyslexiaDesc}</p>
             </div>
             <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="dyslexiaFont" aria-label="Fonte Acess\xEDvel Lexend">
+              data-option="dyslexiaFont" aria-label="${STRINGS.panelDyslexiaLabel}">
               <span class="ms-switch-thumb"></span>
             </button>
           </li>
           <li class="ms-a11y-option-row">
             <div class="ms-a11y-option-text">
-              <strong>R\xE9gua de Foco de Leitura</strong>
-              <p>Destaque linha a linha para guiar a aten\xE7\xE3o</p>
+              <strong>${STRINGS.panelRulerTitle}</strong>
+              <p>${STRINGS.panelRulerDesc}</p>
             </div>
             <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="readingRuler" aria-label="R\xE9gua de Foco de Leitura">
+              data-option="readingRuler" aria-label="${STRINGS.panelRulerTitle}">
               <span class="ms-switch-thumb"></span>
             </button>
           </li>
           <li class="ms-a11y-option-row">
             <div class="ms-a11y-option-text">
-              <strong>Leitor de Tela por Voz</strong>
-              <p>L\xEA os t\xEDtulos e textos em portugu\xEAs</p>
+              <strong>${STRINGS.panelVoiceTitle}</strong>
+              <p>${STRINGS.panelVoiceDesc}</p>
             </div>
-            <button type="button" class="ms-btn-ouvir" data-action="speak" aria-label="Ouvir conte\xFAdo principal">
-              Ouvir
+            <button type="button" class="ms-btn-ouvir" data-action="speak" aria-label="${STRINGS.panelVoiceLabel}">
+              ${STRINGS.panelVoiceButton}
             </button>
           </li>
         </ul>
       </section>
 
       <section class="ms-a11y-section" aria-labelledby="ms-label-more">
-        <h3 id="ms-label-more" class="ms-a11y-section-title">Mais op\xE7\xF5es</h3>
+        <h3 id="ms-label-more" class="ms-a11y-section-title">${STRINGS.panelMoreTitle}</h3>
         <ul class="ms-a11y-option-list">
           <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text"><strong>Destacar links</strong></div>
+            <div class="ms-a11y-option-text"><strong>${STRINGS.panelHighlightLinks}</strong></div>
             <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="highlightLinks" aria-label="Destacar links">
+              data-option="highlightLinks" aria-label="${STRINGS.panelHighlightLinks}">
               <span class="ms-switch-thumb"></span>
             </button>
           </li>
           <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text"><strong>Espa\xE7amento de texto</strong></div>
+            <div class="ms-a11y-option-text"><strong>${STRINGS.panelTextSpacing}</strong></div>
             <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="textSpacing" aria-label="Espa\xE7amento de texto">
+              data-option="textSpacing" aria-label="${STRINGS.panelTextSpacing}">
               <span class="ms-switch-thumb"></span>
             </button>
           </li>
           <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text"><strong>Reduzir movimento</strong></div>
+            <div class="ms-a11y-option-text"><strong>${STRINGS.panelReducedMotion}</strong></div>
             <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="reducedMotion" aria-label="Reduzir movimento">
+              data-option="reducedMotion" aria-label="${STRINGS.panelReducedMotion}">
               <span class="ms-switch-thumb"></span>
             </button>
           </li>
           <li class="ms-a11y-option-row">
             <div class="ms-a11y-option-text">
-              <strong>Ocultar imagens</strong>
-              <span class="ms-a11y-option-hint">No Modo Simples, imagens somem por padr\xE3o \u2014 desligue para manter</span>
+              <strong>${STRINGS.panelHideImages}</strong>
+              <span class="ms-a11y-option-hint">${STRINGS.panelHideImagesHint}</span>
             </div>
             <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="hideImages" aria-label="Ocultar imagens">
+              data-option="hideImages" aria-label="${STRINGS.panelHideImages}">
               <span class="ms-switch-thumb"></span>
             </button>
           </li>
@@ -2231,17 +2311,17 @@
     chrome.innerHTML = `
     <div class="ms-simples-chrome-inner">
       <button type="button" class="ms-chrome-icon" data-action="open-panel"
-        aria-label="Abrir painel de acessibilidade" title="Acessibilidade">
+        aria-label="${STRINGS.sessionOpenPanelLabel}" title="${STRINGS.sessionOpenPanelTitle}">
         ${SLIDERS_ICON}
       </button>
       <div class="ms-simples-toggle-wrap" data-active="false">
         <span class="ms-simples-spark" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
         <div class="ms-simples-toggle-text">
-          <strong>SIMPLES</strong>
-          <span class="ms-simples-sub" data-sub>Acessibilidade Cognitiva</span>
+          <strong>${STRINGS.sessionBrand}</strong>
+          <span class="ms-simples-sub" data-sub>${STRINGS.sessionSubOff}</span>
         </div>
         <button type="button" class="ms-switch ms-chrome-switch" role="switch" aria-checked="false"
-          data-action="toggle-simples" aria-label="Modo Simples">
+          data-action="toggle-simples" aria-label="${STRINGS.sessionSwitchLabel}">
           <span class="ms-switch-thumb"></span>
         </button>
       </div>
@@ -2251,35 +2331,35 @@
     bar.id = "ms-session-bar";
     bar.className = "ms-session-bar";
     bar.setAttribute("role", "region");
-    bar.setAttribute("aria-label", "Modo Simples");
+    bar.setAttribute("aria-label", STRINGS.sessionBarLabel);
     bar.innerHTML = `
     <div class="ms-session-bar-inner" data-state="off">
       <div class="ms-session-off">
-        <p><span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span> Quer uma navega\xE7\xE3o mais calma, direta e sem excesso de informa\xE7\xE3o?</p>
-        <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="activate">Ativar Modo Simples</button>
+        <p><span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span> ${STRINGS.sessionOffPrompt}</p>
+        <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="activate">${STRINGS.sessionActivate}</button>
       </div>
       <div class="ms-session-on" hidden>
         <div class="ms-session-on-top">
           <div class="ms-session-on-title" tabindex="-1">
             <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
-            <strong>Modo Simples<span class="ms-sr-only"> ativado</span></strong>
-            <span class="ms-session-badge">Foco na Navega\xE7\xE3o</span>
+            <strong>${STRINGS.sessionOnTitle}<span class="ms-sr-only">${STRINGS.sessionOnSrSuffix}</span></strong>
+            <span class="ms-session-badge">${STRINGS.sessionBadge}</span>
           </div>
           <p class="ms-session-desc" data-session-desc>
-            Exibindo explica\xE7\xF5es em palavras f\xE1ceis, sem termos complicados.
+            ${STRINGS.sessionDescSimple}
           </p>
         </div>
         <div class="ms-session-actions">
-          <button type="button" class="ms-session-btn ms-session-btn--light" data-action="speak" aria-label="Ouvir p\xE1gina">
-            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></span> <span data-speak-label>Ouvir P\xE1gina</span>
+          <button type="button" class="ms-session-btn ms-session-btn--light" data-action="speak" aria-label="${STRINGS.sessionSpeakLabel}">
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></span> <span data-speak-label>${STRINGS.sessionSpeakText}</span>
           </button>
           <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="lang" aria-pressed="false">
-            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg></span> <span class="ms-btn-pre">Linguagem </span>Simples<span class="ms-btn-post">: <span data-lang-label aria-hidden="true">DESLIGADA</span></span>
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg></span> <span class="ms-btn-pre">${STRINGS.sessionLangPre}</span>${STRINGS.sessionLangMain}<span class="ms-btn-post">: <span data-lang-label aria-hidden="true">${STRINGS.sessionLangOff}</span></span>
           </button>
           <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="images" aria-pressed="false">
-            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/></svg></span> Imagens<span class="ms-btn-post">: <span data-images-label aria-hidden="true">OCULTAS</span></span>
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/></svg></span> ${STRINGS.sessionImages}<span class="ms-btn-post">: <span data-images-label aria-hidden="true">${STRINGS.sessionImagesHidden}</span></span>
           </button>
-          <button type="button" class="ms-session-btn ms-session-btn--light" data-action="exit">Voltar<span class="ms-btn-post"> ao site normal</span></button>
+          <button type="button" class="ms-session-btn ms-session-btn--light" data-action="exit">${STRINGS.sessionExit}<span class="ms-btn-post">${STRINGS.sessionExitPost}</span></button>
         </div>
       </div>
     </div>
@@ -2327,8 +2407,7 @@
         sw.classList.toggle("ms-switch--on", on);
       }
       if (wrap) wrap.setAttribute("data-active", String(on));
-      if (sub)
-        sub.textContent = on ? "Interface Simplificada" : "Acessibilidade Cognitiva";
+      if (sub) sub.textContent = on ? STRINGS.sessionSubOn : STRINGS.sessionSubOff;
       _placeChrome(chrome, on, mount);
       const inner = bar.querySelector(".ms-session-bar-inner");
       const off = bar.querySelector(".ms-session-off");
@@ -2348,10 +2427,10 @@
       }
       if (langLabel) {
         langLabel.setAttribute("aria-hidden", String(langAvailable));
-        langLabel.textContent = !langAvailable ? "Indispon\xEDvel nesta p\xE1gina" : langOn ? "LIGADA" : "DESLIGADA";
+        langLabel.textContent = !langAvailable ? STRINGS.sessionLangUnavailable : langOn ? STRINGS.sessionLangOn : STRINGS.sessionLangOff;
       }
       if (desc) {
-        desc.textContent = langOn ? "Exibindo explica\xE7\xF5es em palavras f\xE1ceis, sem termos complicados." : "Navega\xE7\xE3o mais calma, com bot\xF5es claros e menos distra\xE7\xF5es.";
+        desc.textContent = langOn ? STRINGS.sessionDescSimple : STRINGS.sessionDescCalm;
       }
       const hideImgs = !!((_b = s.options) == null ? void 0 : _b.hideImages);
       const imgBtn = bar.querySelector('[data-action="images"]');
@@ -2360,7 +2439,8 @@
         imgBtn.setAttribute("aria-pressed", String(!hideImgs));
         imgBtn.classList.toggle("ms-session-btn--active", !hideImgs);
       }
-      if (imgLabel) imgLabel.textContent = hideImgs ? "OCULTAS" : "VIS\xCDVEIS";
+      if (imgLabel)
+        imgLabel.textContent = hideImgs ? STRINGS.sessionImagesHidden : STRINGS.sessionImagesVisible;
       if (ui.speaking !== void 0) {
         const speakBtn = bar.querySelector('[data-action="speak"]');
         const speakLabel = bar.querySelector("[data-speak-label]");
@@ -2368,11 +2448,11 @@
           speakBtn.classList.toggle("ms-session-btn--speaking", ui.speaking);
           speakBtn.setAttribute(
             "aria-label",
-            ui.speaking ? "Parar leitura da p\xE1gina" : "Ouvir p\xE1gina"
+            ui.speaking ? STRINGS.sessionStopLabel : STRINGS.sessionSpeakLabel
           );
         }
         if (speakLabel)
-          speakLabel.textContent = ui.speaking ? "Parar Voz" : "Ouvir P\xE1gina";
+          speakLabel.textContent = ui.speaking ? STRINGS.sessionStopText : STRINGS.sessionSpeakText;
       }
     }
     function destroy() {

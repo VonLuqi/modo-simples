@@ -6,6 +6,7 @@
  */
 
 import { hasSimpleLanguagePairs } from '../utils/simpleLanguage.js';
+import { STRINGS as S } from './strings.js';
 
 const SLIDERS_ICON = `
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" focusable="false">
@@ -46,17 +47,17 @@ export function createSessionChrome({
   chrome.innerHTML = `
     <div class="ms-simples-chrome-inner">
       <button type="button" class="ms-chrome-icon" data-action="open-panel"
-        aria-label="Abrir painel de acessibilidade" title="Acessibilidade">
+        aria-label="${S.sessionOpenPanelLabel}" title="${S.sessionOpenPanelTitle}">
         ${SLIDERS_ICON}
       </button>
       <div class="ms-simples-toggle-wrap" data-active="false">
         <span class="ms-simples-spark" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
         <div class="ms-simples-toggle-text">
-          <strong>SIMPLES</strong>
-          <span class="ms-simples-sub" data-sub>Acessibilidade Cognitiva</span>
+          <strong>${S.sessionBrand}</strong>
+          <span class="ms-simples-sub" data-sub>${S.sessionSubOff}</span>
         </div>
         <button type="button" class="ms-switch ms-chrome-switch" role="switch" aria-checked="false"
-          data-action="toggle-simples" aria-label="Modo Simples">
+          data-action="toggle-simples" aria-label="${S.sessionSwitchLabel}">
           <span class="ms-switch-thumb"></span>
         </button>
       </div>
@@ -67,35 +68,35 @@ export function createSessionChrome({
   bar.id = 'ms-session-bar';
   bar.className = 'ms-session-bar';
   bar.setAttribute('role', 'region');
-  bar.setAttribute('aria-label', 'Modo Simples');
+  bar.setAttribute('aria-label', S.sessionBarLabel);
   bar.innerHTML = `
     <div class="ms-session-bar-inner" data-state="off">
       <div class="ms-session-off">
-        <p><span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span> Quer uma navegação mais calma, direta e sem excesso de informação?</p>
-        <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="activate">Ativar Modo Simples</button>
+        <p><span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span> ${S.sessionOffPrompt}</p>
+        <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="activate">${S.sessionActivate}</button>
       </div>
       <div class="ms-session-on" hidden>
         <div class="ms-session-on-top">
           <div class="ms-session-on-title" tabindex="-1">
             <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
-            <strong>Modo Simples<span class="ms-sr-only"> ativado</span></strong>
-            <span class="ms-session-badge">Foco na Navegação</span>
+            <strong>${S.sessionOnTitle}<span class="ms-sr-only">${S.sessionOnSrSuffix}</span></strong>
+            <span class="ms-session-badge">${S.sessionBadge}</span>
           </div>
           <p class="ms-session-desc" data-session-desc>
-            Exibindo explicações em palavras fáceis, sem termos complicados.
+            ${S.sessionDescSimple}
           </p>
         </div>
         <div class="ms-session-actions">
-          <button type="button" class="ms-session-btn ms-session-btn--light" data-action="speak" aria-label="Ouvir página">
-            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></span> <span data-speak-label>Ouvir Página</span>
+          <button type="button" class="ms-session-btn ms-session-btn--light" data-action="speak" aria-label="${S.sessionSpeakLabel}">
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></span> <span data-speak-label>${S.sessionSpeakText}</span>
           </button>
           <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="lang" aria-pressed="false">
-            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg></span> <span class="ms-btn-pre">Linguagem </span>Simples<span class="ms-btn-post">: <span data-lang-label aria-hidden="true">DESLIGADA</span></span>
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg></span> <span class="ms-btn-pre">${S.sessionLangPre}</span>${S.sessionLangMain}<span class="ms-btn-post">: <span data-lang-label aria-hidden="true">${S.sessionLangOff}</span></span>
           </button>
           <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="images" aria-pressed="false">
-            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/></svg></span> Imagens<span class="ms-btn-post">: <span data-images-label aria-hidden="true">OCULTAS</span></span>
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/></svg></span> ${S.sessionImages}<span class="ms-btn-post">: <span data-images-label aria-hidden="true">${S.sessionImagesHidden}</span></span>
           </button>
-          <button type="button" class="ms-session-btn ms-session-btn--light" data-action="exit">Voltar<span class="ms-btn-post"> ao site normal</span></button>
+          <button type="button" class="ms-session-btn ms-session-btn--light" data-action="exit">${S.sessionExit}<span class="ms-btn-post">${S.sessionExitPost}</span></button>
         </div>
       </div>
     </div>
@@ -161,10 +162,7 @@ export function createSessionChrome({
       sw.classList.toggle('ms-switch--on', on);
     }
     if (wrap) wrap.setAttribute('data-active', String(on));
-    if (sub)
-      sub.textContent = on
-        ? 'Interface Simplificada'
-        : 'Acessibilidade Cognitiva';
+    if (sub) sub.textContent = on ? S.sessionSubOn : S.sessionSubOff;
 
     // Header some com MS on (distração) — reposiciona o mesmo switch no nav de pills
     _placeChrome(chrome, on, mount);
@@ -190,15 +188,13 @@ export function createSessionChrome({
       // Estado vai por aria-pressed; só o aviso "Indisponível" precisa ser lido
       langLabel.setAttribute('aria-hidden', String(langAvailable));
       langLabel.textContent = !langAvailable
-        ? 'Indisponível nesta página'
+        ? S.sessionLangUnavailable
         : langOn
-          ? 'LIGADA'
-          : 'DESLIGADA';
+          ? S.sessionLangOn
+          : S.sessionLangOff;
     }
     if (desc) {
-      desc.textContent = langOn
-        ? 'Exibindo explicações em palavras fáceis, sem termos complicados.'
-        : 'Navegação mais calma, com botões claros e menos distrações.';
+      desc.textContent = langOn ? S.sessionDescSimple : S.sessionDescCalm;
     }
 
     const hideImgs = !!s.options?.hideImages;
@@ -208,7 +204,10 @@ export function createSessionChrome({
       imgBtn.setAttribute('aria-pressed', String(!hideImgs));
       imgBtn.classList.toggle('ms-session-btn--active', !hideImgs);
     }
-    if (imgLabel) imgLabel.textContent = hideImgs ? 'OCULTAS' : 'VISÍVEIS';
+    if (imgLabel)
+      imgLabel.textContent = hideImgs
+        ? S.sessionImagesHidden
+        : S.sessionImagesVisible;
 
     if (ui.speaking !== undefined) {
       const speakBtn = bar.querySelector('[data-action="speak"]');
@@ -217,11 +216,13 @@ export function createSessionChrome({
         speakBtn.classList.toggle('ms-session-btn--speaking', ui.speaking);
         speakBtn.setAttribute(
           'aria-label',
-          ui.speaking ? 'Parar leitura da página' : 'Ouvir página',
+          ui.speaking ? S.sessionStopLabel : S.sessionSpeakLabel,
         );
       }
       if (speakLabel)
-        speakLabel.textContent = ui.speaking ? 'Parar Voz' : 'Ouvir Página';
+        speakLabel.textContent = ui.speaking
+          ? S.sessionStopText
+          : S.sessionSpeakText;
     }
   }
 

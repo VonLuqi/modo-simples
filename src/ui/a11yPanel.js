@@ -6,25 +6,30 @@
  */
 
 import { trapFocus } from '../utils/focus.js';
+import { STRINGS as S } from './strings.js';
 
 const TEXT_SCALES = [
-  { value: '100', label: '100%', title: 'Padrão' },
-  { value: '125', label: '125%', title: 'Grande' },
-  { value: '150', label: '150%', title: 'Maior' },
-  { value: '175', label: '175%', title: 'Máximo' },
+  { value: '100', label: '100%', title: S.scaleDefault },
+  { value: '125', label: '125%', title: S.scaleLarge },
+  { value: '150', label: '150%', title: S.scaleLarger },
+  { value: '175', label: '175%', title: S.scaleMax },
 ];
 
 const DEFAULT_BRAND = {
-  title: 'Acessibilidade Digital',
+  title: S.panelDefaultTitle,
   subtitle: '',
-  footer: 'Preferências salvas neste navegador',
+  footer: S.panelDefaultFooter,
 };
 
 const COLOR_THEMES = [
-  { value: 'senac', label: 'Cores do site', sub: 'Padrão' },
-  { value: 'yellowBlack', label: 'Amarelo e Preto', sub: 'Alto contraste' },
-  { value: 'darkHigh', label: 'Modo Escuro Alto', sub: 'Fundo escuro' },
-  { value: 'soft', label: 'Descanso / Suave', sub: 'Baixa intensidade' },
+  { value: 'senac', label: S.themeSite, sub: S.themeSiteSub },
+  {
+    value: 'yellowBlack',
+    label: S.themeYellowBlack,
+    sub: S.themeYellowBlackSub,
+  },
+  { value: 'darkHigh', label: S.themeDarkHigh, sub: S.themeDarkHighSub },
+  { value: 'soft', label: S.themeSoft, sub: S.themeSoftSub },
 ];
 
 /**
@@ -65,7 +70,7 @@ export function createA11yPanel({
         <h2 id="ms-a11y-title"></h2>
         <p class="ms-a11y-subtitle"></p>
       </div>
-      <button type="button" class="ms-a11y-close" aria-label="Fechar painel de acessibilidade">
+      <button type="button" class="ms-a11y-close" aria-label="${S.panelCloseLabel}">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
           <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
         </svg>
@@ -77,11 +82,11 @@ export function createA11yPanel({
         <div class="ms-a11y-card-row">
           <div class="ms-a11y-card-text">
             <span class="ms-a11y-card-star" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
-            <strong>Modo Simples (Recomendado)</strong>
-            <p>Oculta distrações visuais, aumenta botões e resume conteúdos essenciais.</p>
+            <strong>${S.panelSimpleTitle}</strong>
+            <p>${S.panelSimpleDesc}</p>
           </div>
           <button type="button" class="ms-switch" role="switch" aria-checked="false"
-            data-action="modo-simples" aria-label="Modo Simples">
+            data-action="modo-simples" aria-label="${S.panelSimpleSwitchLabel}">
             <span class="ms-switch-thumb"></span>
           </button>
         </div>
@@ -89,14 +94,14 @@ export function createA11yPanel({
 
       <section class="ms-a11y-section" aria-labelledby="ms-label-text">
         <h3 id="ms-label-text" class="ms-a11y-section-title">
-          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg></span> Tamanho do texto
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg></span> ${S.panelTextSizeTitle}
         </h3>
         <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-text" data-option="textScale">
           ${TEXT_SCALES.map(
             (s) => `
             <button type="button" role="radio" class="ms-segment"
               data-value="${s.value}" aria-checked="false"
-              aria-label="Tamanho do texto ${s.label} — ${s.title}" title="${s.title}">
+              aria-label="${S.panelTextSizeItemLabel} ${s.label} — ${s.title}" title="${s.title}">
               ${s.label}
             </button>`,
           ).join('')}
@@ -105,14 +110,14 @@ export function createA11yPanel({
 
       <section class="ms-a11y-section" aria-labelledby="ms-label-theme">
         <h3 id="ms-label-theme" class="ms-a11y-section-title">
-          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg></span> Contraste e cores
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg></span> ${S.panelThemeTitle}
         </h3>
         <div class="ms-theme-grid" role="radiogroup" aria-labelledby="ms-label-theme" data-option="colorTheme">
           ${COLOR_THEMES.map(
             (t) => `
             <button type="button" role="radio" class="ms-theme-btn ms-theme-btn--${t.value}"
               data-value="${t.value}" aria-checked="false"
-              aria-label="Tema ${t.label} — ${t.sub}">
+              aria-label="${S.panelThemeItemLabel} ${t.label} — ${t.sub}">
               <span class="ms-theme-swatch" aria-hidden="true"></span>
               <span class="ms-theme-label">${t.label}</span>
               <span class="ms-theme-sub">${t.sub}</span>
@@ -123,72 +128,72 @@ export function createA11yPanel({
 
       <section class="ms-a11y-section" aria-labelledby="ms-label-cognitive">
         <h3 id="ms-label-cognitive" class="ms-a11y-section-title">
-          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10h16"/><path d="M10 10v10"/></svg></span> Auxílio cognitivo &amp; TDAH
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10h16"/><path d="M10 10v10"/></svg></span> ${S.panelCognitiveTitle}
         </h3>
         <ul class="ms-a11y-option-list">
           <li class="ms-a11y-option-row">
             <div class="ms-a11y-option-text">
-              <strong>Fonte Acessível (Lexend)</strong>
-              <p>Desenvolvida para dislexia e agilidade visual</p>
+              <strong>${S.panelDyslexiaTitle}</strong>
+              <p>${S.panelDyslexiaDesc}</p>
             </div>
             <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="dyslexiaFont" aria-label="Fonte Acessível Lexend">
+              data-option="dyslexiaFont" aria-label="${S.panelDyslexiaLabel}">
               <span class="ms-switch-thumb"></span>
             </button>
           </li>
           <li class="ms-a11y-option-row">
             <div class="ms-a11y-option-text">
-              <strong>Régua de Foco de Leitura</strong>
-              <p>Destaque linha a linha para guiar a atenção</p>
+              <strong>${S.panelRulerTitle}</strong>
+              <p>${S.panelRulerDesc}</p>
             </div>
             <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="readingRuler" aria-label="Régua de Foco de Leitura">
+              data-option="readingRuler" aria-label="${S.panelRulerTitle}">
               <span class="ms-switch-thumb"></span>
             </button>
           </li>
           <li class="ms-a11y-option-row">
             <div class="ms-a11y-option-text">
-              <strong>Leitor de Tela por Voz</strong>
-              <p>Lê os títulos e textos em português</p>
+              <strong>${S.panelVoiceTitle}</strong>
+              <p>${S.panelVoiceDesc}</p>
             </div>
-            <button type="button" class="ms-btn-ouvir" data-action="speak" aria-label="Ouvir conteúdo principal">
-              Ouvir
+            <button type="button" class="ms-btn-ouvir" data-action="speak" aria-label="${S.panelVoiceLabel}">
+              ${S.panelVoiceButton}
             </button>
           </li>
         </ul>
       </section>
 
       <section class="ms-a11y-section" aria-labelledby="ms-label-more">
-        <h3 id="ms-label-more" class="ms-a11y-section-title">Mais opções</h3>
+        <h3 id="ms-label-more" class="ms-a11y-section-title">${S.panelMoreTitle}</h3>
         <ul class="ms-a11y-option-list">
           <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text"><strong>Destacar links</strong></div>
+            <div class="ms-a11y-option-text"><strong>${S.panelHighlightLinks}</strong></div>
             <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="highlightLinks" aria-label="Destacar links">
+              data-option="highlightLinks" aria-label="${S.panelHighlightLinks}">
               <span class="ms-switch-thumb"></span>
             </button>
           </li>
           <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text"><strong>Espaçamento de texto</strong></div>
+            <div class="ms-a11y-option-text"><strong>${S.panelTextSpacing}</strong></div>
             <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="textSpacing" aria-label="Espaçamento de texto">
+              data-option="textSpacing" aria-label="${S.panelTextSpacing}">
               <span class="ms-switch-thumb"></span>
             </button>
           </li>
           <li class="ms-a11y-option-row">
-            <div class="ms-a11y-option-text"><strong>Reduzir movimento</strong></div>
+            <div class="ms-a11y-option-text"><strong>${S.panelReducedMotion}</strong></div>
             <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="reducedMotion" aria-label="Reduzir movimento">
+              data-option="reducedMotion" aria-label="${S.panelReducedMotion}">
               <span class="ms-switch-thumb"></span>
             </button>
           </li>
           <li class="ms-a11y-option-row">
             <div class="ms-a11y-option-text">
-              <strong>Ocultar imagens</strong>
-              <span class="ms-a11y-option-hint">No Modo Simples, imagens somem por padrão — desligue para manter</span>
+              <strong>${S.panelHideImages}</strong>
+              <span class="ms-a11y-option-hint">${S.panelHideImagesHint}</span>
             </div>
             <button type="button" class="ms-switch" role="switch" aria-checked="false"
-              data-option="hideImages" aria-label="Ocultar imagens">
+              data-option="hideImages" aria-label="${S.panelHideImages}">
               <span class="ms-switch-thumb"></span>
             </button>
           </li>
