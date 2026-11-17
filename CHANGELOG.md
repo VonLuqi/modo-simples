@@ -70,6 +70,13 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **IMP-40** — a régua já atualiza o `transform` por `requestAnimationFrame` (feito junto com o IMP-08); sem mudança de código nesta parte.
 - **UX-22** — ícones do chrome e do painel em SVG inline (mesmo traço do ícone de sliders do FAB, `aria-hidden` e `focusable="false"`) no lugar de emoji e glifos: 🔊 📄 🖼 na barra, ★ no switch SIMPLES, no convite e no card do painel, e T ◉ ▣ nos títulos das seções. Os nomes acessíveis não mudaram. **Mudança observável:** o aspecto dos ícones deixa de depender do sistema operacional.
 
+### Corrigido (W2 mobile)
+
+- **UX-06** — com o Modo Simples ligado o switch SIMPLES ocupa uma linha própria no topo do `nav[data-ms-pills]` (primeiro filho), acima das pills, em vez de ficar dentro de `.ms-pills-nav__inner`. As pills quebram linha (grade de 2 colunas até 720 px) e não há mais rolagem horizontal, a 390 e a 1200 px. **Mudança observável:** o switch deixa de ser filho de `.ms-pills-nav__inner` (CSS de integrador que dependia disso, como `.ms-pills-nav__inner #ms-simples-chrome`, não vale mais); `.ms-pills-nav .ms-pills-nav__inner` e `.ms-pill` ganham `flex-wrap`, `overflow-x: visible` e `min-height: 44px` pela lib.
+- **UX-07** — barra do Modo Simples compacta até 480 px: título e selo numa linha, descrição só para leitor de tela e os quatro botões numa grade, ícone mais rótulo curto (Ouvir Página, Simples, Imagens, Voltar), todos ≥ 44 px. Altura a 390×844: 97 px (antes 271 px). Os nomes acessíveis completos continuam ("Linguagem Simples:", "Voltar ao site normal"); o estado liga/desliga segue em `aria-pressed`.
+- **UX-14** — o CSS do widget deixou de usar `rem`: painel, FAB, chrome, barra e pills injetadas usam `calc(N * var(--ms-u))` com `--ms-u: 16px`. Um `html { font-size: 62.5% }` do host não encolhe mais o widget (nenhum texto abaixo de 12 px) e o resultado é idêntico com a raiz padrão. **Mudança observável:** a variável CSS `--ms-u` passa a existir no `:host`, em `#ms-simples-chrome`, `#ms-session-bar` e `.ms-pills-nav`; testes de integradores que comparam o CSS por texto (`bottom: 1.5rem`) precisam usar `calc(1.5 * var(--ms-u))`.
+- **UX-25** — _(linha do @D1 a ser incluída pelo @M)_
+
 ### Encerrado sem correção
 
 - **UX-29** (suposto widget que não respondia ao clique): era o marcador de clique do portal de teste, não um defeito do widget — verificado pelo @UI (T9). Nenhuma mudança de código.
