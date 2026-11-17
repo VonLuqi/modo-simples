@@ -317,8 +317,8 @@ describe('createSessionChrome — sync (F5-T09)', () => {
     chrome.sync({ modoSimples: true, options: {} });
     assert.equal(switchBtn.getAttribute('aria-checked'), 'true');
     assert.ok(
-      inner.contains(chromeEl),
-      'switch deve ir para o nav de pills com MS on',
+      pills.contains(chromeEl) && pills.children[0] === chromeEl,
+      'switch deve ir para a linha própria no topo do nav de pills com MS on (UX-06)',
     );
     assert.ok(chromeEl.classList.contains('ms-simples-chrome--ms-nav'));
 

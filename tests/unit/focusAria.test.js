@@ -47,7 +47,8 @@ describe('UX-09 — foco do switch sobrevive ao re-parent do chrome', () => {
 
     chrome.sync(estado({}, true));
     const wrap = document.getElementById('ms-simples-chrome');
-    assert.ok(wrap.parentElement.classList.contains('ms-pills-nav__inner'));
+    assert.ok(wrap.parentElement.hasAttribute('data-ms-pills'));
+    assert.equal(wrap.parentElement.children[0], wrap);
     assert.equal(document.activeElement, sw);
     chrome.destroy();
   });

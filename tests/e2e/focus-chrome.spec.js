@@ -21,9 +21,7 @@ test('o foco fica no switch SIMPLES ao ligar e ao desligar (Enter)', async ({
 
   await page.keyboard.press('Enter'); // liga
   await expect(page.locator('html')).toHaveClass(/ms-ativo/);
-  await expect(
-    page.locator('.ms-pills-nav__inner').locator(SWITCH),
-  ).toHaveCount(1);
+  await expect(page.locator('[data-ms-pills]').locator(SWITCH)).toHaveCount(1);
   await expect(sw).toBeFocused();
 
   await page.keyboard.press('Enter'); // desliga

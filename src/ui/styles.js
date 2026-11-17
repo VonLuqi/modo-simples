@@ -763,11 +763,12 @@ export function getPageStyles() {
     }
     /* Same SIMPLES control, parked in MS pills nav while site header is hidden */
     #ms-simples-chrome.ms-simples-chrome--ms-nav {
-      margin-left: auto;
-      align-self: center;
-      position: sticky;
-      right: 0;
-      z-index: 2;
+      box-sizing: border-box;
+      width: 100%;
+      margin: 0;
+      padding: 0.45rem 1rem 0;
+      justify-content: flex-end;
+      position: static;
     }
     #ms-simples-chrome.ms-simples-chrome--ms-nav .ms-chrome-icon {
       display: none;
@@ -998,6 +999,29 @@ export function getPageStyles() {
       -webkit-box-decoration-break: clone;
     }
 
+    /* UX-06: pills quebram linha (sem rolagem horizontal); no mobile viram grade de 2 colunas */
+    .ms-pills-nav .ms-pills-nav__inner {
+      flex-wrap: wrap;
+      overflow-x: visible;
+    }
+    .ms-pills-nav .ms-pill {
+      flex: 0 1 auto;
+      min-height: 44px;
+      box-sizing: border-box;
+    }
+    @media (max-width: 720px) {
+      .ms-pills-nav .ms-pills-nav__inner {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+      }
+      .ms-pills-nav .ms-pill {
+        justify-content: center;
+        text-align: center;
+        white-space: normal;
+      }
+    }
+
     /* Pills injetáveis (F5-T11 — simpleNav) */
     .ms-pills-nav[data-ms-injected] {
       background: #fff;
@@ -1007,10 +1031,7 @@ export function getPageStyles() {
     .ms-pills-nav[data-ms-injected] .ms-pills-nav__inner {
       display: flex;
       gap: 0.5rem;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
       padding: 0.65rem 1rem;
-      scrollbar-width: thin;
     }
     .ms-pills-nav[data-ms-injected] .ms-pill {
       flex: 0 0 auto;

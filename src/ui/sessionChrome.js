@@ -260,12 +260,18 @@ function _resolve(selectors) {
  * @param {HTMLElement} chrome
  * @param {Element} parent
  */
-function _moveChrome(chrome, parent) {
-  if (chrome.parentElement === parent) return;
+function _moveChrome(chrome, parent, first = false) {
+  if (
+    chrome.parentElement === parent &&
+    (!first || parent.children[0] === chrome)
+  ) {
+    return;
+  }
   const focused = chrome.contains(document.activeElement)
     ? document.activeElement
     : null;
-  parent.appendChild(chrome);
+  if (first) parent.prepend(chrome);
+  else parent.appendChild(chrome);
   if (!focused) return;
   focused.focus();
   // O destino pode estar display:none até o <html> trocar ms-ativo (logo depois do sync):
@@ -306,11 +312,11 @@ function _placeChrome(chrome, modoOn, mount) {
   chrome.classList.remove('ms-simples-chrome--fixed');
   chrome.classList.add('ms-simples-chrome--ms-nav');
 
-  const pillsInner =
-    document.querySelector('[data-ms-pills] .ms-pills-nav__inner') ||
-    document.querySelector('[data-ms-pills]');
-  if (pillsInner) {
-    _moveChrome(chrome, pillsInner);
+  // UX-06: o switch ocupa uma linha própria acima das pills (primeiro filho do nav),
+  // em vez de disputar espaço com elas dentro da faixa rolável
+  const pillsNav = document.querySelector('[data-ms-pills]');
+  if (pillsNav) {
+    _moveChrome(chrome, pillsNav, true);
     return;
   }
 
