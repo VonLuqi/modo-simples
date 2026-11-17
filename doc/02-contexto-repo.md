@@ -142,7 +142,6 @@ Nav unificada (8 itens) com `aria-current="page"`. Com MS ligado: **pills** + **
 | `mutator/domMutator.js`                                                 | Aplicar/reverter MS e opções; estilos de página; Lexend   |
 | `mutator/domObserver.js`                                                | MutationObserver com debounce                             |
 | `ui/fab.js`, `a11yPanel.js`, `sessionChrome.js`, `styles.js`            | UI atual (painel modal + barra)                           |
-| `ui/radialMenu.js` (e afins)                                            | Legado do menu radial — não é a UI alvo da demo           |
 | `features/tts.js`, `readingRuler.js`, `simpleNav.js`, `manualSelect.js` | Recursos opcionais                                        |
 | `utils/aria.js`, `focus.js`, `mediaQuery.js`                            | Anúncios, foco, `prefers-reduced-motion`                  |
 
