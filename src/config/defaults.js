@@ -51,7 +51,11 @@ const defaults = {
     'iframe',
   ],
 
-  /** Scoring weights used by the heuristic engine. */
+  /**
+   * Scoring weights used by the heuristic engine (somam; sem teto).
+   * Confiança = min(nota / (mainTagBonus + h1Bonus + 2 × textLengthBonus), 1).
+   * Detalhes e exemplos: doc/08-heuristicas-edges.md.
+   */
   scoring: {
     mainTagBonus: 100,
     roleMainBonus: 90,
@@ -77,7 +81,8 @@ const defaults = {
 
   /**
    * Minimum heuristic confidence (0–1) to auto-apply main detection.
-   * Below this threshold, a manual-selection fallback is shown instead.
+   * Below this threshold (confidence < value), a manual-selection fallback is
+   * shown instead. With default weights: ideal score 210, minimum score 95.
    */
   confidenceThreshold: 0.45,
 

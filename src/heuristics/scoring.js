@@ -11,6 +11,9 @@ import defaults from '../config/defaults.js';
  *   - Presence of heading hierarchy (h1, h2)
  *   - Text density (amount of text content)
  *
+ * Weights and thresholds: config/defaults.js; table with examples in
+ * doc/08-heuristicas-edges.md.
+ *
  * This intentionally does not read computed styles or layout geometry to
  * keep it fast enough to run on every page load without blocking rendering.
  *
