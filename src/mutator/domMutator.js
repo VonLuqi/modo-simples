@@ -1,4 +1,3 @@
-import { getPageStyles } from '../ui/styles.js';
 import { detectMainContent } from '../heuristics/contentDetector.js';
 import { detectDistractions } from '../heuristics/distractionDetector.js';
 import {
@@ -72,12 +71,15 @@ export function holdPrincipal(on) {
 /**
  * Inject the Modo Simples page CSS into <head>.
  * Idempotent — safe to call multiple times; only injects once.
+ * The CSS text comes from the caller (modo-simples.js), so the mutator does not import ui/.
+ *
+ * @param {string} [css]
  */
-export function injectPageStyles() {
+export function injectPageStyles(css = '') {
   if (document.getElementById(PAGE_STYLE_ID)) return;
   const style = document.createElement('style');
   style.id = PAGE_STYLE_ID;
-  style.textContent = getPageStyles();
+  style.textContent = css;
   document.head.appendChild(style);
 }
 

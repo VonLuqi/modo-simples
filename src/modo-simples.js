@@ -24,7 +24,7 @@ import {
 } from './utils/mediaQuery.js';
 import { announce } from './utils/aria.js';
 import { hasSimpleLanguagePairs } from './utils/simpleLanguage.js';
-import { getUIStyles } from './ui/styles.js';
+import { getPageStyles, getUIStyles } from './ui/styles.js';
 import { createFab } from './ui/fab.js';
 import { createA11yPanel } from './ui/a11yPanel.js';
 import { createSessionChrome } from './ui/sessionChrome.js';
@@ -94,7 +94,7 @@ class ModoSimples {
     this._initialized = true;
 
     this._loadPersistedState();
-    injectPageStyles();
+    injectPageStyles(getPageStyles());
     setLexendFontUrl(this._config.fontUrl);
     this._buildUI();
     this._bindEvents();
