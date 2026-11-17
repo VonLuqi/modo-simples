@@ -706,7 +706,7 @@ export function getPageStyles() {
     /* ── Lexend / dyslexia font ──────────────────────────────────────────── */
     html.ms-dyslexia-font,
     html.ms-dyslexia-font body,
-    html.ms-dyslexia-font body *:not(#ms-container):not(#ms-container *):not([class~="icon"]):not([class^="icon-"]):not([class*=" icon-"]):not([class*="icon_"]):not([class*="-icon"]):not([class*="_icon"]):not([class*="glyphicon"]):not([class*="fa-"]):not(.fa):not(.fas):not(.far):not(.fab):not(.material-icons):not(code):not(pre):not(kbd):not(samp) {
+    html.ms-dyslexia-font body *:not(#ms-container):not(#ms-container *):not([class~="icon"]):not([class^="icon-"]):not([class*=" icon-"]):not([class^="icon_"]):not([class*=" icon_"]):not([class^="glyphicon"]):not([class*=" glyphicon"]):not([class$="-icon"]):not([class*="-icon "]):not([class$="_icon"]):not([class*="_icon "]):not([class*="fa-"]):not(.fa):not(.fas):not(.far):not(.fab):not(.material-icons):not(code):not(pre):not(kbd):not(samp) {
       font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif !important;
       letter-spacing: 0.02em !important;
       word-spacing: 0.08em !important;

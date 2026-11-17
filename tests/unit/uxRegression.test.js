@@ -5,6 +5,7 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { Window } from 'happy-dom';
 
 import { createElement, installDocument } from './helpers/miniDom.js';
 import {
@@ -352,16 +353,59 @@ describe('CSS da lib: fonte e espaçamento do texto (IMP-09, IMP-21)', () => {
       '[class~="icon"]',
       '[class^="icon-"]',
       '[class*=" icon-"]',
-      '[class*="icon_"]',
-      '[class*="-icon"]',
-      '[class*="_icon"]',
-      '[class*="glyphicon"]',
+      '[class^="icon_"]',
+      '[class*=" icon_"]',
+      '[class^="glyphicon"]',
+      '[class*=" glyphicon"]',
+      '[class$="-icon"]',
+      '[class*="-icon "]',
+      '[class$="_icon"]',
+      '[class*="_icon "]',
       '.fa',
       '.material-icons',
       'code',
       'pre',
     ]) {
       assert.ok(seletor.includes(`:not(${ex})`), `falta :not(${ex})`);
+    }
+  });
+
+  it('Lexend exclui só tokens de ícone (ancorados), não substrings (LOW-3 QA T68)', () => {
+    const css = getPageStyles();
+    const i = css.indexOf('html.ms-dyslexia-font body *');
+    const seletor = css.slice(i, css.indexOf('{', i));
+    const nots = [...seletor.matchAll(/:not\((\[[^\]]+\])\)/g)].map(
+      (m) => m[1],
+    );
+    const doc = new Window().document;
+    const excluido = (cls) => {
+      const el = doc.createElement('span');
+      el.setAttribute('class', cls);
+      return nots.some((n) => el.matches(n));
+    };
+    for (const c of [
+      'icon',
+      'icon-home',
+      'icon_x',
+      'glyphicon glyphicon-home',
+      'btn-icon',
+      'nav__icon',
+      'btn btn-icon big',
+      'big nav__icon',
+      'a icon-x',
+    ]) {
+      assert.equal(excluido(c), true, `${c} deveria ser excluído`);
+    }
+    for (const c of [
+      'silicon_x',
+      'lexicon_list',
+      'my-iconic',
+      'x-icons',
+      'foo_iconic',
+      'silicon',
+      'a silicon_x b',
+    ]) {
+      assert.equal(excluido(c), false, `${c} não deveria ser excluído`);
     }
   });
 

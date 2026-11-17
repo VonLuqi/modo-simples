@@ -78,6 +78,7 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **LOW-4** — a fonte Lexend só exclui classes de ícone de verdade (`icon`, `icon-*`), não qualquer classe que contenha "icon" (ex.: `silicon`, `iconic`).
 - **LOW-5** — removido o `:hover` redundante do bloco `prefers-reduced-motion` (o hover não tem `transform` desde o UX-17).
 - **MED-2 / LOW-A (QA T66)** — o clique repassado só vale se for do usuário (`isTrusted`) e, se o alvo for um campo de formulário, ele recebe o foco (antes o foco ia para o FAB); a Lexend também exclui `glyphicon`, `*-icon`, `*_icon` e `icon_*` (fontes de ícone voltavam a virar tofu).
+- **LOW-3 (QA T68)** — as exclusões de ícone da Lexend agora são ancoradas em token de classe (`icon`, `icon-*`, `icon_*`, `glyphicon*`, `*-icon`, `*_icon`): `silicon_x`, `lexicon_list`, `my-iconic`, `x-icons` e `foo_iconic` voltam a receber a Lexend.
 
 ### Encerrado sem correção
 
