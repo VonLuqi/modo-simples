@@ -245,16 +245,24 @@ describe('configure em runtime', () => {
     assert.ok(inst._config.mainSelectors.length > 0);
   });
 
-  // IMP-31 (F2): position só é lido no init.
-  it(
-    'configure({ position }) reposiciona o FAB em runtime (IMP-31)',
-    { todo: 'IMP-31 — F2: position só é consumido em _buildUI' },
-    () => {
-      inst.init();
-      inst.configure({ position: 'top-left' });
-      const css =
-        $('#ms-container').shadowRoot.querySelector('style').textContent;
-      assert.ok(css.includes('top: 1.5rem;left: 1.5rem;'));
-    },
-  );
+  // IMP-31: position vale em runtime (refaz o CSS do Shadow DOM)
+  it('configure({ position }) reposiciona o FAB em runtime (IMP-31)', () => {
+    inst.init();
+    const css = () =>
+      $('#ms-container').shadowRoot.querySelector('style').textContent;
+    assert.ok(css().includes('bottom: 1.5rem;right: 1.5rem;'));
+    inst.configure({ position: 'top-left' });
+    assert.ok(css().includes('top: 1.5rem;left: 1.5rem;'));
+    assert.ok(!css().includes('bottom: 1.5rem;right: 1.5rem;'));
+    inst.configure({ position: 'bottom-left' });
+    assert.ok(css().includes('bottom: 1.5rem;left: 1.5rem;'));
+  });
+
+  it('configure({ position }) antes do init continua valendo', () => {
+    inst.configure({ position: 'top-right' });
+    inst.init();
+    const css =
+      $('#ms-container').shadowRoot.querySelector('style').textContent;
+    assert.ok(css.includes('top: 1.5rem;right: 1.5rem;'));
+  });
 });

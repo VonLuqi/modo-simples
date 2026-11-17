@@ -2829,6 +2829,7 @@
       this._onDocKeydown = null;
       this._onDocClick = null;
       this._speakTimer = null;
+      this._styleEl = null;
       this._initialized = false;
     }
     // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -2957,6 +2958,9 @@
       if (Object.prototype.hasOwnProperty.call(patch, "fontUrl")) {
         setLexendFontUrl(this._config.fontUrl);
       }
+      if (this._initialized && this._styleEl && Object.prototype.hasOwnProperty.call(patch, "position")) {
+        this._styleEl.textContent = getUIStyles(this._config.position);
+      }
       if (this._initialized && Object.prototype.hasOwnProperty.call(patch, "sessionBar")) {
         this._syncSessionChrome();
       }
@@ -2973,6 +2977,7 @@
       const styleEl = document.createElement("style");
       styleEl.textContent = getUIStyles(this._config.position);
       this._shadow.appendChild(styleEl);
+      this._styleEl = styleEl;
       const s = state_default.get();
       this._panel = createA11yPanel({
         state: s,

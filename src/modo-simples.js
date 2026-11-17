@@ -63,6 +63,7 @@ class ModoSimples {
     this._onDocKeydown = null;
     this._onDocClick = null;
     this._speakTimer = null;
+    this._styleEl = null;
     this._initialized = false;
   }
 
@@ -205,6 +206,14 @@ class ModoSimples {
     if (Object.prototype.hasOwnProperty.call(patch, 'fontUrl')) {
       setLexendFontUrl(this._config.fontUrl);
     }
+    // position: refaz o CSS do Shadow DOM (FAB + painel) em runtime (IMP-31)
+    if (
+      this._initialized &&
+      this._styleEl &&
+      Object.prototype.hasOwnProperty.call(patch, 'position')
+    ) {
+      this._styleEl.textContent = getUIStyles(this._config.position);
+    }
     if (
       this._initialized &&
       Object.prototype.hasOwnProperty.call(patch, 'sessionBar')
@@ -231,6 +240,7 @@ class ModoSimples {
     const styleEl = document.createElement('style');
     styleEl.textContent = getUIStyles(this._config.position);
     this._shadow.appendChild(styleEl);
+    this._styleEl = styleEl;
 
     const s = state.get();
 
