@@ -455,7 +455,7 @@ export function getUIStyles(position = 'bottom-right') {
       border-radius: 8px;
       padding: 0.45rem 0.9rem;
       background: var(--ms-orange);
-      color: #fff;
+      color: #1a1205;
       font: inherit;
       font-size: 0.82rem;
       font-weight: 700;
