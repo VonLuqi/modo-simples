@@ -145,7 +145,7 @@ Nav unificada (8 itens) com `aria-current="page"`. Com MS ligado: **pills** + **
 | `features/tts.js`, `readingRuler.js`, `simpleNav.js`, `manualSelect.js` | Recursos opcionais                                        |
 | `utils/aria.js`, `focus.js`, `mediaQuery.js`                            | Anúncios, foco, `prefers-reduced-motion`                  |
 
-Plano técnico adicional: [`docs/implementation_plan.md`](../docs/implementation_plan.md).  
+Plano técnico adicional: [`doc/arquivo/implementation_plan.md`](./arquivo/implementation_plan.md).  
 Edges das heurísticas: [08-heuristicas-edges.md](./08-heuristicas-edges.md).
 
 ### Fluxo ao ativar Modo Simples
@@ -177,7 +177,6 @@ modo-simples/
 │   ├── unit/                 ← node:test
 │   └── structure/            ← estrutura do protótipo
 ├── doc/                      ← documentação de produto/projeto/entrega
-├── docs/                     ← plano técnico da lib
 ├── serve.json                ← cleanUrls off + rewrites /examples → index
 ├── LICENSE                   ← MIT
 ├── package.json              ← v1.1.0
@@ -277,7 +276,7 @@ Contrato útil para o host:
 ## 9. Convenções para a equipe
 
 1. **Lib em `src/`**, protótipo em `examples/` — não misturar markup Senac com lógica do script.
-2. Documentação de produto/entrega em **`doc/`**; plano técnico longo em **`docs/`**.
+2. Documentação de produto/entrega em **`doc/`**; plano técnico legado arquivado em **`doc/arquivo/`**.
 3. Não versionar `node_modules/`; `dist/` é gerado localmente (`npm run build`) — está no `.gitignore`.
 4. Páginas novas: HTML semântico + shell CSS canônico + nav/pills sincronizados (scripts de sync).
 5. Preferir alterações focadas; UI alvo da demo é **painel + barra**, não o menu radial legado.

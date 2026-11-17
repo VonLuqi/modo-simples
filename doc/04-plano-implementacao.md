@@ -2,7 +2,7 @@
 
 Plano operacional em **tasks** para concluir a proposta do Projeto Integrador e entregar a ferramenta + protótipo Senac Minas.
 
-Documentos relacionados: [proposta](./01-proposta.md) · [contexto](./02-contexto-repo.md) · [status](./03-status-implementacao.md) · [UI painel](./06-ui-painel-acessibilidade.md) · [UI barra](./07-ui-barra-modo-simples.md) · plano técnico legado em `docs/implementation_plan.md`
+Documentos relacionados: [proposta](./01-proposta.md) · [contexto](./02-contexto-repo.md) · [status](./03-status-implementacao.md) · [UI painel](./06-ui-painel-acessibilidade.md) · [UI barra](./07-ui-barra-modo-simples.md) · plano técnico legado em [`arquivo/implementation_plan.md`](./arquivo/implementation_plan.md)
 
 ---
 

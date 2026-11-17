@@ -118,8 +118,6 @@ modo-simples/
 │   ├── unit/
 │   ├── integration/
 │   └── a11y/
-├── docs/
-│   └── implementation_plan.md
 ├── package.json
 └── README.md
 ```
