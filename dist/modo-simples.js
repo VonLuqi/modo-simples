@@ -561,7 +561,7 @@
       position: relative;
       background: #0B2C5F;
       color: #fff;
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-weight: 700;
       padding: 0.45rem 0.8rem;
       border-radius: 999px;
@@ -714,7 +714,7 @@
     }
     .ms-a11y-subtitle {
       margin: 0.2rem 0 0;
-      font-size: 0.72rem;
+      font-size: 0.8125rem;
       opacity: 0.85;
       color: #fff;
     }
@@ -786,7 +786,7 @@
     }
     .ms-a11y-section-title {
       margin: 0 0 0.65rem;
-      font-size: 0.72rem;
+      font-size: 0.8125rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
@@ -806,6 +806,7 @@
       border: none;
       border-radius: 8px;
       padding: 0.55rem 0.25rem;
+      min-height: 44px;
       font: inherit;
       font-size: 0.8rem;
       font-weight: 600;
@@ -872,12 +873,12 @@
       background: linear-gradient(90deg, #f5efe0 50%, #5c4a32 50%);
     }
     .ms-theme-label {
-      font-size: 0.72rem;
+      font-size: 0.8125rem;
       font-weight: 700;
       line-height: 1.2;
     }
     .ms-theme-sub {
-      font-size: 0.65rem;
+      font-size: 0.8125rem;
       color: #64748b;
     }
 
@@ -904,14 +905,14 @@
     .ms-a11y-option-hint {
       display: block;
       margin-top: 0.2rem;
-      font-size: 0.72rem;
+      font-size: 0.8125rem;
       font-weight: 500;
       color: #64748b;
       line-height: 1.35;
     }
     .ms-a11y-option-text p {
       margin: 0.15rem 0 0;
-      font-size: 0.72rem;
+      font-size: 0.8125rem;
       color: #64748b;
       line-height: 1.35;
     }
@@ -927,6 +928,12 @@
       cursor: pointer;
       position: relative;
       transition: background 0.18s ease;
+    }
+    /* UX-16: \xE1rea de toque de 44px de altura (trilho visual de 26px) */
+    .ms-switch::after {
+      content: "";
+      position: absolute;
+      inset: -9px 0;
     }
     .ms-switch-thumb {
       display: block;
@@ -979,7 +986,7 @@
     .ms-a11y-footer-note {
       margin: 0.35rem 0 0;
       text-align: center;
-      font-size: 0.68rem;
+      font-size: 0.8125rem;
       color: #475569;
       line-height: 1.35;
     }
@@ -998,7 +1005,7 @@
         white-space: normal;
         text-align: center;
         border-radius: 14px;
-        font-size: 0.68rem;
+        font-size: 0.75rem;
       }
     }
 
@@ -1183,7 +1190,7 @@
     /* \u2500\u2500 Lexend / dyslexia font \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     html.ms-dyslexia-font,
     html.ms-dyslexia-font body,
-    html.ms-dyslexia-font body *:not(#ms-container):not(#ms-container *) {
+    html.ms-dyslexia-font body *:not(#ms-container):not(#ms-container *):not([class*="icon"]):not([class*="fa-"]):not(.fa):not(.fas):not(.far):not(.fab):not(.material-icons):not(code):not(pre):not(kbd):not(samp) {
       font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif !important;
       letter-spacing: 0.02em !important;
       word-spacing: 0.08em !important;
@@ -1192,7 +1199,19 @@
     /* \u2500\u2500 Text spacing (WCAG 1.4.12) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     html.ms-text-spacing body,
     html.ms-text-spacing p,
-    html.ms-text-spacing li {
+    html.ms-text-spacing li,
+    html.ms-text-spacing h1,
+    html.ms-text-spacing h2,
+    html.ms-text-spacing h3,
+    html.ms-text-spacing h4,
+    html.ms-text-spacing h5,
+    html.ms-text-spacing h6,
+    html.ms-text-spacing td,
+    html.ms-text-spacing th,
+    html.ms-text-spacing dd,
+    html.ms-text-spacing dt,
+    html.ms-text-spacing blockquote,
+    html.ms-text-spacing label {
       line-height: 2 !important;
       letter-spacing: 0.12em !important;
       word-spacing: 0.16em !important;
@@ -1243,8 +1262,8 @@
       gap: 0.55rem;
     }
     .ms-chrome-icon {
-      width: 38px;
-      height: 38px;
+      width: 44px;
+      height: 44px;
       border-radius: 10px;
       border: 1px solid #c5d0e3;
       background: #fff;
@@ -1289,7 +1308,7 @@
       color: #0b2c5f;
     }
     .ms-simples-sub {
-      font-size: 0.65rem;
+      font-size: 0.75rem;
       color: #475569;
       font-weight: 600;
     }
@@ -1301,6 +1320,12 @@
       background: #64748b;
       padding: 3px;
       cursor: pointer;
+      position: relative;
+    }
+    .ms-chrome-switch::after {
+      content: "";
+      position: absolute;
+      inset: -9px 0;
     }
     .ms-chrome-switch .ms-switch-thumb {
       display: block;
@@ -1367,7 +1392,7 @@
       color: #fff;
       border-radius: 999px;
       padding: 0.22rem 0.7rem;
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-weight: 700;
     }
     .ms-session-desc {
@@ -1392,9 +1417,6 @@
       align-items: center;
       gap: 0.35rem;
       transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-    }
-    .ms-session-btn:hover {
-      transform: translateY(-1px);
     }
     .ms-session-btn--light {
       background: #fff;
@@ -1494,7 +1516,6 @@
     .ms-pills-nav[data-ms-injected] .ms-pill:hover {
       background: #e2e8f0;
       text-decoration: none;
-      transform: translateY(-1px);
       box-shadow: 0 2px 6px rgb(11 44 95 / 10%);
     }
     .ms-pills-nav[data-ms-injected] .ms-pill[aria-current='page'] {
@@ -1616,11 +1637,17 @@
     function handleKeydown(e) {
       if (e.key !== "Tab") return;
       const focusable = getFocusable(container);
-      if (focusable.length < 2) return;
+      if (!focusable.length) return;
       const root = container.getRootNode();
       const active = root instanceof ShadowRoot ? root.activeElement : document.activeElement;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
+      if (!active || active === container || !container.contains(active)) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+        return;
+      }
+      if (focusable.length < 2) return;
       if (e.shiftKey && active === first) {
         e.preventDefault();
         last.focus();
@@ -1629,8 +1656,8 @@
         first.focus();
       }
     }
-    container.addEventListener("keydown", handleKeydown);
-    return () => container.removeEventListener("keydown", handleKeydown);
+    document.addEventListener("keydown", handleKeydown);
+    return () => document.removeEventListener("keydown", handleKeydown);
   }
 
   // src/ui/a11yPanel.js
@@ -1689,7 +1716,7 @@
       <div class="ms-a11y-card ms-a11y-card--simple" data-section="modo-simples">
         <div class="ms-a11y-card-row">
           <div class="ms-a11y-card-text">
-            <span class="ms-a11y-card-star" aria-hidden="true">\u2605</span>
+            <span class="ms-a11y-card-star" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
             <strong>Modo Simples (Recomendado)</strong>
             <p>Oculta distra\xE7\xF5es visuais, aumenta bot\xF5es e resume conte\xFAdos essenciais.</p>
           </div>
@@ -1702,7 +1729,7 @@
 
       <section class="ms-a11y-section" aria-labelledby="ms-label-text">
         <h3 id="ms-label-text" class="ms-a11y-section-title">
-          <span aria-hidden="true">T</span> Tamanho do texto
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg></span> Tamanho do texto
         </h3>
         <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-text" data-option="textScale">
           ${TEXT_SCALES.map(
@@ -1718,7 +1745,7 @@
 
       <section class="ms-a11y-section" aria-labelledby="ms-label-theme">
         <h3 id="ms-label-theme" class="ms-a11y-section-title">
-          <span aria-hidden="true">\u25C9</span> Contraste e cores
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg></span> Contraste e cores
         </h3>
         <div class="ms-theme-grid" role="radiogroup" aria-labelledby="ms-label-theme" data-option="colorTheme">
           ${COLOR_THEMES.map(
@@ -1736,7 +1763,7 @@
 
       <section class="ms-a11y-section" aria-labelledby="ms-label-cognitive">
         <h3 id="ms-label-cognitive" class="ms-a11y-section-title">
-          <span aria-hidden="true">\u25A3</span> Aux\xEDlio cognitivo &amp; TDAH
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10h16"/><path d="M10 10v10"/></svg></span> Aux\xEDlio cognitivo &amp; TDAH
         </h3>
         <ul class="ms-a11y-option-list">
           <li class="ms-a11y-option-row">
@@ -1951,7 +1978,7 @@
         ${SLIDERS_ICON}
       </button>
       <div class="ms-simples-toggle-wrap" data-active="false">
-        <span class="ms-simples-spark" aria-hidden="true">\u2605</span>
+        <span class="ms-simples-spark" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
         <div class="ms-simples-toggle-text">
           <strong>SIMPLES</strong>
           <span class="ms-simples-sub" data-sub>Acessibilidade Cognitiva</span>
@@ -1971,13 +1998,13 @@
     bar.innerHTML = `
     <div class="ms-session-bar-inner" data-state="off">
       <div class="ms-session-off">
-        <p><span aria-hidden="true">\u2605</span> Quer uma navega\xE7\xE3o mais calma, direta e sem excesso de informa\xE7\xE3o?</p>
+        <p><span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span> Quer uma navega\xE7\xE3o mais calma, direta e sem excesso de informa\xE7\xE3o?</p>
         <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="activate">Ativar Modo Simples</button>
       </div>
       <div class="ms-session-on" hidden>
         <div class="ms-session-on-top">
           <div class="ms-session-on-title" tabindex="-1">
-            <span aria-hidden="true">\u2605</span>
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
             <strong>Modo Simples Ativado</strong>
             <span class="ms-session-badge">Foco na Navega\xE7\xE3o</span>
           </div>
@@ -1987,13 +2014,13 @@
         </div>
         <div class="ms-session-actions">
           <button type="button" class="ms-session-btn ms-session-btn--light" data-action="speak" aria-label="Ouvir p\xE1gina">
-            <span aria-hidden="true">\u{1F50A}</span> <span data-speak-label>Ouvir P\xE1gina</span>
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></span> <span data-speak-label>Ouvir P\xE1gina</span>
           </button>
           <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="lang" aria-pressed="false">
-            <span aria-hidden="true">\u{1F4C4}</span> Linguagem Simples: <span data-lang-label aria-hidden="true">DESLIGADA</span>
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg></span> Linguagem Simples: <span data-lang-label aria-hidden="true">DESLIGADA</span>
           </button>
           <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="images" aria-pressed="false">
-            <span aria-hidden="true">\u{1F5BC}</span> Imagens: <span data-images-label aria-hidden="true">OCULTAS</span>
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/></svg></span> Imagens: <span data-images-label aria-hidden="true">OCULTAS</span>
           </button>
           <button type="button" class="ms-session-btn ms-session-btn--light" data-action="exit">Voltar ao site normal</button>
         </div>
@@ -3252,7 +3279,21 @@
       }
       if (currentState.modoSimples) {
         this._activateModoSimples(currentState, { announce: false });
+        this._announceRestoredOnce();
       }
+    }
+    /**
+     * Modo restaurado em outra página: silêncio a cada navegação, mas uma única vez por sessão
+     * avisa que continua ligado (UX-19). Sem sessionStorage, fica em silêncio.
+     */
+    _announceRestoredOnce() {
+      try {
+        if (sessionStorage.getItem("ms_restoreAnnounced")) return;
+        sessionStorage.setItem("ms_restoreAnnounced", "1");
+      } catch (_) {
+        return;
+      }
+      announce("Modo Simples continua ligado");
     }
     destroy() {
       var _a;
@@ -3264,6 +3305,7 @@
       stopReadingRuler();
       stopSpeaking();
       stopManualSelect();
+      this._setPageInert(false);
       revert();
       stopObserving();
       if (this._removeMotionListener) {
@@ -3430,7 +3472,10 @@
       this._shadow.appendChild(this._fab.element);
       this._fab.sync({ panelOpen: s.panelOpen });
       this._panel.sync(s);
-      if (s.panelOpen) this._panel.open();
+      if (s.panelOpen) {
+        this._panel.open();
+        this._setPageInert(true);
+      }
       this._syncSessionChrome();
       this._simpleNav = createSimpleNav();
       this._syncSimpleNav();
@@ -3464,10 +3509,8 @@
     // ── Events ─────────────────────────────────────────────────────────────────
     _bindEvents() {
       this._onDocKeydown = (e) => {
-        var _a, _b;
         if (e.key === "Escape" && state_default.get().panelOpen) {
           this._closePanel();
-          (_b = (_a = this._fab) == null ? void 0 : _a.button) == null ? void 0 : _b.focus();
         }
       };
       document.addEventListener("keydown", this._onDocKeydown);
@@ -3497,15 +3540,48 @@
       state_default.get().panelOpen ? this._closePanel() : this._openPanel();
     }
     _openPanel() {
+      var _a;
+      let opener = document.activeElement;
+      while ((_a = opener == null ? void 0 : opener.shadowRoot) == null ? void 0 : _a.activeElement) {
+        opener = opener.shadowRoot.activeElement;
+      }
+      if (opener !== document.body && !this._panel.element.contains(opener)) {
+        this._panelOpener = opener;
+      }
       state_default.set({ panelOpen: true });
       this._panel.open();
+      this._setPageInert(true);
       this._fab.sync({ panelOpen: true });
       announce("Painel de acessibilidade aberto");
     }
+    /**
+     * aria-modal não esconde a página de ninguém: enquanto o painel está aberto, os irmãos do
+     * host no <body> ficam `inert` (sem foco, clique ou leitura). Só desfaz o que ela mesma fez.
+     * @param {boolean} on
+     */
+    _setPageInert(on) {
+      for (const el of this._inerted || []) el.removeAttribute("inert");
+      this._inerted = [];
+      if (!on) return;
+      for (const el of document.body.children) {
+        if (el === this._host || el.hasAttribute("inert") || el.hasAttribute("data-ms-live") || el.id === "ms-manual-select-banner" || el.id === "ms-manual-select-highlight") {
+          continue;
+        }
+        el.setAttribute("inert", "");
+        this._inerted.push(el);
+      }
+    }
     _closePanel() {
+      var _a, _b, _c;
       state_default.set({ panelOpen: false });
       this._panel.close();
+      this._setPageInert(false);
       this._fab.sync({ panelOpen: false });
+      if (!isManualSelectActive()) {
+        const opener = ((_a = this._panelOpener) == null ? void 0 : _a.isConnected) ? this._panelOpener : (_b = this._fab) == null ? void 0 : _b.button;
+        (_c = opener == null ? void 0 : opener.focus) == null ? void 0 : _c.call(opener);
+      }
+      this._panelOpener = null;
     }
     _toggleSpeak() {
       if (isSpeaking()) {
@@ -3545,14 +3621,17 @@
         document.documentElement.classList.add("ms-ativo");
         applyOptions(currentState);
         holdPrincipal(true);
+        this._setPageInert(false);
         startManualSelect({
           onSelect: (el, path) => {
+            this._setPageInert(state_default.get().panelOpen);
             setPrincipal(el, this._config);
             this._savePrincipalPath(path, el);
             applyModoSimples(state_default.get(), this._config);
             announce("Conte\xFAdo principal definido");
           },
           onCancel: () => {
+            this._setPageInert(state_default.get().panelOpen);
             announce("Sele\xE7\xE3o manual cancelada");
           }
         });
