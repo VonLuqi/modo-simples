@@ -27,3 +27,6 @@ public/
 # Playwright (e2e)
 test-results/
 playwright-report/
+
+# Artefatos FUSE/NTFS (arquivo aberto e apagado) — nunca versionar
+.fuse_hidden*
