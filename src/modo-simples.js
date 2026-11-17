@@ -370,8 +370,7 @@ class ModoSimples {
   _bindEvents() {
     this._onDocKeydown = (e) => {
       if (e.key === 'Escape' && state.get().panelOpen) {
-        this._closePanel();
-        this._fab?.button?.focus();
+        this._closePanel(); // devolve o foco a quem abriu (UX-12)
       }
     };
     document.addEventListener('keydown', this._onDocKeydown);
@@ -412,6 +411,14 @@ class ModoSimples {
   }
 
   _openPanel() {
+    // Quem abriu (FAB ou ícone do chrome, este no light DOM): é para onde o foco volta ao fechar
+    let opener = document.activeElement;
+    while (opener?.shadowRoot?.activeElement) {
+      opener = opener.shadowRoot.activeElement;
+    }
+    if (opener !== document.body && !this._panel.element.contains(opener)) {
+      this._panelOpener = opener;
+    }
     state.set({ panelOpen: true });
     this._panel.open();
     this._fab.sync({ panelOpen: true });
@@ -422,6 +429,14 @@ class ModoSimples {
     state.set({ panelOpen: false });
     this._panel.close();
     this._fab.sync({ panelOpen: false });
+    // Botão X, clique fora ou Esc: o foco volta ao opener (sem roubá-lo da seleção manual)
+    if (!isManualSelectActive()) {
+      const opener = this._panelOpener?.isConnected
+        ? this._panelOpener
+        : this._fab?.button;
+      opener?.focus?.();
+    }
+    this._panelOpener = null;
   }
 
   _toggleSpeak() {
