@@ -1,4 +1,4 @@
-import { test, expect, waitForLib } from './helpers.js';
+import { test, expect, waitForLib, openPanel } from './helpers.js';
 
 /**
  * IMP-22 — com confiança baixa a seleção manual só aplica o Modo Simples depois de confirmar.
@@ -136,6 +136,24 @@ test.describe('seleção manual — teclado e toque (IMP-07)', () => {
     await page.keyboard.press('Escape');
     await expect(page.locator(BANNER)).toHaveCount(0);
     await expect(principais(page)).toHaveCount(0);
+  });
+
+  test('Esc devolve o foco ao controle do painel que iniciou a seleção (QA R34 LOW-2)', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(PAGE);
+    await waitForLib(page);
+    await openPanel(page);
+
+    const interruptor = page.locator('[data-action="modo-simples"]');
+    await interruptor.focus();
+    await page.keyboard.press('Enter'); // liga o MS → seleção manual
+    await expect(page.locator(BANNER)).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(page.locator(BANNER)).toHaveCount(0);
+    await expect(interruptor).toBeFocused();
   });
 
   test('toque (tap) no conteúdo escolhe como o clique', async ({

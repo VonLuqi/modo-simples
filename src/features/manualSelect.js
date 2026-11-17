@@ -191,7 +191,13 @@ function confirmSelect(el) {
 export function startManualSelect(opts = {}) {
   stopManualSelect();
   _callbacks = opts;
-  _prevFocus = document.activeElement;
+  // Quem disparou pode estar num Shadow DOM (painel): guarda o elemento focado de verdade,
+  // não o host #ms-container, para o foco poder voltar a ele (QA R34 LOW-2)
+  let active = document.activeElement;
+  while (active?.shadowRoot?.activeElement) {
+    active = active.shadowRoot.activeElement;
+  }
+  _prevFocus = active;
 
   _banner = document.createElement('div');
   _banner.id = BANNER_ID;
