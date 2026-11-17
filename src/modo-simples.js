@@ -62,6 +62,7 @@ class ModoSimples {
     this._removeStateListener = null;
     this._onDocKeydown = null;
     this._onDocClick = null;
+    this._speakTimer = null;
     this._initialized = false;
   }
 
@@ -101,6 +102,7 @@ class ModoSimples {
   destroy() {
     // Instância que nunca subiu não pode derrubar a UI/estado de outra (state e DOM são compartilhados)
     if (!this._initialized) return;
+    this._clearSpeakTimer();
     stopReadingRuler();
     stopSpeaking();
     stopManualSelect();
@@ -347,6 +349,7 @@ class ModoSimples {
 
   _toggleSpeak() {
     if (isSpeaking()) {
+      this._clearSpeakTimer();
       stopSpeaking();
       announce('Leitura interrompida');
       this._syncSpeaking(false);
@@ -354,12 +357,21 @@ class ModoSimples {
       speakMainContent();
       announce('Lendo conteúdo principal');
       this._syncSpeaking(true);
-      const check = setInterval(() => {
+      // polling do fim da fala: id guardado para ser limpo no destroy() (IMP-25)
+      this._clearSpeakTimer();
+      this._speakTimer = setInterval(() => {
         if (!isSpeaking()) {
-          clearInterval(check);
+          this._clearSpeakTimer();
           this._syncSpeaking(false);
         }
       }, 400);
+    }
+  }
+
+  _clearSpeakTimer() {
+    if (this._speakTimer !== null) {
+      clearInterval(this._speakTimer);
+      this._speakTimer = null;
     }
   }
 

@@ -2828,6 +2828,7 @@
       this._removeStateListener = null;
       this._onDocKeydown = null;
       this._onDocClick = null;
+      this._speakTimer = null;
       this._initialized = false;
     }
     // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -2860,6 +2861,7 @@
     destroy() {
       var _a;
       if (!this._initialized) return;
+      this._clearSpeakTimer();
       stopReadingRuler();
       stopSpeaking();
       stopManualSelect();
@@ -3067,6 +3069,7 @@
     }
     _toggleSpeak() {
       if (isSpeaking()) {
+        this._clearSpeakTimer();
         stopSpeaking();
         announce("Leitura interrompida");
         this._syncSpeaking(false);
@@ -3074,12 +3077,19 @@
         speakMainContent();
         announce("Lendo conte\xFAdo principal");
         this._syncSpeaking(true);
-        const check = setInterval(() => {
+        this._clearSpeakTimer();
+        this._speakTimer = setInterval(() => {
           if (!isSpeaking()) {
-            clearInterval(check);
+            this._clearSpeakTimer();
             this._syncSpeaking(false);
           }
         }, 400);
+      }
+    }
+    _clearSpeakTimer() {
+      if (this._speakTimer !== null) {
+        clearInterval(this._speakTimer);
+        this._speakTimer = null;
       }
     }
     _syncSpeaking(speaking) {

@@ -121,17 +121,20 @@ describe('init / destroy', () => {
     assert.doesNotThrow(() => inst.destroy());
   });
 
-  // IMP-25 (F2): _toggleSpeak cria setInterval que destroy() não limpa.
-  it(
-    'destroy() não deixa setInterval vivo (IMP-25)',
-    { todo: 'IMP-25 — corrigir na F2: guardar o id e limpar em destroy()' },
-    () => {
-      inst.init();
-      inst._toggleSpeak(); // sem speechSynthesis no ambiente: cria o polling
-      inst.destroy();
-      assert.equal(intervals.size, 0);
-    },
-  );
+  // IMP-25: o polling do fim da fala é limpo no destroy() e nunca acumula.
+  it('destroy() não deixa setInterval vivo (IMP-25)', () => {
+    inst.init();
+    inst._toggleSpeak(); // sem speechSynthesis no ambiente: cria o polling
+    inst.destroy();
+    assert.equal(intervals.size, 0);
+  });
+
+  it('ouvir de novo não acumula intervalos (IMP-25)', () => {
+    inst.init();
+    inst._toggleSpeak();
+    inst._toggleSpeak();
+    assert.ok(intervals.size <= 1);
+  });
 });
 
 describe('enable / disable / toggle', () => {
