@@ -100,3 +100,59 @@ test.describe('seleção manual (IMP-22)', () => {
     await expect(ocultos(page)).toHaveCount(0);
   });
 });
+
+test.describe('seleção manual — teclado e toque (IMP-07)', () => {
+  test('Tab escolhe, Enter confirma: oculta em volta e fecha o banner', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(PAGE);
+    await waitForLib(page);
+    await page.evaluate(() => window.ModoSimples.enable());
+    await expect(page.locator(BANNER)).toBeFocused();
+
+    await page.keyboard.press('Tab');
+    await expect(page.locator(BANNER)).toContainText('Escolha atual: main');
+    await expect(page.locator('#ms-manual-select-highlight')).toBeVisible();
+    await page.keyboard.press('Enter');
+
+    await expect(page.locator(BANNER)).toHaveCount(0);
+    await expect(page.locator('main')).toHaveAttribute('data-ms-principal', '');
+    await expect(page.locator('#lateral')).toBeHidden();
+  });
+
+  test('Enter sem escolha não confirma; Shift+Tab percorre ao contrário; Esc cancela', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(PAGE);
+    await waitForLib(page);
+    await page.evaluate(() => window.ModoSimples.enable());
+
+    await page.keyboard.press('Enter');
+    await expect(page.locator(BANNER)).toBeVisible();
+    await page.keyboard.press('Shift+Tab');
+    await expect(page.locator(BANNER)).toContainText('Escolha atual:');
+    await page.keyboard.press('Escape');
+    await expect(page.locator(BANNER)).toHaveCount(0);
+    await expect(principais(page)).toHaveCount(0);
+  });
+
+  test('toque (tap) no conteúdo escolhe como o clique', async ({
+    site,
+  }, testInfo) => {
+    test.skip(!testInfo.project.use.hasTouch, 'só no projeto mobile');
+    const { page } = site;
+    await page.goto(PAGE);
+    await waitForLib(page);
+    await page.evaluate(() => window.ModoSimples.enable());
+
+    await page.locator('#alvo').tap();
+
+    await expect(page.locator(BANNER)).toHaveCount(0);
+    await expect(page.locator('#alvo')).toHaveAttribute(
+      'data-ms-principal',
+      '',
+    );
+  });
+});
