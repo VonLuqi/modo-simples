@@ -14,8 +14,12 @@ let _banner = null;
 let _onClick = null;
 /** @type {((e: KeyboardEvent) => void)|null} */
 let _onKey = null;
+/** @type {((e: Event) => void)|null} */
+let _onPointer = null;
 /** @type {{ onSelect?: Function, onCancel?: Function }|null} */
 let _callbacks = null;
+
+const POINTER_EVENTS = ['pointerdown', 'pointerup', 'mousedown', 'mouseup'];
 
 /**
  * Escape a CSS identifier without relying on the CSS global (Node-safe).
@@ -133,6 +137,7 @@ export function startManualSelect(opts = {}) {
     }
     e.preventDefault();
     e.stopPropagation();
+    e.stopImmediatePropagation(); // nenhum outro listener de captura do documento vê o clique (IMP-29)
 
     const el = e.target;
     if (!el || el === document.documentElement || el === document.body) return;
@@ -151,14 +156,39 @@ export function startManualSelect(opts = {}) {
 
   _onKey = (e) => {
     if (e.key === 'Escape') {
+      // consome o Esc: não fecha o painel nem diálogos do host junto (IMP-29)
+      e.preventDefault();
+      e.stopImmediatePropagation();
       const cb = _callbacks?.onCancel;
       stopManualSelect();
       if (cb) cb();
     }
   };
 
+  // mousedown/pointerdown/mouseup também não podem acionar menus do host durante a escolha
+  _onPointer = (e) => {
+    if (
+      e.target.closest?.('#ms-container') ||
+      e.target.closest?.(`#${BANNER_ID}`)
+    ) {
+      return;
+    }
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  };
+
   document.addEventListener('click', _onClick, true);
   document.addEventListener('keydown', _onKey, true);
+  for (const type of POINTER_EVENTS) {
+    document.addEventListener(type, _onPointer, true);
+  }
+}
+
+/**
+ * @returns {boolean} true while the manual selection mode is open
+ */
+export function isManualSelectActive() {
+  return _onClick !== null;
 }
 
 /**
@@ -172,6 +202,12 @@ export function stopManualSelect() {
   if (_onKey) {
     document.removeEventListener('keydown', _onKey, true);
     _onKey = null;
+  }
+  if (_onPointer) {
+    for (const type of POINTER_EVENTS) {
+      document.removeEventListener(type, _onPointer, true);
+    }
+    _onPointer = null;
   }
   if (_banner?.parentNode) {
     _banner.parentNode.removeChild(_banner);

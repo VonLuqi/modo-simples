@@ -2158,7 +2158,9 @@
   var _banner = null;
   var _onClick = null;
   var _onKey = null;
+  var _onPointer = null;
   var _callbacks = null;
+  var POINTER_EVENTS = ["pointerdown", "pointerup", "mousedown", "mouseup"];
   function escapeIdent(value) {
     if (typeof CSS !== "undefined" && CSS.escape) return CSS.escape(value);
     return String(value).replace(/([^\w-])/g, "\\$1");
@@ -2247,6 +2249,7 @@
       }
       e.preventDefault();
       e.stopPropagation();
+      e.stopImmediatePropagation();
       const el = e.target;
       if (!el || el === document.documentElement || el === document.body) return;
       document.querySelectorAll("[data-ms-principal]").forEach((node) => {
@@ -2260,13 +2263,29 @@
     };
     _onKey = (e) => {
       if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopImmediatePropagation();
         const cb = _callbacks == null ? void 0 : _callbacks.onCancel;
         stopManualSelect();
         if (cb) cb();
       }
     };
+    _onPointer = (e) => {
+      var _a, _b, _c, _d;
+      if (((_b = (_a = e.target).closest) == null ? void 0 : _b.call(_a, "#ms-container")) || ((_d = (_c = e.target).closest) == null ? void 0 : _d.call(_c, `#${BANNER_ID}`))) {
+        return;
+      }
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    };
     document.addEventListener("click", _onClick, true);
     document.addEventListener("keydown", _onKey, true);
+    for (const type of POINTER_EVENTS) {
+      document.addEventListener(type, _onPointer, true);
+    }
+  }
+  function isManualSelectActive() {
+    return _onClick !== null;
   }
   function stopManualSelect() {
     if (_onClick) {
@@ -2276,6 +2295,12 @@
     if (_onKey) {
       document.removeEventListener("keydown", _onKey, true);
       _onKey = null;
+    }
+    if (_onPointer) {
+      for (const type of POINTER_EVENTS) {
+        document.removeEventListener(type, _onPointer, true);
+      }
+      _onPointer = null;
     }
     if (_banner == null ? void 0 : _banner.parentNode) {
       _banner.parentNode.removeChild(_banner);
@@ -3187,6 +3212,7 @@
       this._onDocClick = (e) => {
         var _a, _b, _c;
         if (!state_default.get().panelOpen) return;
+        if (isManualSelectActive()) return;
         const path = typeof e.composedPath === "function" ? e.composedPath() : [];
         if (path.includes(this._host) || path.includes((_a = this._panel) == null ? void 0 : _a.element) || path.includes((_b = this._fab) == null ? void 0 : _b.element)) {
           return;

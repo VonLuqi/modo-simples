@@ -51,6 +51,7 @@ import {
 import {
   startManualSelect,
   stopManualSelect,
+  isManualSelectActive,
 } from './features/manualSelect.js';
 import { createSimpleNav } from './features/simpleNav.js';
 
@@ -375,6 +376,7 @@ class ModoSimples {
 
     this._onDocClick = (e) => {
       if (!state.get().panelOpen) return;
+      if (isManualSelectActive()) return; // o clique é da seleção manual: consumido uma vez (IMP-29)
       const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
       if (
         path.includes(this._host) ||
