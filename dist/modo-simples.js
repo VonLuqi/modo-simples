@@ -2830,6 +2830,7 @@
       this._onDocClick = null;
       this._speakTimer = null;
       this._styleEl = null;
+      this._reducedMotionUser = null;
       this._initialized = false;
     }
     // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -2984,6 +2985,7 @@
         onClose: () => this._closePanel(),
         onToggleModoSimples: (value) => this._setModoSimples(value),
         onSetOption: (key, value) => {
+          if (key === "reducedMotion") this._reducedMotionUser = !!value;
           state_default.set({ options: { [key]: value } });
           if (key === "hideImages" && state_default.get().modoSimples) {
             this._savePreferShowImages(!value);
@@ -3218,7 +3220,11 @@
     // ── Persistence ────────────────────────────────────────────────────────────
     _persistState(next) {
       if (!this._config.persistence) return;
-      const payload = { modoSimples: next.modoSimples, options: next.options };
+      const payload = {
+        modoSimples: next.modoSimples,
+        // reducedMotion só é gravado quando o usuário escolheu (null = derivado do SO)
+        options: { ...next.options, reducedMotion: this._reducedMotionUser }
+      };
       if (this._config.hostnamePersistence) {
         persistence_default.saveForHost(STATE_KEY, payload);
       } else {
@@ -3231,6 +3237,8 @@
       if (!saved) return;
       const patch = hydratePersistedState(saved);
       if (patch) state_default.set(patch);
+      const rm = saved.options && saved.options.reducedMotion;
+      this._reducedMotionUser = typeof rm === "boolean" ? rm : null;
     }
     _savePrincipalPath(path) {
       if (!this._config.persistence || !path) return;
@@ -3245,10 +3253,13 @@
       return this._config.hostnamePersistence ? persistence_default.loadForHost(PRINCIPAL_KEY) : persistence_default.load(PRINCIPAL_KEY);
     }
     // ── System preferences ─────────────────────────────────────────────────────
+    /**
+     * reducedMotion segue a preferência do SO enquanto o usuário não escolher (IMP-14):
+     * o valor derivado nunca é gravado como escolha, e acompanha o SO nos dois sentidos.
+     */
     _syncReducedMotion() {
-      if (prefersReducedMotion()) {
-        state_default.set({ options: { reducedMotion: true } });
-      }
+      if (this._reducedMotionUser !== null) return;
+      state_default.set({ options: { reducedMotion: prefersReducedMotion() } });
     }
   };
   function readPreBootConfig(win) {

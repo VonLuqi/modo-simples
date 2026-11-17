@@ -64,6 +64,8 @@ class ModoSimples {
     this._onDocClick = null;
     this._speakTimer = null;
     this._styleEl = null;
+    /** escolha explícita do usuário para reducedMotion (null = segue o SO) */
+    this._reducedMotionUser = null;
     this._initialized = false;
   }
 
@@ -249,6 +251,7 @@ class ModoSimples {
       onClose: () => this._closePanel(),
       onToggleModoSimples: (value) => this._setModoSimples(value),
       onSetOption: (key, value) => {
+        if (key === 'reducedMotion') this._reducedMotionUser = !!value;
         state.set({ options: { [key]: value } });
         if (key === 'hideImages' && state.get().modoSimples) {
           this._savePreferShowImages(!value);
@@ -523,7 +526,11 @@ class ModoSimples {
 
   _persistState(next) {
     if (!this._config.persistence) return;
-    const payload = { modoSimples: next.modoSimples, options: next.options };
+    const payload = {
+      modoSimples: next.modoSimples,
+      // reducedMotion só é gravado quando o usuário escolheu (null = derivado do SO)
+      options: { ...next.options, reducedMotion: this._reducedMotionUser },
+    };
     if (this._config.hostnamePersistence) {
       persistence.saveForHost(STATE_KEY, payload);
     } else {
@@ -540,6 +547,8 @@ class ModoSimples {
 
     const patch = hydratePersistedState(saved);
     if (patch) state.set(patch);
+    const rm = saved.options && saved.options.reducedMotion;
+    this._reducedMotionUser = typeof rm === 'boolean' ? rm : null;
   }
 
   _savePrincipalPath(path) {
@@ -560,10 +569,13 @@ class ModoSimples {
 
   // ── System preferences ─────────────────────────────────────────────────────
 
+  /**
+   * reducedMotion segue a preferência do SO enquanto o usuário não escolher (IMP-14):
+   * o valor derivado nunca é gravado como escolha, e acompanha o SO nos dois sentidos.
+   */
   _syncReducedMotion() {
-    if (prefersReducedMotion()) {
-      state.set({ options: { reducedMotion: true } });
-    }
+    if (this._reducedMotionUser !== null) return;
+    state.set({ options: { reducedMotion: prefersReducedMotion() } });
   }
 }
 
