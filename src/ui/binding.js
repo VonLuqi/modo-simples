@@ -1,0 +1,253 @@
+/**
+ * src/ui/binding.js — ligação da UI (FAB, painel, barra de sessão, eventos globais) ao ModoSimples.
+ *
+ * Funções que operam em nome de uma instância `ms` (usam ms._config, ms._panel, ms._fab, ...).
+ * A classe ModoSimples mantém os métodos _xxx como delegates de uma linha para cá.
+ */
+
+import state from '../core/state.js';
+import eventBus from '../core/eventBus.js';
+import { announce } from '../utils/aria.js';
+import { getUIStyles } from './styles.js';
+import { createFab } from './fab.js';
+import { createA11yPanel } from './a11yPanel.js';
+import { createSessionChrome } from './sessionChrome.js';
+import { createSimpleNav } from '../features/simpleNav.js';
+import {
+  speakMainContent,
+  stopSpeaking,
+  isSpeaking,
+  onSpeakingChange,
+} from '../features/tts.js';
+import { isManualSelectActive } from '../features/manualSelect.js';
+
+export function buildUI(ms) {
+  ms._host = document.createElement('div');
+  ms._host.id = 'ms-container';
+  document.body.appendChild(ms._host);
+
+  ms._shadow = ms._host.attachShadow({ mode: 'open' });
+
+  const styleEl = document.createElement('style');
+  styleEl.textContent = getUIStyles(ms._config.position);
+  ms._shadow.appendChild(styleEl);
+  ms._styleEl = styleEl;
+
+  const s = state.get();
+
+  ms._panel = createA11yPanel({
+    state: s,
+    onClose: () => ms._closePanel(),
+    onToggleModoSimples: (value) => ms._setModoSimples(value),
+    onSetOption: (key, value) => {
+      if (key === 'reducedMotion') ms._reducedMotionUser = !!value;
+      state.set({ options: { [key]: value } });
+      if (key === 'hideImages' && state.get().modoSimples) {
+        ms._savePreferShowImages(!value);
+      }
+    },
+    onSpeak: () => ms._toggleSpeak(),
+    brand: ms._config.brand,
+  });
+  ms._shadow.appendChild(ms._panel.element);
+
+  ms._fab = createFab({
+    onClick: () => ms._togglePanel(),
+  });
+  ms._shadow.appendChild(ms._fab.element);
+
+  ms._fab.sync({ panelOpen: s.panelOpen });
+  ms._panel.sync(s);
+  if (s.panelOpen) {
+    ms._panel.open();
+    ms._setPageInert(true);
+  }
+
+  ms._syncSessionChrome();
+
+  ms._simpleNav = createSimpleNav();
+  ms._syncSimpleNav();
+  // Reposiciona SIMPLES após pills (MS on some com o header)
+  if (ms._chrome) ms._chrome.sync(s);
+}
+
+/** Cria/destrói a barra de sessão conforme config.sessionBar (default: desligada). */
+export function syncSessionChrome(ms) {
+  if (ms._config.sessionBar && !ms._chrome) {
+    ms._chrome = createSessionChrome({
+      mount: ms._config.mount || {},
+      onToggleModoSimples: (value) => ms._setModoSimples(value),
+      onOpenPanel: () => ms._openPanel(),
+      onSpeak: () => ms._toggleSpeak(),
+      onToggleSimpleLanguage: (value) =>
+        state.set({ options: { simpleLanguage: value } }),
+      onToggleHideImages: (hide) => {
+        state.set({ options: { hideImages: hide } });
+        if (state.get().modoSimples) ms._savePreferShowImages(!hide);
+      },
+    });
+    ms._chrome.sync(state.get());
+  } else if (!ms._config.sessionBar && ms._chrome) {
+    ms._chrome.destroy();
+    ms._chrome = null;
+  }
+}
+
+export function syncSimpleNav(ms) {
+  if (!ms._simpleNav) return;
+  ms._simpleNav.sync(ms._config.simpleNav);
+  if (ms._chrome) ms._chrome.sync(state.get());
+}
+
+export function bindEvents(ms) {
+  ms._onDocKeydown = (e) => {
+    if (e.key === 'Escape' && state.get().panelOpen) {
+      ms._closePanel(); // devolve o foco a quem abriu (UX-12)
+    }
+  };
+  document.addEventListener('keydown', ms._onDocKeydown);
+
+  ms._onDocClick = (e) => {
+    if (!state.get().panelOpen) return;
+    if (isManualSelectActive()) return; // o clique é da seleção manual: consumido uma vez (IMP-29)
+    const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
+    if (
+      path.includes(ms._host) ||
+      path.includes(ms._panel?.element) ||
+      path.includes(ms._fab?.element)
+    ) {
+      return;
+    }
+    // Clicks that land on the host (open shadow) still include host in composedPath
+    if (e.target === ms._host) return;
+    if (!ms._host?.contains(e.target) && e.target !== ms._host) {
+      // o inert faz o clique cair no body: fecha e repassa o clique ao elemento que estava
+      // sob o ponteiro (senão o primeiro clique no doc é engolido)
+      const { clientX, clientY } = e;
+      const retargeted =
+        e.target === document.body || e.target === document.documentElement;
+      ms._closePanel();
+      if (retargeted && e.isTrusted && e.detail > 0) {
+        const alvo = document.elementFromPoint(clientX, clientY);
+        if (
+          alvo &&
+          alvo !== document.body &&
+          alvo !== document.documentElement
+        ) {
+          alvo.click();
+          // click() sintético não dá foco: campo de formulário recebe foco no lugar do FAB
+          if (
+            alvo.matches(
+              'input, select, textarea, [contenteditable]:not([contenteditable="false"])',
+            )
+          ) {
+            alvo.focus();
+          }
+        }
+      }
+    }
+  };
+  document.addEventListener('click', ms._onDocClick, true);
+
+  ms._removeStateListener = eventBus.on('stateChange', ({ prev, next }) => {
+    ms._onStateChange(prev, next);
+  });
+
+  // Estado "lendo/parado" da UI vem dos eventos do tts: sem polling (IMP-25)
+  ms._removeSpeakListener = onSpeakingChange((speaking) =>
+    ms._syncSpeaking(speaking),
+  );
+}
+
+export function togglePanel(ms) {
+  state.get().panelOpen ? ms._closePanel() : ms._openPanel();
+}
+
+export function openPanel(ms) {
+  // Quem abriu (FAB ou ícone do chrome, este no light DOM): é para onde o foco volta ao fechar
+  let opener = document.activeElement;
+  while (opener?.shadowRoot?.activeElement) {
+    opener = opener.shadowRoot.activeElement;
+  }
+  if (opener !== document.body && !ms._panel.element.contains(opener)) {
+    ms._panelOpener = opener;
+  }
+  state.set({ panelOpen: true });
+  ms._panel.open();
+  ms._setPageInert(true);
+  ms._fab.sync({ panelOpen: true });
+  announce('Painel de acessibilidade aberto');
+}
+
+/**
+ * aria-modal não esconde a página de ninguém: enquanto o painel está aberto, os irmãos do
+ * host no <body> ficam `inert` (sem foco, clique ou leitura). Só desfaz o que ela mesma fez.
+ * @param {boolean} on
+ */
+export function setPageInert(ms, on) {
+  ms._inertObserver?.disconnect();
+  ms._inertObserver = null;
+  for (const el of ms._inerted || []) el.removeAttribute('inert');
+  ms._inerted = [];
+  if (!on) return;
+  for (const el of document.body.children) ms._inertSibling(el);
+  // filhos do body que chegam com o painel aberto (toast, modal do site) também ficam inert
+  ms._inertObserver = new MutationObserver((records) => {
+    for (const r of records) {
+      for (const n of r.addedNodes) {
+        if (n.nodeType === 1) ms._inertSibling(n);
+      }
+    }
+  });
+  ms._inertObserver.observe(document.body, { childList: true });
+}
+
+export function inertSibling(ms, el) {
+  // fora do inert: o host, o que já era inert, regiões aria-live do site (o leitor de tela
+  // ainda precisa anunciá-las) e os nós da própria lib que precisam continuar vivos
+  // (anúncios de leitor de tela, seleção manual)
+  if (
+    el === ms._host ||
+    el.hasAttribute('inert') ||
+    el.hasAttribute('aria-live') ||
+    el.hasAttribute('data-ms-live') ||
+    el.id === 'ms-manual-select-banner' ||
+    el.id === 'ms-manual-select-highlight'
+  ) {
+    return;
+  }
+  el.setAttribute('inert', '');
+  ms._inerted.push(el);
+}
+
+export function closePanel(ms) {
+  state.set({ panelOpen: false });
+  ms._panel.close();
+  ms._setPageInert(false);
+  ms._fab.sync({ panelOpen: false });
+  // Botão X, clique fora ou Esc: o foco volta ao opener (sem roubá-lo da seleção manual)
+  if (!isManualSelectActive()) {
+    const opener = ms._panelOpener?.isConnected
+      ? ms._panelOpener
+      : ms._fab?.button;
+    opener?.focus?.();
+  }
+  ms._panelOpener = null;
+}
+
+export function toggleSpeak() {
+  // a UI acompanha por onSpeakingChange (ver _bindEvents)
+  if (isSpeaking()) {
+    stopSpeaking();
+    announce('Leitura interrompida');
+  } else {
+    speakMainContent();
+    announce('Lendo conteúdo principal');
+  }
+}
+
+export function syncSpeaking(ms, speaking) {
+  const s = state.get();
+  if (ms._panel) ms._panel.sync(s, { speaking });
+  if (ms._chrome) ms._chrome.sync(s, { speaking });
+}

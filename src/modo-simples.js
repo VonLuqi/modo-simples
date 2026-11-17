@@ -10,7 +10,6 @@
 
 import defaults from './config/defaults.js';
 import { mergeConfig } from './config/mergeConfig.js';
-import eventBus from './core/eventBus.js';
 import state from './core/state.js';
 import { diffStateAnnouncements } from './core/announcements.js';
 import {
@@ -33,9 +32,19 @@ import {
 import { announce } from './utils/aria.js';
 import { hasSimpleLanguagePairs } from './utils/simpleLanguage.js';
 import { getPageStyles, getUIStyles } from './ui/styles.js';
-import { createFab } from './ui/fab.js';
-import { createA11yPanel } from './ui/a11yPanel.js';
-import { createSessionChrome } from './ui/sessionChrome.js';
+import {
+  buildUI,
+  syncSessionChrome,
+  syncSimpleNav,
+  bindEvents,
+  togglePanel,
+  openPanel,
+  setPageInert,
+  inertSibling,
+  closePanel,
+  toggleSpeak,
+  syncSpeaking,
+} from './ui/binding.js';
 import {
   injectPageStyles,
   setLexendFontUrl,
@@ -52,18 +61,11 @@ import {
   startReadingRuler,
   stopReadingRuler,
 } from './features/readingRuler.js';
-import {
-  speakMainContent,
-  stopSpeaking,
-  isSpeaking,
-  onSpeakingChange,
-} from './features/tts.js';
+import { stopSpeaking, isSpeaking } from './features/tts.js';
 import {
   startManualSelect,
   stopManualSelect,
-  isManualSelectActive,
 } from './features/manualSelect.js';
-import { createSimpleNav } from './features/simpleNav.js';
 
 class ModoSimples {
   constructor(userConfig = {}) {
@@ -275,238 +277,51 @@ class ModoSimples {
   // ── UI Construction ────────────────────────────────────────────────────────
 
   _buildUI() {
-    this._host = document.createElement('div');
-    this._host.id = 'ms-container';
-    document.body.appendChild(this._host);
-
-    this._shadow = this._host.attachShadow({ mode: 'open' });
-
-    const styleEl = document.createElement('style');
-    styleEl.textContent = getUIStyles(this._config.position);
-    this._shadow.appendChild(styleEl);
-    this._styleEl = styleEl;
-
-    const s = state.get();
-
-    this._panel = createA11yPanel({
-      state: s,
-      onClose: () => this._closePanel(),
-      onToggleModoSimples: (value) => this._setModoSimples(value),
-      onSetOption: (key, value) => {
-        if (key === 'reducedMotion') this._reducedMotionUser = !!value;
-        state.set({ options: { [key]: value } });
-        if (key === 'hideImages' && state.get().modoSimples) {
-          this._savePreferShowImages(!value);
-        }
-      },
-      onSpeak: () => this._toggleSpeak(),
-      brand: this._config.brand,
-    });
-    this._shadow.appendChild(this._panel.element);
-
-    this._fab = createFab({
-      onClick: () => this._togglePanel(),
-    });
-    this._shadow.appendChild(this._fab.element);
-
-    this._fab.sync({ panelOpen: s.panelOpen });
-    this._panel.sync(s);
-    if (s.panelOpen) {
-      this._panel.open();
-      this._setPageInert(true);
-    }
-
-    this._syncSessionChrome();
-
-    this._simpleNav = createSimpleNav();
-    this._syncSimpleNav();
-    // Reposiciona SIMPLES após pills (MS on some com o header)
-    if (this._chrome) this._chrome.sync(s);
+    buildUI(this);
   }
 
-  /** Cria/destrói a barra de sessão conforme config.sessionBar (default: desligada). */
   _syncSessionChrome() {
-    if (this._config.sessionBar && !this._chrome) {
-      this._chrome = createSessionChrome({
-        mount: this._config.mount || {},
-        onToggleModoSimples: (value) => this._setModoSimples(value),
-        onOpenPanel: () => this._openPanel(),
-        onSpeak: () => this._toggleSpeak(),
-        onToggleSimpleLanguage: (value) =>
-          state.set({ options: { simpleLanguage: value } }),
-        onToggleHideImages: (hide) => {
-          state.set({ options: { hideImages: hide } });
-          if (state.get().modoSimples) this._savePreferShowImages(!hide);
-        },
-      });
-      this._chrome.sync(state.get());
-    } else if (!this._config.sessionBar && this._chrome) {
-      this._chrome.destroy();
-      this._chrome = null;
-    }
+    syncSessionChrome(this);
   }
 
   _syncSimpleNav() {
-    if (!this._simpleNav) return;
-    this._simpleNav.sync(this._config.simpleNav);
-    if (this._chrome) this._chrome.sync(state.get());
+    syncSimpleNav(this);
   }
 
   // ── Events ─────────────────────────────────────────────────────────────────
 
   _bindEvents() {
-    this._onDocKeydown = (e) => {
-      if (e.key === 'Escape' && state.get().panelOpen) {
-        this._closePanel(); // devolve o foco a quem abriu (UX-12)
-      }
-    };
-    document.addEventListener('keydown', this._onDocKeydown);
-
-    this._onDocClick = (e) => {
-      if (!state.get().panelOpen) return;
-      if (isManualSelectActive()) return; // o clique é da seleção manual: consumido uma vez (IMP-29)
-      const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
-      if (
-        path.includes(this._host) ||
-        path.includes(this._panel?.element) ||
-        path.includes(this._fab?.element)
-      ) {
-        return;
-      }
-      // Clicks that land on the host (open shadow) still include host in composedPath
-      if (e.target === this._host) return;
-      if (!this._host?.contains(e.target) && e.target !== this._host) {
-        // o inert faz o clique cair no body: fecha e repassa o clique ao elemento que estava
-        // sob o ponteiro (senão o primeiro clique no doc é engolido)
-        const { clientX, clientY } = e;
-        const retargeted =
-          e.target === document.body || e.target === document.documentElement;
-        this._closePanel();
-        if (retargeted && e.isTrusted && e.detail > 0) {
-          const alvo = document.elementFromPoint(clientX, clientY);
-          if (
-            alvo &&
-            alvo !== document.body &&
-            alvo !== document.documentElement
-          ) {
-            alvo.click();
-            // click() sintético não dá foco: campo de formulário recebe foco no lugar do FAB
-            if (
-              alvo.matches(
-                'input, select, textarea, [contenteditable]:not([contenteditable="false"])',
-              )
-            ) {
-              alvo.focus();
-            }
-          }
-        }
-      }
-    };
-    document.addEventListener('click', this._onDocClick, true);
-
-    this._removeStateListener = eventBus.on('stateChange', ({ prev, next }) => {
-      this._onStateChange(prev, next);
-    });
-
-    // Estado "lendo/parado" da UI vem dos eventos do tts: sem polling (IMP-25)
-    this._removeSpeakListener = onSpeakingChange((speaking) =>
-      this._syncSpeaking(speaking),
-    );
+    bindEvents(this);
   }
 
   // ── Panel management ───────────────────────────────────────────────────────
 
   _togglePanel() {
-    state.get().panelOpen ? this._closePanel() : this._openPanel();
+    togglePanel(this);
   }
 
   _openPanel() {
-    // Quem abriu (FAB ou ícone do chrome, este no light DOM): é para onde o foco volta ao fechar
-    let opener = document.activeElement;
-    while (opener?.shadowRoot?.activeElement) {
-      opener = opener.shadowRoot.activeElement;
-    }
-    if (opener !== document.body && !this._panel.element.contains(opener)) {
-      this._panelOpener = opener;
-    }
-    state.set({ panelOpen: true });
-    this._panel.open();
-    this._setPageInert(true);
-    this._fab.sync({ panelOpen: true });
-    announce('Painel de acessibilidade aberto');
+    openPanel(this);
   }
 
-  /**
-   * aria-modal não esconde a página de ninguém: enquanto o painel está aberto, os irmãos do
-   * host no <body> ficam `inert` (sem foco, clique ou leitura). Só desfaz o que ela mesma fez.
-   * @param {boolean} on
-   */
   _setPageInert(on) {
-    this._inertObserver?.disconnect();
-    this._inertObserver = null;
-    for (const el of this._inerted || []) el.removeAttribute('inert');
-    this._inerted = [];
-    if (!on) return;
-    for (const el of document.body.children) this._inertSibling(el);
-    // filhos do body que chegam com o painel aberto (toast, modal do site) também ficam inert
-    this._inertObserver = new MutationObserver((records) => {
-      for (const r of records) {
-        for (const n of r.addedNodes) {
-          if (n.nodeType === 1) this._inertSibling(n);
-        }
-      }
-    });
-    this._inertObserver.observe(document.body, { childList: true });
+    setPageInert(this, on);
   }
 
   _inertSibling(el) {
-    // fora do inert: o host, o que já era inert, regiões aria-live do site (o leitor de tela
-    // ainda precisa anunciá-las) e os nós da própria lib que precisam continuar vivos
-    // (anúncios de leitor de tela, seleção manual)
-    if (
-      el === this._host ||
-      el.hasAttribute('inert') ||
-      el.hasAttribute('aria-live') ||
-      el.hasAttribute('data-ms-live') ||
-      el.id === 'ms-manual-select-banner' ||
-      el.id === 'ms-manual-select-highlight'
-    ) {
-      return;
-    }
-    el.setAttribute('inert', '');
-    this._inerted.push(el);
+    inertSibling(this, el);
   }
 
   _closePanel() {
-    state.set({ panelOpen: false });
-    this._panel.close();
-    this._setPageInert(false);
-    this._fab.sync({ panelOpen: false });
-    // Botão X, clique fora ou Esc: o foco volta ao opener (sem roubá-lo da seleção manual)
-    if (!isManualSelectActive()) {
-      const opener = this._panelOpener?.isConnected
-        ? this._panelOpener
-        : this._fab?.button;
-      opener?.focus?.();
-    }
-    this._panelOpener = null;
+    closePanel(this);
   }
 
   _toggleSpeak() {
-    // a UI acompanha por onSpeakingChange (ver _bindEvents)
-    if (isSpeaking()) {
-      stopSpeaking();
-      announce('Leitura interrompida');
-    } else {
-      speakMainContent();
-      announce('Lendo conteúdo principal');
-    }
+    toggleSpeak();
   }
 
   _syncSpeaking(speaking) {
-    const s = state.get();
-    if (this._panel) this._panel.sync(s, { speaking });
-    if (this._chrome) this._chrome.sync(s, { speaking });
+    syncSpeaking(this, speaking);
   }
 
   // ── Modo Simples activation ────────────────────────────────────────────────
