@@ -78,6 +78,9 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **UX-14 (escala de texto)** — `--ms-u` agora vale `calc(16px * var(--ms-scale, 1))` e as classes `html.ms-text-scale-125|150|175` definem `--ms-scale` (1,25 / 1,5 / 1,75): o widget acompanha a escala de texto da lib (botão da barra a 175 % volta a 23,8 px) e continua imune a `html { font-size: 62.5% }` do host.
 - **UX-06 / reflow (MED2, MED4)** — até 720 px as pills usam `repeat(N, minmax(0, 1fr))` (3 colunas a partir de 360 px, 2 abaixo), `overflow-wrap: anywhere` e padding lateral menor; a grade de 4 botões da barra e o `.ms-simples-toggle-wrap` ganham `min-width: 0`. A 390 px o bloco de pills cai de 222 para 117 px (conteúdo começa em 268 px, antes ~350 px) e a 320 px com texto a 175 % o documento não rola na horizontal.
 - **UX-25** — cabeçalho do protótipo: o nav fica numa linha só acima de 1100 px ("Pesquisar" não quebra) e vira o botão "Menu" (aria-expanded/aria-controls, Esc fecha, 44 px) abaixo disso; no mobile (390 px) o cabeçalho cai de 201 para 140 px. Nav e botão vêm de scripts/sync-nav.cjs.
+- **UX-25 (QA)** — o menu recolhível do protótipo fecha ao sair com Tab e ao voltar para telas largas (aria-expanded zerado); botão Entrar com 44px no mobile (cabeçalho segue ≤140px).
+- **UX-14 (protótipo)** — textos das pills e dos cards do hub do protótipo ficam com ≥12px mesmo com html a 62,5%.
+- **UX-06 (doc)** — guia de integração (doc/09) avisa do empate de especificidade de .ms-pills-nav .ms-pill com CSS do host.
 
 ### Encerrado sem correção
 
