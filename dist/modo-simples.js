@@ -2352,6 +2352,10 @@
   var _distractionElements = [];
   var _manualPrincipal = null;
   var _manualPath = "";
+  var _holdPrincipal = false;
+  function holdPrincipal(on) {
+    _holdPrincipal = !!on;
+  }
   function injectPageStyles() {
     if (document.getElementById(PAGE_STYLE_ID)) return;
     const style = document.createElement("style");
@@ -2421,6 +2425,7 @@
     _distractionElements = [];
     _manualPrincipal = null;
     _manualPath = "";
+    _holdPrincipal = false;
   }
   function revert() {
     revertModoSimples();
@@ -2437,6 +2442,7 @@
     _mainElement = el;
     _manualPrincipal = el;
     _manualPath = buildCssPath(el);
+    _holdPrincipal = false;
     el.setAttribute("data-ms-principal", "");
     _distractionElements = detectDistractions(_mainElement, config);
     document.querySelectorAll('[data-ms-hidden="true"]').forEach((node) => {
@@ -2448,6 +2454,10 @@
   }
   function reprocess(state2, config) {
     if (!state2.modoSimples) {
+      applyOptions(state2);
+      return;
+    }
+    if (_holdPrincipal || isManualSelectActive()) {
       applyOptions(state2);
       return;
     }
@@ -3302,6 +3312,7 @@
       if (confidence < this._config.confidenceThreshold) {
         document.documentElement.classList.add("ms-ativo");
         applyOptions(currentState);
+        holdPrincipal(true);
         startManualSelect({
           onSelect: (el, path) => {
             setPrincipal(el, this._config);

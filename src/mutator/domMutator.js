@@ -1,7 +1,10 @@
 import { getPageStyles } from '../ui/styles.js';
 import { detectMainContent } from '../heuristics/contentDetector.js';
 import { detectDistractions } from '../heuristics/distractionDetector.js';
-import { buildCssPath } from '../features/manualSelect.js';
+import {
+  buildCssPath,
+  isManualSelectActive,
+} from '../features/manualSelect.js';
 
 /**
  * DOM Mutator — applies and reverts Modo Simples visual transformations.
@@ -54,6 +57,17 @@ let _distractionElements = [];
  */
 let _manualPrincipal = null;
 let _manualPath = '';
+/**
+ * Confiança baixa: enquanto o usuário não escolher o principal, o reprocess (observer) NÃO pode
+ * aplicar a heurística — ela já foi considerada incerta. Zera ao escolher (setPrincipal) ou ao
+ * desligar o Modo Simples (revertModoSimples).
+ */
+let _holdPrincipal = false;
+
+/** @param {boolean} on */
+export function holdPrincipal(on) {
+  _holdPrincipal = !!on;
+}
 
 /**
  * Inject the Modo Simples page CSS into <head>.
@@ -187,6 +201,7 @@ export function revertModoSimples() {
   _distractionElements = [];
   _manualPrincipal = null;
   _manualPath = '';
+  _holdPrincipal = false;
 }
 
 /**
@@ -214,6 +229,7 @@ export function setPrincipal(el, config) {
   _mainElement = el;
   _manualPrincipal = el;
   _manualPath = buildCssPath(el);
+  _holdPrincipal = false;
   el.setAttribute('data-ms-principal', '');
   _distractionElements = detectDistractions(_mainElement, config);
   document.querySelectorAll('[data-ms-hidden="true"]').forEach((node) => {
@@ -231,6 +247,11 @@ export function setPrincipal(el, config) {
  */
 export function reprocess(state, config) {
   if (!state.modoSimples) {
+    applyOptions(state);
+    return;
+  }
+  // Seleção manual aberta (ou principal ainda por escolher): a heurística é incerta, não reaplica
+  if (_holdPrincipal || isManualSelectActive()) {
     applyOptions(state);
     return;
   }

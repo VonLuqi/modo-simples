@@ -36,6 +36,7 @@ import {
   revert,
   revertModoSimples,
   setPrincipal,
+  holdPrincipal,
 } from './mutator/domMutator.js';
 import { startObserving, stopObserving } from './mutator/domObserver.js';
 import {
@@ -468,6 +469,7 @@ class ModoSimples {
       // confirmar (IMP-22). Enquanto escolhe, só a marca de "modo ligado" e as opções.
       document.documentElement.classList.add('ms-ativo');
       applyOptions(currentState);
+      holdPrincipal(true); // o observer não aplica a heurística incerta enquanto isso
       startManualSelect({
         onSelect: (el, path) => {
           setPrincipal(el, this._config);
