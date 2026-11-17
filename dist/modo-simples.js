@@ -146,78 +146,6 @@
     return merged;
   }
 
-  // src/heuristics/scoring.js
-  function scoreElement(element, config = defaults_default) {
-    var _a;
-    const { scoring } = config;
-    let score = 0;
-    const tag = element.tagName.toLowerCase();
-    const role = element.getAttribute("role");
-    if (tag === "main") score += scoring.mainTagBonus;
-    if (role === "main") score += scoring.roleMainBonus;
-    if (tag === "article") score += scoring.articleBonus;
-    if (element.querySelector("h1")) score += scoring.h1Bonus;
-    if (element.querySelector("h2")) score += scoring.h2Bonus;
-    const textLength2 = ((_a = element.textContent) != null ? _a : "").trim().length;
-    if (textLength2 >= scoring.minTextLength) {
-      score += scoring.textLengthBonus;
-      if (textLength2 >= scoring.minTextLength * 3)
-        score += scoring.textLengthBonus;
-    }
-    return score;
-  }
-
-  // src/heuristics/queryAll.js
-  function queryAll(selectors) {
-    if (!Array.isArray(selectors) || selectors.length === 0) return [];
-    try {
-      return Array.from(document.querySelectorAll(selectors.join(",")));
-    } catch (_) {
-      const found = /* @__PURE__ */ new Set();
-      for (const selector of selectors) {
-        try {
-          document.querySelectorAll(selector).forEach((el) => found.add(el));
-        } catch (_2) {
-        }
-      }
-      return [...found];
-    }
-  }
-
-  // src/heuristics/contentDetector.js
-  function detectMainContent(config = defaults_default) {
-    const scored = [];
-    const rank = (el) => {
-      if (typeof el.matches !== "function") return 0;
-      const i = config.mainSelectors.findIndex((sel) => {
-        try {
-          return el.matches(sel);
-        } catch (_) {
-          return false;
-        }
-      });
-      return i === -1 ? config.mainSelectors.length : i;
-    };
-    const candidates = queryAll(config.mainSelectors).map((element, order) => ({
-      element,
-      order,
-      priority: rank(element)
-    }));
-    candidates.sort((a, b) => a.priority - b.priority || a.order - b.order);
-    for (const { element } of candidates) {
-      scored.push({ element, score: scoreElement(element, config) });
-    }
-    if (scored.length === 0) {
-      return { element: document.body, confidence: 0 };
-    }
-    scored.sort((a, b) => b.score - a.score);
-    const best = scored[0];
-    const { scoring } = config;
-    const ideal = scoring.mainTagBonus + scoring.h1Bonus + scoring.textLengthBonus * 2;
-    const confidence = Math.min(best.score / ideal, 1);
-    return { element: best.element, confidence };
-  }
-
   // src/core/eventBus.js
   var eventBus = {
     /** @type {Record<string, Function[]>} */
@@ -333,6 +261,49 @@
   }
   var state = createState(initialState);
   var state_default = state;
+
+  // src/core/announcements.js
+  var TOGGLE_ANNOUNCEMENTS = {
+    dyslexiaFont: ["Fonte Lexend ativada", "Fonte Lexend desativada"],
+    highlightLinks: ["Destaque de links ativado", "Destaque de links desativado"],
+    textSpacing: [
+      "Espa\xE7amento de texto ativado",
+      "Espa\xE7amento de texto desativado"
+    ],
+    hideImages: ["Imagens ocultadas", "Imagens vis\xEDveis"],
+    reducedMotion: [
+      "Movimento reduzido ativado",
+      "Movimento reduzido desativado"
+    ],
+    simpleLanguage: ["Linguagem simples ligada", "Linguagem simples desligada"]
+  };
+  var THEME_LABELS = {
+    senac: "Cores do site",
+    yellowBlack: "Amarelo e Preto",
+    darkHigh: "Modo Escuro Alto",
+    soft: "Descanso Suave"
+  };
+  function diffStateAnnouncements(prev, next) {
+    const out = [];
+    if (prev.options.readingRuler !== next.options.readingRuler) {
+      out.push(
+        next.options.readingRuler ? "R\xE9gua de leitura ativada" : "R\xE9gua de leitura desativada"
+      );
+    }
+    Object.entries(TOGGLE_ANNOUNCEMENTS).forEach(([k, [on, off]]) => {
+      if (prev.options[k] !== next.options[k])
+        out.push(next.options[k] ? on : off);
+    });
+    if (prev.options.textScale !== next.options.textScale) {
+      out.push(`Tamanho do texto ${next.options.textScale}%`);
+    }
+    if (prev.options.colorTheme !== next.options.colorTheme) {
+      out.push(
+        `Tema ${THEME_LABELS[next.options.colorTheme] || next.options.colorTheme}`
+      );
+    }
+    return out;
+  }
 
   // src/core/persistence.js
   var KEY_PREFIX = "ms_";
@@ -463,6 +434,196 @@
         simpleLanguage: modoSimples ? Boolean(opts.simpleLanguage) : false
       }
     };
+  }
+
+  // src/heuristics/scoring.js
+  function scoreElement(element, config = defaults_default) {
+    var _a;
+    const { scoring } = config;
+    let score = 0;
+    const tag = element.tagName.toLowerCase();
+    const role = element.getAttribute("role");
+    if (tag === "main") score += scoring.mainTagBonus;
+    if (role === "main") score += scoring.roleMainBonus;
+    if (tag === "article") score += scoring.articleBonus;
+    if (element.querySelector("h1")) score += scoring.h1Bonus;
+    if (element.querySelector("h2")) score += scoring.h2Bonus;
+    const textLength2 = ((_a = element.textContent) != null ? _a : "").trim().length;
+    if (textLength2 >= scoring.minTextLength) {
+      score += scoring.textLengthBonus;
+      if (textLength2 >= scoring.minTextLength * 3)
+        score += scoring.textLengthBonus;
+    }
+    return score;
+  }
+
+  // src/heuristics/queryAll.js
+  function queryAll(selectors) {
+    if (!Array.isArray(selectors) || selectors.length === 0) return [];
+    try {
+      return Array.from(document.querySelectorAll(selectors.join(",")));
+    } catch (_) {
+      const found = /* @__PURE__ */ new Set();
+      for (const selector of selectors) {
+        try {
+          document.querySelectorAll(selector).forEach((el) => found.add(el));
+        } catch (_2) {
+        }
+      }
+      return [...found];
+    }
+  }
+
+  // src/heuristics/contentDetector.js
+  function detectMainContent(config = defaults_default) {
+    const scored = [];
+    const rank = (el) => {
+      if (typeof el.matches !== "function") return 0;
+      const i = config.mainSelectors.findIndex((sel) => {
+        try {
+          return el.matches(sel);
+        } catch (_) {
+          return false;
+        }
+      });
+      return i === -1 ? config.mainSelectors.length : i;
+    };
+    const candidates = queryAll(config.mainSelectors).map((element, order) => ({
+      element,
+      order,
+      priority: rank(element)
+    }));
+    candidates.sort((a, b) => a.priority - b.priority || a.order - b.order);
+    for (const { element } of candidates) {
+      scored.push({ element, score: scoreElement(element, config) });
+    }
+    if (scored.length === 0) {
+      return { element: document.body, confidence: 0 };
+    }
+    scored.sort((a, b) => b.score - a.score);
+    const best = scored[0];
+    const { scoring } = config;
+    const ideal = scoring.mainTagBonus + scoring.h1Bonus + scoring.textLengthBonus * 2;
+    const confidence = Math.min(best.score / ideal, 1);
+    return { element: best.element, confidence };
+  }
+
+  // src/core/instancePersistence.js
+  var textLength = (el) => (el && el.textContent || "").trim().length;
+  var STATE_KEY = "state";
+  var PRINCIPAL_KEY = "principal";
+  function saveHideImagesBeforeMs(ms, hide) {
+    ms._hideImagesBeforeMs = !!hide;
+    if (!ms._config.persistence) return;
+    const key = "hideImagesBeforeMs";
+    if (ms._config.hostnamePersistence) {
+      persistence_default.saveForHost(key, !!hide);
+    } else {
+      persistence_default.save(key, !!hide);
+    }
+  }
+  function takeHideImagesBeforeMs(ms) {
+    let hide = ms._hideImagesBeforeMs;
+    if (hide === null && ms._config.persistence) {
+      const key = "hideImagesBeforeMs";
+      hide = ms._config.hostnamePersistence ? persistence_default.loadForHost(key, null) : persistence_default.load(key, null);
+    }
+    ms._hideImagesBeforeMs = null;
+    if (ms._config.persistence) {
+      const key = "hideImagesBeforeMs";
+      if (ms._config.hostnamePersistence) {
+        persistence_default.removeForHost(key);
+      } else {
+        persistence_default.remove(key);
+      }
+    }
+    return !!hide;
+  }
+  function loadPreferShowImages(ms) {
+    if (!ms._config.persistence) return false;
+    const key = "preferShowImagesInMs";
+    const v = ms._config.hostnamePersistence ? persistence_default.loadForHost(key, false) : persistence_default.load(key, false);
+    return !!v;
+  }
+  function savePreferShowImages(ms, show) {
+    if (!ms._config.persistence) return;
+    const key = "preferShowImagesInMs";
+    if (ms._config.hostnamePersistence) {
+      persistence_default.saveForHost(key, !!show);
+    } else {
+      persistence_default.save(key, !!show);
+    }
+  }
+  function persistState(ms, next) {
+    if (!ms._config.persistence) return;
+    const payload = {
+      v: SCHEMA_VERSION,
+      modoSimples: next.modoSimples,
+      // reducedMotion só é gravado quando o usuário escolheu (null = derivado do SO)
+      options: { ...next.options, reducedMotion: ms._reducedMotionUser }
+    };
+    const json = JSON.stringify(payload);
+    if (json === ms._lastPersisted) return;
+    ms._lastPersisted = json;
+    if (ms._config.hostnamePersistence) {
+      persistence_default.saveForHost(STATE_KEY, payload);
+    } else {
+      persistence_default.save(STATE_KEY, payload);
+    }
+  }
+  function loadPersistedState(ms) {
+    if (!ms._config.persistence) return;
+    const saved = ms._config.hostnamePersistence ? persistence_default.loadForHost(STATE_KEY) : persistence_default.load(STATE_KEY);
+    if (!saved) return;
+    const patch = hydratePersistedState(saved);
+    if (patch) state_default.set(patch);
+    const rm = saved.options && saved.options.reducedMotion;
+    const isUserChoice = saved.v >= 1 && typeof rm === "boolean";
+    ms._reducedMotionUser = isUserChoice ? rm : null;
+  }
+  function savePrincipalPath(ms, path, el) {
+    if (!ms._config.persistence || !path) return;
+    persistence_default.saveForPath(PRINCIPAL_KEY, {
+      path,
+      textLen: textLength(el)
+    });
+  }
+  function loadPrincipal(ms) {
+    if (!ms._config.persistence) return null;
+    let v = persistence_default.loadForPath(PRINCIPAL_KEY);
+    const viaHost = v == null;
+    if (viaHost) {
+      v = ms._config.hostnamePersistence ? persistence_default.loadForHost(PRINCIPAL_KEY) : persistence_default.load(PRINCIPAL_KEY);
+    }
+    if (typeof v === "string" && v) {
+      return { path: v, textLen: null, legacy: true };
+    }
+    if (v && typeof v.path === "string" && v.path) {
+      return {
+        path: v.path,
+        textLen: Number.isFinite(v.textLen) ? v.textLen : null,
+        legacy: viaHost
+      };
+    }
+    return null;
+  }
+  function discardPrincipal(ms) {
+    if (!ms._config.persistence) return;
+    persistence_default.removeForPath(PRINCIPAL_KEY);
+  }
+  function isPlausiblePrincipal(ms, el, saved) {
+    const len = textLength(el);
+    if (len < ms._config.scoring.minTextLength) return false;
+    if (saved.textLen && len < saved.textLen * 0.5) return false;
+    if (saved.legacy) return ms._legacyHintFits(el, len);
+    return true;
+  }
+  function legacyHintFits(ms, el, len) {
+    const { element, confidence } = detectMainContent(ms._config);
+    if (confidence < ms._config.confidenceThreshold || element === el) {
+      return true;
+    }
+    return len >= textLength(element) * 0.5;
   }
 
   // src/utils/mediaQuery.js
@@ -2299,35 +2460,359 @@
     document.body.prepend(bar);
   }
 
-  // src/heuristics/distractionDetector.js
-  function detectDistractions(mainElement, config = defaults_default) {
-    const distractions = [];
-    const isMsChrome = (el) => {
+  // src/features/simpleNav.js
+  var SAFE_SCHEMES = ["http", "https", "mailto", "tel"];
+  function isSafeHref(href) {
+    const compact = String(href).replace(/[\u0000- \u007f-\u009f]/g, "");
+    const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(compact);
+    return !scheme || SAFE_SCHEMES.includes(scheme[1].toLowerCase());
+  }
+  function normalizeSimpleNav(items) {
+    if (!Array.isArray(items)) return [];
+    return items.map((item) => {
       var _a, _b;
-      if (!el || !el.id && !el.getAttribute) return false;
-      if (el.id === "ms-container" || el.id === "ms-session-bar" || el.id === "ms-simples-chrome") {
-        return true;
+      if (!item || typeof item !== "object") return null;
+      const label = String((_a = item.label) != null ? _a : "").trim();
+      const href = String((_b = item.href) != null ? _b : "").trim();
+      if (!label || !href || !isSafeHref(href)) return null;
+      const short = item.short != null && String(item.short).trim() ? String(item.short).trim() : void 0;
+      return short ? { label, href, short } : { label, href };
+    }).filter(Boolean);
+  }
+  function findHostAuthoredPills() {
+    const all = document.querySelectorAll("[data-ms-pills]");
+    for (const el of all) {
+      if (!el.hasAttribute("data-ms-injected")) return el;
+    }
+    return null;
+  }
+  function createSimpleNav() {
+    let nav = null;
+    function sync(items) {
+      const list = normalizeSimpleNav(items);
+      if (findHostAuthoredPills()) {
+        destroy();
+        return;
       }
-      if ((_a = el.hasAttribute) == null ? void 0 : _a.call(el, "data-ms-pills")) return true;
-      if ((_b = el.closest) == null ? void 0 : _b.call(
-        el,
-        "#ms-container, #ms-session-bar, #ms-simples-chrome, [data-ms-pills]"
-      )) {
-        return true;
+      if (!list.length) {
+        destroy();
+        return;
       }
-      return false;
-    };
-    const seen = /* @__PURE__ */ new Set();
-    for (const el of queryAll(config.distractionSelectors)) {
-      if (isMsChrome(el)) continue;
-      if (mainElement && el.contains(mainElement)) continue;
-      if (mainElement && mainElement.contains(el)) continue;
-      if (!seen.has(el)) {
-        seen.add(el);
-        distractions.push(el);
+      if (!nav) {
+        nav = document.createElement("nav");
+        nav.className = "ms-pills-nav ms-simple-only";
+        nav.setAttribute("data-ms-pills", "");
+        nav.setAttribute("data-ms-injected", "");
+        nav.setAttribute("aria-label", "Navega\xE7\xE3o do Modo Simples");
+        const inner2 = document.createElement("div");
+        inner2.className = "ms-pills-nav__inner";
+        nav.appendChild(inner2);
+        _mount(nav);
+      }
+      const inner = nav.querySelector(".ms-pills-nav__inner");
+      if (!inner) return;
+      const chrome = inner.querySelector("#ms-simples-chrome");
+      if (chrome) chrome.remove();
+      inner.innerHTML = "";
+      for (const item of list) {
+        const a = document.createElement("a");
+        a.className = "ms-pill";
+        a.setAttribute("href", item.href);
+        a.href = item.href;
+        if (item.short) {
+          const full = document.createElement("span");
+          full.className = "ms-pill__full";
+          full.textContent = item.label;
+          const short = document.createElement("span");
+          short.className = "ms-pill__short";
+          short.textContent = item.short;
+          a.appendChild(full);
+          a.appendChild(short);
+        } else {
+          a.textContent = item.label;
+        }
+        inner.appendChild(a);
+      }
+      if (chrome) inner.appendChild(chrome);
+      _markCurrent(nav);
+    }
+    function destroy() {
+      if (!nav) return;
+      nav.remove();
+      nav = null;
+    }
+    return { sync, destroy };
+  }
+  function _mount(nav) {
+    const bar = document.getElementById("ms-session-bar");
+    if (bar) {
+      bar.insertAdjacentElement("afterend", nav);
+      return;
+    }
+    const header = document.querySelector("header");
+    if (header) {
+      header.insertAdjacentElement("afterend", nav);
+      return;
+    }
+    const chrome = document.getElementById("ms-simples-chrome");
+    if (chrome) {
+      chrome.insertAdjacentElement("afterend", nav);
+      return;
+    }
+    document.body.prepend(nav);
+  }
+  function _markCurrent(nav) {
+    const path = typeof location !== "undefined" && location.pathname || "";
+    const file = path.split("/").pop() || "";
+    const hrefFull = typeof location !== "undefined" && location.href || "";
+    nav.querySelectorAll("a.ms-pill").forEach((a) => {
+      a.removeAttribute("aria-current");
+      const href = a.getAttribute("href") || "";
+      if (!href || href === "#") return;
+      try {
+        const resolved = typeof location !== "undefined" ? new URL(href, location.href) : null;
+        const match2 = resolved && resolved.href === hrefFull || href === file || href.endsWith("/" + file) || file && href.split("/").pop() === file;
+        if (match2) a.setAttribute("aria-current", "page");
+      } catch (_) {
+        if (href === file) a.setAttribute("aria-current", "page");
+      }
+    });
+  }
+
+  // src/features/tts.js
+  var _utterance = null;
+  var _speaking = false;
+  var _blocks = [];
+  var _blockIndex = 0;
+  var _activeEl = null;
+  var _runId = 0;
+  var _listeners = /* @__PURE__ */ new Set();
+  var _notified = false;
+  function notify() {
+    if (_speaking === _notified) return;
+    _notified = _speaking;
+    for (const cb of Array.from(_listeners)) {
+      try {
+        cb(_speaking);
+      } catch (_) {
       }
     }
-    return distractions;
+  }
+  function onSpeakingChange(cb) {
+    _listeners.add(cb);
+    return () => {
+      _listeners.delete(cb);
+    };
+  }
+  var BLOCK_TAGS = [
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "p",
+    "li",
+    "dt",
+    "dd",
+    "figcaption",
+    "blockquote"
+  ];
+  function closestSafe(el, selector) {
+    var _a, _b, _c;
+    if (!el) return null;
+    if (typeof el.closest === "function") return el.closest(selector);
+    let node = el;
+    while (node) {
+      if (node.matches && node.matches(selector)) return node;
+      const parts = selector.split(",").map((s) => s.trim());
+      for (const part of parts) {
+        if (part.startsWith(".") && ((_a = node.classList) == null ? void 0 : _a.contains(part.slice(1))))
+          return node;
+        if (part.startsWith("#") && node.id === part.slice(1)) return node;
+        if (part.startsWith("[") && part.endsWith("]")) {
+          const attr = part.slice(1, -1).split("=")[0];
+          if ((_b = node.hasAttribute) == null ? void 0 : _b.call(node, attr)) return node;
+        }
+        if (/^[a-z][a-z0-9]*$/i.test(part) && ((_c = node.tagName) == null ? void 0 : _c.toLowerCase()) === part.toLowerCase()) {
+          return node;
+        }
+      }
+      node = node.parentElement;
+    }
+    return null;
+  }
+  function getRoot() {
+    return document.querySelector("[data-ms-principal]") || document.querySelector("main") || document.querySelector('[role="main"]') || document.body;
+  }
+  function isVisiblyReadable(el) {
+    if (!el || closestSafe(el, "#ms-container") || closestSafe(el, "#ms-simples-chrome") || closestSafe(el, "#ms-session-bar")) {
+      return false;
+    }
+    if (closestSafe(el, "[data-ms-hidden]")) return false;
+    const html = document.documentElement;
+    const msOn = html.classList.contains("ms-ativo");
+    const simpleLang = html.classList.contains("ms-simple-language");
+    if (msOn && closestSafe(el, ".ms-simple-hide")) return false;
+    if (!msOn && closestSafe(el, ".ms-simple-only")) return false;
+    if (simpleLang && closestSafe(el, "[data-ms-plain]")) return false;
+    if (!simpleLang && closestSafe(el, "[data-ms-simple]")) return false;
+    return (el.textContent || "").trim().length > 0;
+  }
+  function collectBlocks() {
+    const root = getRoot();
+    if (!root) return [];
+    const nodes = Array.from(root.querySelectorAll(BLOCK_TAGS.join(",")));
+    const readable = new Set(nodes.filter(isVisiblyReadable));
+    return nodes.filter((el) => {
+      if (!readable.has(el)) return false;
+      let parent = el.parentElement;
+      while (parent && parent !== root) {
+        if (readable.has(parent)) return false;
+        parent = parent.parentElement;
+      }
+      return true;
+    });
+  }
+  var MAX_UTTERANCE = 200;
+  function splitForSpeech(text, max = MAX_UTTERANCE) {
+    if (text.length <= max) return [text];
+    const chunks = [];
+    let cur = "";
+    const flush = () => {
+      const t = cur.trim();
+      if (t) chunks.push(t);
+      cur = "";
+    };
+    const sentences = text.match(/[\s\S]+?(?:[.!?…]+(?=\s|$)|$)\s*/g) || [text];
+    for (const s of sentences) {
+      if (s.length > max) {
+        flush();
+        const words = s.match(/\S+\s*/g) || [s];
+        for (const w of words) {
+          if (w.length > max) {
+            flush();
+            for (let i = 0; i < w.length; i += max)
+              chunks.push(w.slice(i, i + max));
+          } else if ((cur + w).trim().length > max) {
+            flush();
+            cur = w;
+          } else {
+            cur += w;
+          }
+        }
+        continue;
+      }
+      if ((cur + s).trim().length > max) {
+        flush();
+        cur = s;
+      } else {
+        cur += s;
+      }
+    }
+    flush();
+    return chunks;
+  }
+  function clearHighlight() {
+    document.querySelectorAll("[data-ms-tts-active]").forEach((node) => {
+      node.removeAttribute("data-ms-tts-active");
+    });
+    _activeEl = null;
+  }
+  function highlightAndScroll(el) {
+    clearHighlight();
+    el.setAttribute("data-ms-tts-active", "");
+    _activeEl = el;
+    const reduceMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (typeof el.scrollIntoView === "function") {
+      try {
+        el.scrollIntoView({
+          block: "center",
+          behavior: reduceMotion ? "auto" : "smooth"
+        });
+      } catch (_) {
+        el.scrollIntoView(true);
+      }
+    }
+  }
+  function speakBlockAt(index, run) {
+    if (!_speaking || run !== _runId) return;
+    if (index >= _blocks.length) {
+      stopSpeaking();
+      return;
+    }
+    const el = _blocks[index];
+    _blockIndex = index;
+    highlightAndScroll(el);
+    const text = (el.innerText || el.textContent || "").replace(/\s+/g, " ").trim();
+    if (!text) {
+      speakBlockAt(index + 1, run);
+      return;
+    }
+    const chunks = splitForSpeech(text);
+    const speakChunk = (i) => {
+      if (!_speaking || run !== _runId) return;
+      const utterance = new SpeechSynthesisUtterance(chunks[i]);
+      _utterance = utterance;
+      utterance.lang = "pt-BR";
+      utterance.rate = 1;
+      const next = () => {
+        if (run !== _runId) return;
+        _utterance = null;
+        if (!_speaking) return;
+        if (i + 1 < chunks.length) speakChunk(i + 1);
+        else speakBlockAt(index + 1, run);
+      };
+      utterance.onend = next;
+      utterance.onerror = next;
+      speechSynthesis.speak(utterance);
+    };
+    speakChunk(0);
+  }
+  function speakMainContent() {
+    if (typeof speechSynthesis === "undefined") return;
+    stopSpeaking();
+    const run = _runId;
+    _blocks = collectBlocks();
+    if (!_blocks.length) {
+      const root = getRoot();
+      const text = root ? (root.innerText || root.textContent || "").replace(/\s+/g, " ").trim() : "";
+      if (!text) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      _utterance = utterance;
+      utterance.lang = "pt-BR";
+      utterance.rate = 1;
+      const done = () => {
+        if (run !== _runId) return;
+        _speaking = false;
+        _utterance = null;
+        notify();
+      };
+      utterance.onend = done;
+      utterance.onerror = done;
+      _speaking = true;
+      notify();
+      speechSynthesis.speak(utterance);
+      return;
+    }
+    _speaking = true;
+    notify();
+    speakBlockAt(0, run);
+  }
+  function stopSpeaking() {
+    _runId += 1;
+    _speaking = false;
+    _blocks = [];
+    _blockIndex = 0;
+    clearHighlight();
+    notify();
+    if (typeof speechSynthesis === "undefined") return;
+    speechSynthesis.cancel();
+    _utterance = null;
+  }
+  function isSpeaking() {
+    if (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking) {
+      return true;
+    }
+    return _speaking;
   }
 
   // src/features/manualSelect.js
@@ -2644,6 +3129,212 @@
     _callbacks = null;
     if (wasActive && (_prevFocus == null ? void 0 : _prevFocus.isConnected)) (_a = _prevFocus.focus) == null ? void 0 : _a.call(_prevFocus);
     _prevFocus = null;
+  }
+
+  // src/ui/binding.js
+  function buildUI(ms) {
+    ms._host = document.createElement("div");
+    ms._host.id = "ms-container";
+    document.body.appendChild(ms._host);
+    ms._shadow = ms._host.attachShadow({ mode: "open" });
+    const styleEl = document.createElement("style");
+    styleEl.textContent = getUIStyles(ms._config.position);
+    ms._shadow.appendChild(styleEl);
+    ms._styleEl = styleEl;
+    const s = state_default.get();
+    ms._panel = createA11yPanel({
+      state: s,
+      onClose: () => ms._closePanel(),
+      onToggleModoSimples: (value) => ms._setModoSimples(value),
+      onSetOption: (key, value) => {
+        if (key === "reducedMotion") ms._reducedMotionUser = !!value;
+        state_default.set({ options: { [key]: value } });
+        if (key === "hideImages" && state_default.get().modoSimples) {
+          ms._savePreferShowImages(!value);
+        }
+      },
+      onSpeak: () => ms._toggleSpeak(),
+      brand: ms._config.brand
+    });
+    ms._shadow.appendChild(ms._panel.element);
+    ms._fab = createFab({
+      onClick: () => ms._togglePanel()
+    });
+    ms._shadow.appendChild(ms._fab.element);
+    ms._fab.sync({ panelOpen: s.panelOpen });
+    ms._panel.sync(s);
+    if (s.panelOpen) {
+      ms._panel.open();
+      ms._setPageInert(true);
+    }
+    ms._syncSessionChrome();
+    ms._simpleNav = createSimpleNav();
+    ms._syncSimpleNav();
+    if (ms._chrome) ms._chrome.sync(s);
+  }
+  function syncSessionChrome(ms) {
+    if (ms._config.sessionBar && !ms._chrome) {
+      ms._chrome = createSessionChrome({
+        mount: ms._config.mount || {},
+        onToggleModoSimples: (value) => ms._setModoSimples(value),
+        onOpenPanel: () => ms._openPanel(),
+        onSpeak: () => ms._toggleSpeak(),
+        onToggleSimpleLanguage: (value) => state_default.set({ options: { simpleLanguage: value } }),
+        onToggleHideImages: (hide) => {
+          state_default.set({ options: { hideImages: hide } });
+          if (state_default.get().modoSimples) ms._savePreferShowImages(!hide);
+        }
+      });
+      ms._chrome.sync(state_default.get());
+    } else if (!ms._config.sessionBar && ms._chrome) {
+      ms._chrome.destroy();
+      ms._chrome = null;
+    }
+  }
+  function syncSimpleNav(ms) {
+    if (!ms._simpleNav) return;
+    ms._simpleNav.sync(ms._config.simpleNav);
+    if (ms._chrome) ms._chrome.sync(state_default.get());
+  }
+  function bindEvents(ms) {
+    ms._onDocKeydown = (e) => {
+      if (e.key === "Escape" && state_default.get().panelOpen) {
+        ms._closePanel();
+      }
+    };
+    document.addEventListener("keydown", ms._onDocKeydown);
+    ms._onDocClick = (e) => {
+      var _a, _b, _c;
+      if (!state_default.get().panelOpen) return;
+      if (isManualSelectActive()) return;
+      const path = typeof e.composedPath === "function" ? e.composedPath() : [];
+      if (path.includes(ms._host) || path.includes((_a = ms._panel) == null ? void 0 : _a.element) || path.includes((_b = ms._fab) == null ? void 0 : _b.element)) {
+        return;
+      }
+      if (e.target === ms._host) return;
+      if (!((_c = ms._host) == null ? void 0 : _c.contains(e.target)) && e.target !== ms._host) {
+        const { clientX, clientY } = e;
+        const retargeted = e.target === document.body || e.target === document.documentElement;
+        ms._closePanel();
+        if (retargeted && e.isTrusted && e.detail > 0) {
+          const alvo = document.elementFromPoint(clientX, clientY);
+          if (alvo && alvo !== document.body && alvo !== document.documentElement) {
+            alvo.click();
+            if (alvo.matches(
+              'input, select, textarea, [contenteditable]:not([contenteditable="false"])'
+            )) {
+              alvo.focus();
+            }
+          }
+        }
+      }
+    };
+    document.addEventListener("click", ms._onDocClick, true);
+    ms._removeStateListener = eventBus_default.on("stateChange", ({ prev, next }) => {
+      ms._onStateChange(prev, next);
+    });
+    ms._removeSpeakListener = onSpeakingChange(
+      (speaking) => ms._syncSpeaking(speaking)
+    );
+  }
+  function togglePanel(ms) {
+    state_default.get().panelOpen ? ms._closePanel() : ms._openPanel();
+  }
+  function openPanel(ms) {
+    var _a;
+    let opener = document.activeElement;
+    while ((_a = opener == null ? void 0 : opener.shadowRoot) == null ? void 0 : _a.activeElement) {
+      opener = opener.shadowRoot.activeElement;
+    }
+    if (opener !== document.body && !ms._panel.element.contains(opener)) {
+      ms._panelOpener = opener;
+    }
+    state_default.set({ panelOpen: true });
+    ms._panel.open();
+    ms._setPageInert(true);
+    ms._fab.sync({ panelOpen: true });
+    announce("Painel de acessibilidade aberto");
+  }
+  function setPageInert(ms, on) {
+    var _a;
+    (_a = ms._inertObserver) == null ? void 0 : _a.disconnect();
+    ms._inertObserver = null;
+    for (const el of ms._inerted || []) el.removeAttribute("inert");
+    ms._inerted = [];
+    if (!on) return;
+    for (const el of document.body.children) ms._inertSibling(el);
+    ms._inertObserver = new MutationObserver((records) => {
+      for (const r of records) {
+        for (const n of r.addedNodes) {
+          if (n.nodeType === 1) ms._inertSibling(n);
+        }
+      }
+    });
+    ms._inertObserver.observe(document.body, { childList: true });
+  }
+  function inertSibling(ms, el) {
+    if (el === ms._host || el.hasAttribute("inert") || el.hasAttribute("aria-live") || el.hasAttribute("data-ms-live") || el.id === "ms-manual-select-banner" || el.id === "ms-manual-select-highlight") {
+      return;
+    }
+    el.setAttribute("inert", "");
+    ms._inerted.push(el);
+  }
+  function closePanel(ms) {
+    var _a, _b, _c;
+    state_default.set({ panelOpen: false });
+    ms._panel.close();
+    ms._setPageInert(false);
+    ms._fab.sync({ panelOpen: false });
+    if (!isManualSelectActive()) {
+      const opener = ((_a = ms._panelOpener) == null ? void 0 : _a.isConnected) ? ms._panelOpener : (_b = ms._fab) == null ? void 0 : _b.button;
+      (_c = opener == null ? void 0 : opener.focus) == null ? void 0 : _c.call(opener);
+    }
+    ms._panelOpener = null;
+  }
+  function toggleSpeak() {
+    if (isSpeaking()) {
+      stopSpeaking();
+      announce("Leitura interrompida");
+    } else {
+      speakMainContent();
+      announce("Lendo conte\xFAdo principal");
+    }
+  }
+  function syncSpeaking(ms, speaking) {
+    const s = state_default.get();
+    if (ms._panel) ms._panel.sync(s, { speaking });
+    if (ms._chrome) ms._chrome.sync(s, { speaking });
+  }
+
+  // src/heuristics/distractionDetector.js
+  function detectDistractions(mainElement, config = defaults_default) {
+    const distractions = [];
+    const isMsChrome = (el) => {
+      var _a, _b;
+      if (!el || !el.id && !el.getAttribute) return false;
+      if (el.id === "ms-container" || el.id === "ms-session-bar" || el.id === "ms-simples-chrome") {
+        return true;
+      }
+      if ((_a = el.hasAttribute) == null ? void 0 : _a.call(el, "data-ms-pills")) return true;
+      if ((_b = el.closest) == null ? void 0 : _b.call(
+        el,
+        "#ms-container, #ms-session-bar, #ms-simples-chrome, [data-ms-pills]"
+      )) {
+        return true;
+      }
+      return false;
+    };
+    const seen = /* @__PURE__ */ new Set();
+    for (const el of queryAll(config.distractionSelectors)) {
+      if (isMsChrome(el)) continue;
+      if (mainElement && el.contains(mainElement)) continue;
+      if (mainElement && mainElement.contains(el)) continue;
+      if (!seen.has(el)) {
+        seen.add(el);
+        distractions.push(el);
+      }
+    }
+    return distractions;
   }
 
   // src/mutator/domMutator.js
@@ -2974,365 +3665,7 @@
     _ruler = null;
   }
 
-  // src/features/tts.js
-  var _utterance = null;
-  var _speaking = false;
-  var _blocks = [];
-  var _blockIndex = 0;
-  var _activeEl = null;
-  var _runId = 0;
-  var _listeners = /* @__PURE__ */ new Set();
-  var _notified = false;
-  function notify() {
-    if (_speaking === _notified) return;
-    _notified = _speaking;
-    for (const cb of Array.from(_listeners)) {
-      try {
-        cb(_speaking);
-      } catch (_) {
-      }
-    }
-  }
-  function onSpeakingChange(cb) {
-    _listeners.add(cb);
-    return () => {
-      _listeners.delete(cb);
-    };
-  }
-  var BLOCK_TAGS = [
-    "h1",
-    "h2",
-    "h3",
-    "h4",
-    "p",
-    "li",
-    "dt",
-    "dd",
-    "figcaption",
-    "blockquote"
-  ];
-  function closestSafe(el, selector) {
-    var _a, _b, _c;
-    if (!el) return null;
-    if (typeof el.closest === "function") return el.closest(selector);
-    let node = el;
-    while (node) {
-      if (node.matches && node.matches(selector)) return node;
-      const parts = selector.split(",").map((s) => s.trim());
-      for (const part of parts) {
-        if (part.startsWith(".") && ((_a = node.classList) == null ? void 0 : _a.contains(part.slice(1))))
-          return node;
-        if (part.startsWith("#") && node.id === part.slice(1)) return node;
-        if (part.startsWith("[") && part.endsWith("]")) {
-          const attr = part.slice(1, -1).split("=")[0];
-          if ((_b = node.hasAttribute) == null ? void 0 : _b.call(node, attr)) return node;
-        }
-        if (/^[a-z][a-z0-9]*$/i.test(part) && ((_c = node.tagName) == null ? void 0 : _c.toLowerCase()) === part.toLowerCase()) {
-          return node;
-        }
-      }
-      node = node.parentElement;
-    }
-    return null;
-  }
-  function getRoot() {
-    return document.querySelector("[data-ms-principal]") || document.querySelector("main") || document.querySelector('[role="main"]') || document.body;
-  }
-  function isVisiblyReadable(el) {
-    if (!el || closestSafe(el, "#ms-container") || closestSafe(el, "#ms-simples-chrome") || closestSafe(el, "#ms-session-bar")) {
-      return false;
-    }
-    if (closestSafe(el, "[data-ms-hidden]")) return false;
-    const html = document.documentElement;
-    const msOn = html.classList.contains("ms-ativo");
-    const simpleLang = html.classList.contains("ms-simple-language");
-    if (msOn && closestSafe(el, ".ms-simple-hide")) return false;
-    if (!msOn && closestSafe(el, ".ms-simple-only")) return false;
-    if (simpleLang && closestSafe(el, "[data-ms-plain]")) return false;
-    if (!simpleLang && closestSafe(el, "[data-ms-simple]")) return false;
-    return (el.textContent || "").trim().length > 0;
-  }
-  function collectBlocks() {
-    const root = getRoot();
-    if (!root) return [];
-    const nodes = Array.from(root.querySelectorAll(BLOCK_TAGS.join(",")));
-    const readable = new Set(nodes.filter(isVisiblyReadable));
-    return nodes.filter((el) => {
-      if (!readable.has(el)) return false;
-      let parent = el.parentElement;
-      while (parent && parent !== root) {
-        if (readable.has(parent)) return false;
-        parent = parent.parentElement;
-      }
-      return true;
-    });
-  }
-  var MAX_UTTERANCE = 200;
-  function splitForSpeech(text, max = MAX_UTTERANCE) {
-    if (text.length <= max) return [text];
-    const chunks = [];
-    let cur = "";
-    const flush = () => {
-      const t = cur.trim();
-      if (t) chunks.push(t);
-      cur = "";
-    };
-    const sentences = text.match(/[\s\S]+?(?:[.!?…]+(?=\s|$)|$)\s*/g) || [text];
-    for (const s of sentences) {
-      if (s.length > max) {
-        flush();
-        const words = s.match(/\S+\s*/g) || [s];
-        for (const w of words) {
-          if (w.length > max) {
-            flush();
-            for (let i = 0; i < w.length; i += max)
-              chunks.push(w.slice(i, i + max));
-          } else if ((cur + w).trim().length > max) {
-            flush();
-            cur = w;
-          } else {
-            cur += w;
-          }
-        }
-        continue;
-      }
-      if ((cur + s).trim().length > max) {
-        flush();
-        cur = s;
-      } else {
-        cur += s;
-      }
-    }
-    flush();
-    return chunks;
-  }
-  function clearHighlight() {
-    document.querySelectorAll("[data-ms-tts-active]").forEach((node) => {
-      node.removeAttribute("data-ms-tts-active");
-    });
-    _activeEl = null;
-  }
-  function highlightAndScroll(el) {
-    clearHighlight();
-    el.setAttribute("data-ms-tts-active", "");
-    _activeEl = el;
-    const reduceMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (typeof el.scrollIntoView === "function") {
-      try {
-        el.scrollIntoView({
-          block: "center",
-          behavior: reduceMotion ? "auto" : "smooth"
-        });
-      } catch (_) {
-        el.scrollIntoView(true);
-      }
-    }
-  }
-  function speakBlockAt(index, run) {
-    if (!_speaking || run !== _runId) return;
-    if (index >= _blocks.length) {
-      stopSpeaking();
-      return;
-    }
-    const el = _blocks[index];
-    _blockIndex = index;
-    highlightAndScroll(el);
-    const text = (el.innerText || el.textContent || "").replace(/\s+/g, " ").trim();
-    if (!text) {
-      speakBlockAt(index + 1, run);
-      return;
-    }
-    const chunks = splitForSpeech(text);
-    const speakChunk = (i) => {
-      if (!_speaking || run !== _runId) return;
-      const utterance = new SpeechSynthesisUtterance(chunks[i]);
-      _utterance = utterance;
-      utterance.lang = "pt-BR";
-      utterance.rate = 1;
-      const next = () => {
-        if (run !== _runId) return;
-        _utterance = null;
-        if (!_speaking) return;
-        if (i + 1 < chunks.length) speakChunk(i + 1);
-        else speakBlockAt(index + 1, run);
-      };
-      utterance.onend = next;
-      utterance.onerror = next;
-      speechSynthesis.speak(utterance);
-    };
-    speakChunk(0);
-  }
-  function speakMainContent() {
-    if (typeof speechSynthesis === "undefined") return;
-    stopSpeaking();
-    const run = _runId;
-    _blocks = collectBlocks();
-    if (!_blocks.length) {
-      const root = getRoot();
-      const text = root ? (root.innerText || root.textContent || "").replace(/\s+/g, " ").trim() : "";
-      if (!text) return;
-      const utterance = new SpeechSynthesisUtterance(text);
-      _utterance = utterance;
-      utterance.lang = "pt-BR";
-      utterance.rate = 1;
-      const done = () => {
-        if (run !== _runId) return;
-        _speaking = false;
-        _utterance = null;
-        notify();
-      };
-      utterance.onend = done;
-      utterance.onerror = done;
-      _speaking = true;
-      notify();
-      speechSynthesis.speak(utterance);
-      return;
-    }
-    _speaking = true;
-    notify();
-    speakBlockAt(0, run);
-  }
-  function stopSpeaking() {
-    _runId += 1;
-    _speaking = false;
-    _blocks = [];
-    _blockIndex = 0;
-    clearHighlight();
-    notify();
-    if (typeof speechSynthesis === "undefined") return;
-    speechSynthesis.cancel();
-    _utterance = null;
-  }
-  function isSpeaking() {
-    if (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking) {
-      return true;
-    }
-    return _speaking;
-  }
-
-  // src/features/simpleNav.js
-  var SAFE_SCHEMES = ["http", "https", "mailto", "tel"];
-  function isSafeHref(href) {
-    const compact = String(href).replace(/[\u0000- \u007f-\u009f]/g, "");
-    const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(compact);
-    return !scheme || SAFE_SCHEMES.includes(scheme[1].toLowerCase());
-  }
-  function normalizeSimpleNav(items) {
-    if (!Array.isArray(items)) return [];
-    return items.map((item) => {
-      var _a, _b;
-      if (!item || typeof item !== "object") return null;
-      const label = String((_a = item.label) != null ? _a : "").trim();
-      const href = String((_b = item.href) != null ? _b : "").trim();
-      if (!label || !href || !isSafeHref(href)) return null;
-      const short = item.short != null && String(item.short).trim() ? String(item.short).trim() : void 0;
-      return short ? { label, href, short } : { label, href };
-    }).filter(Boolean);
-  }
-  function findHostAuthoredPills() {
-    const all = document.querySelectorAll("[data-ms-pills]");
-    for (const el of all) {
-      if (!el.hasAttribute("data-ms-injected")) return el;
-    }
-    return null;
-  }
-  function createSimpleNav() {
-    let nav = null;
-    function sync(items) {
-      const list = normalizeSimpleNav(items);
-      if (findHostAuthoredPills()) {
-        destroy();
-        return;
-      }
-      if (!list.length) {
-        destroy();
-        return;
-      }
-      if (!nav) {
-        nav = document.createElement("nav");
-        nav.className = "ms-pills-nav ms-simple-only";
-        nav.setAttribute("data-ms-pills", "");
-        nav.setAttribute("data-ms-injected", "");
-        nav.setAttribute("aria-label", "Navega\xE7\xE3o do Modo Simples");
-        const inner2 = document.createElement("div");
-        inner2.className = "ms-pills-nav__inner";
-        nav.appendChild(inner2);
-        _mount(nav);
-      }
-      const inner = nav.querySelector(".ms-pills-nav__inner");
-      if (!inner) return;
-      const chrome = inner.querySelector("#ms-simples-chrome");
-      if (chrome) chrome.remove();
-      inner.innerHTML = "";
-      for (const item of list) {
-        const a = document.createElement("a");
-        a.className = "ms-pill";
-        a.setAttribute("href", item.href);
-        a.href = item.href;
-        if (item.short) {
-          const full = document.createElement("span");
-          full.className = "ms-pill__full";
-          full.textContent = item.label;
-          const short = document.createElement("span");
-          short.className = "ms-pill__short";
-          short.textContent = item.short;
-          a.appendChild(full);
-          a.appendChild(short);
-        } else {
-          a.textContent = item.label;
-        }
-        inner.appendChild(a);
-      }
-      if (chrome) inner.appendChild(chrome);
-      _markCurrent(nav);
-    }
-    function destroy() {
-      if (!nav) return;
-      nav.remove();
-      nav = null;
-    }
-    return { sync, destroy };
-  }
-  function _mount(nav) {
-    const bar = document.getElementById("ms-session-bar");
-    if (bar) {
-      bar.insertAdjacentElement("afterend", nav);
-      return;
-    }
-    const header = document.querySelector("header");
-    if (header) {
-      header.insertAdjacentElement("afterend", nav);
-      return;
-    }
-    const chrome = document.getElementById("ms-simples-chrome");
-    if (chrome) {
-      chrome.insertAdjacentElement("afterend", nav);
-      return;
-    }
-    document.body.prepend(nav);
-  }
-  function _markCurrent(nav) {
-    const path = typeof location !== "undefined" && location.pathname || "";
-    const file = path.split("/").pop() || "";
-    const hrefFull = typeof location !== "undefined" && location.href || "";
-    nav.querySelectorAll("a.ms-pill").forEach((a) => {
-      a.removeAttribute("aria-current");
-      const href = a.getAttribute("href") || "";
-      if (!href || href === "#") return;
-      try {
-        const resolved = typeof location !== "undefined" ? new URL(href, location.href) : null;
-        const match2 = resolved && resolved.href === hrefFull || href === file || href.endsWith("/" + file) || file && href.split("/").pop() === file;
-        if (match2) a.setAttribute("aria-current", "page");
-      } catch (_) {
-        if (href === file) a.setAttribute("aria-current", "page");
-      }
-    });
-  }
-
   // src/modo-simples.js
-  var textLength = (el) => (el && el.textContent || "").trim().length;
-  var STATE_KEY = "state";
-  var PRINCIPAL_KEY = "principal";
   var ModoSimples = class {
     constructor(userConfig = {}) {
       this._config = mergeConfig(defaults_default, userConfig);
@@ -3482,47 +3815,17 @@
     }
     /** Guarda (memória + storage) se as imagens estavam ocultas antes de ligar o MS. */
     _saveHideImagesBeforeMs(hide) {
-      this._hideImagesBeforeMs = !!hide;
-      if (!this._config.persistence) return;
-      const key = "hideImagesBeforeMs";
-      if (this._config.hostnamePersistence) {
-        persistence_default.saveForHost(key, !!hide);
-      } else {
-        persistence_default.save(key, !!hide);
-      }
+      saveHideImagesBeforeMs(this, hide);
     }
     /** Lê e esquece o valor guardado; sem registro (ex.: MS já estava ligado) = imagens visíveis. */
     _takeHideImagesBeforeMs() {
-      let hide = this._hideImagesBeforeMs;
-      if (hide === null && this._config.persistence) {
-        const key = "hideImagesBeforeMs";
-        hide = this._config.hostnamePersistence ? persistence_default.loadForHost(key, null) : persistence_default.load(key, null);
-      }
-      this._hideImagesBeforeMs = null;
-      if (this._config.persistence) {
-        const key = "hideImagesBeforeMs";
-        if (this._config.hostnamePersistence) {
-          persistence_default.removeForHost(key);
-        } else {
-          persistence_default.remove(key);
-        }
-      }
-      return !!hide;
+      return takeHideImagesBeforeMs(this);
     }
     _loadPreferShowImages() {
-      if (!this._config.persistence) return false;
-      const key = "preferShowImagesInMs";
-      const v = this._config.hostnamePersistence ? persistence_default.loadForHost(key, false) : persistence_default.load(key, false);
-      return !!v;
+      return loadPreferShowImages(this);
     }
     _savePreferShowImages(show) {
-      if (!this._config.persistence) return;
-      const key = "preferShowImagesInMs";
-      if (this._config.hostnamePersistence) {
-        persistence_default.saveForHost(key, !!show);
-      } else {
-        persistence_default.save(key, !!show);
-      }
+      savePreferShowImages(this, show);
     }
     configure(patch) {
       this._config = mergeConfig(this._config, patch);
@@ -3541,185 +3844,39 @@
     }
     // ── UI Construction ────────────────────────────────────────────────────────
     _buildUI() {
-      this._host = document.createElement("div");
-      this._host.id = "ms-container";
-      document.body.appendChild(this._host);
-      this._shadow = this._host.attachShadow({ mode: "open" });
-      const styleEl = document.createElement("style");
-      styleEl.textContent = getUIStyles(this._config.position);
-      this._shadow.appendChild(styleEl);
-      this._styleEl = styleEl;
-      const s = state_default.get();
-      this._panel = createA11yPanel({
-        state: s,
-        onClose: () => this._closePanel(),
-        onToggleModoSimples: (value) => this._setModoSimples(value),
-        onSetOption: (key, value) => {
-          if (key === "reducedMotion") this._reducedMotionUser = !!value;
-          state_default.set({ options: { [key]: value } });
-          if (key === "hideImages" && state_default.get().modoSimples) {
-            this._savePreferShowImages(!value);
-          }
-        },
-        onSpeak: () => this._toggleSpeak(),
-        brand: this._config.brand
-      });
-      this._shadow.appendChild(this._panel.element);
-      this._fab = createFab({
-        onClick: () => this._togglePanel()
-      });
-      this._shadow.appendChild(this._fab.element);
-      this._fab.sync({ panelOpen: s.panelOpen });
-      this._panel.sync(s);
-      if (s.panelOpen) {
-        this._panel.open();
-        this._setPageInert(true);
-      }
-      this._syncSessionChrome();
-      this._simpleNav = createSimpleNav();
-      this._syncSimpleNav();
-      if (this._chrome) this._chrome.sync(s);
+      buildUI(this);
     }
-    /** Cria/destrói a barra de sessão conforme config.sessionBar (default: desligada). */
     _syncSessionChrome() {
-      if (this._config.sessionBar && !this._chrome) {
-        this._chrome = createSessionChrome({
-          mount: this._config.mount || {},
-          onToggleModoSimples: (value) => this._setModoSimples(value),
-          onOpenPanel: () => this._openPanel(),
-          onSpeak: () => this._toggleSpeak(),
-          onToggleSimpleLanguage: (value) => state_default.set({ options: { simpleLanguage: value } }),
-          onToggleHideImages: (hide) => {
-            state_default.set({ options: { hideImages: hide } });
-            if (state_default.get().modoSimples) this._savePreferShowImages(!hide);
-          }
-        });
-        this._chrome.sync(state_default.get());
-      } else if (!this._config.sessionBar && this._chrome) {
-        this._chrome.destroy();
-        this._chrome = null;
-      }
+      syncSessionChrome(this);
     }
     _syncSimpleNav() {
-      if (!this._simpleNav) return;
-      this._simpleNav.sync(this._config.simpleNav);
-      if (this._chrome) this._chrome.sync(state_default.get());
+      syncSimpleNav(this);
     }
     // ── Events ─────────────────────────────────────────────────────────────────
     _bindEvents() {
-      this._onDocKeydown = (e) => {
-        if (e.key === "Escape" && state_default.get().panelOpen) {
-          this._closePanel();
-        }
-      };
-      document.addEventListener("keydown", this._onDocKeydown);
-      this._onDocClick = (e) => {
-        var _a, _b, _c;
-        if (!state_default.get().panelOpen) return;
-        if (isManualSelectActive()) return;
-        const path = typeof e.composedPath === "function" ? e.composedPath() : [];
-        if (path.includes(this._host) || path.includes((_a = this._panel) == null ? void 0 : _a.element) || path.includes((_b = this._fab) == null ? void 0 : _b.element)) {
-          return;
-        }
-        if (e.target === this._host) return;
-        if (!((_c = this._host) == null ? void 0 : _c.contains(e.target)) && e.target !== this._host) {
-          const { clientX, clientY } = e;
-          const retargeted = e.target === document.body || e.target === document.documentElement;
-          this._closePanel();
-          if (retargeted && e.isTrusted && e.detail > 0) {
-            const alvo = document.elementFromPoint(clientX, clientY);
-            if (alvo && alvo !== document.body && alvo !== document.documentElement) {
-              alvo.click();
-              if (alvo.matches(
-                'input, select, textarea, [contenteditable]:not([contenteditable="false"])'
-              )) {
-                alvo.focus();
-              }
-            }
-          }
-        }
-      };
-      document.addEventListener("click", this._onDocClick, true);
-      this._removeStateListener = eventBus_default.on("stateChange", ({ prev, next }) => {
-        this._onStateChange(prev, next);
-      });
-      this._removeSpeakListener = onSpeakingChange(
-        (speaking) => this._syncSpeaking(speaking)
-      );
+      bindEvents(this);
     }
     // ── Panel management ───────────────────────────────────────────────────────
     _togglePanel() {
-      state_default.get().panelOpen ? this._closePanel() : this._openPanel();
+      togglePanel(this);
     }
     _openPanel() {
-      var _a;
-      let opener = document.activeElement;
-      while ((_a = opener == null ? void 0 : opener.shadowRoot) == null ? void 0 : _a.activeElement) {
-        opener = opener.shadowRoot.activeElement;
-      }
-      if (opener !== document.body && !this._panel.element.contains(opener)) {
-        this._panelOpener = opener;
-      }
-      state_default.set({ panelOpen: true });
-      this._panel.open();
-      this._setPageInert(true);
-      this._fab.sync({ panelOpen: true });
-      announce("Painel de acessibilidade aberto");
+      openPanel(this);
     }
-    /**
-     * aria-modal não esconde a página de ninguém: enquanto o painel está aberto, os irmãos do
-     * host no <body> ficam `inert` (sem foco, clique ou leitura). Só desfaz o que ela mesma fez.
-     * @param {boolean} on
-     */
     _setPageInert(on) {
-      var _a;
-      (_a = this._inertObserver) == null ? void 0 : _a.disconnect();
-      this._inertObserver = null;
-      for (const el of this._inerted || []) el.removeAttribute("inert");
-      this._inerted = [];
-      if (!on) return;
-      for (const el of document.body.children) this._inertSibling(el);
-      this._inertObserver = new MutationObserver((records) => {
-        for (const r of records) {
-          for (const n of r.addedNodes) {
-            if (n.nodeType === 1) this._inertSibling(n);
-          }
-        }
-      });
-      this._inertObserver.observe(document.body, { childList: true });
+      setPageInert(this, on);
     }
     _inertSibling(el) {
-      if (el === this._host || el.hasAttribute("inert") || el.hasAttribute("aria-live") || el.hasAttribute("data-ms-live") || el.id === "ms-manual-select-banner" || el.id === "ms-manual-select-highlight") {
-        return;
-      }
-      el.setAttribute("inert", "");
-      this._inerted.push(el);
+      inertSibling(this, el);
     }
     _closePanel() {
-      var _a, _b, _c;
-      state_default.set({ panelOpen: false });
-      this._panel.close();
-      this._setPageInert(false);
-      this._fab.sync({ panelOpen: false });
-      if (!isManualSelectActive()) {
-        const opener = ((_a = this._panelOpener) == null ? void 0 : _a.isConnected) ? this._panelOpener : (_b = this._fab) == null ? void 0 : _b.button;
-        (_c = opener == null ? void 0 : opener.focus) == null ? void 0 : _c.call(opener);
-      }
-      this._panelOpener = null;
+      closePanel(this);
     }
     _toggleSpeak() {
-      if (isSpeaking()) {
-        stopSpeaking();
-        announce("Leitura interrompida");
-      } else {
-        speakMainContent();
-        announce("Lendo conte\xFAdo principal");
-      }
+      toggleSpeak();
     }
     _syncSpeaking(speaking) {
-      const s = state_default.get();
-      if (this._panel) this._panel.sync(s, { speaking });
-      if (this._chrome) this._chrome.sync(s, { speaking });
+      syncSpeaking(this, speaking);
     }
     // ── Modo Simples activation ────────────────────────────────────────────────
     _activateModoSimples(currentState, { announce: doAnnounce = true } = {}) {
@@ -3799,85 +3956,20 @@
       if (prev.options.readingRuler !== next.options.readingRuler) {
         if (next.options.readingRuler) startReadingRuler();
         else stopReadingRuler();
-        announce(
-          next.options.readingRuler ? "R\xE9gua de leitura ativada" : "R\xE9gua de leitura desativada"
-        );
       }
-      const announcements = {
-        dyslexiaFont: ["Fonte Lexend ativada", "Fonte Lexend desativada"],
-        highlightLinks: [
-          "Destaque de links ativado",
-          "Destaque de links desativado"
-        ],
-        textSpacing: [
-          "Espa\xE7amento de texto ativado",
-          "Espa\xE7amento de texto desativado"
-        ],
-        hideImages: ["Imagens ocultadas", "Imagens vis\xEDveis"],
-        reducedMotion: [
-          "Movimento reduzido ativado",
-          "Movimento reduzido desativado"
-        ],
-        simpleLanguage: [
-          "Linguagem simples ligada",
-          "Linguagem simples desligada"
-        ]
-      };
-      Object.entries(announcements).forEach(([k, [on, off]]) => {
-        if (prev.options[k] !== next.options[k])
-          announce(next.options[k] ? on : off);
-      });
-      if (prev.options.textScale !== next.options.textScale) {
-        announce(`Tamanho do texto ${next.options.textScale}%`);
-      }
-      if (prev.options.colorTheme !== next.options.colorTheme) {
-        const labels = {
-          senac: "Cores do site",
-          yellowBlack: "Amarelo e Preto",
-          darkHigh: "Modo Escuro Alto",
-          soft: "Descanso Suave"
-        };
-        announce(
-          `Tema ${labels[next.options.colorTheme] || next.options.colorTheme}`
-        );
-      }
+      diffStateAnnouncements(prev, next).forEach((msg) => announce(msg));
       this._persistState(next);
     }
     // ── Persistence ────────────────────────────────────────────────────────────
     _persistState(next) {
-      if (!this._config.persistence) return;
-      const payload = {
-        v: SCHEMA_VERSION,
-        modoSimples: next.modoSimples,
-        // reducedMotion só é gravado quando o usuário escolheu (null = derivado do SO)
-        options: { ...next.options, reducedMotion: this._reducedMotionUser }
-      };
-      const json = JSON.stringify(payload);
-      if (json === this._lastPersisted) return;
-      this._lastPersisted = json;
-      if (this._config.hostnamePersistence) {
-        persistence_default.saveForHost(STATE_KEY, payload);
-      } else {
-        persistence_default.save(STATE_KEY, payload);
-      }
+      persistState(this, next);
     }
     _loadPersistedState() {
-      if (!this._config.persistence) return;
-      const saved = this._config.hostnamePersistence ? persistence_default.loadForHost(STATE_KEY) : persistence_default.load(STATE_KEY);
-      if (!saved) return;
-      const patch = hydratePersistedState(saved);
-      if (patch) state_default.set(patch);
-      const rm = saved.options && saved.options.reducedMotion;
-      const isUserChoice = saved.v >= 1 && typeof rm === "boolean";
-      this._reducedMotionUser = isUserChoice ? rm : null;
+      loadPersistedState(this);
     }
     /** Grava o principal escolhido POR PÁGINA, com o tamanho do texto para validar depois. */
     _savePrincipalPath(path, el) {
-      if (!this._config.persistence || !path) return;
-      persistence_default.saveForPath(PRINCIPAL_KEY, {
-        path,
-        textLen: textLength(el)
-      });
+      savePrincipalPath(this, path, el);
     }
     /**
      * Principal salvo para ESTA página. Sem registro de página, aceita o registro antigo (por host,
@@ -3885,31 +3977,14 @@
      * @returns {{ path: string, textLen: number|null, legacy: boolean } | null}
      */
     _loadPrincipal() {
-      if (!this._config.persistence) return null;
-      let v = persistence_default.loadForPath(PRINCIPAL_KEY);
-      const viaHost = v == null;
-      if (viaHost) {
-        v = this._config.hostnamePersistence ? persistence_default.loadForHost(PRINCIPAL_KEY) : persistence_default.load(PRINCIPAL_KEY);
-      }
-      if (typeof v === "string" && v) {
-        return { path: v, textLen: null, legacy: true };
-      }
-      if (v && typeof v.path === "string" && v.path) {
-        return {
-          path: v.path,
-          textLen: Number.isFinite(v.textLen) ? v.textLen : null,
-          legacy: viaHost
-        };
-      }
-      return null;
+      return loadPrincipal(this);
     }
     /**
      * Esquece o principal salvo DESTA página. O registro antigo por host nunca é apagado aqui:
      * ele é só uma dica, e falhar numa página não diz nada sobre as outras.
      */
     _discardPrincipal() {
-      if (!this._config.persistence) return;
-      persistence_default.removeForPath(PRINCIPAL_KEY);
+      discardPrincipal(this);
     }
     /**
      * O elemento achado pelo caminho salvo ainda parece a área de conteúdo? Exige o mínimo de
@@ -3917,11 +3992,7 @@
      * tamanho de quando foi escolhido.
      */
     _isPlausiblePrincipal(el, saved) {
-      const len = textLength(el);
-      if (len < this._config.scoring.minTextLength) return false;
-      if (saved.textLen && len < saved.textLen * 0.5) return false;
-      if (saved.legacy) return this._legacyHintFits(el, len);
-      return true;
+      return isPlausiblePrincipal(this, el, saved);
     }
     /**
      * Registro antigo (por host, sem tamanho gravado) é só uma dica: além do mínimo de texto, quando
@@ -3929,11 +4000,7 @@
      * candidato dela (< 50% do texto) — outra página do host com a mesma estrutura de caminho.
      */
     _legacyHintFits(el, len) {
-      const { element, confidence } = detectMainContent(this._config);
-      if (confidence < this._config.confidenceThreshold || element === el) {
-        return true;
-      }
-      return len >= textLength(element) * 0.5;
+      return legacyHintFits(this, el, len);
     }
     // ── System preferences ─────────────────────────────────────────────────────
     /**
