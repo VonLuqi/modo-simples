@@ -220,6 +220,8 @@ function renderSection(sec, index) {
  * @param {(value: boolean) => void} opts.onToggleModoSimples
  * @param {(key: string, value: *) => void} opts.onSetOption
  * @param {() => void} opts.onSpeak
+ * @param {() => void} [opts.onResetAll]
+ * @param {() => void} [opts.onMoveSide]
  * @param {{ title?: string, subtitle?: string, footer?: string }} [opts.brand]
  * @returns {{ element: HTMLElement, open: () => void, close: () => void, sync: (state: Object) => void }}
  */
@@ -229,6 +231,8 @@ export function createA11yPanel({
   onToggleModoSimples,
   onSetOption,
   onSpeak,
+  onResetAll,
+  onMoveSide,
   brand,
 }) {
   const texts = { ...DEFAULT_BRAND, ...brand };
@@ -274,6 +278,11 @@ export function createA11yPanel({
       </div>
       ${SECTIONS.map(renderSection).join('')}
 
+      <div class="ms-a11y-actions">
+        <button type="button" class="ms-a11y-action" data-action="reset-all">${S.panelResetLabel}</button>
+        <button type="button" class="ms-a11y-action" data-action="move-side">${S.panelMoveToLeft}</button>
+      </div>
+
       <div class="ms-a11y-live" aria-live="polite" aria-atomic="true"></div>
       <p class="ms-a11y-footer-note"></p>
     </div>
@@ -305,6 +314,19 @@ export function createA11yPanel({
   panel
     .querySelector('.ms-a11y-close')
     .addEventListener('click', () => onClose());
+  panel
+    .querySelector('[data-action="reset-all"]')
+    .addEventListener('click', () => onResetAll?.());
+  panel
+    .querySelector('[data-action="move-side"]')
+    .addEventListener('click', () => onMoveSide?.());
+
+  /** Lado atual do painel: o botão oferece o lado oposto. @param {'left'|'right'} side */
+  function setSide(side) {
+    panel.setAttribute('data-ms-side', side);
+    panel.querySelector('[data-action="move-side"]').textContent =
+      side === 'left' ? S.panelMoveToRight : S.panelMoveToLeft;
+  }
 
   panel
     .querySelector('[data-action="modo-simples"]')
@@ -451,5 +473,5 @@ export function createA11yPanel({
 
   sync(state);
 
-  return { element: panel, open, close, sync };
+  return { element: panel, open, close, sync, setSide };
 }

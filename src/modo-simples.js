@@ -19,6 +19,8 @@ import {
   savePreferShowImages,
   persistState,
   loadPersistedState,
+  loadPanelSide,
+  savePanelSide,
   savePrincipalPath,
   loadPrincipal,
   discardPrincipal,
@@ -44,6 +46,10 @@ import {
   closePanel,
   toggleSpeak,
   syncSpeaking,
+  resetAll,
+  movePanelSide,
+  hideWidget,
+  showWidget,
 } from './ui/binding.js';
 import {
   injectPageStyles,
@@ -325,6 +331,36 @@ class ModoSimples {
   /** Delegate: ver closePanel() em src/ui/binding.js. */
   _closePanel() {
     closePanel(this);
+  }
+
+  /** Delegate: ver resetAll() em src/ui/binding.js. */
+  _resetAll() {
+    resetAll(this);
+  }
+
+  /** Delegate: ver movePanelSide() em src/ui/binding.js. */
+  _movePanelSide() {
+    movePanelSide(this);
+  }
+
+  /** Delegate: ver hideWidget() em src/ui/binding.js. */
+  _hideWidget() {
+    hideWidget(this);
+  }
+
+  /** Delegate: ver showWidget() em src/ui/binding.js. */
+  _showWidget() {
+    showWidget(this);
+  }
+
+  /** Delegate: ver loadPanelSide() em src/core/instancePersistence.js. */
+  _loadPanelSide() {
+    return loadPanelSide(this);
+  }
+
+  /** Delegate: ver savePanelSide() em src/core/instancePersistence.js. */
+  _savePanelSide(side) {
+    savePanelSide(this, side);
   }
 
   _toggleSpeak() {

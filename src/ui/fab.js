@@ -11,14 +11,16 @@ import { STRINGS as S } from './strings.js';
 const TIP_SEEN_KEY = 'fabTipSeen';
 
 /**
- * @param {{ onClick: () => void }} opts
+ * @param {{ onClick: () => void, onHide?: () => void }} opts
  * @returns {{
  *   element: HTMLElement,
  *   button: HTMLButtonElement,
  *   sync: (s: { panelOpen: boolean }) => void,
+ *   setSide: (side: 'left'|'right') => void,
+ *   setHidden: (hidden: boolean) => void,
  * }}
  */
-export function createFab({ onClick }) {
+export function createFab({ onClick, onHide }) {
   const wrap = document.createElement('div');
   wrap.className = 'ms-fab-wrap';
   wrap.setAttribute('data-ms-fab-wrap', '');
@@ -73,8 +75,24 @@ export function createFab({ onClick }) {
     onClick();
   });
 
+  // X de esconder: irmão do botão do FAB (botão dentro de botão não é válido)
+  const hideBtn = document.createElement('button');
+  hideBtn.type = 'button';
+  hideBtn.className = 'ms-fab-hide';
+  hideBtn.setAttribute('aria-label', S.fabHideLabel);
+  hideBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" focusable="false"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
+  hideBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    onHide?.();
+  });
+
+  const box = document.createElement('div');
+  box.className = 'ms-fab-box';
+  box.appendChild(btn);
+  box.appendChild(hideBtn);
+
   wrap.appendChild(tip);
-  wrap.appendChild(btn);
+  wrap.appendChild(box);
 
   /**
    * @param {{ panelOpen: boolean }} s
@@ -97,5 +115,22 @@ export function createFab({ onClick }) {
 
   sync({ panelOpen: false });
 
-  return { element: wrap, button: btn, sync };
+  /** @param {'left'|'right'} side */
+  function setSide(side) {
+    wrap.setAttribute('data-ms-side', side);
+  }
+
+  /** Esconde/mostra o FAB inteiro (só nesta página; nada é persistido). */
+  function setHidden(hidden) {
+    wrap.hidden = hidden;
+  }
+
+  return {
+    element: wrap,
+    button: btn,
+    hideButton: hideBtn,
+    sync,
+    setSide,
+    setHidden,
+  };
 }

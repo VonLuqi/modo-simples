@@ -16,6 +16,7 @@ const textLength = (el) => ((el && el.textContent) || '').trim().length;
 
 const STATE_KEY = 'state';
 const PRINCIPAL_KEY = 'principal';
+const SIDE_KEY = 'panelSide';
 
 /** Guarda (memória + storage) se as imagens estavam ocultas antes de ligar o MS. */
 export function saveHideImagesBeforeMs(ms, hide) {
@@ -66,6 +67,25 @@ export function savePreferShowImages(ms, show) {
     persistence.saveForHost(key, !!show);
   } else {
     persistence.save(key, !!show);
+  }
+}
+
+/** Lado do painel/FAB salvo ('left'|'right'); sem registro válido = lado do config.position. */
+export function loadPanelSide(ms) {
+  const fallback = ms._config.position.endsWith('left') ? 'left' : 'right';
+  if (!ms._config.persistence) return fallback;
+  const v = ms._config.hostnamePersistence
+    ? persistence.loadForHost(SIDE_KEY)
+    : persistence.load(SIDE_KEY);
+  return v === 'left' || v === 'right' ? v : fallback;
+}
+
+export function savePanelSide(ms, side) {
+  if (!ms._config.persistence) return;
+  if (ms._config.hostnamePersistence) {
+    persistence.saveForHost(SIDE_KEY, side);
+  } else {
+    persistence.save(SIDE_KEY, side);
   }
 }
 

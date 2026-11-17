@@ -10,6 +10,15 @@ export const STRINGS = Object.freeze({
   fabTip: 'Acessibilidade & Modo Simples',
   fabOpenLabel: 'Abrir painel de acessibilidade',
   fabCloseLabel: 'Fechar painel de acessibilidade',
+  fabHideLabel: 'Esconder botão de acessibilidade nesta página',
+  announceWidgetHidden:
+    'Botão de acessibilidade escondido. Alt+Shift+A mostra de novo.',
+  announceResetAll: 'Tudo desligado. Página sem ajustes.',
+  announceSideLeft: 'Painel movido para a esquerda',
+  announceSideRight: 'Painel movido para a direita',
+  panelResetLabel: 'Desligar tudo',
+  panelMoveToLeft: 'Mover painel para a esquerda',
+  panelMoveToRight: 'Mover painel para a direita',
 
   // a11yPanel.js
   panelCloseLabel: 'Fechar painel de acessibilidade',

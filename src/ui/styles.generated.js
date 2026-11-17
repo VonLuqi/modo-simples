@@ -129,6 +129,44 @@ export const UI_CSS = `
     .ms-fab-icon--close[hidden],
     .ms-fab-icon--open[hidden] { display: none !important; }
 
+
+    .ms-fab-wrap[hidden] { display: none !important; }
+    .ms-fab-wrap[data-ms-side="left"] {
+      right: auto;
+      left: calc(1.5 * var(--ms-u));
+      align-items: flex-start;
+    }
+    .ms-fab-wrap[data-ms-side="right"] {
+      left: auto;
+      right: calc(1.5 * var(--ms-u));
+      align-items: flex-end;
+    }
+    .ms-fab-wrap[data-ms-side="left"] .ms-fab-tip::after {
+      right: auto;
+      left: calc(1.15 * var(--ms-u));
+    }
+    .ms-fab-box { position: relative; }
+    .ms-fab-hide {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      background: #0B2C5F;
+      color: #fff;
+      cursor: pointer;
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ms-fab-wrap[data-ms-side="left"] .ms-fab-hide { right: auto; left: -8px; }
+    .ms-fab-hide:hover { background: #123f86; }
+    .ms-fab-hide:focus-visible { outline: 3px solid var(--ms-blue); outline-offset: 2px; }
+    .ms-fab-wrap--open .ms-fab-hide { display: none; }
     /* ── Panel ───────────────────────────────────────────────────────────── */
     #ms-a11y-panel,
     .ms-a11y-panel {
@@ -222,6 +260,38 @@ export const UI_CSS = `
       background: #f7f8fa;
     }
 
+
+    #ms-a11y-panel[data-ms-side="left"] {
+      right: auto;
+      left: calc(1.5 * var(--ms-u));
+      transform-origin: bottom left;
+    }
+    #ms-a11y-panel[data-ms-side="right"] {
+      left: auto;
+      right: calc(1.5 * var(--ms-u));
+      transform-origin: bottom right;
+    }
+    .ms-a11y-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: calc(0.5 * var(--ms-u));
+      margin-top: calc(0.75 * var(--ms-u));
+    }
+    .ms-a11y-action {
+      flex: 1 1 auto;
+      min-height: 44px;
+      padding: calc(0.5 * var(--ms-u)) calc(0.75 * var(--ms-u));
+      border: 2px solid var(--ms-blue);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ms-blue);
+      font: inherit;
+      font-weight: 700;
+      font-size: calc(0.875 * var(--ms-u));
+      cursor: pointer;
+    }
+    .ms-a11y-action:hover { background: #eef3fb; }
+    .ms-a11y-action:focus-visible { outline: 3px solid var(--ms-blue); outline-offset: 2px; }
     /* ── Modo Simples card ───────────────────────────────────────────────── */
     .ms-a11y-card--simple {
       background: var(--ms-simple-bg);

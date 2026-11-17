@@ -20,6 +20,34 @@ import {
   onSpeakingChange,
 } from '../features/tts.js';
 import { isManualSelectActive } from '../features/manualSelect.js';
+import { STRINGS as S } from './strings.js';
+
+/** Valores iniciais das opções (espelha core/state.js) — alvo do "Desligar tudo". */
+const RESET_OPTIONS = {
+  textScale: '100',
+  colorTheme: 'senac',
+  dyslexiaFont: false,
+  readingRuler: false,
+  highlightLinks: false,
+  textSpacing: false,
+  reducedMotion: false,
+  hideImages: false,
+  simpleLanguage: false,
+};
+
+/** Alvo do atalho/teclado é campo editável (inclui dentro de shadow DOM)? */
+function isEditableTarget(e) {
+  const t =
+    typeof e.composedPath === 'function' ? e.composedPath()[0] : e.target;
+  return !!(
+    t &&
+    (t.isContentEditable ||
+      (t.matches &&
+        t.matches(
+          'input, select, textarea, [contenteditable]:not([contenteditable="false"])',
+        )))
+  );
+}
 
 export function buildUI(ms) {
   ms._host = document.createElement('div');
@@ -47,14 +75,20 @@ export function buildUI(ms) {
       }
     },
     onSpeak: () => ms._toggleSpeak(),
+    onResetAll: () => ms._resetAll(),
+    onMoveSide: () => ms._movePanelSide(),
     brand: ms._config.brand,
   });
   ms._shadow.appendChild(ms._panel.element);
 
   ms._fab = createFab({
     onClick: () => ms._togglePanel(),
+    onHide: () => ms._hideWidget(),
   });
   ms._shadow.appendChild(ms._fab.element);
+  ms._side = ms._loadPanelSide();
+  ms._fab.setSide(ms._side);
+  ms._panel.setSide(ms._side);
 
   ms._fab.sync({ panelOpen: s.panelOpen });
   ms._panel.sync(s);
@@ -101,6 +135,20 @@ export function syncSimpleNav(ms) {
 
 export function bindEvents(ms) {
   ms._onDocKeydown = (e) => {
+    // Alt+Shift+A: mostra o FAB escondido e abre o painel (ignorado ao digitar em campos)
+    if (
+      e.altKey &&
+      e.shiftKey &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      !e.repeat &&
+      e.code === 'KeyA' &&
+      !isEditableTarget(e)
+    ) {
+      e.preventDefault();
+      ms._showWidget();
+      return;
+    }
     if (e.key === 'Escape' && state.get().panelOpen) {
       ms._closePanel(); // devolve o foco a quem abriu (UX-12)
     }
@@ -250,4 +298,50 @@ export function syncSpeaking(ms, speaking) {
   const s = state.get();
   if (ms._panel) ms._panel.sync(s, { speaking });
   if (ms._chrome) ms._chrome.sync(s, { speaking });
+}
+
+/** Desliga o Modo Simples e volta todas as opções ao padrão; o estado resultante é persistido. */
+export function resetAll(ms) {
+  ms._reducedMotionUser = null; // volta a seguir o SO (padrão)
+  if (state.get().modoSimples) ms._setModoSimples(false);
+  state.set({ options: { ...RESET_OPTIONS } });
+  ms._syncReducedMotion();
+  announce(S.announceResetAll);
+}
+
+/** Alterna esquerda/direita; FAB e painel vão juntos e o lado fica salvo. */
+export function movePanelSide(ms) {
+  ms._side = ms._side === 'left' ? 'right' : 'left';
+  ms._fab.setSide(ms._side);
+  ms._panel.setSide(ms._side);
+  ms._savePanelSide(ms._side);
+  announce(ms._side === 'left' ? S.announceSideLeft : S.announceSideRight);
+}
+
+/** Esconde o FAB só nesta página (sem persistir); o foco vai para o conteúdo principal. */
+export function hideWidget(ms) {
+  if (state.get().panelOpen) ms._closePanel();
+  ms._fab.setHidden(true);
+  const main = document.querySelector('main, [role="main"]');
+  if (main) {
+    const had = main.hasAttribute('tabindex');
+    if (!had) main.setAttribute('tabindex', '-1');
+    main.addEventListener(
+      'blur',
+      () => {
+        if (!had) main.removeAttribute('tabindex');
+      },
+      { once: true },
+    );
+    main.focus({ preventScroll: true });
+  } else {
+    document.activeElement?.blur?.();
+  }
+  announce(S.announceWidgetHidden);
+}
+
+/** Atalho: reexibe o FAB e abre o painel (foco vai para o painel). */
+export function showWidget(ms) {
+  ms._fab.setHidden(false);
+  if (!state.get().panelOpen) ms._openPanel();
 }

@@ -101,3 +101,41 @@
     .ms-fab-icon--close[hidden],
     .ms-fab-icon--open[hidden] { display: none !important; }
 
+
+    .ms-fab-wrap[hidden] { display: none !important; }
+    .ms-fab-wrap[data-ms-side="left"] {
+      right: auto;
+      left: calc(1.5 * var(--ms-u));
+      align-items: flex-start;
+    }
+    .ms-fab-wrap[data-ms-side="right"] {
+      left: auto;
+      right: calc(1.5 * var(--ms-u));
+      align-items: flex-end;
+    }
+    .ms-fab-wrap[data-ms-side="left"] .ms-fab-tip::after {
+      right: auto;
+      left: calc(1.15 * var(--ms-u));
+    }
+    .ms-fab-box { position: relative; }
+    .ms-fab-hide {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      background: #0B2C5F;
+      color: #fff;
+      cursor: pointer;
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ms-fab-wrap[data-ms-side="left"] .ms-fab-hide { right: auto; left: -8px; }
+    .ms-fab-hide:hover { background: #123f86; }
+    .ms-fab-hide:focus-visible { outline: 3px solid var(--ms-blue); outline-offset: 2px; }
+    .ms-fab-wrap--open .ms-fab-hide { display: none; }

@@ -512,6 +512,7 @@
   var textLength = (el) => (el && el.textContent || "").trim().length;
   var STATE_KEY = "state";
   var PRINCIPAL_KEY = "principal";
+  var SIDE_KEY = "panelSide";
   function saveHideImagesBeforeMs(ms, hide) {
     ms._hideImagesBeforeMs = !!hide;
     if (!ms._config.persistence) return;
@@ -552,6 +553,20 @@
       persistence_default.saveForHost(key, !!show);
     } else {
       persistence_default.save(key, !!show);
+    }
+  }
+  function loadPanelSide(ms) {
+    const fallback = ms._config.position.endsWith("left") ? "left" : "right";
+    if (!ms._config.persistence) return fallback;
+    const v = ms._config.hostnamePersistence ? persistence_default.loadForHost(SIDE_KEY) : persistence_default.load(SIDE_KEY);
+    return v === "left" || v === "right" ? v : fallback;
+  }
+  function savePanelSide(ms, side) {
+    if (!ms._config.persistence) return;
+    if (ms._config.hostnamePersistence) {
+      persistence_default.saveForHost(SIDE_KEY, side);
+    } else {
+      persistence_default.save(SIDE_KEY, side);
     }
   }
   function persistState(ms, next) {
@@ -803,6 +818,44 @@
     .ms-fab-icon--close[hidden],
     .ms-fab-icon--open[hidden] { display: none !important; }
 
+
+    .ms-fab-wrap[hidden] { display: none !important; }
+    .ms-fab-wrap[data-ms-side="left"] {
+      right: auto;
+      left: calc(1.5 * var(--ms-u));
+      align-items: flex-start;
+    }
+    .ms-fab-wrap[data-ms-side="right"] {
+      left: auto;
+      right: calc(1.5 * var(--ms-u));
+      align-items: flex-end;
+    }
+    .ms-fab-wrap[data-ms-side="left"] .ms-fab-tip::after {
+      right: auto;
+      left: calc(1.15 * var(--ms-u));
+    }
+    .ms-fab-box { position: relative; }
+    .ms-fab-hide {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      background: #0B2C5F;
+      color: #fff;
+      cursor: pointer;
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ms-fab-wrap[data-ms-side="left"] .ms-fab-hide { right: auto; left: -8px; }
+    .ms-fab-hide:hover { background: #123f86; }
+    .ms-fab-hide:focus-visible { outline: 3px solid var(--ms-blue); outline-offset: 2px; }
+    .ms-fab-wrap--open .ms-fab-hide { display: none; }
     /* \u2500\u2500 Panel \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     #ms-a11y-panel,
     .ms-a11y-panel {
@@ -896,6 +949,38 @@
       background: #f7f8fa;
     }
 
+
+    #ms-a11y-panel[data-ms-side="left"] {
+      right: auto;
+      left: calc(1.5 * var(--ms-u));
+      transform-origin: bottom left;
+    }
+    #ms-a11y-panel[data-ms-side="right"] {
+      left: auto;
+      right: calc(1.5 * var(--ms-u));
+      transform-origin: bottom right;
+    }
+    .ms-a11y-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: calc(0.5 * var(--ms-u));
+      margin-top: calc(0.75 * var(--ms-u));
+    }
+    .ms-a11y-action {
+      flex: 1 1 auto;
+      min-height: 44px;
+      padding: calc(0.5 * var(--ms-u)) calc(0.75 * var(--ms-u));
+      border: 2px solid var(--ms-blue);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ms-blue);
+      font: inherit;
+      font-weight: 700;
+      font-size: calc(0.875 * var(--ms-u));
+      cursor: pointer;
+    }
+    .ms-a11y-action:hover { background: #eef3fb; }
+    .ms-a11y-action:focus-visible { outline: 3px solid var(--ms-blue); outline-offset: 2px; }
     /* \u2500\u2500 Modo Simples card \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     .ms-a11y-card--simple {
       background: var(--ms-simple-bg);
@@ -1944,6 +2029,14 @@
     fabTip: "Acessibilidade & Modo Simples",
     fabOpenLabel: "Abrir painel de acessibilidade",
     fabCloseLabel: "Fechar painel de acessibilidade",
+    fabHideLabel: "Esconder bot\xE3o de acessibilidade nesta p\xE1gina",
+    announceWidgetHidden: "Bot\xE3o de acessibilidade escondido. Alt+Shift+A mostra de novo.",
+    announceResetAll: "Tudo desligado. P\xE1gina sem ajustes.",
+    announceSideLeft: "Painel movido para a esquerda",
+    announceSideRight: "Painel movido para a direita",
+    panelResetLabel: "Desligar tudo",
+    panelMoveToLeft: "Mover painel para a esquerda",
+    panelMoveToRight: "Mover painel para a direita",
     // a11yPanel.js
     panelCloseLabel: "Fechar painel de acessibilidade",
     panelSimpleTitle: "Modo Simples (Recomendado)",
@@ -2021,7 +2114,7 @@
 
   // src/ui/fab.js
   var TIP_SEEN_KEY = "fabTipSeen";
-  function createFab({ onClick }) {
+  function createFab({ onClick, onHide }) {
     const wrap = document.createElement("div");
     wrap.className = "ms-fab-wrap";
     wrap.setAttribute("data-ms-fab-wrap", "");
@@ -2065,8 +2158,21 @@
       e.stopPropagation();
       onClick();
     });
+    const hideBtn = document.createElement("button");
+    hideBtn.type = "button";
+    hideBtn.className = "ms-fab-hide";
+    hideBtn.setAttribute("aria-label", STRINGS.fabHideLabel);
+    hideBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" focusable="false"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
+    hideBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      onHide == null ? void 0 : onHide();
+    });
+    const box = document.createElement("div");
+    box.className = "ms-fab-box";
+    box.appendChild(btn);
+    box.appendChild(hideBtn);
     wrap.appendChild(tip);
-    wrap.appendChild(btn);
+    wrap.appendChild(box);
     function sync({ panelOpen }) {
       btn.setAttribute("aria-expanded", String(panelOpen));
       btn.setAttribute(
@@ -2082,7 +2188,20 @@
       if (closeIcon) closeIcon.toggleAttribute("hidden", !panelOpen);
     }
     sync({ panelOpen: false });
-    return { element: wrap, button: btn, sync };
+    function setSide(side) {
+      wrap.setAttribute("data-ms-side", side);
+    }
+    function setHidden(hidden) {
+      wrap.hidden = hidden;
+    }
+    return {
+      element: wrap,
+      button: btn,
+      hideButton: hideBtn,
+      sync,
+      setSide,
+      setHidden
+    };
   }
 
   // src/utils/focus.js
@@ -2313,6 +2432,8 @@
     onToggleModoSimples,
     onSetOption,
     onSpeak,
+    onResetAll,
+    onMoveSide,
     brand
   }) {
     const texts = { ...DEFAULT_BRAND, ...brand };
@@ -2357,6 +2478,11 @@
       </div>
       ${SECTIONS.map(renderSection).join("")}
 
+      <div class="ms-a11y-actions">
+        <button type="button" class="ms-a11y-action" data-action="reset-all">${STRINGS.panelResetLabel}</button>
+        <button type="button" class="ms-a11y-action" data-action="move-side">${STRINGS.panelMoveToLeft}</button>
+      </div>
+
       <div class="ms-a11y-live" aria-live="polite" aria-atomic="true"></div>
       <p class="ms-a11y-footer-note"></p>
     </div>
@@ -2378,6 +2504,12 @@
       });
     });
     panel.querySelector(".ms-a11y-close").addEventListener("click", () => onClose());
+    panel.querySelector('[data-action="reset-all"]').addEventListener("click", () => onResetAll == null ? void 0 : onResetAll());
+    panel.querySelector('[data-action="move-side"]').addEventListener("click", () => onMoveSide == null ? void 0 : onMoveSide());
+    function setSide(side) {
+      panel.setAttribute("data-ms-side", side);
+      panel.querySelector('[data-action="move-side"]').textContent = side === "left" ? STRINGS.panelMoveToRight : STRINGS.panelMoveToLeft;
+    }
     panel.querySelector('[data-action="modo-simples"]').addEventListener("click", (e) => {
       const btn = e.currentTarget;
       const next = btn.getAttribute("aria-checked") !== "true";
@@ -2491,7 +2623,7 @@
       }
     }
     sync(state2);
-    return { element: panel, open, close, sync };
+    return { element: panel, open, close, sync, setSide };
   }
 
   // src/ui/sessionChrome.js
@@ -3419,6 +3551,23 @@
   }
 
   // src/ui/binding.js
+  var RESET_OPTIONS = {
+    textScale: "100",
+    colorTheme: "senac",
+    dyslexiaFont: false,
+    readingRuler: false,
+    highlightLinks: false,
+    textSpacing: false,
+    reducedMotion: false,
+    hideImages: false,
+    simpleLanguage: false
+  };
+  function isEditableTarget(e) {
+    const t = typeof e.composedPath === "function" ? e.composedPath()[0] : e.target;
+    return !!(t && (t.isContentEditable || t.matches && t.matches(
+      'input, select, textarea, [contenteditable]:not([contenteditable="false"])'
+    )));
+  }
   function buildUI(ms) {
     ms._host = document.createElement("div");
     ms._host.id = "ms-container";
@@ -3441,13 +3590,19 @@
         }
       },
       onSpeak: () => ms._toggleSpeak(),
+      onResetAll: () => ms._resetAll(),
+      onMoveSide: () => ms._movePanelSide(),
       brand: ms._config.brand
     });
     ms._shadow.appendChild(ms._panel.element);
     ms._fab = createFab({
-      onClick: () => ms._togglePanel()
+      onClick: () => ms._togglePanel(),
+      onHide: () => ms._hideWidget()
     });
     ms._shadow.appendChild(ms._fab.element);
+    ms._side = ms._loadPanelSide();
+    ms._fab.setSide(ms._side);
+    ms._panel.setSide(ms._side);
     ms._fab.sync({ panelOpen: s.panelOpen });
     ms._panel.sync(s);
     if (s.panelOpen) {
@@ -3485,6 +3640,11 @@
   }
   function bindEvents(ms) {
     ms._onDocKeydown = (e) => {
+      if (e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.repeat && e.code === "KeyA" && !isEditableTarget(e)) {
+        e.preventDefault();
+        ms._showWidget();
+        return;
+      }
       if (e.key === "Escape" && state_default.get().panelOpen) {
         ms._closePanel();
       }
@@ -3591,6 +3751,45 @@
     const s = state_default.get();
     if (ms._panel) ms._panel.sync(s, { speaking });
     if (ms._chrome) ms._chrome.sync(s, { speaking });
+  }
+  function resetAll(ms) {
+    ms._reducedMotionUser = null;
+    if (state_default.get().modoSimples) ms._setModoSimples(false);
+    state_default.set({ options: { ...RESET_OPTIONS } });
+    ms._syncReducedMotion();
+    announce(STRINGS.announceResetAll);
+  }
+  function movePanelSide(ms) {
+    ms._side = ms._side === "left" ? "right" : "left";
+    ms._fab.setSide(ms._side);
+    ms._panel.setSide(ms._side);
+    ms._savePanelSide(ms._side);
+    announce(ms._side === "left" ? STRINGS.announceSideLeft : STRINGS.announceSideRight);
+  }
+  function hideWidget(ms) {
+    var _a, _b;
+    if (state_default.get().panelOpen) ms._closePanel();
+    ms._fab.setHidden(true);
+    const main = document.querySelector('main, [role="main"]');
+    if (main) {
+      const had = main.hasAttribute("tabindex");
+      if (!had) main.setAttribute("tabindex", "-1");
+      main.addEventListener(
+        "blur",
+        () => {
+          if (!had) main.removeAttribute("tabindex");
+        },
+        { once: true }
+      );
+      main.focus({ preventScroll: true });
+    } else {
+      (_b = (_a = document.activeElement) == null ? void 0 : _a.blur) == null ? void 0 : _b.call(_a);
+    }
+    announce(STRINGS.announceWidgetHidden);
+  }
+  function showWidget(ms) {
+    ms._fab.setHidden(false);
+    if (!state_default.get().panelOpen) ms._openPanel();
   }
 
   // src/heuristics/distractionDetector.js
@@ -4169,6 +4368,30 @@
     /** Delegate: ver closePanel() em src/ui/binding.js. */
     _closePanel() {
       closePanel(this);
+    }
+    /** Delegate: ver resetAll() em src/ui/binding.js. */
+    _resetAll() {
+      resetAll(this);
+    }
+    /** Delegate: ver movePanelSide() em src/ui/binding.js. */
+    _movePanelSide() {
+      movePanelSide(this);
+    }
+    /** Delegate: ver hideWidget() em src/ui/binding.js. */
+    _hideWidget() {
+      hideWidget(this);
+    }
+    /** Delegate: ver showWidget() em src/ui/binding.js. */
+    _showWidget() {
+      showWidget(this);
+    }
+    /** Delegate: ver loadPanelSide() em src/core/instancePersistence.js. */
+    _loadPanelSide() {
+      return loadPanelSide(this);
+    }
+    /** Delegate: ver savePanelSide() em src/core/instancePersistence.js. */
+    _savePanelSide(side) {
+      savePanelSide(this, side);
     }
     _toggleSpeak() {
       toggleSpeak();
