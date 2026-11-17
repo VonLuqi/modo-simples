@@ -304,6 +304,27 @@ test.describe('estado visual do FAB e do painel', () => {
     expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
   });
 
+  test('IMP-09: com a fonte Lexend ligada, ícones e código mantêm a própria fonte', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(GENERIC);
+    await waitForLib(page);
+    await page.evaluate(() => {
+      document.body.insertAdjacentHTML(
+        'beforeend',
+        '<p id="t-txt">texto</p><i id="t-ico" class="fa" style="font-family: monospace">x</i><code id="t-cod">c</code>',
+      );
+    });
+    await openPanel(page);
+    await page.locator('.ms-switch[data-option="dyslexiaFont"]').click();
+    const fam = (id) =>
+      page.locator(id).evaluate((e) => getComputedStyle(e).fontFamily);
+    expect(await fam('#t-txt')).toMatch(/Lexend/);
+    expect(await fam('#t-ico')).not.toMatch(/Lexend/);
+    expect(await fam('#t-cod')).not.toMatch(/Lexend/);
+  });
+
   test('UX-08 (QA LOW-3): recarregar antes dos 6s não mostra a dica de novo', async ({
     site,
   }) => {

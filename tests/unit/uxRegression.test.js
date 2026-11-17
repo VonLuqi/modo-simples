@@ -341,6 +341,24 @@ describe('CSS da lib: tamanho mínimo de texto (UX-15)', () => {
   });
 });
 
+describe('CSS da lib: fonte e espaçamento do texto (IMP-09, IMP-21)', () => {
+  it('Lexend não vale para fontes de ícone nem código (IMP-09)', () => {
+    const css = getPageStyles();
+    const i = css.indexOf('html.ms-dyslexia-font body *');
+    assert.ok(i >= 0);
+    const seletor = css.slice(i, css.indexOf('{', i));
+    for (const ex of [
+      '[class*="icon"]',
+      '.fa',
+      '.material-icons',
+      'code',
+      'pre',
+    ]) {
+      assert.ok(seletor.includes(`:not(${ex})`), `falta :not(${ex})`);
+    }
+  });
+});
+
 describe('CSS da lib: sem salto no hover (UX-17)', () => {
   it('botões da barra e pills não se deslocam no :hover', () => {
     const css = getPageStyles();
