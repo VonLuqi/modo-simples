@@ -13,6 +13,7 @@ import { mergeConfig } from './config/mergeConfig.js';
 import { detectMainContent } from './heuristics/contentDetector.js';
 import eventBus from './core/eventBus.js';
 import state from './core/state.js';
+import { diffStateAnnouncements } from './core/announcements.js';
 import persistence from './core/persistence.js';
 import {
   hydratePersistedState,
@@ -635,52 +636,9 @@ class ModoSimples {
     if (prev.options.readingRuler !== next.options.readingRuler) {
       if (next.options.readingRuler) startReadingRuler();
       else stopReadingRuler();
-      announce(
-        next.options.readingRuler
-          ? 'Régua de leitura ativada'
-          : 'Régua de leitura desativada',
-      );
     }
 
-    const announcements = {
-      dyslexiaFont: ['Fonte Lexend ativada', 'Fonte Lexend desativada'],
-      highlightLinks: [
-        'Destaque de links ativado',
-        'Destaque de links desativado',
-      ],
-      textSpacing: [
-        'Espaçamento de texto ativado',
-        'Espaçamento de texto desativado',
-      ],
-      hideImages: ['Imagens ocultadas', 'Imagens visíveis'],
-      reducedMotion: [
-        'Movimento reduzido ativado',
-        'Movimento reduzido desativado',
-      ],
-      simpleLanguage: [
-        'Linguagem simples ligada',
-        'Linguagem simples desligada',
-      ],
-    };
-    Object.entries(announcements).forEach(([k, [on, off]]) => {
-      if (prev.options[k] !== next.options[k])
-        announce(next.options[k] ? on : off);
-    });
-
-    if (prev.options.textScale !== next.options.textScale) {
-      announce(`Tamanho do texto ${next.options.textScale}%`);
-    }
-    if (prev.options.colorTheme !== next.options.colorTheme) {
-      const labels = {
-        senac: 'Cores do site',
-        yellowBlack: 'Amarelo e Preto',
-        darkHigh: 'Modo Escuro Alto',
-        soft: 'Descanso Suave',
-      };
-      announce(
-        `Tema ${labels[next.options.colorTheme] || next.options.colorTheme}`,
-      );
-    }
+    diffStateAnnouncements(prev, next).forEach((msg) => announce(msg));
 
     this._persistState(next);
   }
