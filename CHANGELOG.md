@@ -9,7 +9,7 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - CI no GitHub Actions (`.github/workflows/ci.yml`): format, lint, testes, cobertura com piso (linhas 90 · ramos 80 · funções 80), build sem drift de `dist/`, audit, smokes e e2e Playwright + axe.
 - ESLint (flat config), Husky 9 + lint-staged ativos, `vitest` removido (testes em `node:test`), `npm audit` sem vulnerabilidades.
 - Testes: ciclo de vida da classe, boot com `ModoSimplesConfig`, observer, focus, painel, escaping, e2e em browser real e baseline de acessibilidade por cenário (regra + seletor + página/estado).
-- `npm test` falha se um teste `todo` passar ("IMP-xx fixed: remove todo"): bugs conhecidos IMP-01, IMP-02, IMP-25 e IMP-31 seguem rastreados como `todo` até a correção.
+- `npm test` falha se um teste `todo` passar ("IMP-xx fixed: remove todo"): os bugs conhecidos IMP-01, IMP-02, IMP-25 e IMP-31 ficaram rastreados como `todo` e foram **corrigidos na F2** (hoje não há `todo` pendente).
 
 ### Corrigido (F2)
 
@@ -29,6 +29,9 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **IMP-06** — o principal manual vale por página e é validado antes de reaplicar.
 - **IMP-05** — escala de texto a 100% não adiciona classe/regra: `html { font-size: 62.5% }` do host deixa de ser sobrescrito.
 - **IMP-32** — opt-out do auto-boot (`data-ms-autoboot="false"` / `ModoSimplesConfig.autoboot=false`), `window.ModoSimplesClass`/`ModoSimplesBoot`, `sideEffects` no `package.json`; `examples/hello-modo-simples.html` passou a usar config pré-boot.
+- **IMP-50** — a leitura em voz segue a ordem do documento (antes lia todos os títulos, depois os parágrafos).
+- **Seleção manual** — com confiança baixa o `reprocess` não aplica a heurística enquanto o principal está por escolher (uma mutação do host, como um carrossel, não aplica mais o principal incerto).
+- **Cancelar a seleção manual** — deixa o Modo Simples ligado **sem principal** (nada marcado, oculto ou persistido); antes marcava o `body` como principal e o `max-width` do principal estreitava a página inteira.
 - **IMP-13** — leitura (TTS): eventos de uma fala antiga não avançam a fila da nova (token de geração); reiniciar ou parar e ouvir de novo não pula nem duplica blocos.
 - **IMP-38** — leitura (TTS): coleta de blocos sem reflow (legibilidade calculada uma vez por bloco) e falas de até 200 caracteres, por frase e depois por palavra.
 - **IMP-22** — seleção manual (confiança baixa): nada é ocultado antes de o usuário confirmar; cancelar (botão ou Esc) mantém a página inteira, sem persistir.
