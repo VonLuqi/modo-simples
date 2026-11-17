@@ -63,6 +63,11 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **UX-17** — sem `translateY` no hover de `.ms-session-btn` e das pills (ações frequentes); o hover segue por cor/sombra.
 - **IMP-09** — com a fonte Lexend ligada, ícones (`[class*="icon"]`, `[class*="fa-"]`, `.fa`, `.fas`, `.far`, `.fab`, `.material-icons`) e `code`/`pre`/`kbd`/`samp` mantêm a própria fonte (e o espaçamento de letras da regra); antes viravam letras ou quadrados.
 - **IMP-21** — o espaçamento de texto (WCAG 1.4.12) agora vale também para `h1`–`h6`, `td`, `th`, `dd`, `dt`, `blockquote` e `label` (antes só `body`, `p` e `li`).
+- **UX-13** — o trap de foco também pega o Tab vindo de fora do painel (clicou na página e deu Tab) ou do próprio contêiner: Tab entra pelo primeiro controle, Shift+Tab pelo último.
+- **UX-12** — ao fechar o painel (botão X, clique fora ou Esc) o foco volta a quem o abriu: FAB ou ícone do chrome. Antes só o Esc devolvia, e sempre ao FAB.
+- **IMP-24** — com o painel aberto os irmãos do host no `<body>` ficam `inert` (o `aria-modal` passa a valer de fato). Ficam de fora os anúncios de leitor de tela e a seleção manual; durante a seleção manual iniciada pelo painel a página volta a receber clique e foco, e o `inert` volta depois.
+- **UX-19** — modo restaurado em outra página não anuncia a cada navegação; avisa "Modo Simples continua ligado" uma vez por sessão (`sessionStorage`).
+- **IMP-40** — a régua já atualiza o `transform` por `requestAnimationFrame` (feito junto com o IMP-08); sem mudança de código nesta parte.
 
 ### Encerrado sem correção
 
