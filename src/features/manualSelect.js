@@ -105,7 +105,11 @@ function isOwnUi(el) {
   return !!(
     el?.closest?.('#ms-container') ||
     el?.closest?.(`#${BANNER_ID}`) ||
-    el?.closest?.(`#${HIGHLIGHT_ID}`)
+    el?.closest?.(`#${HIGHLIGHT_ID}`) ||
+    // chrome da lib no light DOM: barra de sessão, switch SIMPLES e pills (QA R34 MED-2)
+    el?.closest?.(
+      '#ms-session-bar, #ms-simples-chrome, .ms-pills-nav, [data-ms-pills]',
+    )
   );
 }
 
