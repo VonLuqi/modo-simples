@@ -397,7 +397,7 @@ export function getUIStyles(position = 'bottom-right') {
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.65rem;
+      gap: 1.15rem;
     }
     .ms-a11y-option-row {
       display: flex;

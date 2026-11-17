@@ -387,6 +387,15 @@ describe('CSS da lib: fonte e espaçamento do texto (IMP-09, IMP-21)', () => {
   });
 });
 
+describe('CSS da lib: áreas de toque dos switches (UX-16)', () => {
+  it('linhas de opção: folga >= 18px para as áreas de toque (44px) dos switches não se sobreporem', () => {
+    const css = getUIStyles();
+    const m = css.match(/\.ms-a11y-option-list\s*\{[^}]*gap:\s*([\d.]+)rem/);
+    assert.ok(m, 'gap do option-list');
+    assert.ok(Number(m[1]) * 16 >= 18, `gap ${m[1]}rem < 18px`);
+  });
+});
+
 describe('ícones da lib são SVG, não emoji/glifos (UX-22)', () => {
   it('sessionChrome.js e a11yPanel.js não têm emoji nem glifos de ícone', () => {
     const proibidos = /[\u{1F300}-\u{1FAFF}★◉▣]/u;
