@@ -125,6 +125,22 @@
   };
   var defaults_default = defaults;
 
+  // src/config/mergeConfig.js
+  function mergeConfig(base, patch) {
+    const merged = { ...base, ...patch };
+    const scoring = { ...base.scoring };
+    const patchScoring = patch && patch.scoring;
+    if (patchScoring && typeof patchScoring === "object") {
+      for (const [key, value] of Object.entries(patchScoring)) {
+        if (typeof value === "number" && Number.isFinite(value)) {
+          scoring[key] = value;
+        }
+      }
+    }
+    merged.scoring = scoring;
+    return merged;
+  }
+
   // src/core/eventBus.js
   var eventBus = {
     /** @type {Record<string, Function[]>} */
@@ -2780,7 +2796,7 @@
   var PRINCIPAL_KEY = "principal";
   var ModoSimples = class {
     constructor(userConfig = {}) {
-      this._config = { ...defaults_default, ...userConfig };
+      this._config = mergeConfig(defaults_default, userConfig);
       this._host = null;
       this._shadow = null;
       this._fab = null;
@@ -2914,7 +2930,7 @@
       }
     }
     configure(patch) {
-      this._config = { ...this._config, ...patch };
+      this._config = mergeConfig(this._config, patch);
       if (Object.prototype.hasOwnProperty.call(patch, "fontUrl")) {
         setLexendFontUrl(this._config.fontUrl);
       }

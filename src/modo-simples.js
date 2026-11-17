@@ -9,6 +9,7 @@
  */
 
 import defaults from './config/defaults.js';
+import { mergeConfig } from './config/mergeConfig.js';
 import eventBus from './core/eventBus.js';
 import state from './core/state.js';
 import persistence from './core/persistence.js';
@@ -50,7 +51,7 @@ const PRINCIPAL_KEY = 'principal';
 
 class ModoSimples {
   constructor(userConfig = {}) {
-    this._config = { ...defaults, ...userConfig };
+    this._config = mergeConfig(defaults, userConfig);
     this._host = null;
     this._shadow = null;
     this._fab = null;
@@ -196,7 +197,7 @@ class ModoSimples {
     }
   }
   configure(patch) {
-    this._config = { ...this._config, ...patch };
+    this._config = mergeConfig(this._config, patch);
     if (Object.prototype.hasOwnProperty.call(patch, 'fontUrl')) {
       setLexendFontUrl(this._config.fontUrl);
     }
