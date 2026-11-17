@@ -17,13 +17,21 @@ export function getUIStyles(position = 'bottom-right') {
   const isRight = position.endsWith('right');
 
   const fabCorner = [
-    isBottom ? 'bottom: 1.5rem;' : 'top: 1.5rem;',
-    isRight ? 'right: 1.5rem;' : 'left: 1.5rem;',
+    isBottom
+      ? 'bottom: calc(1.5 * var(--ms-u));'
+      : 'top: calc(1.5 * var(--ms-u));',
+    isRight
+      ? 'right: calc(1.5 * var(--ms-u));'
+      : 'left: calc(1.5 * var(--ms-u));',
   ].join('');
 
   const panelCorner = [
-    isBottom ? 'bottom: calc(1.5rem + 100px);' : 'top: calc(1.5rem + 100px);',
-    isRight ? 'right: 1.5rem;' : 'left: 1.5rem;',
+    isBottom
+      ? 'bottom: calc(calc(1.5 * var(--ms-u)) + 100px);'
+      : 'top: calc(calc(1.5 * var(--ms-u)) + 100px);',
+    isRight
+      ? 'right: calc(1.5 * var(--ms-u));'
+      : 'left: calc(1.5 * var(--ms-u));',
   ].join('');
 
   const panelOrigin = `${isBottom ? 'bottom' : 'top'} ${isRight ? 'right' : 'left'}`;
@@ -43,6 +51,7 @@ export function getUIStyles(position = 'bottom-right') {
       --ms-simple-bg: #FFF8E7;
       --ms-simple-border: #F39200;
       --ms-panel-radius: 14px;
+      --ms-u: 16px;
       --ms-font: 'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif;
       font-family: var(--ms-font);
       font-size: 15px;
@@ -60,7 +69,7 @@ export function getUIStyles(position = 'bottom-right') {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 0.45rem;
+      gap: calc(0.45 * var(--ms-u));
       pointer-events: none;
       z-index: 2;
     }
@@ -69,9 +78,9 @@ export function getUIStyles(position = 'bottom-right') {
       position: relative;
       background: #0B2C5F;
       color: #fff;
-      font-size: 0.75rem;
+      font-size: calc(0.75 * var(--ms-u));
       font-weight: 700;
-      padding: 0.45rem 0.8rem;
+      padding: calc(0.45 * var(--ms-u)) calc(0.8 * var(--ms-u));
       border-radius: 999px;
       box-shadow:
         0 2px 4px rgba(11, 44, 95, 0.18),
@@ -87,7 +96,7 @@ export function getUIStyles(position = 'bottom-right') {
       content: '';
       position: absolute;
       bottom: -5px;
-      right: 1.15rem;
+      right: calc(1.15 * var(--ms-u));
       width: 0;
       height: 0;
       border: 6px solid transparent;
@@ -161,7 +170,7 @@ export function getUIStyles(position = 'bottom-right') {
     .ms-a11y-panel {
       position: absolute;
       ${panelCorner}
-      width: min(380px, calc(100vw - 2rem));
+      width: min(380px, calc(100vw - calc(2 * var(--ms-u))));
       max-height: min(72vh, 640px);
       display: flex;
       flex-direction: column;
@@ -193,8 +202,8 @@ export function getUIStyles(position = 'bottom-right') {
     .ms-a11y-header {
       display: flex;
       align-items: flex-start;
-      gap: 0.75rem;
-      padding: 1rem 1rem 0.9rem;
+      gap: calc(0.75 * var(--ms-u));
+      padding: calc(1 * var(--ms-u)) calc(1 * var(--ms-u)) calc(0.9 * var(--ms-u));
       background: linear-gradient(135deg, var(--ms-blue) 0%, var(--ms-blue-mid) 100%);
       color: #fff;
       flex-shrink: 0;
@@ -215,14 +224,14 @@ export function getUIStyles(position = 'bottom-right') {
     .ms-a11y-header-text { flex: 1; min-width: 0; }
     .ms-a11y-header-text h2 {
       margin: 0;
-      font-size: 1.05rem;
+      font-size: calc(1.05 * var(--ms-u));
       font-weight: 700;
       line-height: 1.25;
       color: #fff;
     }
     .ms-a11y-subtitle {
-      margin: 0.2rem 0 0;
-      font-size: 0.8125rem;
+      margin: calc(0.2 * var(--ms-u)) 0 0;
+      font-size: calc(0.8125 * var(--ms-u));
       opacity: 0.85;
       color: #fff;
     }
@@ -233,7 +242,7 @@ export function getUIStyles(position = 'bottom-right') {
       border: none;
       color: rgba(255, 255, 255, 0.85);
       cursor: pointer;
-      padding: 0.25rem;
+      padding: calc(0.25 * var(--ms-u));
       border-radius: 6px;
       display: flex;
       align-items: center;
@@ -244,7 +253,7 @@ export function getUIStyles(position = 'bottom-right') {
 
     .ms-a11y-body {
       overflow-y: auto;
-      padding: 0.85rem 1rem 1.1rem;
+      padding: calc(0.85 * var(--ms-u)) calc(1 * var(--ms-u)) calc(1.1 * var(--ms-u));
       flex: 1;
       background: #f7f8fa;
     }
@@ -254,27 +263,27 @@ export function getUIStyles(position = 'bottom-right') {
       background: var(--ms-simple-bg);
       border: 2px solid var(--ms-simple-border);
       border-radius: 12px;
-      padding: 0.85rem 0.9rem;
-      margin-bottom: 1rem;
+      padding: calc(0.85 * var(--ms-u)) calc(0.9 * var(--ms-u));
+      margin-bottom: calc(1 * var(--ms-u));
     }
     .ms-a11y-card-row {
       display: flex;
       align-items: flex-start;
-      gap: 0.75rem;
+      gap: calc(0.75 * var(--ms-u));
     }
     .ms-a11y-card-text { flex: 1; min-width: 0; }
     .ms-a11y-card-star {
       color: var(--ms-orange);
-      margin-right: 0.2rem;
-      font-size: 1rem;
+      margin-right: calc(0.2 * var(--ms-u));
+      font-size: calc(1 * var(--ms-u));
     }
     .ms-a11y-card-text strong {
-      font-size: 0.95rem;
+      font-size: calc(0.95 * var(--ms-u));
       color: var(--ms-blue);
     }
     .ms-a11y-card-text p {
-      margin: 0.35rem 0 0;
-      font-size: 0.78rem;
+      margin: calc(0.35 * var(--ms-u)) 0 0;
+      font-size: calc(0.78 * var(--ms-u));
       color: #4a5568;
       line-height: 1.4;
     }
@@ -288,35 +297,35 @@ export function getUIStyles(position = 'bottom-right') {
     .ms-a11y-section {
       background: #fff;
       border-radius: 10px;
-      padding: 0.75rem 0.85rem;
-      margin-bottom: 0.75rem;
+      padding: calc(0.75 * var(--ms-u)) calc(0.85 * var(--ms-u));
+      margin-bottom: calc(0.75 * var(--ms-u));
       border: 1px solid #e8eaef;
     }
     .ms-a11y-section-title {
-      margin: 0 0 0.65rem;
-      font-size: 0.8125rem;
+      margin: 0 0 calc(0.65 * var(--ms-u));
+      font-size: calc(0.8125 * var(--ms-u));
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
       color: var(--ms-blue);
       display: flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: calc(0.35 * var(--ms-u));
     }
 
     /* ── Segmented text scale ────────────────────────────────────────────── */
     .ms-segmented {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0.35rem;
+      gap: calc(0.35 * var(--ms-u));
     }
     .ms-segment {
       border: none;
       border-radius: 8px;
-      padding: 0.55rem 0.25rem;
+      padding: calc(0.55 * var(--ms-u)) calc(0.25 * var(--ms-u));
       min-height: 44px;
       font: inherit;
-      font-size: 0.8rem;
+      font-size: calc(0.8 * var(--ms-u));
       font-weight: 600;
       background: #eef0f4;
       color: #334155;
@@ -336,17 +345,17 @@ export function getUIStyles(position = 'bottom-right') {
     .ms-theme-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
+      gap: calc(0.5 * var(--ms-u));
     }
     .ms-theme-btn {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 0.15rem;
+      gap: calc(0.15 * var(--ms-u));
       text-align: left;
       border: 2px solid #e2e8f0;
       border-radius: 10px;
-      padding: 0.55rem 0.6rem;
+      padding: calc(0.55 * var(--ms-u)) calc(0.6 * var(--ms-u));
       background: #fff;
       cursor: pointer;
       font: inherit;
@@ -365,7 +374,7 @@ export function getUIStyles(position = 'bottom-right') {
       width: 100%;
       height: 18px;
       border-radius: 4px;
-      margin-bottom: 0.25rem;
+      margin-bottom: calc(0.25 * var(--ms-u));
       border: 1px solid rgba(0, 0, 0, 0.08);
     }
     .ms-theme-btn--senac .ms-theme-swatch {
@@ -381,12 +390,12 @@ export function getUIStyles(position = 'bottom-right') {
       background: linear-gradient(90deg, #f5efe0 50%, #5c4a32 50%);
     }
     .ms-theme-label {
-      font-size: 0.8125rem;
+      font-size: calc(0.8125 * var(--ms-u));
       font-weight: 700;
       line-height: 1.2;
     }
     .ms-theme-sub {
-      font-size: 0.8125rem;
+      font-size: calc(0.8125 * var(--ms-u));
       color: #64748b;
     }
 
@@ -397,30 +406,30 @@ export function getUIStyles(position = 'bottom-right') {
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.65rem;
+      gap: calc(0.65 * var(--ms-u));
     }
     .ms-a11y-option-row {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: calc(0.75 * var(--ms-u));
     }
     .ms-a11y-option-text { flex: 1; min-width: 0; }
     .ms-a11y-option-text strong {
-      font-size: 0.85rem;
+      font-size: calc(0.85 * var(--ms-u));
       color: #1e293b;
       display: block;
     }
     .ms-a11y-option-hint {
       display: block;
-      margin-top: 0.2rem;
-      font-size: 0.8125rem;
+      margin-top: calc(0.2 * var(--ms-u));
+      font-size: calc(0.8125 * var(--ms-u));
       font-weight: 500;
       color: #64748b;
       line-height: 1.35;
     }
     .ms-a11y-option-text p {
-      margin: 0.15rem 0 0;
-      font-size: 0.8125rem;
+      margin: calc(0.15 * var(--ms-u)) 0 0;
+      font-size: calc(0.8125 * var(--ms-u));
       color: #64748b;
       line-height: 1.35;
     }
@@ -469,11 +478,11 @@ export function getUIStyles(position = 'bottom-right') {
       flex-shrink: 0;
       border: none;
       border-radius: 8px;
-      padding: 0.45rem 0.9rem;
+      padding: calc(0.45 * var(--ms-u)) calc(0.9 * var(--ms-u));
       background: var(--ms-orange);
       color: #1a1205;
       font: inherit;
-      font-size: 0.82rem;
+      font-size: calc(0.82 * var(--ms-u));
       font-weight: 700;
       cursor: pointer;
     }
@@ -492,20 +501,20 @@ export function getUIStyles(position = 'bottom-right') {
     }
 
     .ms-a11y-footer-note {
-      margin: 0.35rem 0 0;
+      margin: calc(0.35 * var(--ms-u)) 0 0;
       text-align: center;
-      font-size: 0.8125rem;
+      font-size: calc(0.8125 * var(--ms-u));
       color: #475569;
       line-height: 1.35;
     }
 
     @media (max-width: 480px) {
       #ms-a11y-panel {
-        width: calc(100vw - 1rem);
-        max-height: calc(100vh - 124px - 2.5rem);
-        max-height: calc(100dvh - 124px - 2.5rem);
-        right: 0.5rem !important;
-        left: 0.5rem !important;
+        width: calc(100vw - calc(1 * var(--ms-u)));
+        max-height: calc(100vh - 124px - calc(2.5 * var(--ms-u)));
+        max-height: calc(100dvh - 124px - calc(2.5 * var(--ms-u)));
+        right: calc(0.5 * var(--ms-u)) !important;
+        left: calc(0.5 * var(--ms-u)) !important;
         transform-origin: bottom center;
       }
       .ms-fab-tip {
@@ -513,7 +522,7 @@ export function getUIStyles(position = 'bottom-right') {
         white-space: normal;
         text-align: center;
         border-radius: 14px;
-        font-size: 0.75rem;
+        font-size: calc(0.75 * var(--ms-u));
       }
     }
 
@@ -748,6 +757,12 @@ export function getPageStyles() {
     html.ms-manual-select-active { cursor: pointer !important; }
 
     /* ── Session chrome (SIMPLES header) + barra sob o nav ───────────────── */
+    /* UX-14: 1 unidade = 16px fixos, sem depender do html { font-size } do host */
+    #ms-simples-chrome,
+    #ms-session-bar,
+    .ms-pills-nav {
+      --ms-u: 16px;
+    }
     #ms-simples-chrome {
       display: flex;
       align-items: center;
@@ -757,8 +772,8 @@ export function getPageStyles() {
     }
     #ms-simples-chrome.ms-simples-chrome--fixed {
       position: fixed;
-      top: 0.75rem;
-      right: 5.5rem;
+      top: calc(0.75 * var(--ms-u));
+      right: calc(5.5 * var(--ms-u));
       z-index: 2147483646;
     }
     /* Same SIMPLES control, parked in MS pills nav while site header is hidden */
@@ -766,7 +781,7 @@ export function getPageStyles() {
       box-sizing: border-box;
       width: 100%;
       margin: 0;
-      padding: 0.45rem 1rem 0;
+      padding: calc(0.45 * var(--ms-u)) calc(1 * var(--ms-u)) 0;
       justify-content: flex-end;
       position: static;
     }
@@ -776,7 +791,7 @@ export function getPageStyles() {
     .ms-simples-chrome-inner {
       display: flex;
       align-items: center;
-      gap: 0.55rem;
+      gap: calc(0.55 * var(--ms-u));
     }
     .ms-chrome-icon {
       width: 44px;
@@ -800,8 +815,8 @@ export function getPageStyles() {
     .ms-simples-toggle-wrap {
       display: flex;
       align-items: center;
-      gap: 0.55rem;
-      padding: 0.4rem 0.7rem 0.4rem 0.75rem;
+      gap: calc(0.55 * var(--ms-u));
+      padding: calc(0.4 * var(--ms-u)) calc(0.7 * var(--ms-u)) calc(0.4 * var(--ms-u)) calc(0.75 * var(--ms-u));
       border-radius: 999px;
       border: 2px solid #d8e1ef;
       background: #fff;
@@ -813,19 +828,19 @@ export function getPageStyles() {
       background: #fff8e7;
       box-shadow: 0 0 0 2px rgba(243, 146, 0, 0.22);
     }
-    .ms-simples-spark { color: #f39200; font-size: 1rem; }
+    .ms-simples-spark { color: #f39200; font-size: calc(1 * var(--ms-u)); }
     .ms-simples-toggle-text {
       display: flex;
       flex-direction: column;
       line-height: 1.15;
     }
     .ms-simples-toggle-text strong {
-      font-size: 0.8rem;
+      font-size: calc(0.8 * var(--ms-u));
       letter-spacing: 0.05em;
       color: #0b2c5f;
     }
     .ms-simples-sub {
-      font-size: 0.75rem;
+      font-size: calc(0.75 * var(--ms-u));
       color: #475569;
       font-weight: 600;
     }
@@ -870,15 +885,15 @@ export function getPageStyles() {
       box-shadow: 0 2px 10px rgb(217 119 6 / 22%);
     }
     .ms-session-bar-inner {
-      width: min(72rem, calc(100% - 2rem));
+      width: min(calc(72 * var(--ms-u)), calc(100% - calc(2 * var(--ms-u))));
       margin: 0 auto;
-      padding: 0.9rem 0;
+      padding: calc(0.9 * var(--ms-u)) 0;
     }
     .ms-session-off {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.5rem 1rem;
+      gap: calc(0.5 * var(--ms-u)) calc(1 * var(--ms-u));
     }
     .ms-session-off[hidden],
     .ms-session-on[hidden] {
@@ -887,8 +902,8 @@ export function getPageStyles() {
     .ms-session-off p {
       margin: 0;
       font-weight: 600;
-      max-width: 52rem;
-      font-size: 0.95rem;
+      max-width: calc(52 * var(--ms-u));
+      font-size: calc(0.95 * var(--ms-u));
     }
     .ms-chrome-icon:focus-visible,
     .ms-chrome-switch:focus-visible,
@@ -896,43 +911,43 @@ export function getPageStyles() {
       outline: 3px solid #0b2c5f;
       outline-offset: 2px;
     }
-    .ms-session-on-top { margin-bottom: 0.7rem; }
+    .ms-session-on-top { margin-bottom: calc(0.7 * var(--ms-u)); }
     .ms-session-on-title {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 1.05rem;
+      gap: calc(0.5 * var(--ms-u));
+      font-size: calc(1.05 * var(--ms-u));
     }
     .ms-session-badge {
       background: #1a1205;
       color: #fff;
       border-radius: 999px;
-      padding: 0.22rem 0.7rem;
-      font-size: 0.75rem;
+      padding: calc(0.22 * var(--ms-u)) calc(0.7 * var(--ms-u));
+      font-size: calc(0.75 * var(--ms-u));
       font-weight: 700;
     }
     .ms-session-desc {
-      margin: 0.35rem 0 0;
-      font-size: 0.9rem;
+      margin: calc(0.35 * var(--ms-u)) 0 0;
+      font-size: calc(0.9 * var(--ms-u));
       font-weight: 500;
     }
     .ms-session-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: calc(0.5 * var(--ms-u));
     }
     .ms-session-btn {
       border: none;
       border-radius: 12px;
-      padding: 0.55rem 0.95rem;
+      padding: calc(0.55 * var(--ms-u)) calc(0.95 * var(--ms-u));
       min-height: 44px;
       font-weight: 700;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: calc(0.85 * var(--ms-u));
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: calc(0.35 * var(--ms-u));
       transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     }
     .ms-session-btn--light {
@@ -958,10 +973,10 @@ export function getPageStyles() {
 
     /* UX-07: barra compacta no mobile (título numa linha, botões ícone + rótulo curto em grade) */
     @media (max-width: 480px) {
-      .ms-session-bar-inner { padding: 0.5rem 0; }
-      .ms-session-on-top { margin-bottom: 0.4rem; }
-      .ms-session-on-title { font-size: 0.95rem; gap: 0.4rem; }
-      .ms-session-badge { font-size: 0.75rem; padding: 0.15rem 0.5rem; white-space: nowrap; }
+      .ms-session-bar-inner { padding: calc(0.5 * var(--ms-u)) 0; }
+      .ms-session-on-top { margin-bottom: calc(0.4 * var(--ms-u)); }
+      .ms-session-on-title { font-size: calc(0.95 * var(--ms-u)); gap: calc(0.4 * var(--ms-u)); }
+      .ms-session-badge { font-size: calc(0.75 * var(--ms-u)); padding: calc(0.15 * var(--ms-u)) calc(0.5 * var(--ms-u)); white-space: nowrap; }
       .ms-session-desc,
       .ms-btn-pre,
       .ms-btn-post {
@@ -976,14 +991,14 @@ export function getPageStyles() {
       .ms-session-actions {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 0.4rem;
+        gap: calc(0.4 * var(--ms-u));
       }
       .ms-session-actions .ms-session-btn {
         flex-direction: column;
         justify-content: center;
-        gap: 0.15rem;
-        padding: 0.3rem 0.2rem;
-        font-size: 0.75rem;
+        gap: calc(0.15 * var(--ms-u));
+        padding: calc(0.3 * var(--ms-u)) calc(0.2 * var(--ms-u));
+        font-size: calc(0.75 * var(--ms-u));
         line-height: 1.15;
         text-align: center;
       }
@@ -1050,7 +1065,7 @@ export function getPageStyles() {
       .ms-pills-nav .ms-pills-nav__inner {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 0.5rem;
+        gap: calc(0.5 * var(--ms-u));
       }
       .ms-pills-nav .ms-pill {
         justify-content: center;
@@ -1067,20 +1082,20 @@ export function getPageStyles() {
     }
     .ms-pills-nav[data-ms-injected] .ms-pills-nav__inner {
       display: flex;
-      gap: 0.5rem;
-      padding: 0.65rem 1rem;
+      gap: calc(0.5 * var(--ms-u));
+      padding: calc(0.65 * var(--ms-u)) calc(1 * var(--ms-u));
     }
     .ms-pills-nav[data-ms-injected] .ms-pill {
       flex: 0 0 auto;
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      padding: 0.55rem 0.95rem;
+      gap: calc(0.35 * var(--ms-u));
+      padding: calc(0.55 * var(--ms-u)) calc(0.95 * var(--ms-u));
       border-radius: 10px;
       background: #eef2f7;
       color: #0b2c5f;
       font-weight: 700;
-      font-size: 0.82rem;
+      font-size: calc(0.82 * var(--ms-u));
       font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
       text-decoration: none;
       border: 2px solid transparent;

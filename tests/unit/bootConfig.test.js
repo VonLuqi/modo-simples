@@ -59,7 +59,11 @@ describe('boot com window.ModoSimplesConfig', () => {
     const css = document
       .querySelector('#ms-container')
       .shadowRoot.querySelector('style').textContent;
-    assert.ok(css.includes('top: 1.5rem;left: 1.5rem;'));
+    assert.ok(
+      css.includes(
+        'top: calc(1.5 * var(--ms-u));left: calc(1.5 * var(--ms-u));',
+      ),
+    );
   });
 
   it('API pública do window.ModoSimples está completa', () => {

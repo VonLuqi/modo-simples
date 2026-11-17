@@ -131,6 +131,8 @@ test.describe('auto-boot desligado (IMP-32)', () => {
           .querySelector('#ms-container')
           .shadowRoot.querySelector('style').textContent,
     );
-    expect(css).toContain('top: 1.5rem;left: 1.5rem;');
+    expect(css).toContain(
+      'top: calc(1.5 * var(--ms-u));left: calc(1.5 * var(--ms-u));',
+    );
   });
 });

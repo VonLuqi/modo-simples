@@ -335,10 +335,32 @@ describe('createSessionChrome — sync (F5-T09)', () => {
 describe('CSS da lib: tamanho mínimo de texto (UX-15)', () => {
   it('nenhuma regra usa font-size abaixo de 0.75rem (12px)', () => {
     const css = getUIStyles() + getPageStyles();
-    const pequenos = [...css.matchAll(/font-size:\s*(\d*\.?\d+)rem/g)]
+    // 1 unidade = 1rem = 16px (UX-14: `calc(N * var(--ms-u))`, --ms-u: 16px)
+    const pequenos = [
+      ...css.matchAll(
+        /font-size:\s*(?:calc\()?(\d*\.?\d+)(?:rem| \* var\(--ms-u\))/g,
+      ),
+    ]
       .map((m) => Number(m[1]))
       .filter((v) => v < 0.75);
     assert.deepEqual(pequenos, []);
+  });
+});
+
+describe('CSS da lib: independente do html { font-size } do host (UX-14)', () => {
+  it('o widget usa var(--ms-u) (16px), não rem', () => {
+    const ui = getUIStyles();
+    assert.ok(ui.includes('--ms-u: 16px'));
+    assert.equal(/\d\s*rem\b/.test(ui), false, 'rem no CSS do shadow DOM');
+
+    const pagina = getPageStyles();
+    const i = pagina.indexOf('#ms-simples-chrome,\n    #ms-session-bar');
+    assert.ok(i >= 0, 'falta a âncora --ms-u no chrome/barra/pills');
+    assert.equal(
+      /\d\s*rem\b/.test(pagina.slice(i)),
+      false,
+      'rem no chrome/barra/pills da lib',
+    );
   });
 });
 

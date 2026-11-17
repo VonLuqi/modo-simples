@@ -250,12 +250,28 @@ describe('configure em runtime', () => {
     inst.init();
     const css = () =>
       $('#ms-container').shadowRoot.querySelector('style').textContent;
-    assert.ok(css().includes('bottom: 1.5rem;right: 1.5rem;'));
+    assert.ok(
+      css().includes(
+        'bottom: calc(1.5 * var(--ms-u));right: calc(1.5 * var(--ms-u));',
+      ),
+    );
     inst.configure({ position: 'top-left' });
-    assert.ok(css().includes('top: 1.5rem;left: 1.5rem;'));
-    assert.ok(!css().includes('bottom: 1.5rem;right: 1.5rem;'));
+    assert.ok(
+      css().includes(
+        'top: calc(1.5 * var(--ms-u));left: calc(1.5 * var(--ms-u));',
+      ),
+    );
+    assert.ok(
+      !css().includes(
+        'bottom: calc(1.5 * var(--ms-u));right: calc(1.5 * var(--ms-u));',
+      ),
+    );
     inst.configure({ position: 'bottom-left' });
-    assert.ok(css().includes('bottom: 1.5rem;left: 1.5rem;'));
+    assert.ok(
+      css().includes(
+        'bottom: calc(1.5 * var(--ms-u));left: calc(1.5 * var(--ms-u));',
+      ),
+    );
   });
 
   it('configure({ position }) antes do init continua valendo', () => {
@@ -263,6 +279,10 @@ describe('configure em runtime', () => {
     inst.init();
     const css =
       $('#ms-container').shadowRoot.querySelector('style').textContent;
-    assert.ok(css.includes('top: 1.5rem;right: 1.5rem;'));
+    assert.ok(
+      css.includes(
+        'top: calc(1.5 * var(--ms-u));right: calc(1.5 * var(--ms-u));',
+      ),
+    );
   });
 });
