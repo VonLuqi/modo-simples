@@ -418,11 +418,14 @@ describe('CSS da lib: sem salto no hover (UX-17)', () => {
     const css = getPageStyles();
     const hovers = css.match(/[^{}]*:hover\s*\{[^}]*\}/g) || [];
     const comLift = hovers.filter(
-      (r) =>
-        /\.ms-session-btn|\.ms-pill/.test(r) &&
-        /translateY\(-/.test(r) &&
-        !/transform:\s*none/.test(r),
+      (r) => /\.ms-session-btn|\.ms-pill/.test(r) && /translateY\(-/.test(r),
     );
     assert.deepEqual(comLift, []);
+  });
+
+  it('reduced-motion não repete :hover só para zerar um transform que não existe', () => {
+    const css = getPageStyles();
+    const rm = css.slice(css.lastIndexOf('prefers-reduced-motion: reduce'));
+    assert.equal(/\.ms-session-btn:hover|\.ms-pill:hover/.test(rm), false);
   });
 });

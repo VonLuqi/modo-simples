@@ -1061,10 +1061,6 @@ export function getPageStyles() {
       .ms-pills-nav[data-ms-injected] .ms-pill {
         transition: none !important;
       }
-      .ms-session-btn:hover,
-      .ms-pills-nav[data-ms-injected] .ms-pill:hover {
-        transform: none;
-      }
     }
   `;
 }
