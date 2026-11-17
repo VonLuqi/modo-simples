@@ -2829,6 +2829,12 @@
   }
 
   // src/features/simpleNav.js
+  var SAFE_SCHEMES = ["http", "https", "mailto", "tel"];
+  function isSafeHref(href) {
+    const compact = String(href).replace(/[\u0000- \u007f-\u009f]/g, "");
+    const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(compact);
+    return !scheme || SAFE_SCHEMES.includes(scheme[1].toLowerCase());
+  }
   function normalizeSimpleNav(items) {
     if (!Array.isArray(items)) return [];
     return items.map((item) => {
@@ -2836,7 +2842,7 @@
       if (!item || typeof item !== "object") return null;
       const label = String((_a = item.label) != null ? _a : "").trim();
       const href = String((_b = item.href) != null ? _b : "").trim();
-      if (!label || !href) return null;
+      if (!label || !href || !isSafeHref(href)) return null;
       const short = item.short != null && String(item.short).trim() ? String(item.short).trim() : void 0;
       return short ? { label, href, short } : { label, href };
     }).filter(Boolean);

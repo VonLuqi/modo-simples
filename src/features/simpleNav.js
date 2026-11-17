@@ -9,8 +9,24 @@
  * @typedef {{ label: string, href: string, short?: string }} SimpleNavItem
  */
 
+const SAFE_SCHEMES = ['http', 'https', 'mailto', 'tel'];
+
 /**
- * Normaliza a lista de itens da API.
+ * href aceito: relativo, http(s):, mailto: ou tel:. Recusa javascript:, data:, vbscript:,
+ * file:, blob: e qualquer outro esquema (IMP-42). Caracteres de controle e espaços são
+ * ignorados na leitura do esquema porque o browser também os ignora ("java\tscript:").
+ * @param {unknown} href
+ * @returns {boolean}
+ */
+export function isSafeHref(href) {
+  // eslint-disable-next-line no-control-regex
+  const compact = String(href).replace(/[\u0000- \u007f-\u009f]/g, '');
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(compact);
+  return !scheme || SAFE_SCHEMES.includes(scheme[1].toLowerCase());
+}
+
+/**
+ * Normaliza a lista de itens da API. Itens com href inseguro são descartados (IMP-42).
  * @param {unknown} items
  * @returns {SimpleNavItem[]}
  */
@@ -21,7 +37,7 @@ export function normalizeSimpleNav(items) {
       if (!item || typeof item !== 'object') return null;
       const label = String(item.label ?? '').trim();
       const href = String(item.href ?? '').trim();
-      if (!label || !href) return null;
+      if (!label || !href || !isSafeHref(href)) return null;
       const short =
         item.short != null && String(item.short).trim()
           ? String(item.short).trim()
