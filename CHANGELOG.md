@@ -108,7 +108,7 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 
 ### Refatoração (F4c)
 
-- **A-11 / A-03** — o CSS saiu da string JS: fonte em `src/ui/css/{ui,page}/*.css`, `scripts/gen-styles.cjs` gera `src/ui/styles.generated.js` (commitado; `--check` e passo de CI falham se defasar) e `ui/styles.js` mantém `getUIStyles()`/`getPageStyles()` (de 1165 para 60 linhas). `domMutator` não importa mais `ui/`: `injectPageStyles(css)` recebe o CSS de `modo-simples.js`. Saída do CSS byte a byte idêntica; exports públicos inalterados.
+- **A-11 / A-03** — o CSS saiu da string JS: fonte em `src/ui/css/{ui,page}/*.css`, `scripts/gen-styles.cjs` gera `src/ui/styles.generated.js` (commitado; `--check` e passo de CI falham se defasar) e `ui/styles.js` mantém `getUIStyles()`/`getPageStyles()` (de 1165 para 60 linhas). `domMutator` não importa mais `ui/`: `injectPageStyles(css)` recebe o CSS de `modo-simples.js`. Saída do CSS byte a byte idêntica; exports públicos inalterados. Revisão (QA R86): `injectPageStyles()` sem CSS não injeta `<style>` vazio (que travaria a injeção real depois), `npm run watch` também observa `src/ui/css` e regera `styles.generated.js`, e `doc/02` e `doc/09` apontam para os novos caminhos do CSS.
 
 ### Testes (F4b)
 

@@ -2679,7 +2679,7 @@
     _holdPrincipal = !!on;
   }
   function injectPageStyles(css = "") {
-    if (document.getElementById(PAGE_STYLE_ID)) return;
+    if (!css || document.getElementById(PAGE_STYLE_ID)) return;
     const style = document.createElement("style");
     style.id = PAGE_STYLE_ID;
     style.textContent = css;
