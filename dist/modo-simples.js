@@ -535,7 +535,7 @@
       --ms-simple-bg: #FFF8E7;
       --ms-simple-border: #F39200;
       --ms-panel-radius: 14px;
-      --ms-u: 16px;
+      --ms-u: calc(16px * var(--ms-scale, 1));
       --ms-font: 'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif;
       font-family: var(--ms-font);
       font-size: 15px;
@@ -1051,9 +1051,9 @@
     }
 
     /* \u2500\u2500 Text scale (independent of ms-ativo) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
-    html.ms-text-scale-125 { font-size: 125%; }
-    html.ms-text-scale-150 { font-size: 150%; }
-    html.ms-text-scale-175 { font-size: 175%; }
+    html.ms-text-scale-125 { font-size: 125%; --ms-scale: 1.25; }
+    html.ms-text-scale-150 { font-size: 150%; --ms-scale: 1.5; }
+    html.ms-text-scale-175 { font-size: 175%; --ms-scale: 1.75; }
 
     /* \u2500\u2500 Color themes \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     html.ms-theme-yellowBlack,
@@ -1237,7 +1237,7 @@
     #ms-simples-chrome,
     #ms-session-bar,
     .ms-pills-nav {
-      --ms-u: 16px;
+      --ms-u: calc(16px * var(--ms-scale, 1));
     }
     #ms-simples-chrome {
       display: flex;
@@ -1290,6 +1290,7 @@
     }
     .ms-simples-toggle-wrap {
       display: flex;
+      min-width: 0;
       align-items: center;
       gap: calc(0.55 * var(--ms-u));
       padding: calc(0.4 * var(--ms-u)) calc(0.7 * var(--ms-u)) calc(0.4 * var(--ms-u)) calc(0.75 * var(--ms-u));
@@ -1466,10 +1467,12 @@
       }
       .ms-session-actions {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: calc(0.4 * var(--ms-u));
       }
       .ms-session-actions .ms-session-btn {
+        min-width: 0;
+        overflow-wrap: anywhere;
         flex-direction: column;
         justify-content: center;
         gap: calc(0.15 * var(--ms-u));
@@ -1540,13 +1543,21 @@
     @media (max-width: 720px) {
       .ms-pills-nav .ms-pills-nav__inner {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: calc(0.5 * var(--ms-u));
       }
       .ms-pills-nav .ms-pill {
         justify-content: center;
         text-align: center;
         white-space: normal;
+        overflow-wrap: anywhere;
+        min-width: 0;
+        padding-inline: calc(0.25 * var(--ms-u));
+      }
+    }
+    @media (min-width: 360px) and (max-width: 720px) {
+      .ms-pills-nav .ms-pills-nav__inner {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
     }
 
