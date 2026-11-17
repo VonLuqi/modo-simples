@@ -104,6 +104,7 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **A-09** — já atendido: `.husky/pre-commit` roda lint-staged e `npm run test:unit` (sem mudança).
 - **A-10** — CI: `node scripts/bundle.cjs && git diff --exit-code dist` (sem `prebuild`/prettier, que reescreve `src/`).
 - **A-12** — pesos do `scoring` e `confidenceThreshold` documentados em `doc/08-heuristicas-edges.md` e nos comentários de `defaults.js`/`scoring.js`. `dist/modo-simples.js` reconstruído (só comentários); `.min.js` idêntico.
+- **e2e (QA R78)** — `panel-focus.spec.js`: o skip silencioso quando o ícone `open-panel` não aparece virou `expect(icone).toBeVisible()`; se o ícone sumir, o teste falha em vez de passar sem rodar.
 
 ### Encerrado sem correção
 

@@ -45,8 +45,7 @@ test.describe('foco volta ao opener ao fechar o painel (UX-12)', () => {
     await page.goto(INDEX);
     await waitForLib(page);
     const icone = page.locator('[data-action="open-panel"]');
-    if (!(await icone.isVisible()))
-      test.skip(true, 'sem ícone visível neste viewport');
+    await expect(icone).toBeVisible();
 
     await icone.focus();
     await page.keyboard.press('Enter');
