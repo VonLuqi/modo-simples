@@ -19,15 +19,15 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **IMP-15** — `scoring` mesclado chave a chave (um patch parcial não gera NaN nem desliga a seleção manual).
 - **IMP-16** — o observer enxerga o config atual depois de `configure()`.
 - **IMP-37** — uma varredura do DOM por lista de seletores (antes ~23), resultado idêntico.
-- **IMP-23** — boot idempotente (script duas vezes não duplica a UI); `destroy()` só desfaz o que é da instância.
+- **IMP-23** — boot idempotente (script duas vezes não duplica a UI); `destroy()` só desfaz o que é da instância: numa instância que nunca subiu é no-op e **não chama mais `eventBus.clearAll()`** (só remove o próprio listener; listeners alheios do `eventBus` sobrevivem).
 - **IMP-25** — sem polling: o estado "lendo/parado" da UI vem dos eventos do TTS (`onSpeakingChange`); nenhum `setInterval` na leitura.
 - **IMP-31** — `configure({ position })` reposiciona o FAB em runtime.
-- **IMP-14** — `prefers-reduced-motion` é valor derivado: não é gravado como escolha do usuário e acompanha o SO.
+- **IMP-14** — `prefers-reduced-motion` é valor derivado: não é gravado como escolha do usuário e acompanha o SO. Só um payload `v: 1` com booleano conta como escolha; no formato antigo (sem `v`) o `reducedMotion` gravado é ignorado e o SO vale (o antigo persistia o valor derivado, `false` por padrão).
 - **IMP-17** — desligar o Modo Simples restaura a escolha de imagens de antes.
 - **IMP-39** — localStorage só é regravado quando o estado persistido muda.
-- **IMP-33** — estado salvo com `v: 1` (formato antigo migrado); novas chaves por página.
-- **IMP-06** — o principal manual vale por página e é validado antes de reaplicar.
-- **IMP-05** — escala de texto a 100% não adiciona classe/regra: `html { font-size: 62.5% }` do host deixa de ser sobrescrito.
+- **IMP-33** — estado salvo com `v: 1`. O formato antigo (sem `v`) continua sendo lido — `largerText`/`highContrast` viram escala e tema — e é regravado como v1 na próxima mudança; o `reducedMotion` do formato antigo não é carregado como escolha (ver IMP-14). Novas chaves por página.
+- **IMP-06** — o principal manual vale por página e é validado antes de reaplicar. O registro antigo por host (string) passa a ser só uma dica: revalidado em cada página (texto mínimo e, se a heurística está confiante, tamanho vs. o candidato dela) e nunca apagado por uma página que falhou.
+- **IMP-05** — escala de texto a 100% não adiciona classe/regra: `html { font-size: 62.5% }` do host deixa de ser sobrescrito. **Mudança observável:** a classe `ms-text-scale-100` não existe mais (só `ms-text-scale-125`, `-150` e `-175`); CSS ou testes de integradores que dependiam dela precisam ser ajustados.
 - **IMP-32** — opt-out do auto-boot (`data-ms-autoboot="false"` / `ModoSimplesConfig.autoboot=false`), `window.ModoSimplesClass`/`ModoSimplesBoot`, `sideEffects` no `package.json`; `examples/hello-modo-simples.html` passou a usar config pré-boot.
 - **IMP-50** — a leitura em voz segue a ordem do documento (antes lia todos os títulos, depois os parágrafos).
 - **Seleção manual** — com confiança baixa o `reprocess` não aplica a heurística enquanto o principal está por escolher (uma mutação do host, como um carrossel, não aplica mais o principal incerto).
