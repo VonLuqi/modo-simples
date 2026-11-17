@@ -956,6 +956,43 @@ export function getPageStyles() {
       color: #fff;
     }
 
+    /* UX-07: barra compacta no mobile (título numa linha, botões ícone + rótulo curto em grade) */
+    @media (max-width: 480px) {
+      .ms-session-bar-inner { padding: 0.5rem 0; }
+      .ms-session-on-top { margin-bottom: 0.4rem; }
+      .ms-session-on-title { font-size: 0.95rem; gap: 0.4rem; }
+      .ms-session-badge { font-size: 0.75rem; padding: 0.15rem 0.5rem; white-space: nowrap; }
+      .ms-session-desc,
+      .ms-btn-pre,
+      .ms-btn-post {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+      }
+      .ms-session-actions {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.4rem;
+      }
+      .ms-session-actions .ms-session-btn {
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.15rem;
+        padding: 0.3rem 0.2rem;
+        font-size: 0.75rem;
+        line-height: 1.15;
+        text-align: center;
+      }
+      .ms-session-actions .ms-session-btn svg {
+        width: 1.35em;
+        height: 1.35em;
+      }
+    }
+
     html.ms-simple-language [data-ms-principal],
     html.ms-simple-language main {
       font-size: 1.15em !important;
