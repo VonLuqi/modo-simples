@@ -19,6 +19,35 @@ let _activeEl = null;
  */
 let _runId = 0;
 
+/** Quem quer saber quando a leitura começa/termina (a UI não precisa fazer polling). */
+const _listeners = new Set();
+let _notified = false;
+
+function notify() {
+  if (_speaking === _notified) return;
+  _notified = _speaking;
+  for (const cb of Array.from(_listeners)) {
+    try {
+      cb(_speaking);
+    } catch (_) {
+      // um ouvinte com erro não pode travar a leitura
+    }
+  }
+}
+
+/**
+ * Registra um ouvinte do estado da leitura: recebe true ao começar e false ao terminar,
+ * ser parada ou falhar.
+ * @param {(speaking: boolean) => void} cb
+ * @returns {() => void} cancela o registro
+ */
+export function onSpeakingChange(cb) {
+  _listeners.add(cb);
+  return () => {
+    _listeners.delete(cb);
+  };
+}
+
 const BLOCK_TAGS = [
   'h1',
   'h2',
@@ -293,15 +322,18 @@ export function speakMainContent() {
       if (run !== _runId) return; // evento de uma leitura antiga (IMP-13)
       _speaking = false;
       _utterance = null;
+      notify();
     };
     utterance.onend = done;
     utterance.onerror = done;
     _speaking = true;
+    notify();
     speechSynthesis.speak(utterance);
     return;
   }
 
   _speaking = true;
+  notify();
   speakBlockAt(0, run);
 }
 
@@ -314,6 +346,7 @@ export function stopSpeaking() {
   _blocks = [];
   _blockIndex = 0;
   clearHighlight();
+  notify();
   if (typeof speechSynthesis === 'undefined') return;
   speechSynthesis.cancel();
   _utterance = null;

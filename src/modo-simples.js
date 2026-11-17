@@ -42,7 +42,12 @@ import {
   startReadingRuler,
   stopReadingRuler,
 } from './features/readingRuler.js';
-import { speakMainContent, stopSpeaking, isSpeaking } from './features/tts.js';
+import {
+  speakMainContent,
+  stopSpeaking,
+  isSpeaking,
+  onSpeakingChange,
+} from './features/tts.js';
 import {
   startManualSelect,
   stopManualSelect,
@@ -68,7 +73,7 @@ class ModoSimples {
     this._removeStateListener = null;
     this._onDocKeydown = null;
     this._onDocClick = null;
-    this._speakTimer = null;
+    this._removeSpeakListener = null;
     this._styleEl = null;
     /** escolha explícita do usuário para reducedMotion (null = segue o SO) */
     this._reducedMotionUser = null;
@@ -115,7 +120,10 @@ class ModoSimples {
   destroy() {
     // Instância que nunca subiu não pode derrubar a UI/estado de outra (state e DOM são compartilhados)
     if (!this._initialized) return;
-    this._clearSpeakTimer();
+    if (this._removeSpeakListener) {
+      this._removeSpeakListener();
+      this._removeSpeakListener = null;
+    }
     stopReadingRuler();
     stopSpeaking();
     stopManualSelect();
@@ -386,6 +394,11 @@ class ModoSimples {
     this._removeStateListener = eventBus.on('stateChange', ({ prev, next }) => {
       this._onStateChange(prev, next);
     });
+
+    // Estado "lendo/parado" da UI vem dos eventos do tts: sem polling (IMP-25)
+    this._removeSpeakListener = onSpeakingChange((speaking) =>
+      this._syncSpeaking(speaking),
+    );
   }
 
   // ── Panel management ───────────────────────────────────────────────────────
@@ -408,30 +421,13 @@ class ModoSimples {
   }
 
   _toggleSpeak() {
+    // a UI acompanha por onSpeakingChange (ver _bindEvents)
     if (isSpeaking()) {
-      this._clearSpeakTimer();
       stopSpeaking();
       announce('Leitura interrompida');
-      this._syncSpeaking(false);
     } else {
       speakMainContent();
       announce('Lendo conteúdo principal');
-      this._syncSpeaking(true);
-      // polling do fim da fala: id guardado para ser limpo no destroy() (IMP-25)
-      this._clearSpeakTimer();
-      this._speakTimer = setInterval(() => {
-        if (!isSpeaking()) {
-          this._clearSpeakTimer();
-          this._syncSpeaking(false);
-        }
-      }, 400);
-    }
-  }
-
-  _clearSpeakTimer() {
-    if (this._speakTimer !== null) {
-      clearInterval(this._speakTimer);
-      this._speakTimer = null;
     }
   }
 

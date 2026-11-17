@@ -2570,6 +2570,24 @@
   var _blockIndex = 0;
   var _activeEl = null;
   var _runId = 0;
+  var _listeners = /* @__PURE__ */ new Set();
+  var _notified = false;
+  function notify() {
+    if (_speaking === _notified) return;
+    _notified = _speaking;
+    for (const cb of Array.from(_listeners)) {
+      try {
+        cb(_speaking);
+      } catch (_) {
+      }
+    }
+  }
+  function onSpeakingChange(cb) {
+    _listeners.add(cb);
+    return () => {
+      _listeners.delete(cb);
+    };
+  }
   var BLOCK_TAGS = [
     "h1",
     "h2",
@@ -2754,14 +2772,17 @@
         if (run !== _runId) return;
         _speaking = false;
         _utterance = null;
+        notify();
       };
       utterance.onend = done;
       utterance.onerror = done;
       _speaking = true;
+      notify();
       speechSynthesis.speak(utterance);
       return;
     }
     _speaking = true;
+    notify();
     speakBlockAt(0, run);
   }
   function stopSpeaking() {
@@ -2770,6 +2791,7 @@
     _blocks = [];
     _blockIndex = 0;
     clearHighlight();
+    notify();
     if (typeof speechSynthesis === "undefined") return;
     speechSynthesis.cancel();
     _utterance = null;
@@ -2911,7 +2933,7 @@
       this._removeStateListener = null;
       this._onDocKeydown = null;
       this._onDocClick = null;
-      this._speakTimer = null;
+      this._removeSpeakListener = null;
       this._styleEl = null;
       this._reducedMotionUser = null;
       this._hideImagesBeforeMs = null;
@@ -2948,7 +2970,10 @@
     destroy() {
       var _a;
       if (!this._initialized) return;
-      this._clearSpeakTimer();
+      if (this._removeSpeakListener) {
+        this._removeSpeakListener();
+        this._removeSpeakListener = null;
+      }
       stopReadingRuler();
       stopSpeaking();
       stopManualSelect();
@@ -3175,6 +3200,9 @@
       this._removeStateListener = eventBus_default.on("stateChange", ({ prev, next }) => {
         this._onStateChange(prev, next);
       });
+      this._removeSpeakListener = onSpeakingChange(
+        (speaking) => this._syncSpeaking(speaking)
+      );
     }
     // ── Panel management ───────────────────────────────────────────────────────
     _togglePanel() {
@@ -3193,27 +3221,11 @@
     }
     _toggleSpeak() {
       if (isSpeaking()) {
-        this._clearSpeakTimer();
         stopSpeaking();
         announce("Leitura interrompida");
-        this._syncSpeaking(false);
       } else {
         speakMainContent();
         announce("Lendo conte\xFAdo principal");
-        this._syncSpeaking(true);
-        this._clearSpeakTimer();
-        this._speakTimer = setInterval(() => {
-          if (!isSpeaking()) {
-            this._clearSpeakTimer();
-            this._syncSpeaking(false);
-          }
-        }, 400);
-      }
-    }
-    _clearSpeakTimer() {
-      if (this._speakTimer !== null) {
-        clearInterval(this._speakTimer);
-        this._speakTimer = null;
       }
     }
     _syncSpeaking(speaking) {
