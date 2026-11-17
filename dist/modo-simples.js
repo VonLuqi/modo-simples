@@ -313,6 +313,13 @@
       this.save(this.hostKey(base), value);
     },
     /**
+     * Remove a value saved under a hostname-scoped key.
+     * @param {string} base
+     */
+    removeForHost(base) {
+      this.remove(this.hostKey(base));
+    },
+    /**
      * Load a value from a hostname-scoped key.
      * @param {string} base
      * @param {*} [fallback=null]
@@ -2831,6 +2838,7 @@
       this._speakTimer = null;
       this._styleEl = null;
       this._reducedMotionUser = null;
+      this._hideImagesBeforeMs = null;
       this._initialized = false;
     }
     // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -2921,6 +2929,9 @@
     _setModoSimples(on) {
       if (on) {
         const preferShow = this._loadPreferShowImages();
+        if (!state_default.get().modoSimples) {
+          this._saveHideImagesBeforeMs(state_default.get().options.hideImages);
+        }
         state_default.set({
           modoSimples: true,
           options: {
@@ -2934,10 +2945,39 @@
           modoSimples: false,
           options: {
             simpleLanguage: false,
-            hideImages: false
+            hideImages: this._takeHideImagesBeforeMs()
           }
         });
       }
+    }
+    /** Guarda (memória + storage) se as imagens estavam ocultas antes de ligar o MS. */
+    _saveHideImagesBeforeMs(hide) {
+      this._hideImagesBeforeMs = !!hide;
+      if (!this._config.persistence) return;
+      const key = "hideImagesBeforeMs";
+      if (this._config.hostnamePersistence) {
+        persistence_default.saveForHost(key, !!hide);
+      } else {
+        persistence_default.save(key, !!hide);
+      }
+    }
+    /** Lê e esquece o valor guardado; sem registro (ex.: MS já estava ligado) = imagens visíveis. */
+    _takeHideImagesBeforeMs() {
+      let hide = this._hideImagesBeforeMs;
+      if (hide === null && this._config.persistence) {
+        const key = "hideImagesBeforeMs";
+        hide = this._config.hostnamePersistence ? persistence_default.loadForHost(key, null) : persistence_default.load(key, null);
+      }
+      this._hideImagesBeforeMs = null;
+      if (this._config.persistence) {
+        const key = "hideImagesBeforeMs";
+        if (this._config.hostnamePersistence) {
+          persistence_default.removeForHost(key);
+        } else {
+          persistence_default.remove(key);
+        }
+      }
+      return !!hide;
     }
     _loadPreferShowImages() {
       if (!this._config.persistence) return false;

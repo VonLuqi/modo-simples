@@ -74,6 +74,14 @@ const persistence = {
   },
 
   /**
+   * Remove a value saved under a hostname-scoped key.
+   * @param {string} base
+   */
+  removeForHost(base) {
+    this.remove(this.hostKey(base));
+  },
+
+  /**
    * Load a value from a hostname-scoped key.
    * @param {string} base
    * @param {*} [fallback=null]

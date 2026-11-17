@@ -66,6 +66,8 @@ class ModoSimples {
     this._styleEl = null;
     /** escolha explícita do usuário para reducedMotion (null = segue o SO) */
     this._reducedMotionUser = null;
+    /** hideImages de antes de ligar o MS (null = sem registro) */
+    this._hideImagesBeforeMs = null;
     this._initialized = false;
   }
 
@@ -166,6 +168,10 @@ class ModoSimples {
   _setModoSimples(on) {
     if (on) {
       const preferShow = this._loadPreferShowImages();
+      // guarda a escolha de imagens de ANTES do MS (só na transição off→on) para restaurar (IMP-17)
+      if (!state.get().modoSimples) {
+        this._saveHideImagesBeforeMs(state.get().options.hideImages);
+      }
       state.set({
         modoSimples: true,
         options: {
@@ -179,10 +185,43 @@ class ModoSimples {
         modoSimples: false,
         options: {
           simpleLanguage: false,
-          hideImages: false,
+          hideImages: this._takeHideImagesBeforeMs(),
         },
       });
     }
+  }
+
+  /** Guarda (memória + storage) se as imagens estavam ocultas antes de ligar o MS. */
+  _saveHideImagesBeforeMs(hide) {
+    this._hideImagesBeforeMs = !!hide;
+    if (!this._config.persistence) return;
+    const key = 'hideImagesBeforeMs';
+    if (this._config.hostnamePersistence) {
+      persistence.saveForHost(key, !!hide);
+    } else {
+      persistence.save(key, !!hide);
+    }
+  }
+
+  /** Lê e esquece o valor guardado; sem registro (ex.: MS já estava ligado) = imagens visíveis. */
+  _takeHideImagesBeforeMs() {
+    let hide = this._hideImagesBeforeMs;
+    if (hide === null && this._config.persistence) {
+      const key = 'hideImagesBeforeMs';
+      hide = this._config.hostnamePersistence
+        ? persistence.loadForHost(key, null)
+        : persistence.load(key, null);
+    }
+    this._hideImagesBeforeMs = null;
+    if (this._config.persistence) {
+      const key = 'hideImagesBeforeMs';
+      if (this._config.hostnamePersistence) {
+        persistence.removeForHost(key);
+      } else {
+        persistence.remove(key);
+      }
+    }
+    return !!hide;
   }
 
   _loadPreferShowImages() {
