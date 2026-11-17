@@ -103,10 +103,9 @@ function isVisiblyReadable(el) {
   if (simpleLang && closestSafe(el, '[data-ms-plain]')) return false;
   if (!simpleLang && closestSafe(el, '[data-ms-simple]')) return false;
 
-  const text = (el.innerText || el.textContent || '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  return text.length > 0;
+  // textContent: não força layout (innerText forçava um reflow por bloco e por ancestral).
+  // O texto realmente falado continua vindo de innerText, só do bloco em leitura.
+  return (el.textContent || '').trim().length > 0;
 }
 
 /**
@@ -124,22 +123,71 @@ function collectBlocks() {
     for (let i = 0; i < found.length; i++) nodes.push(found[i]);
   }
 
+  // Legibilidade calculada uma vez por bloco (antes: de novo para cada ancestral de cada bloco)
+  const readable = new Set(nodes.filter(isVisiblyReadable));
+
   return nodes.filter((el) => {
-    if (!isVisiblyReadable(el)) return false;
+    if (!readable.has(el)) return false;
     // Skip nested blocks already covered by a parent block (e.g. p inside li)
     let parent = el.parentElement;
     while (parent && parent !== root) {
-      if (
-        parent.tagName &&
-        BLOCK_TAGS.includes(parent.tagName.toLowerCase()) &&
-        isVisiblyReadable(parent)
-      ) {
-        return false;
-      }
+      if (readable.has(parent)) return false;
       parent = parent.parentElement;
     }
     return true;
   });
+}
+
+/** Limite prático de caracteres por utterance (o Chrome corta falas longas). */
+const MAX_UTTERANCE = 200;
+
+/**
+ * Divide o texto em pedaços de até `max` caracteres, preferindo fronteiras de frase,
+ * depois de palavra; uma palavra maior que `max` é fatiada. Sem perder texto.
+ * @param {string} text texto já com espaços normalizados
+ * @param {number} [max]
+ * @returns {string[]}
+ */
+export function splitForSpeech(text, max = MAX_UTTERANCE) {
+  if (text.length <= max) return [text];
+
+  const chunks = [];
+  let cur = '';
+  const flush = () => {
+    const t = cur.trim();
+    if (t) chunks.push(t);
+    cur = '';
+  };
+
+  // frase = até pontuação seguida de espaço/fim ("3.14" não quebra)
+  const sentences = text.match(/[\s\S]+?(?:[.!?…]+(?=\s|$)|$)\s*/g) || [text];
+  for (const s of sentences) {
+    if (s.length > max) {
+      flush();
+      const words = s.match(/\S+\s*/g) || [s]; // palavras mantendo o espaço final (sem lookbehind: Safari < 16.4)
+      for (const w of words) {
+        if (w.length > max) {
+          flush();
+          for (let i = 0; i < w.length; i += max)
+            chunks.push(w.slice(i, i + max));
+        } else if ((cur + w).trim().length > max) {
+          flush();
+          cur = w;
+        } else {
+          cur += w;
+        }
+      }
+      continue;
+    }
+    if ((cur + s).trim().length > max) {
+      flush();
+      cur = s;
+    } else {
+      cur += s;
+    }
+  }
+  flush();
+  return chunks;
 }
 
 function clearHighlight() {
@@ -196,19 +244,26 @@ function speakBlockAt(index, run) {
     return;
   }
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  _utterance = utterance;
-  utterance.lang = 'pt-BR';
-  utterance.rate = 1;
-  const next = () => {
-    if (run !== _runId) return; // evento de uma leitura antiga: ignora (IMP-13)
-    _utterance = null;
-    if (_speaking) speakBlockAt(index + 1, run);
+  // Blocos longos viram várias falas curtas (limite prático do Chrome, IMP-38)
+  const chunks = splitForSpeech(text);
+  const speakChunk = (i) => {
+    if (!_speaking || run !== _runId) return;
+    const utterance = new SpeechSynthesisUtterance(chunks[i]);
+    _utterance = utterance;
+    utterance.lang = 'pt-BR';
+    utterance.rate = 1;
+    const next = () => {
+      if (run !== _runId) return; // evento de uma leitura antiga: ignora (IMP-13)
+      _utterance = null;
+      if (!_speaking) return;
+      if (i + 1 < chunks.length) speakChunk(i + 1);
+      else speakBlockAt(index + 1, run);
+    };
+    utterance.onend = next;
+    utterance.onerror = next;
+    speechSynthesis.speak(utterance);
   };
-  utterance.onend = next;
-  utterance.onerror = next;
-
-  speechSynthesis.speak(_utterance);
+  speakChunk(0);
 }
 
 /**
