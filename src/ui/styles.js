@@ -406,7 +406,7 @@ export function getUIStyles(position = 'bottom-right') {
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: calc(0.65 * var(--ms-u));
+      gap: calc(1.15 * var(--ms-u));
     }
     .ms-a11y-option-row {
       display: flex;
@@ -715,7 +715,7 @@ export function getPageStyles() {
     /* ── Lexend / dyslexia font ──────────────────────────────────────────── */
     html.ms-dyslexia-font,
     html.ms-dyslexia-font body,
-    html.ms-dyslexia-font body *:not(#ms-container):not(#ms-container *):not([class*="icon"]):not([class*="fa-"]):not(.fa):not(.fas):not(.far):not(.fab):not(.material-icons):not(code):not(pre):not(kbd):not(samp) {
+    html.ms-dyslexia-font body *:not(#ms-container):not(#ms-container *):not([class~="icon"]):not([class^="icon-"]):not([class*=" icon-"]):not([class*="fa-"]):not(.fa):not(.fas):not(.far):not(.fab):not(.material-icons):not(code):not(pre):not(kbd):not(samp) {
       font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif !important;
       letter-spacing: 0.02em !important;
       word-spacing: 0.08em !important;
@@ -1144,10 +1144,6 @@ export function getPageStyles() {
       .ms-session-btn,
       .ms-pills-nav[data-ms-injected] .ms-pill {
         transition: none !important;
-      }
-      .ms-session-btn:hover,
-      .ms-pills-nav[data-ms-injected] .ms-pill:hover {
-        transform: none;
       }
     }
   `;

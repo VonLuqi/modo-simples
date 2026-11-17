@@ -78,3 +78,54 @@ test('seleção manual iniciada pelo painel: a página não fica inert e o inert
   await expect(page.locator('#ms-a11y-panel')).toBeVisible();
   expect(await inertCount(page)).toBeGreaterThan(0);
 });
+
+test('inert: filho tardio do body fica inert; região aria-live do site não (LOW QA T46)', async ({
+  site,
+}) => {
+  const { page } = site;
+  await page.goto(INDEX);
+  await waitForLib(page);
+  await page.evaluate(() => {
+    const live = document.createElement('div');
+    live.id = 'site-live';
+    live.setAttribute('aria-live', 'polite');
+    document.body.appendChild(live);
+  });
+  await openPanel(page);
+  await page.evaluate(() => {
+    const tardio = document.createElement('div');
+    tardio.id = 'tardio';
+    document.body.appendChild(tardio);
+  });
+  await expect(page.locator('#tardio')).toHaveAttribute('inert', '');
+  await expect(page.locator('#site-live')).not.toHaveAttribute('inert', '');
+
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#tardio')).not.toHaveAttribute('inert', '');
+});
+
+test('clique fora com o painel aberto fecha e também chega ao alvo (LOW QA T46)', async ({
+  site,
+}) => {
+  const { page } = site;
+  await page.goto(INDEX);
+  await waitForLib(page);
+  await page.evaluate(() => {
+    const b = document.createElement('button');
+    b.id = 'nota-doc';
+    b.textContent = 'nota';
+    b.style.cssText = 'position:fixed;top:8px;left:8px;z-index:9999';
+    b.addEventListener(
+      'click',
+      () => (window.__nota = (window.__nota || 0) + 1),
+    );
+    document.body.appendChild(b);
+  });
+  await openPanel(page);
+
+  const box = await page.locator('#nota-doc').boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+
+  await expect(page.locator('#ms-a11y-panel')).toBeHidden();
+  expect(await page.evaluate(() => window.__nota)).toBe(1);
+});

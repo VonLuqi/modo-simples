@@ -408,7 +408,22 @@ class ModoSimples {
       // Clicks that land on the host (open shadow) still include host in composedPath
       if (e.target === this._host) return;
       if (!this._host?.contains(e.target) && e.target !== this._host) {
+        // o inert faz o clique cair no body: fecha e repassa o clique ao elemento que estava
+        // sob o ponteiro (senão o primeiro clique no doc é engolido)
+        const { clientX, clientY } = e;
+        const retargeted =
+          e.target === document.body || e.target === document.documentElement;
         this._closePanel();
+        if (retargeted && e.detail > 0) {
+          const alvo = document.elementFromPoint(clientX, clientY);
+          if (
+            alvo &&
+            alvo !== document.body &&
+            alvo !== document.documentElement
+          ) {
+            alvo.click();
+          }
+        }
       }
     };
     document.addEventListener('click', this._onDocClick, true);
@@ -451,24 +466,39 @@ class ModoSimples {
    * @param {boolean} on
    */
   _setPageInert(on) {
+    this._inertObserver?.disconnect();
+    this._inertObserver = null;
     for (const el of this._inerted || []) el.removeAttribute('inert');
     this._inerted = [];
     if (!on) return;
-    for (const el of document.body.children) {
-      // fora do inert: o host, o que já era inert e os nós da própria lib que precisam
-      // continuar vivos (anúncios de leitor de tela, seleção manual)
-      if (
-        el === this._host ||
-        el.hasAttribute('inert') ||
-        el.hasAttribute('data-ms-live') ||
-        el.id === 'ms-manual-select-banner' ||
-        el.id === 'ms-manual-select-highlight'
-      ) {
-        continue;
+    for (const el of document.body.children) this._inertSibling(el);
+    // filhos do body que chegam com o painel aberto (toast, modal do site) também ficam inert
+    this._inertObserver = new MutationObserver((records) => {
+      for (const r of records) {
+        for (const n of r.addedNodes) {
+          if (n.nodeType === 1) this._inertSibling(n);
+        }
       }
-      el.setAttribute('inert', '');
-      this._inerted.push(el);
+    });
+    this._inertObserver.observe(document.body, { childList: true });
+  }
+
+  _inertSibling(el) {
+    // fora do inert: o host, o que já era inert, regiões aria-live do site (o leitor de tela
+    // ainda precisa anunciá-las) e os nós da própria lib que precisam continuar vivos
+    // (anúncios de leitor de tela, seleção manual)
+    if (
+      el === this._host ||
+      el.hasAttribute('inert') ||
+      el.hasAttribute('aria-live') ||
+      el.hasAttribute('data-ms-live') ||
+      el.id === 'ms-manual-select-banner' ||
+      el.id === 'ms-manual-select-highlight'
+    ) {
+      return;
     }
+    el.setAttribute('inert', '');
+    this._inerted.push(el);
   }
 
   _closePanel() {

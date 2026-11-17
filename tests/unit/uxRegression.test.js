@@ -383,7 +383,9 @@ describe('CSS da lib: fonte e espaçamento do texto (IMP-09, IMP-21)', () => {
     assert.ok(i >= 0);
     const seletor = css.slice(i, css.indexOf('{', i));
     for (const ex of [
-      '[class*="icon"]',
+      '[class~="icon"]',
+      '[class^="icon-"]',
+      '[class*=" icon-"]',
       '.fa',
       '.material-icons',
       'code',
@@ -391,6 +393,13 @@ describe('CSS da lib: fonte e espaçamento do texto (IMP-09, IMP-21)', () => {
     ]) {
       assert.ok(seletor.includes(`:not(${ex})`), `falta :not(${ex})`);
     }
+  });
+
+  it('Lexend não exclui classes que só contêm "icon" no meio (silicon, iconic)', () => {
+    const css = getPageStyles();
+    const i = css.indexOf('html.ms-dyslexia-font body *');
+    const seletor = css.slice(i, css.indexOf('{', i));
+    assert.equal(seletor.includes('[class*="icon"]'), false);
   });
 
   it('espaçamento de texto cobre títulos, tabelas, dl, blockquote e label (IMP-21)', () => {
@@ -409,6 +418,17 @@ describe('CSS da lib: fonte e espaçamento do texto (IMP-09, IMP-21)', () => {
     ]) {
       assert.ok(seletor.includes(`html.ms-text-spacing ${t}`), `falta ${t}`);
     }
+  });
+});
+
+describe('CSS da lib: áreas de toque dos switches (UX-16)', () => {
+  it('linhas de opção: folga >= 18px para as áreas de toque (44px) dos switches não se sobreporem', () => {
+    const css = getUIStyles();
+    const m = css.match(
+      /\.ms-a11y-option-list\s*\{[^}]*gap:\s*calc\(([\d.]+) \* var\(--ms-u\)\)/,
+    );
+    assert.ok(m, 'gap do option-list');
+    assert.ok(Number(m[1]) * 16 >= 18, `gap ${m[1]}u < 18px`);
   });
 });
 
@@ -434,11 +454,14 @@ describe('CSS da lib: sem salto no hover (UX-17)', () => {
     const css = getPageStyles();
     const hovers = css.match(/[^{}]*:hover\s*\{[^}]*\}/g) || [];
     const comLift = hovers.filter(
-      (r) =>
-        /\.ms-session-btn|\.ms-pill/.test(r) &&
-        /translateY\(-/.test(r) &&
-        !/transform:\s*none/.test(r),
+      (r) => /\.ms-session-btn|\.ms-pill/.test(r) && /translateY\(-/.test(r),
     );
     assert.deepEqual(comLift, []);
+  });
+
+  it('reduced-motion não repete :hover só para zerar um transform que não existe', () => {
+    const css = getPageStyles();
+    const rm = css.slice(css.lastIndexOf('prefers-reduced-motion: reduce'));
+    assert.equal(/\.ms-session-btn:hover|\.ms-pill:hover/.test(rm), false);
   });
 });
