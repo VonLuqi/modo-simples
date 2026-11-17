@@ -3429,7 +3429,8 @@
       const patch = hydratePersistedState(saved);
       if (patch) state_default.set(patch);
       const rm = saved.options && saved.options.reducedMotion;
-      this._reducedMotionUser = typeof rm === "boolean" ? rm : null;
+      const isUserChoice = saved.v >= 1 && typeof rm === "boolean";
+      this._reducedMotionUser = isUserChoice ? rm : null;
     }
     /** Grava o principal escolhido POR PÁGINA, com o tamanho do texto para validar depois. */
     _savePrincipalPath(path, el) {

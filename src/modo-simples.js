@@ -613,8 +613,11 @@ class ModoSimples {
 
     const patch = hydratePersistedState(saved);
     if (patch) state.set(patch);
+    // Payload v0 (sem v) gravava o reducedMotion DERIVADO (sempre false por padrão): não é escolha
+    // do usuário. Tratá-lo como escolha ignoraria o SO de todo mundo que atualizou de 1.x/2.0.
     const rm = saved.options && saved.options.reducedMotion;
-    this._reducedMotionUser = typeof rm === 'boolean' ? rm : null;
+    const isUserChoice = saved.v >= 1 && typeof rm === 'boolean';
+    this._reducedMotionUser = isUserChoice ? rm : null;
   }
 
   /** Grava o principal escolhido POR PÁGINA, com o tamanho do texto para validar depois. */

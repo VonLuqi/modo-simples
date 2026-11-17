@@ -96,7 +96,65 @@ describe('reducedMotion derivado do SO (IMP-14)', () => {
     stubOs(false);
     localStorage.setItem(
       KEY,
+      JSON.stringify({
+        v: 1,
+        modoSimples: false,
+        options: { reducedMotion: true },
+      }),
+    );
+    inst = new ModoSimples();
+    inst.init();
+    assert.equal(state.get().options.reducedMotion, true);
+  });
+
+  // M1 (QA T24): payload v0 (sem v) sempre trazia reducedMotion derivado (false por padrão)
+  it('payload antigo (v0) com reducedMotion:false NÃO é escolha: o SO que pede reduzir vale', () => {
+    stubOs(true);
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({ modoSimples: false, options: { reducedMotion: false } }),
+    );
+    inst = new ModoSimples();
+    inst.init();
+    assert.equal(state.get().options.reducedMotion, true);
+    assert.ok(document.documentElement.classList.contains('ms-reduced-motion'));
+  });
+
+  it('payload antigo (v0) com reducedMotion:true também segue o SO (sem preferência = desligado)', () => {
+    stubOs(false);
+    localStorage.setItem(
+      KEY,
       JSON.stringify({ modoSimples: false, options: { reducedMotion: true } }),
+    );
+    inst = new ModoSimples();
+    inst.init();
+    assert.equal(state.get().options.reducedMotion, false);
+  });
+
+  it('payload v1 com false é escolha do usuário e vale mesmo com o SO pedindo reduzir', () => {
+    stubOs(true);
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({
+        v: 1,
+        modoSimples: false,
+        options: { reducedMotion: false },
+      }),
+    );
+    inst = new ModoSimples();
+    inst.init();
+    assert.equal(state.get().options.reducedMotion, false);
+  });
+
+  it('payload v1 com null (derivado) segue o SO', () => {
+    stubOs(true);
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({
+        v: 1,
+        modoSimples: false,
+        options: { reducedMotion: null },
+      }),
     );
     inst = new ModoSimples();
     inst.init();
