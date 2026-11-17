@@ -2859,6 +2859,7 @@
     }
     destroy() {
       var _a;
+      if (!this._initialized) return;
       stopReadingRuler();
       stopSpeaking();
       stopManualSelect();
@@ -2894,7 +2895,6 @@
       const lexend = document.getElementById("ms-lexend-font");
       if (lexend == null ? void 0 : lexend.parentNode) lexend.parentNode.removeChild(lexend);
       state_default.reset();
-      eventBus_default.clearAll();
       this._initialized = false;
     }
     // ── API pública ────────────────────────────────────────────────────────────
@@ -3240,12 +3240,15 @@
     const cfg = win && win.ModoSimplesConfig;
     return cfg && typeof cfg === "object" ? cfg : {};
   }
+  function bootModoSimples(win) {
+    if (win.ModoSimples && win.ModoSimples._initialized) return win.ModoSimples;
+    const instance = new ModoSimples(readPreBootConfig(win));
+    instance.init();
+    win.ModoSimples = instance;
+    return instance;
+  }
   if (typeof window !== "undefined") {
-    let boot = function() {
-      const instance = new ModoSimples(readPreBootConfig(window));
-      instance.init();
-      window.ModoSimples = instance;
-    };
+    const boot = () => bootModoSimples(window);
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", boot);
     } else {

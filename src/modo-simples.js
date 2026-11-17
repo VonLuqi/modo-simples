@@ -99,6 +99,8 @@ class ModoSimples {
   }
 
   destroy() {
+    // Instância que nunca subiu não pode derrubar a UI/estado de outra (state e DOM são compartilhados)
+    if (!this._initialized) return;
     stopReadingRuler();
     stopSpeaking();
     stopManualSelect();
@@ -134,7 +136,7 @@ class ModoSimples {
     const lexend = document.getElementById('ms-lexend-font');
     if (lexend?.parentNode) lexend.parentNode.removeChild(lexend);
     state.reset();
-    eventBus.clearAll();
+    // sem eventBus.clearAll(): o único listener desta instância já foi removido acima
     this._initialized = false;
   }
 
@@ -555,12 +557,22 @@ export function readPreBootConfig(win) {
 
 // ── Auto-boot ──────────────────────────────────────────────────────────────────
 
+/**
+ * Sobe a instância global. Idempotente: script incluído duas vezes (ou reinjetado por SPA)
+ * não cria segunda UI nem sobrescreve window.ModoSimples (IMP-23).
+ * @param {Window} win
+ * @returns {ModoSimples}
+ */
+export function bootModoSimples(win) {
+  if (win.ModoSimples && win.ModoSimples._initialized) return win.ModoSimples;
+  const instance = new ModoSimples(readPreBootConfig(win));
+  instance.init();
+  win.ModoSimples = instance;
+  return instance;
+}
+
 if (typeof window !== 'undefined') {
-  function boot() {
-    const instance = new ModoSimples(readPreBootConfig(window));
-    instance.init();
-    window.ModoSimples = instance;
-  }
+  const boot = () => bootModoSimples(window);
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
