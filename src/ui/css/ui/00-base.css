@@ -1,0 +1,25 @@
+    :host {
+      all: initial;
+      display: block;
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2147483647;
+      --ms-blue: #0B2C5F;
+      --ms-blue-mid: #1B3F92;
+      --ms-orange: #F39200;
+      --ms-orange-dark: #E08400;
+      --ms-simple-bg: #FFF8E7;
+      --ms-simple-border: #F39200;
+      --ms-panel-radius: 14px;
+      --ms-u: calc(16px * var(--ms-scale, 1));
+      --ms-font: 'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      font-family: var(--ms-font);
+      font-size: 15px;
+      line-height: 1.45;
+      color: #1a1a1a;
+      box-sizing: border-box;
+    }
+
+    *, *::before, *::after { box-sizing: inherit; }
+

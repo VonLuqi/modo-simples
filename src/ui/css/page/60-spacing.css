@@ -1,0 +1,22 @@
+    /* ── Text spacing (WCAG 1.4.12) ──────────────────────────────────────── */
+    html.ms-text-spacing body,
+    html.ms-text-spacing p,
+    html.ms-text-spacing li,
+    html.ms-text-spacing h1,
+    html.ms-text-spacing h2,
+    html.ms-text-spacing h3,
+    html.ms-text-spacing h4,
+    html.ms-text-spacing h5,
+    html.ms-text-spacing h6,
+    html.ms-text-spacing td,
+    html.ms-text-spacing th,
+    html.ms-text-spacing dd,
+    html.ms-text-spacing dt,
+    html.ms-text-spacing blockquote,
+    html.ms-text-spacing label {
+      line-height: 2 !important;
+      letter-spacing: 0.12em !important;
+      word-spacing: 0.16em !important;
+    }
+    html.ms-text-spacing p { margin-bottom: 1.5em !important; }
+

@@ -54,6 +54,12 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # CSS vive em src/ui/css; styles.generated.js é commitado e tem que bater com os .css
+      - name: CSS gerado sem drift
+        run: |
+          node scripts/gen-styles.cjs
+          git diff --exit-code src/ui
+
       # dist/ é versionado: o build tem que reproduzir exatamente o que foi commitado
       # bundle.cjs direto (não npm run build): o prebuild roda prettier --write em src/
       - name: Build + dist sem drift

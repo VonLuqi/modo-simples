@@ -1,0 +1,103 @@
+    /* ── FAB ─────────────────────────────────────────────────────────────── */
+    .ms-fab-wrap {
+      position: absolute;
+      {{fabCorner}}
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: calc(0.45 * var(--ms-u));
+      pointer-events: none;
+      z-index: 2;
+    }
+    .ms-fab-tip {
+      pointer-events: none;
+      position: relative;
+      background: #0B2C5F;
+      color: #fff;
+      font-size: calc(0.75 * var(--ms-u));
+      font-weight: 700;
+      padding: calc(0.45 * var(--ms-u)) calc(0.8 * var(--ms-u));
+      border-radius: 999px;
+      box-shadow:
+        0 2px 4px rgba(11, 44, 95, 0.18),
+        0 8px 20px rgba(11, 44, 95, 0.28);
+      white-space: nowrap;
+      max-width: min(240px, 72vw);
+      line-height: 1.25;
+      animation:
+        ms-fab-tip-in 0.38s ease both,
+        ms-fab-tip-out 0.4s ease 6s forwards;
+    }
+    .ms-fab-tip::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      right: calc(1.15 * var(--ms-u));
+      width: 0;
+      height: 0;
+      border: 6px solid transparent;
+      border-top-color: #0B2C5F;
+      filter: drop-shadow(0 2px 1px rgba(11, 44, 95, 0.15));
+    }
+    .ms-fab-tip[hidden] { display: none !important; }
+
+    @keyframes ms-fab-tip-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes ms-fab-tip-out {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    #ms-fab,
+    .ms-fab {
+      position: relative;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      border: none;
+      background: var(--ms-orange);
+      color: #fff;
+      cursor: pointer;
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow:
+        0 2px 6px rgba(243, 146, 0, 0.35),
+        0 8px 22px rgba(243, 146, 0, 0.4);
+      transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+      padding: 0;
+    }
+
+    #ms-fab:hover {
+      background: var(--ms-orange-dark);
+      transform: scale(1.06);
+      box-shadow:
+        0 4px 10px rgba(243, 146, 0, 0.4),
+        0 12px 28px rgba(243, 146, 0, 0.45);
+    }
+    #ms-fab:active { transform: scale(0.96); }
+    #ms-fab:focus-visible {
+      outline: 3px solid var(--ms-blue);
+      outline-offset: 3px;
+    }
+    #ms-fab.ms-fab--open {
+      box-shadow:
+        0 0 0 4px rgba(243, 146, 0, 0.35),
+        0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+    .ms-fab-icon { display: block; }
+    .ms-fab-icon--close[hidden],
+    .ms-fab-icon--open[hidden] { display: none !important; }
+

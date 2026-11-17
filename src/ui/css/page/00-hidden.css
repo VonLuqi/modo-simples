@@ -1,0 +1,15 @@
+    /* ── Hidden distractions (Modo Simples only) ─────────────────────────── */
+    html.ms-ativo [data-ms-hidden="true"] {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    html.ms-ativo [data-ms-principal] {
+      display: block !important;
+      max-width: 75ch !important;
+      margin-inline: auto !important;
+      padding-inline: 1.5rem !important;
+      font-size: 1.125rem !important;
+      line-height: 1.8 !important;
+    }
+

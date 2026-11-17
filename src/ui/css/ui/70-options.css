@@ -1,0 +1,148 @@
+    /* ── Option rows + switches ──────────────────────────────────────────── */
+    .ms-a11y-option-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: calc(1.15 * var(--ms-u));
+    }
+    .ms-a11y-option-row {
+      display: flex;
+      align-items: center;
+      gap: calc(0.75 * var(--ms-u));
+    }
+    .ms-a11y-option-text { flex: 1; min-width: 0; }
+    .ms-a11y-option-text strong {
+      font-size: calc(0.85 * var(--ms-u));
+      color: #1e293b;
+      display: block;
+    }
+    .ms-a11y-option-hint {
+      display: block;
+      margin-top: calc(0.2 * var(--ms-u));
+      font-size: calc(0.8125 * var(--ms-u));
+      font-weight: 500;
+      color: #64748b;
+      line-height: 1.35;
+    }
+    .ms-a11y-option-text p {
+      margin: calc(0.15 * var(--ms-u)) 0 0;
+      font-size: calc(0.8125 * var(--ms-u));
+      color: #64748b;
+      line-height: 1.35;
+    }
+
+    .ms-switch {
+      flex-shrink: 0;
+      width: 44px;
+      height: 26px;
+      border-radius: 999px;
+      border: none;
+      background: #64748b;
+      padding: 3px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.18s ease;
+    }
+    /* UX-16: área de toque de 44px de altura (trilho visual de 26px) */
+    .ms-switch::after {
+      content: "";
+      position: absolute;
+      inset: -9px 0;
+    }
+    .ms-switch-thumb {
+      display: block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+      transition: transform 0.18s ease;
+    }
+    .ms-switch--on,
+    .ms-switch[aria-checked="true"] {
+      background: var(--ms-blue);
+    }
+    .ms-switch--on .ms-switch-thumb,
+    .ms-switch[aria-checked="true"] .ms-switch-thumb {
+      transform: translateX(18px);
+    }
+    .ms-switch:focus-visible {
+      outline: 2px solid var(--ms-orange);
+      outline-offset: 2px;
+    }
+
+    .ms-btn-ouvir {
+      flex-shrink: 0;
+      border: none;
+      border-radius: 8px;
+      padding: calc(0.45 * var(--ms-u)) calc(0.9 * var(--ms-u));
+      background: var(--ms-orange);
+      color: #1a1205;
+      font: inherit;
+      font-size: calc(0.82 * var(--ms-u));
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .ms-btn-ouvir:hover { background: var(--ms-orange-dark); }
+    .ms-btn-ouvir:focus-visible {
+      outline: 2px solid var(--ms-blue);
+      outline-offset: 2px;
+    }
+
+    .ms-a11y-live {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+    }
+
+    .ms-a11y-footer-note {
+      margin: calc(0.35 * var(--ms-u)) 0 0;
+      text-align: center;
+      font-size: calc(0.8125 * var(--ms-u));
+      color: #475569;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 480px) {
+      #ms-a11y-panel {
+        width: calc(100vw - calc(1 * var(--ms-u)));
+        max-height: calc(100vh - 124px - calc(2.5 * var(--ms-u)));
+        max-height: calc(100dvh - 124px - calc(2.5 * var(--ms-u)));
+        right: calc(0.5 * var(--ms-u)) !important;
+        left: calc(0.5 * var(--ms-u)) !important;
+        transform-origin: bottom center;
+      }
+      .ms-fab-tip {
+        max-width: min(180px, 62vw);
+        white-space: normal;
+        text-align: center;
+        border-radius: 14px;
+        font-size: calc(0.75 * var(--ms-u));
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ms-fab-tip {
+        animation: ms-fab-tip-out 0.01s linear 6s forwards !important;
+      }
+      #ms-a11y-panel,
+      .ms-a11y-panel {
+        animation: none !important;
+      }
+      #ms-fab,
+      .ms-fab,
+      .ms-switch-thumb,
+      .ms-switch,
+      .ms-fab-wrap,
+      .ms-chrome-switch .ms-switch-thumb {
+        transition: none !important;
+      }
+      #ms-fab:hover,
+      #ms-fab:active {
+        transform: none;
+      }
+    }

@@ -1,0 +1,5 @@
+    /* ── Reading ruler marker (overlay is created in JS) ─────────────────── */
+    html.ms-reading-ruler { cursor: crosshair; }
+
+    html.ms-manual-select-active { cursor: pointer !important; }
+

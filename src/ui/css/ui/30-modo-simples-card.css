@@ -1,0 +1,35 @@
+    /* ── Modo Simples card ───────────────────────────────────────────────── */
+    .ms-a11y-card--simple {
+      background: var(--ms-simple-bg);
+      border: 2px solid var(--ms-simple-border);
+      border-radius: 12px;
+      padding: calc(0.85 * var(--ms-u)) calc(0.9 * var(--ms-u));
+      margin-bottom: calc(1 * var(--ms-u));
+    }
+    .ms-a11y-card-row {
+      display: flex;
+      align-items: flex-start;
+      gap: calc(0.75 * var(--ms-u));
+    }
+    .ms-a11y-card-text { flex: 1; min-width: 0; }
+    .ms-a11y-card-star {
+      color: var(--ms-orange);
+      margin-right: calc(0.2 * var(--ms-u));
+      font-size: calc(1 * var(--ms-u));
+    }
+    .ms-a11y-card-text strong {
+      font-size: calc(0.95 * var(--ms-u));
+      color: var(--ms-blue);
+    }
+    .ms-a11y-card-text p {
+      margin: calc(0.35 * var(--ms-u)) 0 0;
+      font-size: calc(0.78 * var(--ms-u));
+      color: #4a5568;
+      line-height: 1.4;
+    }
+
+    .ms-a11y-card--simple .ms-switch--on,
+    .ms-a11y-card--simple .ms-switch[aria-checked="true"] {
+      background: #8a5500;
+    }
+

@@ -1,0 +1,96 @@
+    /* UX-06: pills quebram linha (sem rolagem horizontal); no mobile viram grade de 2 colunas */
+    .ms-pills-nav .ms-pills-nav__inner {
+      flex-wrap: wrap;
+      overflow-x: visible;
+    }
+    .ms-pills-nav .ms-pill {
+      flex: 0 1 auto;
+      min-height: 44px;
+      box-sizing: border-box;
+    }
+    @media (max-width: 340px) {
+      .ms-session-on-title { font-size: calc(0.85 * var(--ms-u)); }
+      .ms-session-badge { padding: calc(0.15 * var(--ms-u)) calc(0.35 * var(--ms-u)); }
+    }
+    @media (max-width: 720px) {
+      .ms-pills-nav .ms-pills-nav__inner {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: calc(0.5 * var(--ms-u));
+      }
+      .ms-pills-nav .ms-pill {
+        justify-content: center;
+        text-align: center;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        min-width: 0;
+        padding-inline: calc(0.25 * var(--ms-u));
+      }
+    }
+    @media (min-width: 360px) and (max-width: 720px) {
+      .ms-pills-nav .ms-pills-nav__inner {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    /* Pills injetáveis (F5-T11 — simpleNav) */
+    .ms-pills-nav[data-ms-injected] {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      box-shadow: 0 1px 0 rgb(0 0 0 / 4%);
+    }
+    .ms-pills-nav[data-ms-injected] .ms-pills-nav__inner {
+      display: flex;
+      gap: calc(0.5 * var(--ms-u));
+      padding: calc(0.65 * var(--ms-u)) calc(1 * var(--ms-u));
+    }
+    .ms-pills-nav[data-ms-injected] .ms-pill {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: calc(0.35 * var(--ms-u));
+      padding: calc(0.55 * var(--ms-u)) calc(0.95 * var(--ms-u));
+      border-radius: 10px;
+      background: #eef2f7;
+      color: #0b2c5f;
+      font-weight: 700;
+      font-size: calc(0.82 * var(--ms-u));
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      text-decoration: none;
+      border: 2px solid transparent;
+      white-space: nowrap;
+      transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .ms-pills-nav[data-ms-injected] .ms-pill:hover {
+      background: #e2e8f0;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgb(11 44 95 / 10%);
+    }
+    .ms-pills-nav[data-ms-injected] .ms-pill[aria-current='page'] {
+      background: #0b2c5f;
+      color: #fff;
+      border-color: #f39200;
+      box-shadow: 0 0 0 2px rgb(243 146 0 / 35%);
+      font-weight: 800;
+    }
+    .ms-pills-nav[data-ms-injected] .ms-pill__short {
+      display: none;
+    }
+    @media (max-width: 720px) {
+      .ms-pills-nav[data-ms-injected] .ms-pill__full {
+        display: none;
+      }
+      .ms-pills-nav[data-ms-injected] .ms-pill__short {
+        display: inline;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ms-chrome-icon,
+      .ms-simples-toggle-wrap,
+      .ms-chrome-switch .ms-switch-thumb,
+      .ms-session-btn,
+      .ms-pills-nav[data-ms-injected] .ms-pill {
+        transition: none !important;
+      }
+    }

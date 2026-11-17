@@ -1,0 +1,93 @@
+    /* ── Panel ───────────────────────────────────────────────────────────── */
+    #ms-a11y-panel,
+    .ms-a11y-panel {
+      position: absolute;
+      {{panelCorner}}
+      width: min(380px, calc(100vw - calc(2 * var(--ms-u))));
+      max-height: min(72vh, 640px);
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border-radius: var(--ms-panel-radius);
+      box-shadow:
+        0 4px 12px rgba(11, 44, 95, 0.12),
+        0 16px 48px rgba(11, 44, 95, 0.28);
+      overflow: hidden;
+      pointer-events: auto;
+      z-index: 1;
+      transform-origin: {{panelOrigin}};
+      animation: ms-panel-in 0.22s ease both;
+    }
+
+    #ms-a11y-panel[hidden] { display: none !important; }
+
+    @keyframes ms-panel-in {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .ms-a11y-header {
+      display: flex;
+      align-items: flex-start;
+      gap: calc(0.75 * var(--ms-u));
+      padding: calc(1 * var(--ms-u)) calc(1 * var(--ms-u)) calc(0.9 * var(--ms-u));
+      background: linear-gradient(135deg, var(--ms-blue) 0%, var(--ms-blue-mid) 100%);
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .ms-a11y-header-icon {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--ms-orange);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ms-a11y-header-text { flex: 1; min-width: 0; }
+    .ms-a11y-header-text h2 {
+      margin: 0;
+      font-size: calc(1.05 * var(--ms-u));
+      font-weight: 700;
+      line-height: 1.25;
+      color: #fff;
+    }
+    .ms-a11y-subtitle {
+      margin: calc(0.2 * var(--ms-u)) 0 0;
+      font-size: calc(0.8125 * var(--ms-u));
+      opacity: 0.85;
+      color: #fff;
+    }
+
+    .ms-a11y-close {
+      flex-shrink: 0;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.85);
+      cursor: pointer;
+      padding: calc(0.25 * var(--ms-u));
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ms-a11y-close:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+    .ms-a11y-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+    .ms-a11y-body {
+      overflow-y: auto;
+      padding: calc(0.85 * var(--ms-u)) calc(1 * var(--ms-u)) calc(1.1 * var(--ms-u));
+      flex: 1;
+      background: #f7f8fa;
+    }
+

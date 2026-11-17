@@ -1,0 +1,225 @@
+    /* ── Session chrome (SIMPLES header) + barra sob o nav ───────────────── */
+    /* UX-14: 1 unidade = 16px fixos, sem depender do html { font-size } do host */
+    #ms-simples-chrome,
+    #ms-session-bar,
+    .ms-pills-nav {
+      --ms-u: calc(16px * var(--ms-scale, 1));
+    }
+    #ms-simples-chrome {
+      display: flex;
+      align-items: center;
+      margin-left: auto;
+      z-index: 50;
+      flex-shrink: 0;
+    }
+    #ms-simples-chrome.ms-simples-chrome--fixed {
+      position: fixed;
+      top: calc(0.75 * var(--ms-u));
+      right: calc(5.5 * var(--ms-u));
+      z-index: 2147483646;
+    }
+    /* Same SIMPLES control, parked in MS pills nav while site header is hidden */
+    #ms-simples-chrome.ms-simples-chrome--ms-nav {
+      box-sizing: border-box;
+      width: 100%;
+      margin: 0;
+      padding: calc(0.45 * var(--ms-u)) calc(1 * var(--ms-u)) 0;
+      justify-content: flex-end;
+      position: static;
+    }
+    #ms-simples-chrome.ms-simples-chrome--ms-nav .ms-chrome-icon {
+      display: none;
+    }
+    .ms-simples-chrome-inner {
+      display: flex;
+      align-items: center;
+      gap: calc(0.55 * var(--ms-u));
+    }
+    .ms-chrome-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      border: 1px solid #c5d0e3;
+      background: #fff;
+      color: #0b2c5f;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .ms-chrome-icon:hover {
+      border-color: #f39200;
+      color: #e08400;
+      box-shadow: 0 0 0 3px rgba(243, 146, 0, 0.18);
+    }
+    .ms-simples-toggle-wrap {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: calc(0.55 * var(--ms-u));
+      padding: calc(0.4 * var(--ms-u)) calc(0.7 * var(--ms-u)) calc(0.4 * var(--ms-u)) calc(0.75 * var(--ms-u));
+      border-radius: 999px;
+      border: 2px solid #d8e1ef;
+      background: #fff;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
+      transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+    .ms-simples-toggle-wrap[data-active="true"] {
+      border-color: #f39200;
+      background: #fff8e7;
+      box-shadow: 0 0 0 2px rgba(243, 146, 0, 0.22);
+    }
+    .ms-simples-spark { color: #f39200; font-size: calc(1 * var(--ms-u)); }
+    .ms-simples-toggle-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+    .ms-simples-toggle-text strong {
+      font-size: calc(0.8 * var(--ms-u));
+      letter-spacing: 0.05em;
+      color: #0b2c5f;
+    }
+    .ms-simples-sub {
+      font-size: calc(0.75 * var(--ms-u));
+      color: #475569;
+      font-weight: 600;
+    }
+    .ms-chrome-switch {
+      width: 44px;
+      height: 26px;
+      border-radius: 999px;
+      border: none;
+      background: #64748b;
+      padding: 3px;
+      cursor: pointer;
+      position: relative;
+    }
+    .ms-chrome-switch::after {
+      content: "";
+      position: absolute;
+      inset: -9px 0;
+    }
+    .ms-chrome-switch .ms-switch-thumb {
+      display: block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
+      transition: transform 0.18s ease;
+    }
+    .ms-chrome-switch.ms-switch--on,
+    .ms-chrome-switch[aria-checked="true"] {
+      background: #8a5500;
+    }
+    .ms-chrome-switch.ms-switch--on .ms-switch-thumb,
+    .ms-chrome-switch[aria-checked="true"] .ms-switch-thumb {
+      transform: translateX(18px);
+    }
+
+    #ms-session-bar {
+      background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+      color: #1a1205;
+      width: 100%;
+      border-bottom: 2px solid #d97706;
+      box-shadow: 0 2px 10px rgb(217 119 6 / 22%);
+    }
+    .ms-session-bar-inner {
+      width: min(calc(72 * var(--ms-u)), calc(100% - calc(2 * var(--ms-u))));
+      margin: 0 auto;
+      padding: calc(0.9 * var(--ms-u)) 0;
+    }
+    .ms-session-off {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: calc(0.5 * var(--ms-u)) calc(1 * var(--ms-u));
+    }
+    .ms-session-off[hidden],
+    .ms-session-on[hidden] {
+      display: none !important;
+    }
+    .ms-session-off p {
+      margin: 0;
+      font-weight: 600;
+      max-width: calc(52 * var(--ms-u));
+      font-size: calc(0.95 * var(--ms-u));
+    }
+    .ms-chrome-icon:focus-visible,
+    .ms-chrome-switch:focus-visible,
+    .ms-session-btn:focus-visible {
+      outline: 3px solid #0b2c5f;
+      outline-offset: 2px;
+    }
+    .ms-session-on-top { margin-bottom: calc(0.7 * var(--ms-u)); }
+    .ms-sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
+    .ms-session-on-title {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: calc(0.5 * var(--ms-u));
+      font-size: calc(1.05 * var(--ms-u));
+    }
+    .ms-session-badge {
+      background: #1a1205;
+      color: #fff;
+      border-radius: 999px;
+      padding: calc(0.22 * var(--ms-u)) calc(0.7 * var(--ms-u));
+      font-size: calc(0.75 * var(--ms-u));
+      font-weight: 700;
+    }
+    .ms-session-desc {
+      margin: calc(0.35 * var(--ms-u)) 0 0;
+      font-size: calc(0.9 * var(--ms-u));
+      font-weight: 500;
+    }
+    .ms-session-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: calc(0.5 * var(--ms-u));
+    }
+    .ms-session-btn {
+      border: none;
+      border-radius: 12px;
+      padding: calc(0.55 * var(--ms-u)) calc(0.95 * var(--ms-u));
+      min-height: 44px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: calc(0.85 * var(--ms-u));
+      display: inline-flex;
+      align-items: center;
+      gap: calc(0.35 * var(--ms-u));
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .ms-session-btn--light {
+      background: #fff;
+      color: #1a1205;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+    }
+    .ms-session-btn--dark {
+      background: #1a1205;
+      color: #fff;
+    }
+    .ms-session-btn[aria-disabled='true'] {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .ms-session-btn--active {
+      box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1a1205;
+    }
+    .ms-session-btn--speaking {
+      background: #dc2626;
+      color: #fff;
+    }
+

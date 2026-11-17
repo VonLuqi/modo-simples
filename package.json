@@ -26,7 +26,8 @@
     "doc/13-compatibilidade-browsers.md"
   ],
   "scripts": {
-    "prebuild": "prettier --write src",
+    "gen:styles": "node scripts/gen-styles.cjs",
+    "prebuild": "node scripts/gen-styles.cjs && prettier --write src",
     "build": "node scripts/bundle.cjs",
     "build:dev": "node scripts/bundle.cjs",
     "watch": "node scripts/bundle.cjs --watch",

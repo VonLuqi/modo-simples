@@ -1,0 +1,114 @@
+    /* ── Color themes ────────────────────────────────────────────────────── */
+    html.ms-theme-yellowBlack,
+    html.ms-theme-yellowBlack body {
+      background-color: #000000 !important;
+      color: #ffe600 !important;
+    }
+    html.ms-theme-yellowBlack body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      background-color: transparent !important;
+      color: #ffe600 !important;
+      border-color: #ffe600 !important;
+    }
+    html.ms-theme-yellowBlack a,
+    html.ms-theme-yellowBlack a:visited {
+      color: #fff59d !important;
+      text-decoration: underline !important;
+    }
+    html.ms-theme-yellowBlack .site-header,
+    html.ms-theme-yellowBlack .ms-pills-nav {
+      background-color: #000000 !important;
+      color: #ffe600 !important;
+      border-bottom-color: #ffe600 !important;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 55%) !important;
+    }
+    html.ms-theme-yellowBlack .site-header a,
+    html.ms-theme-yellowBlack .ms-pills-nav a {
+      color: #ffe600 !important;
+    }
+    html.ms-theme-yellowBlack .main-nav a[aria-current='page'],
+    html.ms-theme-yellowBlack .ms-pill[aria-current='page'] {
+      background-color: #ffe600 !important;
+      color: #000000 !important;
+      border-color: #ffe600 !important;
+      text-decoration: none !important;
+    }
+
+    html.ms-theme-darkHigh,
+    html.ms-theme-darkHigh body {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+    }
+    html.ms-theme-darkHigh body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      background-color: transparent !important;
+      color: #f8fafc !important;
+      border-color: #94a3b8 !important;
+    }
+    html.ms-theme-darkHigh a,
+    html.ms-theme-darkHigh a:visited {
+      color: #93c5fd !important;
+    }
+    html.ms-theme-darkHigh .site-header,
+    html.ms-theme-darkHigh .ms-pills-nav {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      border-bottom-color: #334155 !important;
+      box-shadow: 0 2px 10px rgb(0 0 0 / 45%) !important;
+    }
+    html.ms-theme-darkHigh .site-header a,
+    html.ms-theme-darkHigh .ms-pills-nav a {
+      color: #e2e8f0 !important;
+    }
+    html.ms-theme-darkHigh .main-nav a[aria-current='page'],
+    html.ms-theme-darkHigh .ms-pill[aria-current='page'] {
+      background-color: #38bdf8 !important;
+      color: #0f172a !important;
+      border-color: #38bdf8 !important;
+      text-decoration: none !important;
+    }
+
+    html.ms-theme-soft,
+    html.ms-theme-soft body {
+      background-color: #f5efe0 !important;
+      color: #3d3226 !important;
+    }
+    html.ms-theme-soft body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      background-color: transparent !important;
+      color: #3d3226 !important;
+      border-color: #c4b59a !important;
+    }
+    html.ms-theme-soft a,
+    html.ms-theme-soft a:visited {
+      color: #5c4a32 !important;
+    }
+    html.ms-theme-soft .site-header,
+    html.ms-theme-soft .ms-pills-nav {
+      background-color: #f5efe0 !important;
+      color: #3d3226 !important;
+      border-bottom-color: #c4b59a !important;
+      box-shadow: 0 2px 8px rgb(61 50 38 / 12%) !important;
+    }
+    html.ms-theme-soft .site-header a,
+    html.ms-theme-soft .ms-pills-nav a {
+      color: #3d3226 !important;
+    }
+    html.ms-theme-soft .main-nav a[aria-current='page'],
+    html.ms-theme-soft .ms-pill[aria-current='page'] {
+      background-color: #3d3226 !important;
+      color: #f5efe0 !important;
+      border-color: #3d3226 !important;
+      text-decoration: none !important;
+    }
+
+    /* Session bar: opaque amber over page content under any theme */
+    html.ms-theme-yellowBlack #ms-session-bar,
+    html.ms-theme-darkHigh #ms-session-bar,
+    html.ms-theme-soft #ms-session-bar {
+      position: relative;
+      z-index: 40;
+      background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%) !important;
+      color: #1a1205 !important;
+      border-bottom-color: #d97706 !important;
+    }
+
+    /* ms-theme-senac is a noop (default site look) */
+

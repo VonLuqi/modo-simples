@@ -5,3 +5,5 @@ coverage
 graphify-out
 public
 .code-review-graph
+src/ui/css
+src/ui/styles.generated.js

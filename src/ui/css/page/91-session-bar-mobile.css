@@ -1,0 +1,84 @@
+    /* UX-07: barra compacta no mobile (título numa linha, botões ícone + rótulo curto em grade) */
+    @media (max-width: 480px) {
+      .ms-session-bar-inner { padding: calc(0.5 * var(--ms-u)) 0; }
+      .ms-session-on-top { margin-bottom: calc(0.4 * var(--ms-u)); }
+      .ms-session-on-title { font-size: calc(0.95 * var(--ms-u)); gap: calc(0.4 * var(--ms-u)); flex-wrap: nowrap; }
+      .ms-session-on-title > span { flex: none; }
+      .ms-session-on-title strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .ms-session-badge { font-size: calc(0.75 * var(--ms-u)); padding: calc(0.15 * var(--ms-u)) calc(0.5 * var(--ms-u)); white-space: nowrap; }
+      .ms-session-desc,
+      .ms-btn-pre,
+      .ms-btn-post {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+      }
+      .ms-session-actions {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: calc(0.4 * var(--ms-u));
+      }
+      .ms-session-actions .ms-session-btn {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        flex-direction: column;
+        justify-content: center;
+        gap: calc(0.15 * var(--ms-u));
+        padding: calc(0.3 * var(--ms-u)) calc(0.2 * var(--ms-u));
+        font-size: calc(0.75 * var(--ms-u));
+        line-height: 1.15;
+        text-align: center;
+      }
+      .ms-session-actions .ms-session-btn svg {
+        width: 1.35em;
+        height: 1.35em;
+      }
+    }
+
+    html.ms-simple-language [data-ms-principal],
+    html.ms-simple-language main {
+      font-size: 1.15em !important;
+      line-height: 1.75 !important;
+      max-width: 65ch !important;
+    }
+
+    /* Pares de linguagem (protótipo / sites que marcam o markup) */
+    [data-ms-simple] {
+      display: none !important;
+    }
+    html.ms-simple-language [data-ms-plain] {
+      display: none !important;
+    }
+    html.ms-simple-language [data-ms-simple] {
+      display: revert !important;
+    }
+
+    /* Convenções do protótipo Senac (F5-T05) */
+    .ms-simple-only {
+      display: none !important;
+    }
+    html.ms-ativo .ms-simple-only {
+      display: block !important;
+    }
+    html.ms-ativo .ms-simple-only.ms-hub,
+    html.ms-ativo .ms-simple-only.ms-pills-nav {
+      display: block !important;
+    }
+    html.ms-ativo .ms-simple-hide {
+      display: none !important;
+    }
+
+    /* Highlight do bloco sendo lido pelo TTS */
+    [data-ms-tts-active] {
+      background: #fef3c7 !important;
+      outline: 3px solid #f59e0b !important;
+      outline-offset: 4px;
+      border-radius: 6px;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+

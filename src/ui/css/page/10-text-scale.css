@@ -1,0 +1,5 @@
+    /* ── Text scale (independent of ms-ativo) ─────────────────────────────── */
+    html.ms-text-scale-125 { font-size: 125%; --ms-scale: 1.25; }
+    html.ms-text-scale-150 { font-size: 150%; --ms-scale: 1.5; }
+    html.ms-text-scale-175 { font-size: 175%; --ms-scale: 1.75; }
+

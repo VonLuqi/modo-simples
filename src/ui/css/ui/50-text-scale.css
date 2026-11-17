@@ -1,0 +1,28 @@
+    /* ── Segmented text scale ────────────────────────────────────────────── */
+    .ms-segmented {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: calc(0.35 * var(--ms-u));
+    }
+    .ms-segment {
+      border: none;
+      border-radius: 8px;
+      padding: calc(0.55 * var(--ms-u)) calc(0.25 * var(--ms-u));
+      min-height: 44px;
+      font: inherit;
+      font-size: calc(0.8 * var(--ms-u));
+      font-weight: 600;
+      background: #eef0f4;
+      color: #334155;
+      cursor: pointer;
+    }
+    .ms-segment--on,
+    .ms-segment[aria-checked="true"] {
+      background: var(--ms-blue);
+      color: #fff;
+    }
+    .ms-segment:focus-visible {
+      outline: 2px solid var(--ms-orange);
+      outline-offset: 2px;
+    }
+

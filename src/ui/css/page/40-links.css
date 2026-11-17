@@ -1,0 +1,9 @@
+    /* ── Highlight links ─────────────────────────────────────────────────── */
+    html.ms-highlight-links a:not([data-ms-hidden]) {
+      text-decoration: underline !important;
+      text-decoration-thickness: 2px !important;
+      text-underline-offset: 3px !important;
+      outline: 1px dashed currentColor !important;
+      outline-offset: 2px !important;
+    }
+
