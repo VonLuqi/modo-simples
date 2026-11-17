@@ -75,8 +75,8 @@ export function createFab({ onClick }) {
 
     const openIcon = btn.querySelector('.ms-fab-icon--open');
     const closeIcon = btn.querySelector('.ms-fab-icon--close');
-    if (openIcon) openIcon.hidden = panelOpen;
-    if (closeIcon) closeIcon.hidden = !panelOpen;
+    if (openIcon) openIcon.toggleAttribute('hidden', panelOpen);
+    if (closeIcon) closeIcon.toggleAttribute('hidden', !panelOpen);
   }
 
   sync({ panelOpen: false });

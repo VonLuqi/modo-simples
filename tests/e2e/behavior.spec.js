@@ -212,11 +212,7 @@ test.describe('estado visual do FAB e do painel', () => {
   test('UX-30: com o painel aberto o FAB mostra X e esconde os sliders', async ({
     site,
   }) => {
-    // BUG CONFIRMADO: fab.js:75-76 faz `svg.hidden = ...`, mas SVGElement não tem a propriedade
-    // `hidden` (só HTMLElement): vira expando e o atributo `hidden` do markup nunca sai.
-    // Correção de 2 linhas: closeIcon.toggleAttribute('hidden', !panelOpen) (idem openIcon).
-    // Quando corrigir, o Playwright acusa "expected to fail": remova o test.fail.
-    test.fail(true, 'UX-30: svg.hidden não funciona (fab.js:75-76)');
+    // Regressão do UX-30: SVGElement não tem `.hidden`; o FAB usa toggleAttribute('hidden').
     const { page } = site;
     await page.goto(GENERIC);
     await waitForLib(page);
