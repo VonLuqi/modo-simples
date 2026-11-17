@@ -18,6 +18,7 @@ const PAGE = `
   <header>topo</header>
   <main id="auto"><h1>Título</h1><p>${texto(20)}</p></main>
   <section id="escolhido"><p>${texto(12)}</p></section>
+  <section id="medio"><p>${texto(5)}</p></section>
   <aside class="ad">anúncio</aside>
   <div id="pequeno">pouco texto</div>`;
 
@@ -59,11 +60,43 @@ describe('principal manual por página (IMP-06)', () => {
     assert.ok(migrado.textLen > 200);
   });
 
-  it('registro antigo apontando para área pequena demais é descartado', () => {
+  it('registro antigo apontando para área pequena demais não se aplica, mas o registro por host FICA', () => {
     persistence.saveForHost('principal', '#pequeno');
     inst.enable();
     assert.equal(principal().id, 'auto');
-    assert.equal(persistence.loadForHost('principal'), null);
+    // M2: falhar numa página não pode apagar a dica das outras páginas
+    assert.equal(persistence.loadForHost('principal'), '#pequeno');
+  });
+
+  it('dica antiga bem menor que o candidato confiante da heurística não se aplica (e fica guardada)', () => {
+    persistence.saveForHost('principal', '#medio'); // ~235 chars vs ~940 do main
+    inst.enable();
+    assert.equal(principal().id, 'auto');
+    assert.equal(persistence.loadForHost('principal'), '#medio');
+    assert.equal(persistence.loadForPath('principal'), null); // nada migrado
+  });
+
+  it('falha numa página não impede a mesma dica de valer em outra página do host', () => {
+    persistence.saveForHost('principal', '#medio');
+    inst.enable();
+    assert.equal(principal().id, 'auto'); // página A: rejeitada
+    inst.disable();
+
+    // página B: sem main dominante (o #medio é o maior bloco)
+    env.win.happyDOM.setURL('https://exemplo.test/pagina-b.html');
+    document.body.innerHTML = `<section id="medio"><p>${texto(5)}</p></section><aside class="ad">x</aside>`;
+    inst.enable();
+    assert.equal(principal().id, 'medio');
+    assert.equal(persistence.loadForPath('principal').path, '#medio'); // migrada só para B
+    assert.equal(persistence.loadForHost('principal'), '#medio');
+  });
+
+  it('registro DA PÁGINA inválido sai, mas o registro antigo por host continua', () => {
+    persistence.saveForHost('principal', '#escolhido');
+    persistence.saveForPath('principal', { path: '#sumiu', textLen: 5000 });
+    inst.enable();
+    assert.equal(persistence.loadForPath('principal'), null);
+    assert.equal(persistence.loadForHost('principal'), '#escolhido');
   });
 
   it('texto muito menor que o da escolha original (< 50%) descarta a escolha', () => {

@@ -10,6 +10,7 @@
 
 import defaults from './config/defaults.js';
 import { mergeConfig } from './config/mergeConfig.js';
+import { detectMainContent } from './heuristics/contentDetector.js';
 import eventBus from './core/eventBus.js';
 import state from './core/state.js';
 import persistence from './core/persistence.js';
@@ -459,8 +460,9 @@ class ModoSimples {
         if (doAnnounce) announce('Modo Simples ativado');
         return;
       }
-      // caminho inválido, sumiu ou o texto encolheu demais: não é mais a mesma área (IMP-06)
-      this._discardPrincipal();
+      // caminho inválido, sumiu ou o texto encolheu demais: não é mais a mesma área (IMP-06).
+      // Registro da página sai; o antigo por host (dica) fica para as outras páginas.
+      if (!saved.legacy) this._discardPrincipal();
     }
 
     const { confidence } = scan(this._config);
@@ -627,35 +629,37 @@ class ModoSimples {
   /**
    * Principal salvo para ESTA página. Sem registro de página, aceita o registro antigo (por host,
    * string) — ele só vale se passar na validação, e é migrado para a página (IMP-06).
-   * @returns {{ path: string, textLen: number|null } | null}
+   * @returns {{ path: string, textLen: number|null, legacy: boolean } | null}
    */
   _loadPrincipal() {
     if (!this._config.persistence) return null;
     let v = persistence.loadForPath(PRINCIPAL_KEY);
-    if (v == null) {
+    const viaHost = v == null; // sem registro da página: cai no registro antigo, por host
+    if (viaHost) {
       v = this._config.hostnamePersistence
         ? persistence.loadForHost(PRINCIPAL_KEY)
         : persistence.load(PRINCIPAL_KEY);
     }
-    if (typeof v === 'string' && v) return { path: v, textLen: null };
+    if (typeof v === 'string' && v) {
+      return { path: v, textLen: null, legacy: true };
+    }
     if (v && typeof v.path === 'string' && v.path) {
       return {
         path: v.path,
         textLen: Number.isFinite(v.textLen) ? v.textLen : null,
+        legacy: viaHost,
       };
     }
     return null;
   }
 
-  /** Esquece o principal salvo (página e registro antigo por host). */
+  /**
+   * Esquece o principal salvo DESTA página. O registro antigo por host nunca é apagado aqui:
+   * ele é só uma dica, e falhar numa página não diz nada sobre as outras.
+   */
   _discardPrincipal() {
     if (!this._config.persistence) return;
     persistence.removeForPath(PRINCIPAL_KEY);
-    if (this._config.hostnamePersistence) {
-      persistence.removeForHost(PRINCIPAL_KEY);
-    } else {
-      persistence.remove(PRINCIPAL_KEY);
-    }
   }
 
   /**
@@ -667,7 +671,21 @@ class ModoSimples {
     const len = textLength(el);
     if (len < this._config.scoring.minTextLength) return false;
     if (saved.textLen && len < saved.textLen * 0.5) return false;
+    if (saved.legacy) return this._legacyHintFits(el, len);
     return true;
+  }
+
+  /**
+   * Registro antigo (por host, sem tamanho gravado) é só uma dica: além do mínimo de texto, quando
+   * a heurística tem confiança nesta página o elemento da dica não pode ser bem menor que o
+   * candidato dela (< 50% do texto) — outra página do host com a mesma estrutura de caminho.
+   */
+  _legacyHintFits(el, len) {
+    const { element, confidence } = detectMainContent(this._config);
+    if (confidence < this._config.confidenceThreshold || element === el) {
+      return true;
+    }
+    return len >= textLength(element) * 0.5;
   }
 
   // ── System preferences ─────────────────────────────────────────────────────

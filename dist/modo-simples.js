@@ -141,6 +141,78 @@
     return merged;
   }
 
+  // src/heuristics/scoring.js
+  function scoreElement(element, config = defaults_default) {
+    var _a;
+    const { scoring } = config;
+    let score = 0;
+    const tag = element.tagName.toLowerCase();
+    const role = element.getAttribute("role");
+    if (tag === "main") score += scoring.mainTagBonus;
+    if (role === "main") score += scoring.roleMainBonus;
+    if (tag === "article") score += scoring.articleBonus;
+    if (element.querySelector("h1")) score += scoring.h1Bonus;
+    if (element.querySelector("h2")) score += scoring.h2Bonus;
+    const textLength2 = ((_a = element.textContent) != null ? _a : "").trim().length;
+    if (textLength2 >= scoring.minTextLength) {
+      score += scoring.textLengthBonus;
+      if (textLength2 >= scoring.minTextLength * 3)
+        score += scoring.textLengthBonus;
+    }
+    return score;
+  }
+
+  // src/heuristics/queryAll.js
+  function queryAll(selectors) {
+    if (!Array.isArray(selectors) || selectors.length === 0) return [];
+    try {
+      return Array.from(document.querySelectorAll(selectors.join(",")));
+    } catch (_) {
+      const found = /* @__PURE__ */ new Set();
+      for (const selector of selectors) {
+        try {
+          document.querySelectorAll(selector).forEach((el) => found.add(el));
+        } catch (_2) {
+        }
+      }
+      return [...found];
+    }
+  }
+
+  // src/heuristics/contentDetector.js
+  function detectMainContent(config = defaults_default) {
+    const scored = [];
+    const rank = (el) => {
+      if (typeof el.matches !== "function") return 0;
+      const i = config.mainSelectors.findIndex((sel) => {
+        try {
+          return el.matches(sel);
+        } catch (_) {
+          return false;
+        }
+      });
+      return i === -1 ? config.mainSelectors.length : i;
+    };
+    const candidates = queryAll(config.mainSelectors).map((element, order) => ({
+      element,
+      order,
+      priority: rank(element)
+    }));
+    candidates.sort((a, b) => a.priority - b.priority || a.order - b.order);
+    for (const { element } of candidates) {
+      scored.push({ element, score: scoreElement(element, config) });
+    }
+    if (scored.length === 0) {
+      return { element: document.body, confidence: 0 };
+    }
+    scored.sort((a, b) => b.score - a.score);
+    const best = scored[0];
+    const { scoring } = config;
+    const ideal = scoring.mainTagBonus + scoring.h1Bonus + scoring.textLengthBonus * 2;
+    const confidence = Math.min(best.score / ideal, 1);
+    return { element: best.element, confidence };
+  }
+
   // src/core/eventBus.js
   var eventBus = {
     /** @type {Record<string, Function[]>} */
@@ -2063,78 +2135,6 @@
     document.body.prepend(bar);
   }
 
-  // src/heuristics/scoring.js
-  function scoreElement(element, config = defaults_default) {
-    var _a;
-    const { scoring } = config;
-    let score = 0;
-    const tag = element.tagName.toLowerCase();
-    const role = element.getAttribute("role");
-    if (tag === "main") score += scoring.mainTagBonus;
-    if (role === "main") score += scoring.roleMainBonus;
-    if (tag === "article") score += scoring.articleBonus;
-    if (element.querySelector("h1")) score += scoring.h1Bonus;
-    if (element.querySelector("h2")) score += scoring.h2Bonus;
-    const textLength2 = ((_a = element.textContent) != null ? _a : "").trim().length;
-    if (textLength2 >= scoring.minTextLength) {
-      score += scoring.textLengthBonus;
-      if (textLength2 >= scoring.minTextLength * 3)
-        score += scoring.textLengthBonus;
-    }
-    return score;
-  }
-
-  // src/heuristics/queryAll.js
-  function queryAll(selectors) {
-    if (!Array.isArray(selectors) || selectors.length === 0) return [];
-    try {
-      return Array.from(document.querySelectorAll(selectors.join(",")));
-    } catch (_) {
-      const found = /* @__PURE__ */ new Set();
-      for (const selector of selectors) {
-        try {
-          document.querySelectorAll(selector).forEach((el) => found.add(el));
-        } catch (_2) {
-        }
-      }
-      return [...found];
-    }
-  }
-
-  // src/heuristics/contentDetector.js
-  function detectMainContent(config = defaults_default) {
-    const scored = [];
-    const rank = (el) => {
-      if (typeof el.matches !== "function") return 0;
-      const i = config.mainSelectors.findIndex((sel) => {
-        try {
-          return el.matches(sel);
-        } catch (_) {
-          return false;
-        }
-      });
-      return i === -1 ? config.mainSelectors.length : i;
-    };
-    const candidates = queryAll(config.mainSelectors).map((element, order) => ({
-      element,
-      order,
-      priority: rank(element)
-    }));
-    candidates.sort((a, b) => a.priority - b.priority || a.order - b.order);
-    for (const { element } of candidates) {
-      scored.push({ element, score: scoreElement(element, config) });
-    }
-    if (scored.length === 0) {
-      return { element: document.body, confidence: 0 };
-    }
-    scored.sort((a, b) => b.score - a.score);
-    const best = scored[0];
-    const { scoring } = config;
-    const ideal = scoring.mainTagBonus + scoring.h1Bonus + scoring.textLengthBonus * 2;
-    const confidence = Math.min(best.score / ideal, 1);
-    return { element: best.element, confidence };
-  }
-
   // src/heuristics/distractionDetector.js
   function detectDistractions(mainElement, config = defaults_default) {
     const distractions = [];
@@ -3302,7 +3302,7 @@
           if (doAnnounce) announce("Modo Simples ativado");
           return;
         }
-        this._discardPrincipal();
+        if (!saved.legacy) this._discardPrincipal();
       }
       const { confidence } = scan(this._config);
       if (confidence < this._config.confidenceThreshold) {
@@ -3442,32 +3442,34 @@
     /**
      * Principal salvo para ESTA página. Sem registro de página, aceita o registro antigo (por host,
      * string) — ele só vale se passar na validação, e é migrado para a página (IMP-06).
-     * @returns {{ path: string, textLen: number|null } | null}
+     * @returns {{ path: string, textLen: number|null, legacy: boolean } | null}
      */
     _loadPrincipal() {
       if (!this._config.persistence) return null;
       let v = persistence_default.loadForPath(PRINCIPAL_KEY);
-      if (v == null) {
+      const viaHost = v == null;
+      if (viaHost) {
         v = this._config.hostnamePersistence ? persistence_default.loadForHost(PRINCIPAL_KEY) : persistence_default.load(PRINCIPAL_KEY);
       }
-      if (typeof v === "string" && v) return { path: v, textLen: null };
+      if (typeof v === "string" && v) {
+        return { path: v, textLen: null, legacy: true };
+      }
       if (v && typeof v.path === "string" && v.path) {
         return {
           path: v.path,
-          textLen: Number.isFinite(v.textLen) ? v.textLen : null
+          textLen: Number.isFinite(v.textLen) ? v.textLen : null,
+          legacy: viaHost
         };
       }
       return null;
     }
-    /** Esquece o principal salvo (página e registro antigo por host). */
+    /**
+     * Esquece o principal salvo DESTA página. O registro antigo por host nunca é apagado aqui:
+     * ele é só uma dica, e falhar numa página não diz nada sobre as outras.
+     */
     _discardPrincipal() {
       if (!this._config.persistence) return;
       persistence_default.removeForPath(PRINCIPAL_KEY);
-      if (this._config.hostnamePersistence) {
-        persistence_default.removeForHost(PRINCIPAL_KEY);
-      } else {
-        persistence_default.remove(PRINCIPAL_KEY);
-      }
     }
     /**
      * O elemento achado pelo caminho salvo ainda parece a área de conteúdo? Exige o mínimo de
@@ -3478,7 +3480,20 @@
       const len = textLength(el);
       if (len < this._config.scoring.minTextLength) return false;
       if (saved.textLen && len < saved.textLen * 0.5) return false;
+      if (saved.legacy) return this._legacyHintFits(el, len);
       return true;
+    }
+    /**
+     * Registro antigo (por host, sem tamanho gravado) é só uma dica: além do mínimo de texto, quando
+     * a heurística tem confiança nesta página o elemento da dica não pode ser bem menor que o
+     * candidato dela (< 50% do texto) — outra página do host com a mesma estrutura de caminho.
+     */
+    _legacyHintFits(el, len) {
+      const { element, confidence } = detectMainContent(this._config);
+      if (confidence < this._config.confidenceThreshold || element === el) {
+        return true;
+      }
+      return len >= textLength(element) * 0.5;
     }
     // ── System preferences ─────────────────────────────────────────────────────
     /**
