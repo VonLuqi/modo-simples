@@ -206,6 +206,42 @@ describe('maxWait e ócio (IMP-03)', () => {
   });
 });
 
+describe('config atual no observer (IMP-16)', () => {
+  it('com getter, mudar o config depois do start vale no próximo reprocess', async () => {
+    let atual = { ...config, distractionSelectors: ['.ad'] };
+    startObserving(
+      () => ({ modoSimples: true, options: {} }),
+      () => atual,
+    );
+
+    atual = { ...config, distractionSelectors: ['.promo'] }; // como configure() faz
+    const promo = document.createElement('div');
+    promo.className = 'promo';
+    document.body.appendChild(promo);
+    await settle();
+    assert.equal(promo.getAttribute('data-ms-hidden'), 'true');
+  });
+
+  it('com getter, reprocessDebounce novo é respeitado', async () => {
+    let atual = { ...config, reprocessDebounce: 25 };
+    startObserving(
+      () => ({ modoSimples: true, options: {} }),
+      () => atual,
+    );
+    atual = { ...config, reprocessDebounce: 300 };
+    addAd();
+    await env.wait(120);
+    assert.equal(reprocessCount, 0);
+  });
+
+  it('objeto de config direto continua aceito (compatível)', async () => {
+    start();
+    const ad = addAd();
+    await settle();
+    assert.equal(ad.getAttribute('data-ms-hidden'), 'true');
+  });
+});
+
 describe('regressões do observer (F2)', () => {
   it('nós da própria lib (announce) não disparam reprocess (IMP-01)', async () => {
     start();

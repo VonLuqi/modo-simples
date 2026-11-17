@@ -76,7 +76,10 @@ class ModoSimples {
     this._buildUI();
     this._bindEvents();
 
-    startObserving(() => state.get(), this._config);
+    startObserving(
+      () => state.get(),
+      () => this._config, // getter: configure() troca o objeto de config (IMP-16)
+    );
     this._syncReducedMotion();
     this._removeMotionListener = onReducedMotionChange(() =>
       this._syncReducedMotion(),

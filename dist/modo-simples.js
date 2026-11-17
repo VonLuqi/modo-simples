@@ -2417,17 +2417,19 @@
   }
   function startObserving(getState, config) {
     if (_observer) return;
+    const getConfig = () => typeof config === "function" ? config() : config;
     _observer = new MutationObserver((mutations) => {
       var _a, _b;
       if (!mutations.some(isRelevantMutation)) return;
       const state2 = getState();
       if (!state2.modoSimples) return;
+      const cfg = getConfig();
       schedule(
         () => {
-          if (_observer) reprocess(getState(), config);
+          if (_observer) reprocess(getState(), getConfig());
         },
-        (_a = config.reprocessDebounce) != null ? _a : DEFAULT_DEBOUNCE,
-        (_b = config.reprocessMaxWait) != null ? _b : DEFAULT_MAX_WAIT
+        (_a = cfg.reprocessDebounce) != null ? _a : DEFAULT_DEBOUNCE,
+        (_b = cfg.reprocessMaxWait) != null ? _b : DEFAULT_MAX_WAIT
       );
     });
     _observer.observe(document.body, { childList: true, subtree: true });
@@ -2800,7 +2802,11 @@
       setLexendFontUrl(this._config.fontUrl);
       this._buildUI();
       this._bindEvents();
-      startObserving(() => state_default.get(), this._config);
+      startObserving(
+        () => state_default.get(),
+        () => this._config
+        // getter: configure() troca o objeto de config (IMP-16)
+      );
       this._syncReducedMotion();
       this._removeMotionListener = onReducedMotionChange(
         () => this._syncReducedMotion()

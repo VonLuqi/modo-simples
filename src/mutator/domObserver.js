@@ -100,10 +100,12 @@ function runWhenIdle(fn) {
  * Idempotent — calling this multiple times has no extra effect.
  *
  * @param {() => Object} getState  Returns current state snapshot
- * @param {Object}       config    Current configuration
+ * @param {Object|(() => Object)} config  Configuração, ou getter dela. Com getter o observer
+ *   enxerga o config ATUAL a cada mutação (configure() troca o objeto — IMP-16).
  */
 export function startObserving(getState, config) {
   if (_observer) return; // Already running
+  const getConfig = () => (typeof config === 'function' ? config() : config);
 
   _observer = new MutationObserver((mutations) => {
     // Só interessam nós ADICIONADOS do host (nós da própria lib são ignorados)
@@ -113,12 +115,13 @@ export function startObserving(getState, config) {
     const state = getState();
     if (!state.modoSimples) return;
 
+    const cfg = getConfig();
     schedule(
       () => {
-        if (_observer) reprocess(getState(), config);
+        if (_observer) reprocess(getState(), getConfig());
       },
-      config.reprocessDebounce ?? DEFAULT_DEBOUNCE,
-      config.reprocessMaxWait ?? DEFAULT_MAX_WAIT,
+      cfg.reprocessDebounce ?? DEFAULT_DEBOUNCE,
+      cfg.reprocessMaxWait ?? DEFAULT_MAX_WAIT,
     );
   });
 

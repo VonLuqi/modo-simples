@@ -221,6 +221,21 @@ describe('configure em runtime', () => {
     assert.equal($('#ms-lexend-font'), null);
   });
 
+  it('configure() de seletores vale para o reprocess do observer (IMP-16)', async () => {
+    inst.init();
+    inst.enable();
+    inst.configure({
+      distractionSelectors: ['.novo-ruido'],
+      reprocessDebounce: 20,
+    });
+    const el = document.createElement('div');
+    el.className = 'novo-ruido';
+    el.textContent = 'ruído';
+    document.body.appendChild(el);
+    await env.wait(120);
+    assert.equal(el.getAttribute('data-ms-hidden'), 'true');
+  });
+
   it('configure() mescla sem perder as demais chaves', () => {
     inst.configure({ confidenceThreshold: 0.9 });
     assert.equal(inst._config.confidenceThreshold, 0.9);
