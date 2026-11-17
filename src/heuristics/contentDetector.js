@@ -1,5 +1,6 @@
 import defaults from '../config/defaults.js';
 import { scoreElement } from './scoring.js';
+import { queryAll } from './queryAll.js';
 
 /**
  * Detects the main content element on the current page.
@@ -24,20 +25,27 @@ export function detectMainContent(config = defaults) {
   /** @type {{ element: Element, score: number }[]} */
   const scored = [];
 
-  for (const selector of config.mainSelectors) {
-    let matches;
-    try {
-      matches = document.querySelectorAll(selector);
-    } catch (_) {
-      // Malformed or browser-unsupported selector — skip safely
-      continue;
-    }
-
-    matches.forEach((el) => {
-      // Deduplicate (the same element may match multiple selectors)
-      if (scored.some((s) => s.element === el)) return;
-      scored.push({ element: el, score: scoreElement(el, config) });
+  // Uma varredura para todos os seletores. Os candidatos entram na ordem de PRIORIDADE dos
+  // seletores (primeiro seletor que casa), como antes: empate de nota vence o seletor anterior.
+  const rank = (el) => {
+    if (typeof el.matches !== 'function') return 0;
+    const i = config.mainSelectors.findIndex((sel) => {
+      try {
+        return el.matches(sel);
+      } catch (_) {
+        return false;
+      }
     });
+    return i === -1 ? config.mainSelectors.length : i;
+  };
+  const candidates = queryAll(config.mainSelectors).map((element, order) => ({
+    element,
+    order,
+    priority: rank(element),
+  }));
+  candidates.sort((a, b) => a.priority - b.priority || a.order - b.order);
+  for (const { element } of candidates) {
+    scored.push({ element, score: scoreElement(element, config) });
   }
 
   if (scored.length === 0) {

@@ -1,4 +1,5 @@
 import defaults from '../config/defaults.js';
+import { queryAll } from './queryAll.js';
 
 /**
  * Detects elements that are considered distracting on the current page.
@@ -41,28 +42,22 @@ export function detectDistractions(mainElement, config = defaults) {
     return false;
   };
 
-  for (const selector of config.distractionSelectors) {
-    let matches;
-    try {
-      matches = document.querySelectorAll(selector);
-    } catch (_) {
-      // Malformed selector — skip safely
-      continue;
+  // Uma varredura para todos os seletores; Set evita O(n²) de includes()
+  const seen = new Set();
+  for (const el of queryAll(config.distractionSelectors)) {
+    // Never hide Modo Simples chrome / pills / host UI
+    if (isMsChrome(el)) continue;
+
+    // Never hide an ancestor of the main content — that would hide the content
+    if (mainElement && el.contains(mainElement)) continue;
+
+    // Never hide elements inside the main content
+    if (mainElement && mainElement.contains(el)) continue;
+
+    if (!seen.has(el)) {
+      seen.add(el);
+      distractions.push(el);
     }
-
-    matches.forEach((el) => {
-      // Never hide Modo Simples chrome / pills / host UI
-      if (isMsChrome(el)) return;
-
-      // Never hide an ancestor of the main content — that would hide the content
-      if (mainElement && el.contains(mainElement)) return;
-
-      // Never hide elements inside the main content
-      if (mainElement && mainElement.contains(el)) return;
-
-      // Deduplicate
-      if (!distractions.includes(el)) distractions.push(el);
-    });
   }
 
   return distractions;

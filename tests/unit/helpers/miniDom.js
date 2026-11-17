@@ -87,6 +87,8 @@ function matchesSimple(el, selector) {
 }
 
 function matchesSelector(el, selector) {
+  if (selector.includes(','))
+    return selector.split(',').some((part) => matchesSelector(el, part));
   const parts = selector.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 1) return matchesSimple(el, parts[0]);
 

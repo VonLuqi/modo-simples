@@ -2035,20 +2035,45 @@
     return score;
   }
 
+  // src/heuristics/queryAll.js
+  function queryAll(selectors) {
+    if (!Array.isArray(selectors) || selectors.length === 0) return [];
+    try {
+      return Array.from(document.querySelectorAll(selectors.join(",")));
+    } catch (_) {
+      const found = /* @__PURE__ */ new Set();
+      for (const selector of selectors) {
+        try {
+          document.querySelectorAll(selector).forEach((el) => found.add(el));
+        } catch (_2) {
+        }
+      }
+      return [...found];
+    }
+  }
+
   // src/heuristics/contentDetector.js
   function detectMainContent(config = defaults_default) {
     const scored = [];
-    for (const selector of config.mainSelectors) {
-      let matches;
-      try {
-        matches = document.querySelectorAll(selector);
-      } catch (_) {
-        continue;
-      }
-      matches.forEach((el) => {
-        if (scored.some((s) => s.element === el)) return;
-        scored.push({ element: el, score: scoreElement(el, config) });
+    const rank = (el) => {
+      if (typeof el.matches !== "function") return 0;
+      const i = config.mainSelectors.findIndex((sel) => {
+        try {
+          return el.matches(sel);
+        } catch (_) {
+          return false;
+        }
       });
+      return i === -1 ? config.mainSelectors.length : i;
+    };
+    const candidates = queryAll(config.mainSelectors).map((element, order) => ({
+      element,
+      order,
+      priority: rank(element)
+    }));
+    candidates.sort((a, b) => a.priority - b.priority || a.order - b.order);
+    for (const { element } of candidates) {
+      scored.push({ element, score: scoreElement(element, config) });
     }
     if (scored.length === 0) {
       return { element: document.body, confidence: 0 };
@@ -2079,19 +2104,15 @@
       }
       return false;
     };
-    for (const selector of config.distractionSelectors) {
-      let matches;
-      try {
-        matches = document.querySelectorAll(selector);
-      } catch (_) {
-        continue;
+    const seen = /* @__PURE__ */ new Set();
+    for (const el of queryAll(config.distractionSelectors)) {
+      if (isMsChrome(el)) continue;
+      if (mainElement && el.contains(mainElement)) continue;
+      if (mainElement && mainElement.contains(el)) continue;
+      if (!seen.has(el)) {
+        seen.add(el);
+        distractions.push(el);
       }
-      matches.forEach((el) => {
-        if (isMsChrome(el)) return;
-        if (mainElement && el.contains(mainElement)) return;
-        if (mainElement && mainElement.contains(el)) return;
-        if (!distractions.includes(el)) distractions.push(el);
-      });
     }
     return distractions;
   }

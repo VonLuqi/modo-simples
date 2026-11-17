@@ -44,12 +44,9 @@ function setQueryMap(map) {
 
 before(() => {
   global.document = {
+    // detectDistractions une os seletores numa consulta só (IMP-37): o mock separa por vírgula
     querySelectorAll(sel) {
-      return {
-        forEach(cb) {
-          (selectorMap[sel] || []).forEach(cb);
-        },
-      };
+      return sel.split(',').flatMap((s) => selectorMap[s.trim()] || []);
     },
   };
 });
