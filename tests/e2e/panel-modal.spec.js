@@ -103,3 +103,29 @@ test('inert: filho tardio do body fica inert; região aria-live do site não (LO
   await page.keyboard.press('Escape');
   await expect(page.locator('#tardio')).not.toHaveAttribute('inert', '');
 });
+
+test('clique fora com o painel aberto fecha e também chega ao alvo (LOW QA T46)', async ({
+  site,
+}) => {
+  const { page } = site;
+  await page.goto(INDEX);
+  await waitForLib(page);
+  await page.evaluate(() => {
+    const b = document.createElement('button');
+    b.id = 'nota-doc';
+    b.textContent = 'nota';
+    b.style.cssText = 'position:fixed;top:8px;left:8px;z-index:9999';
+    b.addEventListener(
+      'click',
+      () => (window.__nota = (window.__nota || 0) + 1),
+    );
+    document.body.appendChild(b);
+  });
+  await openPanel(page);
+
+  const box = await page.locator('#nota-doc').boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+
+  await expect(page.locator('#ms-a11y-panel')).toBeHidden();
+  expect(await page.evaluate(() => window.__nota)).toBe(1);
+});

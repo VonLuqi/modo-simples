@@ -408,7 +408,22 @@ class ModoSimples {
       // Clicks that land on the host (open shadow) still include host in composedPath
       if (e.target === this._host) return;
       if (!this._host?.contains(e.target) && e.target !== this._host) {
+        // o inert faz o clique cair no body: fecha e repassa o clique ao elemento que estava
+        // sob o ponteiro (senão o primeiro clique no doc é engolido)
+        const { clientX, clientY } = e;
+        const retargeted =
+          e.target === document.body || e.target === document.documentElement;
         this._closePanel();
+        if (retargeted && e.detail > 0) {
+          const alvo = document.elementFromPoint(clientX, clientY);
+          if (
+            alvo &&
+            alvo !== document.body &&
+            alvo !== document.documentElement
+          ) {
+            alvo.click();
+          }
+        }
       }
     };
     document.addEventListener('click', this._onDocClick, true);
