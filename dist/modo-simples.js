@@ -773,7 +773,7 @@
 
     .ms-a11y-card--simple .ms-switch--on,
     .ms-a11y-card--simple .ms-switch[aria-checked="true"] {
-      background: var(--ms-orange);
+      background: #8a5500;
     }
 
     /* \u2500\u2500 Sections \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
@@ -1548,6 +1548,7 @@
       persistence_default.save(TIP_SEEN_KEY, true);
     }
     tip.hidden = persistence_default.load(TIP_SEEN_KEY, false) === true;
+    if (!tip.hidden) persistence_default.save(TIP_SEEN_KEY, true);
     tip.addEventListener("animationend", (e) => {
       if (e.animationName === "ms-fab-tip-out") dismissTip();
     });
@@ -2111,7 +2112,11 @@
     if (chrome.parentElement === parent) return;
     const focused = chrome.contains(document.activeElement) ? document.activeElement : null;
     parent.appendChild(chrome);
-    if (focused) focused.focus();
+    if (!focused) return;
+    focused.focus();
+    if (document.activeElement !== focused && typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(() => focused.focus());
+    }
   }
   function _mountChrome(chrome, mount) {
     chrome.classList.remove(
@@ -2212,6 +2217,7 @@
   var _highlight = null;
   var _current = null;
   var _prevFocus = null;
+  var _cancel = null;
   var _onClick = null;
   var _onKey = null;
   var _onPointer = null;
@@ -2260,8 +2266,12 @@
     return parts.join(" > ");
   }
   function isOwnUi(el) {
-    var _a, _b, _c;
-    return !!(((_a = el == null ? void 0 : el.closest) == null ? void 0 : _a.call(el, "#ms-container")) || ((_b = el == null ? void 0 : el.closest) == null ? void 0 : _b.call(el, `#${BANNER_ID}`)) || ((_c = el == null ? void 0 : el.closest) == null ? void 0 : _c.call(el, `#${HIGHLIGHT_ID}`)));
+    var _a, _b, _c, _d;
+    return !!(((_a = el == null ? void 0 : el.closest) == null ? void 0 : _a.call(el, "#ms-container")) || ((_b = el == null ? void 0 : el.closest) == null ? void 0 : _b.call(el, `#${BANNER_ID}`)) || ((_c = el == null ? void 0 : el.closest) == null ? void 0 : _c.call(el, `#${HIGHLIGHT_ID}`)) || // chrome da lib no light DOM: barra de sessão, switch SIMPLES e pills (QA R34 MED-2)
+    ((_d = el == null ? void 0 : el.closest) == null ? void 0 : _d.call(
+      el,
+      "#ms-session-bar, #ms-simples-chrome, .ms-pills-nav, [data-ms-pills]"
+    )));
   }
   function isCandidate(el) {
     if (!el || el === document.documentElement || el === document.body) {
@@ -2299,11 +2309,18 @@
     const list = Array.from(document.querySelectorAll(CANDIDATE_SELECTOR)).filter(
       isCandidate
     );
-    if (!list.length) return;
+    const onCancel = document.activeElement === _cancel;
     const i = _current ? list.indexOf(_current) : -1;
+    const goCancel = !list.length || !onCancel && step > 0 && i === list.length - 1 || !onCancel && step < 0 && i <= 0;
+    if (goCancel) {
+      setCurrent(null);
+      _cancel == null ? void 0 : _cancel.focus();
+      return;
+    }
     const next = i < 0 ? step > 0 ? list[0] : list[list.length - 1] : list[(i + step + list.length) % list.length];
     (_a = next.scrollIntoView) == null ? void 0 : _a.call(next, { block: "nearest" });
     setCurrent(next);
+    _banner == null ? void 0 : _banner.focus();
   }
   function confirmSelect(el) {
     document.querySelectorAll("[data-ms-principal]").forEach((node) => {
@@ -2316,9 +2333,14 @@
     if (cb) cb(el, path);
   }
   function startManualSelect(opts = {}) {
+    var _a;
     stopManualSelect();
     _callbacks = opts;
-    _prevFocus = document.activeElement;
+    let active = document.activeElement;
+    while ((_a = active == null ? void 0 : active.shadowRoot) == null ? void 0 : _a.activeElement) {
+      active = active.shadowRoot.activeElement;
+    }
+    _prevFocus = active;
     _banner = document.createElement("div");
     _banner.id = BANNER_ID;
     _banner.setAttribute("role", "status");
@@ -2365,6 +2387,7 @@
       if (cb) cb();
     });
     _banner.appendChild(cancelBtn);
+    _cancel = cancelBtn;
     document.body.appendChild(_banner);
     _highlight = document.createElement("div");
     _highlight.id = HIGHLIGHT_ID;
@@ -2391,8 +2414,8 @@
       confirmSelect(el);
     };
     _onKey = (e) => {
-      var _a, _b, _c, _d;
-      const inBanner = (_b = (_a = e.target) == null ? void 0 : _a.closest) == null ? void 0 : _b.call(_a, `#${BANNER_ID}`);
+      var _a2, _b, _c, _d;
+      const inBanner = (_b = (_a2 = e.target) == null ? void 0 : _a2.closest) == null ? void 0 : _b.call(_a2, `#${BANNER_ID}`);
       const consume = () => {
         e.preventDefault();
         e.stopImmediatePropagation();
@@ -2489,6 +2512,7 @@
     _banner = null;
     _status = null;
     _highlight = null;
+    _cancel = null;
     _current = null;
     document.documentElement.classList.remove(OVERLAY_CLASS);
     _callbacks = null;
