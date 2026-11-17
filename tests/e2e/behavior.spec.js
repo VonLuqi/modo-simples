@@ -178,8 +178,7 @@ test.describe('contraste de componentes (WCAG 1.4.11): o axe não mede', () => {
   test('UX-02: trilho do interruptor desligado contra o fundo do painel ≥ 3:1', async ({
     site,
   }) => {
-    // Hoje 1,48:1 (#cbd5e1 sobre branco, styles.js:424). Corrigir na F3 e remover o test.fail.
-    test.fail(true, 'UX-02: trilho do switch com 1,48:1 (F3)');
+    // Regressão do UX-02: trilho #64748b sobre branco = 4,76:1 (antes #cbd5e1 = 1,48:1).
     const { page } = site;
     await page.goto(GENERIC);
     await waitForLib(page);

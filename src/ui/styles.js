@@ -421,7 +421,7 @@ export function getUIStyles(position = 'bottom-right') {
       height: 26px;
       border-radius: 999px;
       border: none;
-      background: #cbd5e1;
+      background: #64748b;
       padding: 3px;
       cursor: pointer;
       position: relative;
@@ -799,7 +799,7 @@ export function getPageStyles() {
       height: 26px;
       border-radius: 999px;
       border: none;
-      background: #cbd5e1;
+      background: #64748b;
       padding: 3px;
       cursor: pointer;
     }
@@ -814,7 +814,7 @@ export function getPageStyles() {
     }
     .ms-chrome-switch.ms-switch--on,
     .ms-chrome-switch[aria-checked="true"] {
-      background: #f39200;
+      background: #8a5500;
     }
     .ms-chrome-switch.ms-switch--on .ms-switch-thumb,
     .ms-chrome-switch[aria-checked="true"] .ms-switch-thumb {
