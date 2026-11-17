@@ -11,7 +11,7 @@ import { buildCssPath } from '../features/manualSelect.js';
  *
  * Root classes:
  *   ms-ativo                     → Modo Simples ON (distraction hiding)
- *   ms-text-scale-{100|125|…}    → text scale
+ *   ms-text-scale-{125|150|175}  → text scale (100% = sem classe)
  *   ms-theme-{senac|yellowBlack|…}
  *   ms-dyslexia-font, ms-highlight-links, ms-text-spacing,
  *   ms-reduced-motion, ms-hide-images, ms-reading-ruler
@@ -121,8 +121,10 @@ export function applyOptions(state) {
   const opts = state.options || {};
 
   html.classList.remove(...TEXT_SCALE_CLASSES);
+  // 100% é o padrão: sem classe nem regra, para não sobrescrever o html{font-size} do host
+  // (ex.: truque de rem com 62.5%) antes de o usuário pedir texto maior (IMP-05)
   const scale = opts.textScale || '100';
-  html.classList.add(`ms-text-scale-${scale}`);
+  if (scale !== '100') html.classList.add(`ms-text-scale-${scale}`);
 
   html.classList.remove(...THEME_CLASSES);
   const theme = opts.colorTheme || 'senac';

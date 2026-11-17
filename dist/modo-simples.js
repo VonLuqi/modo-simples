@@ -942,7 +942,6 @@
     }
 
     /* \u2500\u2500 Text scale (independent of ms-ativo) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
-    html.ms-text-scale-100 { font-size: 100%; }
     html.ms-text-scale-125 { font-size: 125%; }
     html.ms-text-scale-150 { font-size: 150%; }
     html.ms-text-scale-175 { font-size: 175%; }
@@ -2349,7 +2348,7 @@
     const opts = state2.options || {};
     html.classList.remove(...TEXT_SCALE_CLASSES);
     const scale = opts.textScale || "100";
-    html.classList.add(`ms-text-scale-${scale}`);
+    if (scale !== "100") html.classList.add(`ms-text-scale-${scale}`);
     html.classList.remove(...THEME_CLASSES);
     const theme = opts.colorTheme || "senac";
     html.classList.add(`ms-theme-${theme}`);

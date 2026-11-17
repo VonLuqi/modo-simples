@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Host com truque de rem (html 62,5%)</title>
+    <style>
+      html {
+        font-size: 62.5%; /* truque comum: 1rem = 10px */
+      }
+      body {
+        font-size: 1.6rem; /* 16px graças ao truque */
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+      }
+      h1 {
+        font-size: 3.2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header><a href="/">Início</a></header>
+    <main>
+      <h1>Host que usa html { font-size: 62.5% }</h1>
+      <p>
+        Sites que redefinem o tamanho-base do html para facilitar contas em rem
+        não podem ter o tamanho-base trocado pela lib antes de o usuário pedir.
+        Este texto precisa ter densidade suficiente para a heurística achar o
+        conteúdo principal sem pedir seleção manual. Mais uma frase para passar
+        do mínimo de duzentos caracteres do detector.
+      </p>
+    </main>
+    <script src="../../../dist/modo-simples.min.js"></script>
+  </body>
+</html>

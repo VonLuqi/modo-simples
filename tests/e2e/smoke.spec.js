@@ -60,3 +60,44 @@ test.describe('host genérico (sem ModoSimplesConfig)', () => {
     expect(texto).not.toMatch(/senac|projeto integrador/i);
   });
 });
+
+test.describe('host com html { font-size: 62.5% } (IMP-05)', () => {
+  const REM = '/tests/e2e/fixtures/rem-trick.html';
+  const htmlFont = (page) =>
+    page.evaluate(() => getComputedStyle(document.documentElement).fontSize);
+
+  test('a lib não troca o tamanho-base do host ao subir', async ({ site }) => {
+    const { page } = site;
+    await page.goto(REM);
+    await waitForLib(page);
+    expect(await htmlFont(page)).toBe('10px');
+    await expect(page.locator('h1')).toHaveCSS('font-size', '32px');
+  });
+
+  test('ligar o Modo Simples também não mexe no tamanho-base', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(REM);
+    await waitForLib(page);
+    await page.evaluate(() => window.ModoSimples.enable());
+    await expect(page.locator('html')).toHaveClass(/ms-ativo/);
+    expect(await htmlFont(page)).toBe('10px');
+  });
+
+  test('só quando o usuário pede texto maior o tamanho-base muda', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(REM);
+    await waitForLib(page);
+    await page.evaluate(() => {
+      const root = document.querySelector('#ms-container').shadowRoot;
+      root
+        .querySelector('[data-option="textScale"] [data-value="125"]')
+        .click();
+    });
+    await expect(page.locator('html')).toHaveClass(/ms-text-scale-125/);
+    expect(await htmlFont(page)).toBe('20px'); // 125% de 16px: escolha explícita do usuário
+  });
+});

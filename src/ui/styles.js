@@ -544,7 +544,6 @@ export function getPageStyles() {
     }
 
     /* ── Text scale (independent of ms-ativo) ─────────────────────────────── */
-    html.ms-text-scale-100 { font-size: 100%; }
     html.ms-text-scale-125 { font-size: 125%; }
     html.ms-text-scale-150 { font-size: 150%; }
     html.ms-text-scale-175 { font-size: 175%; }

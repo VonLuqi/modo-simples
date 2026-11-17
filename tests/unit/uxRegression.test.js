@@ -86,7 +86,8 @@ describe('mutator — classes Modo Simples (F5-T09)', () => {
 
     const html = document.documentElement;
     assert.ok(html.classList.contains('ms-ativo'));
-    assert.ok(html.classList.contains('ms-text-scale-100'));
+    // 100% é o padrão: sem classe (não sobrescreve o font-size do host — IMP-05)
+    assert.ok(!html.classList.contains('ms-text-scale-100'));
     assert.ok(html.classList.contains('ms-theme-senac'));
 
     const main = document.querySelector('main');
