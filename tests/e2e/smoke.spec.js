@@ -7,20 +7,9 @@ const EXAMPLES = readdirSync(new URL('../../examples', import.meta.url))
 
 const GENERIC = '/tests/e2e/fixtures/generic.html';
 
-// Erros conhecidos de páginas do protótipo (rastreados; o Playwright acusa quando passam).
-const KNOWN_PAGE_ERRORS = {
-  // examples/hello-modo-simples.html:87 chama window.ModoSimples.configure(...) logo após o
-  // <script> da lib, mas o boot só acontece em DOMContentLoaded (modo-simples.js:561-565):
-  // window.ModoSimples ainda é undefined. Corrigir a página (esperar DOMContentLoaded)
-  // ou o boot (iniciar já quando o DOM permitir).
-  'hello-modo-simples.html':
-    'configure() chamado antes do boot (hello-modo-simples.html:87)',
-};
-
 test.describe('examples/*.html carregam o bundle sem erro (IMP-49)', () => {
   for (const file of EXAMPLES) {
     test(file, async ({ site }) => {
-      if (KNOWN_PAGE_ERRORS[file]) test.fail(true, KNOWN_PAGE_ERRORS[file]);
       const { page, errors } = site;
       await page.goto(`/examples/${file}`);
       await waitForLib(page);
@@ -99,5 +88,49 @@ test.describe('host com html { font-size: 62.5% } (IMP-05)', () => {
     });
     await expect(page.locator('html')).toHaveClass(/ms-text-scale-125/);
     expect(await htmlFont(page)).toBe('20px'); // 125% de 16px: escolha explícita do usuário
+  });
+});
+
+test.describe('auto-boot desligado (IMP-32)', () => {
+  const OFF = '/tests/e2e/fixtures/autoboot-off.html';
+
+  test('data-ms-autoboot="false": nada é injetado até o integrador subir', async ({
+    site,
+  }) => {
+    const { page, errors } = site;
+    await page.goto(OFF);
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForFunction(() => !!window.ModoSimplesClass);
+    expect(await page.locator('#ms-container').count()).toBe(0);
+    expect(await page.evaluate(() => typeof window.ModoSimples)).toBe(
+      'undefined',
+    );
+
+    // sobe manualmente (a classe fica exposta; ModoSimplesBoot respeita ModoSimplesConfig)
+    await page.evaluate(() => window.ModoSimplesBoot());
+    await waitForLib(page);
+    await expect(page.locator('#ms-fab')).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test('a classe exposta permite subir com config própria', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(OFF);
+    await page.waitForFunction(() => !!window.ModoSimplesClass);
+    await page.evaluate(() => {
+      const inst = new window.ModoSimplesClass({ position: 'top-left' });
+      inst.init();
+      window.ModoSimples = inst;
+    });
+    await waitForLib(page);
+    const css = await page.evaluate(
+      () =>
+        document
+          .querySelector('#ms-container')
+          .shadowRoot.querySelector('style').textContent,
+    );
+    expect(css).toContain('top: 1.5rem;left: 1.5rem;');
   });
 });

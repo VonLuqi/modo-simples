@@ -3387,12 +3387,24 @@
     win.ModoSimples = instance;
     return instance;
   }
+  function shouldAutoBoot(win, script) {
+    if (script && script.getAttribute("data-ms-autoboot") === "false") {
+      return false;
+    }
+    return readPreBootConfig(win).autoboot !== false;
+  }
   if (typeof window !== "undefined") {
-    const boot = () => bootModoSimples(window);
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", boot);
+    const script = document.currentScript;
+    if (shouldAutoBoot(window, script)) {
+      const boot = () => bootModoSimples(window);
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", boot);
+      } else {
+        boot();
+      }
     } else {
-      boot();
+      window.ModoSimplesClass = ModoSimples;
+      window.ModoSimplesBoot = () => bootModoSimples(window);
     }
   }
   var modo_simples_default = ModoSimples;

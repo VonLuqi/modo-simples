@@ -13,6 +13,10 @@
     "./min": "./dist/modo-simples.min.js",
     "./package.json": "./package.json"
   },
+  "sideEffects": [
+    "./src/modo-simples.js",
+    "./dist/*.js"
+  ],
   "files": [
     "dist/",
     "src/",

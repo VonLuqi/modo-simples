@@ -82,15 +82,15 @@
 
     <!-- Produção / Vercel: servir a raiz do repo (não só examples/) -->
     <script src="./js/ms-config.js"></script>
-    <script src="../dist/modo-simples.min.js"></script>
+    <!-- Config pré-boot: o bundle sobe em DOMContentLoaded, então configure() logo após o
+         <script> da lib chega cedo demais. Defina ModoSimplesConfig ANTES do bundle. -->
     <script>
-      window.ModoSimples.configure({
-        simpleNav: [
-          { label: 'Início', href: 'hello-modo-simples.html' },
-          { label: 'Sobre esta demo', href: '#sobre', short: 'Sobre' },
-          { label: 'Como integrar', href: '#ajuda', short: 'Ajuda' },
-        ],
-      });
+      window.ModoSimplesConfig.simpleNav = [
+        { label: 'Início', href: 'hello-modo-simples.html' },
+        { label: 'Sobre esta demo', href: '#sobre', short: 'Sobre' },
+        { label: 'Como integrar', href: '#ajuda', short: 'Ajuda' },
+      ];
     </script>
+    <script src="../dist/modo-simples.min.js"></script>
   </body>
 </html>

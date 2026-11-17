@@ -701,13 +701,35 @@ export function bootModoSimples(win) {
   return instance;
 }
 
-if (typeof window !== 'undefined') {
-  const boot = () => bootModoSimples(window);
+/**
+ * Auto-boot ligado? Opt-out por `<script data-ms-autoboot="false">` ou
+ * `window.ModoSimplesConfig = { autoboot: false }` (IMP-32).
+ * @param {{ ModoSimplesConfig?: unknown }} win
+ * @param {Element|null} [script] tag <script> que carregou o bundle
+ * @returns {boolean}
+ */
+export function shouldAutoBoot(win, script) {
+  if (script && script.getAttribute('data-ms-autoboot') === 'false') {
+    return false;
+  }
+  return readPreBootConfig(win).autoboot !== false;
+}
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
+if (typeof window !== 'undefined') {
+  // currentScript só existe durante a execução síncrona do script; o boot pode vir depois
+  const script = document.currentScript;
+
+  if (shouldAutoBoot(window, script)) {
+    const boot = () => bootModoSimples(window);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
   } else {
-    boot();
+    // sem auto-boot: o integrador sobe quando quiser, com a classe ou pelo boot padrão
+    window.ModoSimplesClass = ModoSimples;
+    window.ModoSimplesBoot = () => bootModoSimples(window);
   }
 }
 
