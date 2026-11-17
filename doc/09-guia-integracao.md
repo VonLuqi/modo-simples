@@ -129,7 +129,7 @@ window.ModoSimples.destroy();
 | Ação                      | Efeito                                                                                                 |
 | ------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `enable()` / SIMPLES on   | `simpleLanguage: true`; `hideImages: true` (salvo se o usuário já escolheu “mostrar imagens” no MS)    |
-| `disable()` / SIMPLES off | `simpleLanguage: false`; `hideImages: false`                                                           |
+| `disable()` / SIMPLES off | `simpleLanguage: false`; `hideImages` **volta ao valor de antes de ligar o MS**                        |
 | Preferências do painel    | Tema, escala, Lexend, régua, links, etc. **permanecem** ao desligar o MS e **persistem** entre páginas |
 
 Ativar/desativar: **só** pelo switch **SIMPLES** (header ou, com MS on, nas pills) ou pelo switch do painel — a barra não tem CTA “Ativar” nem “Voltar ao site”.
@@ -183,9 +183,26 @@ O bundle faz auto-boot ao carregar. Para passar config **antes** do init (ex.: `
 <script src="/dist/modo-simples.min.js"></script>
 ```
 
-`configure()` depois do boot continua válido (`simpleNav`, `sessionBar`, `fontUrl`, limiares…), mas chaves lidas só no init (`position`, `persistence`, `hostnamePersistence`, `brand`) precisam vir pelo pré-boot. O protótipo usa [`examples/js/ms-config.js`](../examples/js/ms-config.js).
+`configure()` depois do boot continua válido para `simpleNav`, `sessionBar`, `fontUrl`, `position` (refaz o CSS do FAB/painel), limiares e seletores (o observer enxerga o config atual). `scoring` é mesclado chave a chave. Chaves que só fazem sentido antes do init (`autoboot`, `mount` com a barra já criada) vêm pelo pré-boot. O protótipo usa [`examples/js/ms-config.js`](../examples/js/ms-config.js).
 
 > **Mount:** `mount` é lido quando a barra de sessão é **criada** (no init, ou ao fazer `configure({ sessionBar: true })`). `configure({ mount })` com a barra já criada **não a move** — para mudar o `mount`, use o pré-boot (`window.ModoSimplesConfig`) ou desligue e religue `sessionBar` no mesmo `configure`.
+
+### Desligar o auto-boot
+
+O bundle sobe sozinho. Para carregar sem subir (ex.: iniciar depois de um consentimento), use **uma** das opções:
+
+```html
+<script src="/dist/modo-simples.min.js" data-ms-autoboot="false"></script>
+<!-- ou: window.ModoSimplesConfig = { autoboot: false } antes do script -->
+<script>
+  // depois, quando quiser:
+  window.ModoSimplesBoot(); // usa window.ModoSimplesConfig
+  // ou, com config própria:
+  // const ms = new window.ModoSimplesClass({ position: 'top-left' }); ms.init(); window.ModoSimples = ms;
+</script>
+```
+
+Incluir o script **duas vezes** não cria uma segunda UI: o boot reaproveita a instância ativa. Para quem importa o ESM (`import 'modo-simples'`), `package.json` declara `sideEffects` (o entry sobe a instância ao ser importado); `ModoSimplesConfig.autoboot = false` também vale aí.
 
 ### Migração 1.x → 2.0
 
@@ -253,14 +270,16 @@ Controladas pelo painel / barra; salvas automaticamente (se `persistence: true`)
 
 ### Persistência
 
-| Item                                | Detalhe                                                               |
-| ----------------------------------- | --------------------------------------------------------------------- |
-| Chave principal                     | `ms_state:<hostname>` (ou `ms_state` se `hostnamePersistence: false`) |
-| Conteúdo                            | `{ modoSimples, options: { … } }`                                     |
-| Principal manual                    | `ms_principal:<hostname>` (seletor CSS do conteúdo escolhido)         |
-| Preferência “mostrar imagens no MS” | `ms_preferShowImagesInMs:<hostname>`                                  |
-| Falha de storage                    | Silenciosa — a lib continua sem persistir                             |
-| Hosts diferentes                    | `localhost` ≠ `127.0.0.1` ≠ IP da rede — cada um tem seu estado       |
+| Item                                | Detalhe                                                                                                                                                                                                                                |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chave principal                     | `ms_state:<hostname>` (ou `ms_state` se `hostnamePersistence: false`)                                                                                                                                                                  |
+| Conteúdo                            | `{ v: 1, modoSimples, options: { … } }` (sem `v` = formato antigo, lido e regravado como v1)                                                                                                                                           |
+| Principal manual                    | `ms_principal@<pathname>:<hostname>` — **por página**: `{ path, textLen }`; validado ao reaplicar (descarta se sumiu, texto < `scoring.minTextLength` ou < 50% do original). Registro antigo por host é migrado se passar na validação |
+| Preferência “mostrar imagens no MS” | `ms_preferShowImagesInMs:<hostname>`                                                                                                                                                                                                   |
+| Imagens antes de ligar o MS         | `ms_hideImagesBeforeMs:<hostname>` (restaurado ao desligar)                                                                                                                                                                            |
+| Movimento reduzido                  | Só grava se o usuário escolheu; sem escolha, segue `prefers-reduced-motion` do SO                                                                                                                                                      |
+| Falha de storage                    | Silenciosa — a lib continua sem persistir                                                                                                                                                                                              |
+| Hosts diferentes                    | `localhost` ≠ `127.0.0.1` ≠ IP da rede — cada um tem seu estado                                                                                                                                                                        |
 
 Preferências do painel (tema, escala, etc.) **persistem entre páginas** mesmo com MS desligado.  
 `simpleLanguage` só é restaurada se o MS estiver ativo.

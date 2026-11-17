@@ -135,6 +135,8 @@ window.ModoSimples.configure({
 
 Config **antes** do boot: `<script>window.ModoSimplesConfig = { sessionBar: true, mount: { … } }</script>` antes do bundle (ver [`examples/js/ms-config.js`](./examples/js/ms-config.js)).
 
+Sem auto-boot: `<script … data-ms-autoboot="false">` (ou `ModoSimplesConfig.autoboot = false`); depois `window.ModoSimplesBoot()` ou `new window.ModoSimplesClass(cfg).init()`. Script incluído duas vezes não duplica a UI.
+
 > `mount` vale quando a barra de sessão é criada (init ou `configure({ sessionBar: true })`); `configure({ mount })` com a barra já criada não a move — use o pré-boot.
 
 ### Migração 1.x → 2.0 (breaking)
