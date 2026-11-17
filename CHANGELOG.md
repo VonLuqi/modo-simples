@@ -56,6 +56,14 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **IMP-08** — a régua de leitura fica oculta até haver posição conhecida e segue toque/foco (e `requestAnimationFrame` no movimento).
 - **Repositório** — `.fuse_hidden*` no `.gitignore` (artefatos FUSE/NTFS).
 
+### Corrigido (F3, parte 2)
+
+- **UX-15** — nenhum texto da lib abaixo de 12 px (0.75rem): rótulos, subtítulos, dicas e nota do painel em 0.8125rem (13 px); dica do FAB, subtítulo SIMPLES e selo da barra em 0.75rem. Antes 0.65–0.72rem (10–11 px).
+- **UX-16** — áreas de toque de 44 px: ícone do chrome 38 → 44 px, `.ms-segment` com `min-height: 44px` e os dois tipos de switch com área clicável de 44 px de altura (o trilho visual segue com 26 px). **Mudança observável:** o ícone do chrome ocupa 6 px a mais de largura e altura.
+- **UX-17** — sem `translateY` no hover de `.ms-session-btn` e das pills (ações frequentes); o hover segue por cor/sombra.
+- **IMP-09** — com a fonte Lexend ligada, ícones (`[class*="icon"]`, `[class*="fa-"]`, `.fa`, `.fas`, `.far`, `.fab`, `.material-icons`) e `code`/`pre`/`kbd`/`samp` mantêm a própria fonte (e o espaçamento de letras da regra); antes viravam letras ou quadrados.
+- **IMP-21** — o espaçamento de texto (WCAG 1.4.12) agora vale também para `h1`–`h6`, `td`, `th`, `dd`, `dt`, `blockquote` e `label` (antes só `body`, `p` e `li`).
+
 ### Encerrado sem correção
 
 - **UX-29** (suposto widget que não respondia ao clique): era o marcador de clique do portal de teste, não um defeito do widget — verificado pelo @UI (T9). Nenhuma mudança de código.
