@@ -88,7 +88,20 @@ async function build() {
       });
       await ctx.watch();
     }
-    console.log('\nObservando src/ (Ctrl+C para sair)...');
+    // os .css de src/ui/css não são importados pelo esbuild: regera styles.generated.js
+    // (que o esbuild observa) a cada mudança neles
+    let genTimer = null;
+    fs.watch(path.join(ROOT, 'src', 'ui', 'css'), { recursive: true }, () => {
+      clearTimeout(genTimer);
+      genTimer = setTimeout(() => {
+        require('child_process').spawnSync(
+          process.execPath,
+          [path.join(__dirname, 'gen-styles.cjs')],
+          { stdio: 'inherit' },
+        );
+      }, 100);
+    });
+    console.log('\nObservando src/ e src/ui/css (Ctrl+C para sair)...');
   }
 }
 
