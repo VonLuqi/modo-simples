@@ -57,3 +57,36 @@ test.describe('W2 mobile — barra do Modo Simples', () => {
     expect(h).toBeLessThanOrEqual(120);
   });
 });
+
+test.describe('W2 mobile — título curto da barra', () => {
+  for (const width of [320, 360, 390]) {
+    test(`título sem corte com fonte larga a ${width}px e nome acessível com "ativado"`, async ({
+      site,
+    }) => {
+      const { page } = site;
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto(INDEX);
+      await waitForLib(page);
+      await ligarMS(page);
+      await page.addStyleTag({
+        content:
+          "#ms-session-bar, #ms-session-bar * { font-family: 'DejaVu Sans', sans-serif !important; }",
+      });
+      const strong = page.locator(
+        '#ms-session-bar .ms-session-on-title strong',
+      );
+      const m = await strong.evaluate((el) => ({
+        sw: el.scrollWidth,
+        cw: el.clientWidth,
+      }));
+      expect(m.sw).toBeLessThanOrEqual(m.cw);
+      const h = await page
+        .locator('#ms-session-bar')
+        .evaluate((el) => el.getBoundingClientRect().height);
+      expect(h).toBeLessThanOrEqual(120);
+      expect(await strong.evaluate((el) => el.textContent)).toContain(
+        'ativado',
+      );
+    });
+  }
+});

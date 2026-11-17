@@ -78,7 +78,7 @@ export function createSessionChrome({
         <div class="ms-session-on-top">
           <div class="ms-session-on-title" tabindex="-1">
             <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
-            <strong>Modo Simples Ativado</strong>
+            <strong>Modo Simples<span class="ms-sr-only"> ativado</span></strong>
             <span class="ms-session-badge">Foco na Navegação</span>
           </div>
           <p class="ms-session-desc" data-session-desc>

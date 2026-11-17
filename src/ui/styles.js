@@ -913,6 +913,15 @@ export function getPageStyles() {
       outline-offset: 2px;
     }
     .ms-session-on-top { margin-bottom: calc(0.7 * var(--ms-u)); }
+    .ms-sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
     .ms-session-on-title {
       display: flex;
       flex-wrap: wrap;
@@ -1065,6 +1074,10 @@ export function getPageStyles() {
       flex: 0 1 auto;
       min-height: 44px;
       box-sizing: border-box;
+    }
+    @media (max-width: 340px) {
+      .ms-session-on-title { font-size: calc(0.85 * var(--ms-u)); }
+      .ms-session-badge { padding: calc(0.15 * var(--ms-u)) calc(0.35 * var(--ms-u)); }
     }
     @media (max-width: 720px) {
       .ms-pills-nav .ms-pills-nav__inner {

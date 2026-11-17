@@ -82,7 +82,7 @@ Posição: **logo abaixo** da barra de navegação azul (Cursos, Contato, etc.).
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
-| [★] Modo Simples Ativado  [Foco na Navegação]                               |
+| [★] Modo Simples  [Foco na Navegação]                               |
 |     Exibindo explicações em palavras fáceis, sem termos complicados.        |
 |     [Ouvir Página] [Linguagem Simples: LIGADA] [Imagens: OCULTAS|VISÍVEIS]  |
 └────────────────────────────────────────────────────────────────────────────┘
@@ -90,7 +90,7 @@ Posição: **logo abaixo** da barra de navegação azul (Cursos, Contato, etc.).
 
 | Elemento                    | Spec                                                                                                            |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Título                      | **Modo Simples Ativado**                                                                                        |
+| Título                      | **Modo Simples** (“ ativado” só para leitor de tela)                                                            |
 | Badge                       | Pill escuro: **Foco na Navegação**                                                                              |
 | Descrição                   | Exibindo explicações em palavras fáceis… (ou copy sem linguagem simples)                                        |
 | Botão **Ouvir Página**      | Branco; ícone alto-falante; TTS do conteúdo principal                                                           |
@@ -163,9 +163,9 @@ Integração/API: [09-guia-integracao.md](./09-guia-integracao.md).
 
 ## 9. Decisão de 2026-11-16 (F0): saída e ativação dentro da barra
 
-| Item       | Antes (§3, §8)                                                               | Agora                                                                                                      |
-| ---------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Estado ON  | Sem “Voltar”; saída só pelo switch (escondido entre as pills) ou pelo painel | Botão **Voltar ao site normal** na barra; ao acionar, o foco vai para o botão **Ativar Modo Simples**      |
-| Estado OFF | Só texto apontando o interruptor no menu                                     | Convite curto + botão **Ativar Modo Simples**; ao acionar, o foco vai para o título “Modo Simples Ativado” |
+| Item       | Antes (§3, §8)                                                               | Agora                                                                                                                                      |
+| ---------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Estado ON  | Sem “Voltar”; saída só pelo switch (escondido entre as pills) ou pelo painel | Botão **Voltar ao site normal** na barra; ao acionar, o foco vai para o botão **Ativar Modo Simples**                                      |
+| Estado OFF | Só texto apontando o interruptor no menu                                     | Convite curto + botão **Ativar Modo Simples**; ao acionar, o foco vai para o título “Modo Simples” (nome acessível “Modo Simples ativado”) |
 
 **Motivo:** controle de saída explícito e descoberta da ativação para o público-alvo (baixa familiaridade com tecnologia, doc/01). A barra só existe com `sessionBar` ativo (ver doc/09). Achados UX-18 e UX-20. Estende o conflito `doc/07` §8 × `doc/12` §2 a favor de `doc/12`.
