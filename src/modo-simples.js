@@ -68,6 +68,8 @@ class ModoSimples {
     this._reducedMotionUser = null;
     /** hideImages de antes de ligar o MS (null = sem registro) */
     this._hideImagesBeforeMs = null;
+    /** último payload gravado (JSON), para não regravar igual (IMP-39) */
+    this._lastPersisted = null;
     this._initialized = false;
   }
 
@@ -570,6 +572,11 @@ class ModoSimples {
       // reducedMotion só é gravado quando o usuário escolheu (null = derivado do SO)
       options: { ...next.options, reducedMotion: this._reducedMotionUser },
     };
+    // localStorage é síncrono: só grava quando o que é persistido de fato mudou (IMP-39);
+    // abrir/fechar o painel, por exemplo, não altera o payload
+    const json = JSON.stringify(payload);
+    if (json === this._lastPersisted) return;
+    this._lastPersisted = json;
     if (this._config.hostnamePersistence) {
       persistence.saveForHost(STATE_KEY, payload);
     } else {

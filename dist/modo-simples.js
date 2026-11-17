@@ -2839,6 +2839,7 @@
       this._styleEl = null;
       this._reducedMotionUser = null;
       this._hideImagesBeforeMs = null;
+      this._lastPersisted = null;
       this._initialized = false;
     }
     // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -3265,6 +3266,9 @@
         // reducedMotion só é gravado quando o usuário escolheu (null = derivado do SO)
         options: { ...next.options, reducedMotion: this._reducedMotionUser }
       };
+      const json = JSON.stringify(payload);
+      if (json === this._lastPersisted) return;
+      this._lastPersisted = json;
       if (this._config.hostnamePersistence) {
         persistence_default.saveForHost(STATE_KEY, payload);
       } else {
