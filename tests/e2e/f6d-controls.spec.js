@@ -19,7 +19,11 @@ test.describe('F6d — controles do painel/widget', () => {
     const { page } = site;
     await boot(page);
     await openPanel(page);
-    await page.locator('[data-action="move-side"]').click();
+    const lado = page.locator('[data-action="move-side"]');
+    // W4d: rótulo genérico (vale para painel no desktop e FAB no mobile), sem a palavra "painel"
+    await expect(lado).toHaveText('Mover para a esquerda');
+    await lado.click();
+    await expect(lado).toHaveText('Mover para a direita');
     const fabBox = await page.locator(FAB).boundingBox();
     const vw = page.viewportSize().width;
     expect(fabBox.x).toBeLessThan(vw / 2);

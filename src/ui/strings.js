@@ -17,8 +17,8 @@ export const STRINGS = Object.freeze({
   announceSideLeft: 'Painel movido para a esquerda',
   announceSideRight: 'Painel movido para a direita',
   panelResetLabel: 'Desligar tudo',
-  panelMoveToLeft: 'Mover painel para a esquerda',
-  panelMoveToRight: 'Mover painel para a direita',
+  panelMoveToLeft: 'Mover para a esquerda',
+  panelMoveToRight: 'Mover para a direita',
 
   // a11yPanel.js
   panelCloseLabel: 'Fechar painel de acessibilidade',
