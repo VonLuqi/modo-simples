@@ -512,20 +512,8 @@
     return !!(document.querySelector("[data-ms-plain]") && document.querySelector("[data-ms-simple]"));
   }
 
-  // src/ui/styles.js
-  function getUIStyles(position = "bottom-right") {
-    const isBottom = position.startsWith("bottom");
-    const isRight = position.endsWith("right");
-    const fabCorner = [
-      isBottom ? "bottom: calc(1.5 * var(--ms-u));" : "top: calc(1.5 * var(--ms-u));",
-      isRight ? "right: calc(1.5 * var(--ms-u));" : "left: calc(1.5 * var(--ms-u));"
-    ].join("");
-    const panelCorner = [
-      isBottom ? "bottom: calc(calc(1.5 * var(--ms-u)) + 100px);" : "top: calc(calc(1.5 * var(--ms-u)) + 100px);",
-      isRight ? "right: calc(1.5 * var(--ms-u));" : "left: calc(1.5 * var(--ms-u));"
-    ].join("");
-    const panelOrigin = `${isBottom ? "bottom" : "top"} ${isRight ? "right" : "left"}`;
-    return `
+  // src/ui/styles.generated.js
+  var UI_CSS = `
     :host {
       all: initial;
       display: block;
@@ -554,7 +542,7 @@
     /* \u2500\u2500 FAB \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     .ms-fab-wrap {
       position: absolute;
-      ${fabCorner}
+      {{fabCorner}}
       display: flex;
       flex-direction: column;
       align-items: flex-end;
@@ -658,7 +646,7 @@
     #ms-a11y-panel,
     .ms-a11y-panel {
       position: absolute;
-      ${panelCorner}
+      {{panelCorner}}
       width: min(380px, calc(100vw - calc(2 * var(--ms-u))));
       max-height: min(72vh, 640px);
       display: flex;
@@ -671,7 +659,7 @@
       overflow: hidden;
       pointer-events: auto;
       z-index: 1;
-      transform-origin: ${panelOrigin};
+      transform-origin: {{panelOrigin}};
       animation: ms-panel-in 0.22s ease both;
     }
 
@@ -1037,9 +1025,7 @@
       }
     }
   `;
-  }
-  function getPageStyles() {
-    return `
+  var PAGE_CSS = `
     /* \u2500\u2500 Hidden distractions (Modo Simples only) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     html.ms-ativo [data-ms-hidden="true"] {
       display: none !important;
@@ -1643,6 +1629,24 @@
       }
     }
   `;
+
+  // src/ui/styles.js
+  function getUIStyles(position = "bottom-right") {
+    const isBottom = position.startsWith("bottom");
+    const isRight = position.endsWith("right");
+    const fabCorner = [
+      isBottom ? "bottom: calc(1.5 * var(--ms-u));" : "top: calc(1.5 * var(--ms-u));",
+      isRight ? "right: calc(1.5 * var(--ms-u));" : "left: calc(1.5 * var(--ms-u));"
+    ].join("");
+    const panelCorner = [
+      isBottom ? "bottom: calc(calc(1.5 * var(--ms-u)) + 100px);" : "top: calc(calc(1.5 * var(--ms-u)) + 100px);",
+      isRight ? "right: calc(1.5 * var(--ms-u));" : "left: calc(1.5 * var(--ms-u));"
+    ].join("");
+    const panelOrigin = `${isBottom ? "bottom" : "top"} ${isRight ? "right" : "left"}`;
+    return UI_CSS.replace("{{fabCorner}}", () => fabCorner).replace("{{panelCorner}}", () => panelCorner).replace("{{panelOrigin}}", () => panelOrigin);
+  }
+  function getPageStyles() {
+    return PAGE_CSS;
   }
 
   // src/ui/fab.js
@@ -2674,11 +2678,11 @@
   function holdPrincipal(on) {
     _holdPrincipal = !!on;
   }
-  function injectPageStyles() {
+  function injectPageStyles(css = "") {
     if (document.getElementById(PAGE_STYLE_ID)) return;
     const style = document.createElement("style");
     style.id = PAGE_STYLE_ID;
-    style.textContent = getPageStyles();
+    style.textContent = css;
     document.head.appendChild(style);
   }
   var DEFAULT_LEXEND_URL = "https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap";
@@ -3354,7 +3358,7 @@
       if (this._initialized) return;
       this._initialized = true;
       this._loadPersistedState();
-      injectPageStyles();
+      injectPageStyles(getPageStyles());
       setLexendFontUrl(this._config.fontUrl);
       this._buildUI();
       this._bindEvents();
