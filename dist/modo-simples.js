@@ -889,7 +889,7 @@
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.65rem;
+      gap: 1.15rem;
     }
     .ms-a11y-option-row {
       display: flex;
@@ -1190,7 +1190,7 @@
     /* \u2500\u2500 Lexend / dyslexia font \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     html.ms-dyslexia-font,
     html.ms-dyslexia-font body,
-    html.ms-dyslexia-font body *:not(#ms-container):not(#ms-container *):not([class*="icon"]):not([class*="fa-"]):not(.fa):not(.fas):not(.far):not(.fab):not(.material-icons):not(code):not(pre):not(kbd):not(samp) {
+    html.ms-dyslexia-font body *:not(#ms-container):not(#ms-container *):not([class~="icon"]):not([class^="icon-"]):not([class*=" icon-"]):not([class*="fa-"]):not(.fa):not(.fas):not(.far):not(.fab):not(.material-icons):not(code):not(pre):not(kbd):not(samp) {
       font-family: 'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif !important;
       letter-spacing: 0.02em !important;
       word-spacing: 0.08em !important;
@@ -1544,10 +1544,6 @@
       .ms-session-btn,
       .ms-pills-nav[data-ms-injected] .ms-pill {
         transition: none !important;
-      }
-      .ms-session-btn:hover,
-      .ms-pills-nav[data-ms-injected] .ms-pill:hover {
-        transform: none;
       }
     }
   `;
@@ -3524,7 +3520,15 @@
         }
         if (e.target === this._host) return;
         if (!((_c = this._host) == null ? void 0 : _c.contains(e.target)) && e.target !== this._host) {
+          const { clientX, clientY } = e;
+          const retargeted = e.target === document.body || e.target === document.documentElement;
           this._closePanel();
+          if (retargeted && e.detail > 0) {
+            const alvo = document.elementFromPoint(clientX, clientY);
+            if (alvo && alvo !== document.body && alvo !== document.documentElement) {
+              alvo.click();
+            }
+          }
         }
       };
       document.addEventListener("click", this._onDocClick, true);
@@ -3560,16 +3564,28 @@
      * @param {boolean} on
      */
     _setPageInert(on) {
+      var _a;
+      (_a = this._inertObserver) == null ? void 0 : _a.disconnect();
+      this._inertObserver = null;
       for (const el of this._inerted || []) el.removeAttribute("inert");
       this._inerted = [];
       if (!on) return;
-      for (const el of document.body.children) {
-        if (el === this._host || el.hasAttribute("inert") || el.hasAttribute("data-ms-live") || el.id === "ms-manual-select-banner" || el.id === "ms-manual-select-highlight") {
-          continue;
+      for (const el of document.body.children) this._inertSibling(el);
+      this._inertObserver = new MutationObserver((records) => {
+        for (const r of records) {
+          for (const n of r.addedNodes) {
+            if (n.nodeType === 1) this._inertSibling(n);
+          }
         }
-        el.setAttribute("inert", "");
-        this._inerted.push(el);
+      });
+      this._inertObserver.observe(document.body, { childList: true });
+    }
+    _inertSibling(el) {
+      if (el === this._host || el.hasAttribute("inert") || el.hasAttribute("aria-live") || el.hasAttribute("data-ms-live") || el.id === "ms-manual-select-banner" || el.id === "ms-manual-select-highlight") {
+        return;
       }
+      el.setAttribute("inert", "");
+      this._inerted.push(el);
     }
     _closePanel() {
       var _a, _b, _c;
