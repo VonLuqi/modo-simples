@@ -68,6 +68,7 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **IMP-24** — com o painel aberto os irmãos do host no `<body>` ficam `inert` (o `aria-modal` passa a valer de fato). Ficam de fora os anúncios de leitor de tela e a seleção manual; durante a seleção manual iniciada pelo painel a página volta a receber clique e foco, e o `inert` volta depois.
 - **UX-19** — modo restaurado em outra página não anuncia a cada navegação; avisa "Modo Simples continua ligado" uma vez por sessão (`sessionStorage`).
 - **IMP-40** — a régua já atualiza o `transform` por `requestAnimationFrame` (feito junto com o IMP-08); sem mudança de código nesta parte.
+- **UX-22** — ícones do chrome e do painel em SVG inline (mesmo traço do ícone de sliders do FAB, `aria-hidden` e `focusable="false"`) no lugar de emoji e glifos: 🔊 📄 🖼 na barra, ★ no switch SIMPLES, no convite e no card do painel, e T ◉ ▣ nos títulos das seções. Os nomes acessíveis não mudaram. **Mudança observável:** o aspecto dos ícones deixa de depender do sistema operacional.
 
 ### Encerrado sem correção
 
