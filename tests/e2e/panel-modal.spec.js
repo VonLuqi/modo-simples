@@ -78,3 +78,28 @@ test('seleção manual iniciada pelo painel: a página não fica inert e o inert
   await expect(page.locator('#ms-a11y-panel')).toBeVisible();
   expect(await inertCount(page)).toBeGreaterThan(0);
 });
+
+test('inert: filho tardio do body fica inert; região aria-live do site não (LOW QA T46)', async ({
+  site,
+}) => {
+  const { page } = site;
+  await page.goto(INDEX);
+  await waitForLib(page);
+  await page.evaluate(() => {
+    const live = document.createElement('div');
+    live.id = 'site-live';
+    live.setAttribute('aria-live', 'polite');
+    document.body.appendChild(live);
+  });
+  await openPanel(page);
+  await page.evaluate(() => {
+    const tardio = document.createElement('div');
+    tardio.id = 'tardio';
+    document.body.appendChild(tardio);
+  });
+  await expect(page.locator('#tardio')).toHaveAttribute('inert', '');
+  await expect(page.locator('#site-live')).not.toHaveAttribute('inert', '');
+
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#tardio')).not.toHaveAttribute('inert', '');
+});
