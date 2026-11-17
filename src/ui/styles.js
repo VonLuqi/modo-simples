@@ -281,7 +281,7 @@ export function getUIStyles(position = 'bottom-right') {
 
     .ms-a11y-card--simple .ms-switch--on,
     .ms-a11y-card--simple .ms-switch[aria-checked="true"] {
-      background: var(--ms-orange);
+      background: #8a5500;
     }
 
     /* ── Sections ────────────────────────────────────────────────────────── */

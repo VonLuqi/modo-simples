@@ -205,6 +205,32 @@ test.describe('contraste de componentes (WCAG 1.4.11): o axe não mede', () => {
       });
     expect(contraste(trilho, fundo)).toBeGreaterThanOrEqual(3);
   });
+
+  test('UX-02 (QA MED-1): trilho LIGADO do switch do painel contra o card ≥ 3:1', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await openPanel(page);
+    const sw = page.locator('[data-action="modo-simples"]');
+    await sw.click();
+    await expect(sw).toHaveAttribute('aria-checked', 'true');
+
+    // a cor do trilho tem transition de 0,18s: espera assentar
+    await expect
+      .poll(async () => {
+        const { trilho, fundo } = await sw.evaluate((el) => {
+          const card = el.closest('.ms-a11y-card--simple');
+          return {
+            trilho: getComputedStyle(el).backgroundColor,
+            fundo: getComputedStyle(card).backgroundColor,
+          };
+        });
+        return contraste(trilho, fundo);
+      })
+      .toBeGreaterThanOrEqual(3);
+  });
 });
 
 test.describe('estado visual do FAB e do painel', () => {
