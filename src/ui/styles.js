@@ -314,6 +314,7 @@ export function getUIStyles(position = 'bottom-right') {
       border: none;
       border-radius: 8px;
       padding: 0.55rem 0.25rem;
+      min-height: 44px;
       font: inherit;
       font-size: 0.8rem;
       font-weight: 600;
@@ -435,6 +436,12 @@ export function getUIStyles(position = 'bottom-right') {
       cursor: pointer;
       position: relative;
       transition: background 0.18s ease;
+    }
+    /* UX-16: área de toque de 44px de altura (trilho visual de 26px) */
+    .ms-switch::after {
+      content: "";
+      position: absolute;
+      inset: -9px 0;
     }
     .ms-switch-thumb {
       display: block;
@@ -759,8 +766,8 @@ export function getPageStyles() {
       gap: 0.55rem;
     }
     .ms-chrome-icon {
-      width: 38px;
-      height: 38px;
+      width: 44px;
+      height: 44px;
       border-radius: 10px;
       border: 1px solid #c5d0e3;
       background: #fff;
@@ -817,6 +824,12 @@ export function getPageStyles() {
       background: #64748b;
       padding: 3px;
       cursor: pointer;
+      position: relative;
+    }
+    .ms-chrome-switch::after {
+      content: "";
+      position: absolute;
+      inset: -9px 0;
     }
     .ms-chrome-switch .ms-switch-thumb {
       display: block;

@@ -50,6 +50,46 @@ test.describe('Modo Simples: ligar e desligar', () => {
     expect(v.h).toBeGreaterThanOrEqual(44);
   });
 
+  test('UX-16: ícone, segmentos e switches têm área de toque de 44px', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(INDEX);
+    await waitForLib(page);
+
+    const icone = await page.locator('.ms-chrome-icon').first().boundingBox();
+    expect(icone.width).toBeGreaterThanOrEqual(44);
+    expect(icone.height).toBeGreaterThanOrEqual(44);
+
+    // 8px acima e abaixo do trilho de 26px ainda acertam o switch (área ≥ 42-44px)
+    const acertaChrome = await page.evaluate(() => {
+      const s = document.querySelector('.ms-chrome-switch');
+      const r = s.getBoundingClientRect();
+      const x = r.x + r.width / 2;
+      return [r.y - 8, r.y + r.height + 8].map(
+        (y) => document.elementFromPoint(x, y) === s,
+      );
+    });
+    expect(acertaChrome).toEqual([true, true]);
+
+    await openPanel(page);
+    const seg = await page.locator('.ms-segment').first().boundingBox();
+    expect(seg.height).toBeGreaterThanOrEqual(44);
+
+    const acertaPainel = await page
+      .locator('.ms-switch[data-option="dyslexiaFont"]')
+      .evaluate((s) => {
+        s.scrollIntoView({ block: 'center' });
+        const r = s.getBoundingClientRect();
+        const x = r.x + r.width / 2;
+        const root = s.getRootNode();
+        return [r.y - 8, r.y + r.height + 8].map(
+          (y) => root.elementFromPoint(x, y) === s,
+        );
+      });
+    expect(acertaPainel).toEqual([true, true]);
+  });
+
   test('pela API window.ModoSimples: enable / disable / toggle', async ({
     site,
   }) => {
