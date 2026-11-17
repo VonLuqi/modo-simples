@@ -16,9 +16,10 @@ import {
 } from '../../src/mutator/domObserver.js';
 import {
   applyModoSimples,
+  revert,
+  revertModoSimples,
   setPrincipal,
 } from '../../src/mutator/domMutator.js';
-import { revert } from '../../src/mutator/domMutator.js';
 import { announce } from '../../src/utils/aria.js';
 import { installHappy, SAMPLE_PAGE } from './helpers/happyEnv.js';
 
@@ -144,7 +145,7 @@ describe('startObserving / stopObserving', () => {
   });
 });
 
-describe('bugs conhecidos (Fase 2)', () => {
+describe('regressões do observer (F2)', () => {
   it('nós da própria lib (announce) não disparam reprocess (IMP-01)', async () => {
     start();
     announce('Painel de acessibilidade aberto');
@@ -174,20 +175,49 @@ describe('bugs conhecidos (Fase 2)', () => {
     assert.equal(reprocessCount > 0, true);
   });
 
-  it(
-    'o principal escolhido manualmente sobrevive ao reprocess (IMP-02)',
-    {
-      todo: 'IMP-02 — reprocess() chama revertModoSimples e re-escaneia pela heurística',
-    },
-    async () => {
-      const escolhido = document.createElement('section');
-      escolhido.textContent = 'conteúdo escolhido pelo usuário';
-      document.body.appendChild(escolhido);
-      setPrincipal(escolhido, config);
-      start();
-      addAd();
-      await settle();
-      assert.ok(escolhido.hasAttribute('data-ms-principal'));
-    },
-  );
+  it('o principal escolhido manualmente sobrevive ao reprocess (IMP-02)', async () => {
+    const escolhido = document.createElement('section');
+    escolhido.textContent = 'conteúdo escolhido pelo usuário';
+    document.body.appendChild(escolhido);
+    setPrincipal(escolhido, config);
+    start();
+    addAd();
+    await settle();
+    assert.ok(escolhido.hasAttribute('data-ms-principal'));
+    assert.equal(
+      document.querySelector('main').hasAttribute('data-ms-principal'),
+      false,
+    );
+  });
+
+  it('se o host recria o principal manual, reaplica pelo caminho CSS (IMP-02)', async () => {
+    const wrap = document.createElement('div');
+    wrap.id = 'conteudo-escolhido';
+    wrap.textContent = 'escolhido';
+    document.body.appendChild(wrap);
+    setPrincipal(wrap, config);
+    start();
+    // SPA troca o nó por outro com o mesmo id
+    wrap.remove();
+    const novo = document.createElement('div');
+    novo.id = 'conteudo-escolhido';
+    novo.textContent = 'novo';
+    document.body.appendChild(novo);
+    await settle();
+    assert.ok(novo.hasAttribute('data-ms-principal'));
+  });
+
+  it('desligar o Modo Simples esquece a escolha manual (reprocess volta à heurística)', async () => {
+    const escolhido = document.createElement('section');
+    escolhido.textContent = 'x';
+    document.body.appendChild(escolhido);
+    setPrincipal(escolhido, config);
+    revertModoSimples();
+    applyModoSimples({ options: {} }, config);
+    start();
+    addAd();
+    await settle();
+    assert.equal(escolhido.hasAttribute('data-ms-principal'), false);
+    assert.ok(document.querySelector('main').hasAttribute('data-ms-principal'));
+  });
 });

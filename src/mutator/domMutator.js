@@ -1,6 +1,7 @@
 import { getPageStyles } from '../ui/styles.js';
 import { detectMainContent } from '../heuristics/contentDetector.js';
 import { detectDistractions } from '../heuristics/distractionDetector.js';
+import { buildCssPath } from '../features/manualSelect.js';
 
 /**
  * DOM Mutator — applies and reverts Modo Simples visual transformations.
@@ -47,6 +48,12 @@ const OPTION_FLAG_CLASSES = [
 let _mainElement = null;
 /** @type {Element[]} */
 let _distractionElements = [];
+/**
+ * Principal escolhido manualmente (elemento + caminho CSS). Sobrevive ao reprocess do
+ * observer (IMP-02); só é limpo ao desligar o Modo Simples / destroy.
+ */
+let _manualPrincipal = null;
+let _manualPath = '';
 
 /**
  * Inject the Modo Simples page CSS into <head>.
@@ -176,6 +183,8 @@ export function revertModoSimples() {
   document.documentElement.classList.remove('ms-ativo');
   _mainElement = null;
   _distractionElements = [];
+  _manualPrincipal = null;
+  _manualPath = '';
 }
 
 /**
@@ -201,6 +210,8 @@ export function setPrincipal(el, config) {
     node.removeAttribute('data-ms-principal');
   });
   _mainElement = el;
+  _manualPrincipal = el;
+  _manualPath = buildCssPath(el);
   el.setAttribute('data-ms-principal', '');
   _distractionElements = detectDistractions(_mainElement, config);
   document.querySelectorAll('[data-ms-hidden="true"]').forEach((node) => {
@@ -221,7 +232,27 @@ export function reprocess(state, config) {
     applyOptions(state);
     return;
   }
+  // Escolha manual vence a heurística: reaplica pelo elemento ou, se o host o recriou, pelo caminho
+  const manual = findManualPrincipal();
   revertModoSimples();
+  if (manual) {
+    setPrincipal(manual, config);
+    document.documentElement.classList.add('ms-ativo');
+    applyOptions(state);
+    return;
+  }
   scan(config);
   applyModoSimples(state, config);
+}
+
+/** @returns {Element|null} principal manual ainda válido no documento atual */
+function findManualPrincipal() {
+  if (!_manualPrincipal) return null;
+  if (document.contains(_manualPrincipal)) return _manualPrincipal;
+  if (!_manualPath) return null;
+  try {
+    return document.querySelector(_manualPath);
+  } catch (_) {
+    return null;
+  }
 }

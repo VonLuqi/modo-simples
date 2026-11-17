@@ -2075,6 +2075,139 @@
     return distractions;
   }
 
+  // src/features/manualSelect.js
+  var BANNER_ID = "ms-manual-select-banner";
+  var OVERLAY_CLASS = "ms-manual-select-active";
+  var _banner = null;
+  var _onClick = null;
+  var _onKey = null;
+  var _callbacks = null;
+  function escapeIdent(value) {
+    if (typeof CSS !== "undefined" && CSS.escape) return CSS.escape(value);
+    return String(value).replace(/([^\w-])/g, "\\$1");
+  }
+  function buildCssPath(el) {
+    if (!el || el.nodeType !== 1) return "";
+    if (el.id) {
+      return `#${escapeIdent(el.id)}`;
+    }
+    const parts = [];
+    let current = el;
+    const root = typeof document !== "undefined" ? document.documentElement : null;
+    while (current && current.nodeType === 1 && current !== root) {
+      let part = current.tagName.toLowerCase();
+      if (current.id) {
+        parts.unshift(`#${escapeIdent(current.id)}`);
+        break;
+      }
+      const parent = current.parentElement;
+      if (parent && parent.children) {
+        const siblings = Array.from(parent.children).filter(
+          (c) => c.tagName === current.tagName
+        );
+        if (siblings.length > 1) {
+          const index = siblings.indexOf(current) + 1;
+          part += `:nth-of-type(${index})`;
+        }
+      }
+      parts.unshift(part);
+      current = parent;
+    }
+    return parts.join(" > ");
+  }
+  function startManualSelect(opts = {}) {
+    stopManualSelect();
+    _callbacks = opts;
+    _banner = document.createElement("div");
+    _banner.id = BANNER_ID;
+    _banner.setAttribute("role", "status");
+    _banner.setAttribute("aria-live", "polite");
+    Object.assign(_banner.style, {
+      position: "fixed",
+      top: "0",
+      left: "0",
+      right: "0",
+      zIndex: "2147483646",
+      padding: "0.85rem 1.25rem",
+      background: "#0B2C5F",
+      color: "#fff",
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "0.95rem",
+      fontWeight: "600",
+      textAlign: "center",
+      boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
+      cursor: "default"
+    });
+    _banner.textContent = "Clique no conte\xFAdo principal";
+    const cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.textContent = "Cancelar";
+    cancelBtn.setAttribute("aria-label", "Cancelar sele\xE7\xE3o manual");
+    Object.assign(cancelBtn.style, {
+      marginLeft: "1rem",
+      padding: "0.3rem 0.75rem",
+      border: "1px solid rgba(255,255,255,0.5)",
+      borderRadius: "6px",
+      background: "transparent",
+      color: "#fff",
+      cursor: "pointer",
+      font: "inherit",
+      fontSize: "0.85rem"
+    });
+    cancelBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const cb = _callbacks == null ? void 0 : _callbacks.onCancel;
+      stopManualSelect();
+      if (cb) cb();
+    });
+    _banner.appendChild(cancelBtn);
+    document.body.appendChild(_banner);
+    document.documentElement.classList.add(OVERLAY_CLASS);
+    _onClick = (e) => {
+      var _a, _b, _c, _d;
+      if (((_b = (_a = e.target).closest) == null ? void 0 : _b.call(_a, "#ms-container")) || ((_d = (_c = e.target).closest) == null ? void 0 : _d.call(_c, `#${BANNER_ID}`))) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      const el = e.target;
+      if (!el || el === document.documentElement || el === document.body) return;
+      document.querySelectorAll("[data-ms-principal]").forEach((node) => {
+        node.removeAttribute("data-ms-principal");
+      });
+      el.setAttribute("data-ms-principal", "");
+      const path = buildCssPath(el);
+      const cb = _callbacks == null ? void 0 : _callbacks.onSelect;
+      stopManualSelect();
+      if (cb) cb(el, path);
+    };
+    _onKey = (e) => {
+      if (e.key === "Escape") {
+        const cb = _callbacks == null ? void 0 : _callbacks.onCancel;
+        stopManualSelect();
+        if (cb) cb();
+      }
+    };
+    document.addEventListener("click", _onClick, true);
+    document.addEventListener("keydown", _onKey, true);
+  }
+  function stopManualSelect() {
+    if (_onClick) {
+      document.removeEventListener("click", _onClick, true);
+      _onClick = null;
+    }
+    if (_onKey) {
+      document.removeEventListener("keydown", _onKey, true);
+      _onKey = null;
+    }
+    if (_banner == null ? void 0 : _banner.parentNode) {
+      _banner.parentNode.removeChild(_banner);
+    }
+    _banner = null;
+    document.documentElement.classList.remove(OVERLAY_CLASS);
+    _callbacks = null;
+  }
+
   // src/mutator/domMutator.js
   var PAGE_STYLE_ID = "ms-page-styles";
   var LEXEND_LINK_ID = "ms-lexend-font";
@@ -2101,6 +2234,8 @@
   ];
   var _mainElement = null;
   var _distractionElements = [];
+  var _manualPrincipal = null;
+  var _manualPath = "";
   function injectPageStyles() {
     if (document.getElementById(PAGE_STYLE_ID)) return;
     const style = document.createElement("style");
@@ -2168,6 +2303,8 @@
     document.documentElement.classList.remove("ms-ativo");
     _mainElement = null;
     _distractionElements = [];
+    _manualPrincipal = null;
+    _manualPath = "";
   }
   function revert() {
     revertModoSimples();
@@ -2182,6 +2319,8 @@
       node.removeAttribute("data-ms-principal");
     });
     _mainElement = el;
+    _manualPrincipal = el;
+    _manualPath = buildCssPath(el);
     el.setAttribute("data-ms-principal", "");
     _distractionElements = detectDistractions(_mainElement, config);
     document.querySelectorAll('[data-ms-hidden="true"]').forEach((node) => {
@@ -2196,9 +2335,26 @@
       applyOptions(state2);
       return;
     }
+    const manual = findManualPrincipal();
     revertModoSimples();
+    if (manual) {
+      setPrincipal(manual, config);
+      document.documentElement.classList.add("ms-ativo");
+      applyOptions(state2);
+      return;
+    }
     scan(config);
     applyModoSimples(state2, config);
+  }
+  function findManualPrincipal() {
+    if (!_manualPrincipal) return null;
+    if (document.contains(_manualPrincipal)) return _manualPrincipal;
+    if (!_manualPath) return null;
+    try {
+      return document.querySelector(_manualPath);
+    } catch (_) {
+      return null;
+    }
   }
 
   // src/mutator/domObserver.js
@@ -2460,139 +2616,6 @@
       return true;
     }
     return _speaking;
-  }
-
-  // src/features/manualSelect.js
-  var BANNER_ID = "ms-manual-select-banner";
-  var OVERLAY_CLASS = "ms-manual-select-active";
-  var _banner = null;
-  var _onClick = null;
-  var _onKey = null;
-  var _callbacks = null;
-  function escapeIdent(value) {
-    if (typeof CSS !== "undefined" && CSS.escape) return CSS.escape(value);
-    return String(value).replace(/([^\w-])/g, "\\$1");
-  }
-  function buildCssPath(el) {
-    if (!el || el.nodeType !== 1) return "";
-    if (el.id) {
-      return `#${escapeIdent(el.id)}`;
-    }
-    const parts = [];
-    let current = el;
-    const root = typeof document !== "undefined" ? document.documentElement : null;
-    while (current && current.nodeType === 1 && current !== root) {
-      let part = current.tagName.toLowerCase();
-      if (current.id) {
-        parts.unshift(`#${escapeIdent(current.id)}`);
-        break;
-      }
-      const parent = current.parentElement;
-      if (parent && parent.children) {
-        const siblings = Array.from(parent.children).filter(
-          (c) => c.tagName === current.tagName
-        );
-        if (siblings.length > 1) {
-          const index = siblings.indexOf(current) + 1;
-          part += `:nth-of-type(${index})`;
-        }
-      }
-      parts.unshift(part);
-      current = parent;
-    }
-    return parts.join(" > ");
-  }
-  function startManualSelect(opts = {}) {
-    stopManualSelect();
-    _callbacks = opts;
-    _banner = document.createElement("div");
-    _banner.id = BANNER_ID;
-    _banner.setAttribute("role", "status");
-    _banner.setAttribute("aria-live", "polite");
-    Object.assign(_banner.style, {
-      position: "fixed",
-      top: "0",
-      left: "0",
-      right: "0",
-      zIndex: "2147483646",
-      padding: "0.85rem 1.25rem",
-      background: "#0B2C5F",
-      color: "#fff",
-      fontFamily: "system-ui, sans-serif",
-      fontSize: "0.95rem",
-      fontWeight: "600",
-      textAlign: "center",
-      boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
-      cursor: "default"
-    });
-    _banner.textContent = "Clique no conte\xFAdo principal";
-    const cancelBtn = document.createElement("button");
-    cancelBtn.type = "button";
-    cancelBtn.textContent = "Cancelar";
-    cancelBtn.setAttribute("aria-label", "Cancelar sele\xE7\xE3o manual");
-    Object.assign(cancelBtn.style, {
-      marginLeft: "1rem",
-      padding: "0.3rem 0.75rem",
-      border: "1px solid rgba(255,255,255,0.5)",
-      borderRadius: "6px",
-      background: "transparent",
-      color: "#fff",
-      cursor: "pointer",
-      font: "inherit",
-      fontSize: "0.85rem"
-    });
-    cancelBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const cb = _callbacks == null ? void 0 : _callbacks.onCancel;
-      stopManualSelect();
-      if (cb) cb();
-    });
-    _banner.appendChild(cancelBtn);
-    document.body.appendChild(_banner);
-    document.documentElement.classList.add(OVERLAY_CLASS);
-    _onClick = (e) => {
-      var _a, _b, _c, _d;
-      if (((_b = (_a = e.target).closest) == null ? void 0 : _b.call(_a, "#ms-container")) || ((_d = (_c = e.target).closest) == null ? void 0 : _d.call(_c, `#${BANNER_ID}`))) {
-        return;
-      }
-      e.preventDefault();
-      e.stopPropagation();
-      const el = e.target;
-      if (!el || el === document.documentElement || el === document.body) return;
-      document.querySelectorAll("[data-ms-principal]").forEach((node) => {
-        node.removeAttribute("data-ms-principal");
-      });
-      el.setAttribute("data-ms-principal", "");
-      const path = buildCssPath(el);
-      const cb = _callbacks == null ? void 0 : _callbacks.onSelect;
-      stopManualSelect();
-      if (cb) cb(el, path);
-    };
-    _onKey = (e) => {
-      if (e.key === "Escape") {
-        const cb = _callbacks == null ? void 0 : _callbacks.onCancel;
-        stopManualSelect();
-        if (cb) cb();
-      }
-    };
-    document.addEventListener("click", _onClick, true);
-    document.addEventListener("keydown", _onKey, true);
-  }
-  function stopManualSelect() {
-    if (_onClick) {
-      document.removeEventListener("click", _onClick, true);
-      _onClick = null;
-    }
-    if (_onKey) {
-      document.removeEventListener("keydown", _onKey, true);
-      _onKey = null;
-    }
-    if (_banner == null ? void 0 : _banner.parentNode) {
-      _banner.parentNode.removeChild(_banner);
-    }
-    _banner = null;
-    document.documentElement.classList.remove(OVERLAY_CLASS);
-    _callbacks = null;
   }
 
   // src/features/simpleNav.js
