@@ -327,11 +327,40 @@
      */
     loadForHost(base, fallback = null) {
       return this.load(this.hostKey(base), fallback);
+    },
+    /**
+     * Build a page-scoped key: `base@/pathname:hostname`.
+     * Para dados que só fazem sentido numa página (ex.: conteúdo principal escolhido).
+     * @param {string} base
+     * @returns {string}
+     */
+    pathKey(base) {
+      const path = typeof location !== "undefined" && location.pathname ? location.pathname : "/";
+      return `${base}@${path}:${this.hostKey("").slice(1)}`;
+    },
+    /** @param {string} base @param {*} value */
+    saveForPath(base, value) {
+      this.save(this.pathKey(base), value);
+    },
+    /** @param {string} base */
+    removeForPath(base) {
+      this.remove(this.pathKey(base));
+    },
+    /**
+     * Load a page-scoped value. Sem registro para a página, devolve fallback
+     * (quem migra dados antigos consulta a chave por host explicitamente).
+     * @param {string} base
+     * @param {*} [fallback=null]
+     * @returns {*}
+     */
+    loadForPath(base, fallback = null) {
+      return this.load(this.pathKey(base), fallback);
     }
   };
   var persistence_default = persistence;
 
   // src/core/persistedState.js
+  var SCHEMA_VERSION = 1;
   function hydratePersistedState(saved) {
     if (!saved || typeof saved !== "object") return null;
     const opts = saved.options || {};
@@ -3262,6 +3291,7 @@
     _persistState(next) {
       if (!this._config.persistence) return;
       const payload = {
+        v: SCHEMA_VERSION,
         modoSimples: next.modoSimples,
         // reducedMotion só é gravado quando o usuário escolheu (null = derivado do SO)
         options: { ...next.options, reducedMotion: this._reducedMotionUser }

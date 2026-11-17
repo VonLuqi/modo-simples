@@ -6,6 +6,13 @@
  * @param {Object|null|undefined} saved
  * @returns {{ modoSimples: boolean, options: Object } | null}
  */
+/**
+ * Versão do esquema gravado em `ms_state:<host>` (campo `v`). Payload sem `v` é o formato
+ * antigo (v0): continua sendo lido e é regravado como v1 na próxima mudança — nenhuma
+ * preferência se perde (IMP-33).
+ */
+export const SCHEMA_VERSION = 1;
+
 export function hydratePersistedState(saved) {
   if (!saved || typeof saved !== 'object') return null;
 

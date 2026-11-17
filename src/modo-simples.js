@@ -13,7 +13,10 @@ import { mergeConfig } from './config/mergeConfig.js';
 import eventBus from './core/eventBus.js';
 import state from './core/state.js';
 import persistence from './core/persistence.js';
-import { hydratePersistedState } from './core/persistedState.js';
+import {
+  hydratePersistedState,
+  SCHEMA_VERSION,
+} from './core/persistedState.js';
 import {
   prefersReducedMotion,
   onReducedMotionChange,
@@ -568,6 +571,7 @@ class ModoSimples {
   _persistState(next) {
     if (!this._config.persistence) return;
     const payload = {
+      v: SCHEMA_VERSION,
       modoSimples: next.modoSimples,
       // reducedMotion só é gravado quando o usuário escolheu (null = derivado do SO)
       options: { ...next.options, reducedMotion: this._reducedMotionUser },
