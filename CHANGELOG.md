@@ -70,6 +70,14 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 - **IMP-40** — a régua já atualiza o `transform` por `requestAnimationFrame` (feito junto com o IMP-08); sem mudança de código nesta parte.
 - **UX-22** — ícones do chrome e do painel em SVG inline (mesmo traço do ícone de sliders do FAB, `aria-hidden` e `focusable="false"`) no lugar de emoji e glifos: 🔊 📄 🖼 na barra, ★ no switch SIMPLES, no convite e no card do painel, e T ◉ ▣ nos títulos das seções. Os nomes acessíveis não mudaram. **Mudança observável:** o aspecto dos ícones deixa de depender do sistema operacional.
 
+### Corrigido (F3, revisão do QA)
+
+- **LOW-1** — clique fora com o painel aberto fecha o painel e repassa o clique ao elemento que estava sob o ponteiro (o `inert` jogava o clique no `body` e o primeiro clique no conteúdo da página era engolido).
+- **LOW-2** — folga de 18 px entre as linhas de opção do painel: a área de toque de 44 px de um switch não sobrepõe mais a do vizinho.
+- **LOW-3** — com o painel aberto, filhos do `<body>` que chegam depois também ficam `inert`; regiões `aria-live` do site não ficam `inert` (o leitor de tela continua anunciando).
+- **LOW-4** — a fonte Lexend só exclui classes de ícone de verdade (`icon`, `icon-*`), não qualquer classe que contenha "icon" (ex.: `silicon`, `iconic`).
+- **LOW-5** — removido o `:hover` redundante do bloco `prefers-reduced-motion` (o hover não tem `transform` desde o UX-17).
+
 ### Encerrado sem correção
 
 - **UX-29** (suposto widget que não respondia ao clique): era o marcador de clique do portal de teste, não um defeito do widget — verificado pelo @UI (T9). Nenhuma mudança de código.
