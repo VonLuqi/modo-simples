@@ -462,14 +462,21 @@ class ModoSimples {
 
     const { confidence } = scan(this._config);
     if (confidence < this._config.confidenceThreshold) {
-      applyModoSimples(currentState, this._config);
+      // Confiança baixa: nada é ocultado em volta de um principal incerto até o usuário
+      // confirmar (IMP-22). Enquanto escolhe, só a marca de "modo ligado" e as opções.
+      document.documentElement.classList.add('ms-ativo');
+      applyOptions(currentState);
       startManualSelect({
         onSelect: (el, path) => {
           setPrincipal(el, this._config);
           this._savePrincipalPath(path, el);
+          applyModoSimples(state.get(), this._config);
           announce('Conteúdo principal definido');
         },
         onCancel: () => {
+          // sem escolha: a página inteira é o principal (nada oculto); não é persistido
+          setPrincipal(document.body, this._config);
+          applyModoSimples(state.get(), this._config);
           announce('Seleção manual cancelada');
         },
       });

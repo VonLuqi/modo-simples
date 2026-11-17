@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Host com confiança baixa — seleção manual</title>
+  </head>
+  <body>
+    <header class="topo"><a href="/">Início</a></header>
+    <main>
+      <h1>Página onde a heurística não tem certeza</h1>
+      <p id="alvo">Texto que o usuário vai escolher como conteúdo principal.</p>
+    </main>
+    <aside class="ad" id="lateral">Anúncio lateral</aside>
+    <!-- threshold acima do máximo possível: sempre cai na seleção manual -->
+    <script>
+      window.ModoSimplesConfig = { confidenceThreshold: 2 };
+    </script>
+    <script src="../../../dist/modo-simples.min.js"></script>
+  </body>
+</html>

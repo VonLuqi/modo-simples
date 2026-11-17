@@ -3254,14 +3254,18 @@
       }
       const { confidence } = scan(this._config);
       if (confidence < this._config.confidenceThreshold) {
-        applyModoSimples(currentState, this._config);
+        document.documentElement.classList.add("ms-ativo");
+        applyOptions(currentState);
         startManualSelect({
           onSelect: (el, path) => {
             setPrincipal(el, this._config);
             this._savePrincipalPath(path, el);
+            applyModoSimples(state_default.get(), this._config);
             announce("Conte\xFAdo principal definido");
           },
           onCancel: () => {
+            setPrincipal(document.body, this._config);
+            applyModoSimples(state_default.get(), this._config);
             announce("Sele\xE7\xE3o manual cancelada");
           }
         });
