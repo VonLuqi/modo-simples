@@ -145,12 +145,9 @@ function collectBlocks() {
   const root = getRoot();
   if (!root) return [];
 
-  /** @type {Element[]} */
-  const nodes = [];
-  for (const tag of BLOCK_TAGS) {
-    const found = root.querySelectorAll(tag);
-    for (let i = 0; i < found.length; i++) nodes.push(found[i]);
-  }
+  // Uma consulta só: o resultado vem em ORDEM DE DOCUMENTO. Antes era uma consulta por tag
+  // (todos os h1, depois h2, ..., depois p), o que lia títulos primeiro e parágrafos depois (IMP-50)
+  const nodes = Array.from(root.querySelectorAll(BLOCK_TAGS.join(',')));
 
   // Legibilidade calculada uma vez por bloco (antes: de novo para cada ancestral de cada bloco)
   const readable = new Set(nodes.filter(isVisiblyReadable));

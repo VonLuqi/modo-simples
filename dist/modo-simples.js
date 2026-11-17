@@ -2693,11 +2693,7 @@
   function collectBlocks() {
     const root = getRoot();
     if (!root) return [];
-    const nodes = [];
-    for (const tag of BLOCK_TAGS) {
-      const found = root.querySelectorAll(tag);
-      for (let i = 0; i < found.length; i++) nodes.push(found[i]);
-    }
+    const nodes = Array.from(root.querySelectorAll(BLOCK_TAGS.join(",")));
     const readable = new Set(nodes.filter(isVisiblyReadable));
     return nodes.filter((el) => {
       if (!readable.has(el)) return false;
