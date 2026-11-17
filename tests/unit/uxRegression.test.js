@@ -349,7 +349,9 @@ describe('CSS da lib: fonte e espaçamento do texto (IMP-09, IMP-21)', () => {
     assert.ok(i >= 0);
     const seletor = css.slice(i, css.indexOf('{', i));
     for (const ex of [
-      '[class*="icon"]',
+      '[class~="icon"]',
+      '[class^="icon-"]',
+      '[class*=" icon-"]',
       '.fa',
       '.material-icons',
       'code',
@@ -357,6 +359,13 @@ describe('CSS da lib: fonte e espaçamento do texto (IMP-09, IMP-21)', () => {
     ]) {
       assert.ok(seletor.includes(`:not(${ex})`), `falta :not(${ex})`);
     }
+  });
+
+  it('Lexend não exclui classes que só contêm "icon" no meio (silicon, iconic)', () => {
+    const css = getPageStyles();
+    const i = css.indexOf('html.ms-dyslexia-font body *');
+    const seletor = css.slice(i, css.indexOf('{', i));
+    assert.equal(seletor.includes('[class*="icon"]'), false);
   });
 
   it('espaçamento de texto cobre títulos, tabelas, dl, blockquote e label (IMP-21)', () => {
