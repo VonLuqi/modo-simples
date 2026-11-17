@@ -117,7 +117,22 @@ class ModoSimples {
 
     if (currentState.modoSimples) {
       this._activateModoSimples(currentState, { announce: false });
+      this._announceRestoredOnce();
     }
+  }
+
+  /**
+   * Modo restaurado em outra página: silêncio a cada navegação, mas uma única vez por sessão
+   * avisa que continua ligado (UX-19). Sem sessionStorage, fica em silêncio.
+   */
+  _announceRestoredOnce() {
+    try {
+      if (sessionStorage.getItem('ms_restoreAnnounced')) return;
+      sessionStorage.setItem('ms_restoreAnnounced', '1');
+    } catch (_) {
+      return;
+    }
+    announce('Modo Simples continua ligado');
   }
 
   destroy() {
