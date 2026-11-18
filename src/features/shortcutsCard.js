@@ -145,6 +145,22 @@ export function startShortcutsCard({ side = 'left' } = {}) {
   document.body.appendChild(_card);
 }
 
+/** Troca o lado do cartão aberto (botão flutuante mudou de lado). */
+export function placeShortcutsCard(side) {
+  if (!_card) return;
+  _card.style.setProperty(
+    side === 'left' ? 'right' : 'left',
+    'auto',
+    'important',
+  );
+  _card.style.setProperty(side, '16px', 'important');
+}
+
+/** Tira o cartão sem esquecer o "Fechar" da sessão (destroy). */
+export function hideShortcutsCard() {
+  hide();
+}
+
 export function stopShortcutsCard() {
   setDismissed(false);
   hide();

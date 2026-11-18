@@ -13,7 +13,9 @@
     html.ms-block-flashing *,
     html.ms-block-flashing *::before,
     html.ms-block-flashing *::after {
-      animation: none !important;
+      animation-duration: 0.01ms !important;
+      animation-delay: 0s !important;
+      animation-iteration-count: 1 !important;
       transition: none !important;
       scroll-behavior: auto !important;
     }

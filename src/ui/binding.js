@@ -21,6 +21,7 @@ import {
   onSpeakingChange,
 } from '../features/tts.js';
 import { isManualSelectActive } from '../features/manualSelect.js';
+import { placeShortcutsCard } from '../features/shortcutsCard.js';
 import { STRINGS as S } from './strings.js';
 
 /** Valores iniciais das opções (espelha core/state.js) — alvo do "Desligar tudo". */
@@ -356,6 +357,7 @@ export function movePanelSide(ms) {
   ms._fab.setSide(ms._side);
   ms._panel.setSide(ms._side);
   ms._savePanelSide(ms._side);
+  placeShortcutsCard(ms._shortcutsSide());
   announce(ms._side === 'left' ? S.announceSideLeft : S.announceSideRight);
 }
 

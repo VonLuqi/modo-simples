@@ -806,8 +806,14 @@ export const UI_CSS = `
     :host([data-ms-noflash]) *,
     :host([data-ms-noflash]) *::before,
     :host([data-ms-noflash]) *::after {
-      animation: none !important;
+      animation-duration: 0.01ms !important;
+      animation-delay: 0s !important;
+      animation-iteration-count: 1 !important;
       transition: none !important;
+    }
+    /* a dica do botão some depois de 6 s: mantém o atraso (senão sumiria na hora) */
+    :host([data-ms-noflash]) .ms-fab-tip {
+      animation: ms-fab-tip-out 0.01s linear 6s forwards !important;
     }
   `;
 
@@ -1057,7 +1063,9 @@ export const PAGE_CSS = `
     html.ms-block-flashing *,
     html.ms-block-flashing *::before,
     html.ms-block-flashing *::after {
-      animation: none !important;
+      animation-duration: 0.01ms !important;
+      animation-delay: 0s !important;
+      animation-iteration-count: 1 !important;
       transition: none !important;
       scroll-behavior: auto !important;
     }

@@ -1577,8 +1577,14 @@
     :host([data-ms-noflash]) *,
     :host([data-ms-noflash]) *::before,
     :host([data-ms-noflash]) *::after {
-      animation: none !important;
+      animation-duration: 0.01ms !important;
+      animation-delay: 0s !important;
+      animation-iteration-count: 1 !important;
       transition: none !important;
+    }
+    /* a dica do bot\xE3o some depois de 6 s: mant\xE9m o atraso (sen\xE3o sumiria na hora) */
+    :host([data-ms-noflash]) .ms-fab-tip {
+      animation: ms-fab-tip-out 0.01s linear 6s forwards !important;
     }
   `;
   var PAGE_CSS = `
@@ -1827,7 +1833,9 @@
     html.ms-block-flashing *,
     html.ms-block-flashing *::before,
     html.ms-block-flashing *::after {
-      animation: none !important;
+      animation-duration: 0.01ms !important;
+      animation-delay: 0s !important;
+      animation-iteration-count: 1 !important;
       transition: none !important;
       scroll-behavior: auto !important;
     }
@@ -4594,6 +4602,141 @@
     _prevFocus = null;
   }
 
+  // src/features/shortcutsCard.js
+  var CARD_ID = "ms-shortcuts-card";
+  var DISMISS_KEY = "ms-shortcuts-dismissed";
+  var _card = null;
+  function dismissed() {
+    try {
+      return sessionStorage.getItem(DISMISS_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+  function setDismissed(on) {
+    try {
+      if (on) sessionStorage.setItem(DISMISS_KEY, "1");
+      else sessionStorage.removeItem(DISMISS_KEY);
+    } catch (_) {
+    }
+  }
+  function pageAccessKeys() {
+    const out = [];
+    for (const el2 of document.querySelectorAll("[accesskey]")) {
+      if (el2.closest("#ms-container, #" + CARD_ID)) continue;
+      const key = (el2.getAttribute("accesskey") || "").trim();
+      if (!key) continue;
+      const name = (el2.getAttribute("aria-label") || el2.textContent || el2.getAttribute("title") || "").trim().replace(/\s+/g, " ").slice(0, 40);
+      out.push({
+        keys: `${STRINGS.shortcutAccessKeyPrefix}${key.toUpperCase()}`,
+        text: name || key
+      });
+    }
+    return out;
+  }
+  function el(tag, text, style) {
+    const n = document.createElement(tag);
+    if (text) n.textContent = text;
+    if (style) {
+      for (const [k, v] of Object.entries(style)) {
+        n.style.setProperty(k, v, "important");
+      }
+    }
+    return n;
+  }
+  function build(side) {
+    const card = el("section", "", {
+      position: "fixed",
+      bottom: "16px",
+      [side]: "16px",
+      width: "280px",
+      "max-width": "calc(100vw - 120px)",
+      // não cobre o botão flutuante (56px + folgas) a 390px
+      "box-sizing": "border-box",
+      padding: "12px 14px",
+      background: "#0B2C5F",
+      color: "#fff",
+      font: "400 15px/1.4 system-ui, sans-serif",
+      "border-radius": "10px",
+      "box-shadow": "0 4px 16px rgba(0,0,0,0.35)",
+      "z-index": "2147483640"
+    });
+    card.id = CARD_ID;
+    card.setAttribute("role", "region");
+    card.setAttribute("aria-label", STRINGS.shortcutsTitle);
+    card.append(
+      el("h2", STRINGS.shortcutsTitle, {
+        margin: "0 0 8px",
+        font: "700 16px/1.3 system-ui, sans-serif",
+        color: "#fff"
+      })
+    );
+    const list = el("ul", "", {
+      margin: "0 0 10px",
+      padding: "0",
+      "list-style": "none"
+    });
+    for (const s of [...SHORTCUTS, ...pageAccessKeys()]) {
+      const li = el("li", "", { margin: "0 0 6px", color: "#fff" });
+      li.append(
+        el("kbd", s.keys, {
+          display: "inline-block",
+          padding: "1px 6px",
+          margin: "0 6px 0 0",
+          background: "#fff",
+          color: "#0B2C5F",
+          "border-radius": "4px",
+          font: "700 14px/1.4 system-ui, sans-serif"
+        }),
+        document.createTextNode(s.text)
+      );
+      list.append(li);
+    }
+    const close = el("button", STRINGS.shortcutsClose, {
+      "min-width": "44px",
+      "min-height": "44px",
+      padding: "0 16px",
+      background: "#fff",
+      color: "#0B2C5F",
+      border: "0",
+      "border-radius": "8px",
+      font: "700 15px/1 system-ui, sans-serif",
+      cursor: "pointer"
+    });
+    close.type = "button";
+    close.addEventListener("click", () => {
+      setDismissed(true);
+      hide();
+    });
+    card.append(list, close);
+    return card;
+  }
+  function hide() {
+    _card == null ? void 0 : _card.remove();
+    _card = null;
+  }
+  function startShortcutsCard({ side = "left" } = {}) {
+    if (_card || dismissed()) return;
+    _card = build(side);
+    document.body.appendChild(_card);
+  }
+  function placeShortcutsCard(side) {
+    if (!_card) return;
+    _card.style.setProperty(
+      side === "left" ? "right" : "left",
+      "auto",
+      "important"
+    );
+    _card.style.setProperty(side, "16px", "important");
+  }
+  function hideShortcutsCard() {
+    hide();
+  }
+  function stopShortcutsCard() {
+    setDismissed(false);
+    hide();
+  }
+
   // src/ui/binding.js
   var RESET_OPTIONS = {
     textScale: "100",
@@ -4845,6 +4988,7 @@
     ms._fab.setSide(ms._side);
     ms._panel.setSide(ms._side);
     ms._savePanelSide(ms._side);
+    placeShortcutsCard(ms._shortcutsSide());
     announce(ms._side === "left" ? STRINGS.announceSideLeft : STRINGS.announceSideRight);
   }
   function hideWidget(ms) {
@@ -5349,17 +5493,6 @@
     el2.autoplay = false;
     if (!el2.paused) el2.pause();
   }
-  function pauseAutoplay(root = document) {
-    let n = 0;
-    walk(root, (el2) => {
-      var _a;
-      if ((_a = el2.matches) == null ? void 0 : _a.call(el2, MEDIA_SELECTOR)) {
-        muteOne(el2);
-        n += 1;
-      }
-    });
-    return n;
-  }
   function restoreMedia() {
     for (const ref of _tracked) {
       const el2 = ref.deref();
@@ -5488,14 +5621,32 @@
   // src/features/flashBlock.js
   var OWN_HOST2 = "#ms-container";
   var STILL_ATTR = "data-ms-gif-still";
+  var MEDIA_SELECTOR2 = "video, audio";
+  var COPY_STYLE = [
+    "margin",
+    "float",
+    "borderRadius",
+    "border",
+    "boxSizing",
+    "verticalAlign",
+    "top",
+    "left",
+    "right",
+    "bottom"
+  ];
   var _stills = /* @__PURE__ */ new Map();
   var _revealed = /* @__PURE__ */ new WeakSet();
   var _marquees = /* @__PURE__ */ new Set();
+  var _autoplayed = /* @__PURE__ */ new Set();
   var _observer3 = null;
   var _on3 = false;
   var isOwn2 = (el2) => {
     var _a;
     return !!((_a = el2.closest) == null ? void 0 : _a.call(el2, OWN_HOST2));
+  };
+  var userActive2 = () => {
+    var _a;
+    return !!((_a = navigator.userActivation) == null ? void 0 : _a.isActive);
   };
   function isGif(img) {
     const src = img.currentSrc || img.getAttribute("src") || "";
@@ -5513,6 +5664,12 @@
     _revealed.add(img);
     _stills.delete(btn);
     btn.replaceWith(img);
+    if (!img.hasAttribute("tabindex")) {
+      img.setAttribute("tabindex", "-1");
+      img.addEventListener("blur", () => img.removeAttribute("tabindex"), {
+        once: true
+      });
+    }
     (_a = img.focus) == null ? void 0 : _a.call(img, { preventScroll: true });
   }
   function freeze(img) {
@@ -5521,6 +5678,9 @@
     const rect = img.getBoundingClientRect();
     const w = Math.round(rect.width || img.naturalWidth);
     const h = Math.round(rect.height || img.naturalHeight);
+    const cs = getComputedStyle(img);
+    const interactive = !img.closest('a, button, [role="button"], [role="link"]');
+    const alt = img.getAttribute("alt") || "";
     const canvas = document.createElement("canvas");
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
@@ -5536,47 +5696,59 @@
       return (_a = canvas.getContext("2d")) == null ? void 0 : _a.drawImage(first, 0, 0);
     };
     first.src = img.currentSrc || img.src;
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.setAttribute(STILL_ATTR, "");
-    const alt = img.getAttribute("alt") || "";
-    btn.setAttribute(
-      "aria-label",
-      alt ? `${STRINGS.gifShowLabel}: ${alt}` : STRINGS.gifShowLabel
-    );
-    Object.assign(btn.style, {
-      position: "relative",
-      display: img.style.display || "inline-block",
+    const still = document.createElement(interactive ? "button" : "span");
+    still.className = img.className;
+    still.setAttribute(STILL_ATTR, "");
+    if (interactive) {
+      still.type = "button";
+      still.setAttribute(
+        "aria-label",
+        alt ? `${STRINGS.gifShowLabel}: ${alt}` : STRINGS.gifShowLabel
+      );
+    } else if (alt) {
+      still.setAttribute("role", "img");
+      still.setAttribute("aria-label", alt);
+    } else {
+      still.setAttribute("aria-hidden", "true");
+    }
+    for (const p of COPY_STYLE) still.style[p] = cs[p];
+    Object.assign(still.style, {
+      position: cs.position === "static" ? "relative" : cs.position,
+      display: cs.display === "inline" ? "inline-block" : cs.display,
       width: `${w}px`,
-      height: `${h}px`,
+      height: "auto",
+      aspectRatio: `${w} / ${h}`,
+      // redimensionar não distorce
       maxWidth: "100%",
       padding: "0",
-      border: "0",
       background: "none",
-      cursor: "pointer",
-      verticalAlign: "bottom"
+      cursor: interactive ? "pointer" : "inherit"
     });
-    const tag = document.createElement("span");
-    tag.setAttribute("aria-hidden", "true");
-    tag.textContent = `\u25B6 ${STRINGS.gifShowLabel}`;
-    Object.assign(tag.style, {
-      position: "absolute",
-      left: "6px",
-      bottom: "6px",
-      padding: "0.2rem 0.5rem",
-      background: "#0B2C5F",
-      color: "#fff",
-      font: "600 0.85rem/1.2 system-ui, sans-serif",
-      borderRadius: "4px"
-    });
-    btn.append(canvas, tag);
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      reveal(btn);
-    });
-    _stills.set(btn, img);
-    img.replaceWith(btn);
+    if (cs.borderStyle === "none") still.style.border = "0";
+    still.append(canvas);
+    if (interactive) {
+      const tag = document.createElement("span");
+      tag.setAttribute("aria-hidden", "true");
+      tag.textContent = `\u25B6 ${STRINGS.gifShowLabel}`;
+      Object.assign(tag.style, {
+        position: "absolute",
+        left: "6px",
+        bottom: "6px",
+        padding: "0.2rem 0.5rem",
+        background: "#0B2C5F",
+        color: "#fff",
+        font: "600 0.85rem/1.2 system-ui, sans-serif",
+        borderRadius: "4px"
+      });
+      still.append(tag);
+      still.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        reveal(still);
+      });
+    }
+    _stills.set(still, img);
+    img.replaceWith(still);
   }
   function handleImg(img) {
     if (!isGif(img) || _revealed.has(img)) return;
@@ -5588,19 +5760,34 @@
     m.stop();
     _marquees.add(m);
   }
+  function handleMedia(el2) {
+    if (!el2.hasAttribute("autoplay") && !el2.autoplay) return;
+    el2.removeAttribute("autoplay");
+    el2.autoplay = false;
+    _autoplayed.add(el2);
+    if (!el2.paused) el2.pause();
+  }
+  function onPlay2(e) {
+    var _a;
+    const el2 = e.target;
+    if (!((_a = el2 == null ? void 0 : el2.matches) == null ? void 0 : _a.call(el2, MEDIA_SELECTOR2)) || isOwn2(el2)) return;
+    if (!userActive2()) el2.pause();
+  }
   function scan3(root) {
+    var _a;
     if (root.nodeType !== 1 && root.nodeType !== 9) return;
     const all = root.nodeType === 1 ? [root, ...root.querySelectorAll("*")] : root.querySelectorAll("*");
     for (const el2 of all) {
       if (el2.id === "ms-container" || isOwn2(el2)) continue;
       if (el2.tagName === "IMG") handleImg(el2);
       else if (el2.tagName === "MARQUEE") handleMarquee(el2);
+      else if ((_a = el2.matches) == null ? void 0 : _a.call(el2, MEDIA_SELECTOR2)) handleMedia(el2);
     }
-    pauseAutoplay(root);
   }
   function startFlashBlock() {
     if (_on3) return;
     _on3 = true;
+    document.addEventListener("play", onPlay2, true);
     _observer3 = new MutationObserver((records) => {
       var _a;
       for (const r of records) {
@@ -5617,140 +5804,20 @@
     });
     scan3(document);
   }
-  function stopFlashBlock({ keepMedia = false } = {}) {
+  function stopFlashBlock() {
     var _a;
     if (!_on3) return;
     _on3 = false;
     _observer3 == null ? void 0 : _observer3.disconnect();
     _observer3 = null;
-    for (const [btn, img] of _stills) btn.replaceWith(img);
+    document.removeEventListener("play", onPlay2, true);
+    for (const [still, img] of _stills) still.replaceWith(img);
     _stills.clear();
+    _revealed = /* @__PURE__ */ new WeakSet();
     for (const m of _marquees) (_a = m.start) == null ? void 0 : _a.call(m);
     _marquees.clear();
-    if (!keepMedia) restoreMedia();
-  }
-
-  // src/features/shortcutsCard.js
-  var CARD_ID = "ms-shortcuts-card";
-  var DISMISS_KEY = "ms-shortcuts-dismissed";
-  var _card = null;
-  function dismissed() {
-    try {
-      return sessionStorage.getItem(DISMISS_KEY) === "1";
-    } catch (_) {
-      return false;
-    }
-  }
-  function setDismissed(on) {
-    try {
-      if (on) sessionStorage.setItem(DISMISS_KEY, "1");
-      else sessionStorage.removeItem(DISMISS_KEY);
-    } catch (_) {
-    }
-  }
-  function pageAccessKeys() {
-    const out = [];
-    for (const el2 of document.querySelectorAll("[accesskey]")) {
-      if (el2.closest("#ms-container, #" + CARD_ID)) continue;
-      const key = (el2.getAttribute("accesskey") || "").trim();
-      if (!key) continue;
-      const name = (el2.getAttribute("aria-label") || el2.textContent || el2.getAttribute("title") || "").trim().replace(/\s+/g, " ").slice(0, 40);
-      out.push({
-        keys: `${STRINGS.shortcutAccessKeyPrefix}${key.toUpperCase()}`,
-        text: name || key
-      });
-    }
-    return out;
-  }
-  function el(tag, text, style) {
-    const n = document.createElement(tag);
-    if (text) n.textContent = text;
-    if (style) {
-      for (const [k, v] of Object.entries(style)) {
-        n.style.setProperty(k, v, "important");
-      }
-    }
-    return n;
-  }
-  function build(side) {
-    const card = el("section", "", {
-      position: "fixed",
-      bottom: "16px",
-      [side]: "16px",
-      width: "280px",
-      "max-width": "calc(100vw - 120px)",
-      // não cobre o botão flutuante (56px + folgas) a 390px
-      "box-sizing": "border-box",
-      padding: "12px 14px",
-      background: "#0B2C5F",
-      color: "#fff",
-      font: "400 15px/1.4 system-ui, sans-serif",
-      "border-radius": "10px",
-      "box-shadow": "0 4px 16px rgba(0,0,0,0.35)",
-      "z-index": "2147483640"
-    });
-    card.id = CARD_ID;
-    card.setAttribute("role", "region");
-    card.setAttribute("aria-label", STRINGS.shortcutsTitle);
-    card.append(
-      el("h2", STRINGS.shortcutsTitle, {
-        margin: "0 0 8px",
-        font: "700 16px/1.3 system-ui, sans-serif",
-        color: "#fff"
-      })
-    );
-    const list = el("ul", "", {
-      margin: "0 0 10px",
-      padding: "0",
-      "list-style": "none"
-    });
-    for (const s of [...SHORTCUTS, ...pageAccessKeys()]) {
-      const li = el("li", "", { margin: "0 0 6px", color: "#fff" });
-      li.append(
-        el("kbd", s.keys, {
-          display: "inline-block",
-          padding: "1px 6px",
-          margin: "0 6px 0 0",
-          background: "#fff",
-          color: "#0B2C5F",
-          "border-radius": "4px",
-          font: "700 14px/1.4 system-ui, sans-serif"
-        }),
-        document.createTextNode(s.text)
-      );
-      list.append(li);
-    }
-    const close = el("button", STRINGS.shortcutsClose, {
-      "min-width": "44px",
-      "min-height": "44px",
-      padding: "0 16px",
-      background: "#fff",
-      color: "#0B2C5F",
-      border: "0",
-      "border-radius": "8px",
-      font: "700 15px/1 system-ui, sans-serif",
-      cursor: "pointer"
-    });
-    close.type = "button";
-    close.addEventListener("click", () => {
-      setDismissed(true);
-      hide();
-    });
-    card.append(list, close);
-    return card;
-  }
-  function hide() {
-    _card == null ? void 0 : _card.remove();
-    _card = null;
-  }
-  function startShortcutsCard({ side = "left" } = {}) {
-    if (_card || dismissed()) return;
-    _card = build(side);
-    document.body.appendChild(_card);
-  }
-  function stopShortcutsCard() {
-    setDismissed(false);
-    hide();
+    for (const el2 of _autoplayed) el2.setAttribute("autoplay", "");
+    _autoplayed.clear();
   }
 
   // src/modo-simples.js
@@ -5810,7 +5877,9 @@
     }
     /** Cartão de atalhos fica do lado oposto ao botão flutuante. */
     _shortcutsSide() {
-      return String(this._config.position || "").endsWith("left") ? "right" : "left";
+      var _a;
+      const fab = (_a = this._side) != null ? _a : String(this._config.position || "").endsWith("left") ? "left" : "right";
+      return fab === "left" ? "right" : "left";
     }
     /**
      * Modo restaurado em outra página: silêncio a cada navegação, mas uma única vez por sessão
@@ -5835,6 +5904,8 @@
       stopReadingRuler();
       stopFocusReader();
       stopMediaMute();
+      stopFlashBlock();
+      hideShortcutsCard();
       stopSpeaking();
       stopManualSelect();
       this._setPageInert(false);
@@ -6116,7 +6187,7 @@
       }
       if (prev.options.blockFlashing !== next.options.blockFlashing) {
         if (next.options.blockFlashing) startFlashBlock();
-        else stopFlashBlock({ keepMedia: next.options.muteMedia });
+        else stopFlashBlock();
       }
       if (prev.options.showShortcuts !== next.options.showShortcuts) {
         if (next.options.showShortcuts) {

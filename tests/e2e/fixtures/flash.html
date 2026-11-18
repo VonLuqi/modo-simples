@@ -13,6 +13,19 @@
           opacity: 0.2;
         }
       }
+      @keyframes fi {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      /* entrada que termina visível (AOS/animate.css): fill-mode forwards */
+      #fade {
+        opacity: 0;
+        animation: fi 1s forwards;
+      }
       #anim {
         animation: pulse 1s infinite alternate;
         transition: color 2s;
@@ -23,6 +36,7 @@
     <main>
       <h1>Página com movimento</h1>
       <p id="anim">Texto que pulsa</p>
+      <p id="fade">Texto que entra</p>
       <marquee id="marq" scrollamount="5">Texto que corre</marquee>
       <img
         id="gif"
@@ -31,7 +45,15 @@
         height="30"
         src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs="
       />
-      <video id="vid" autoplay muted loop playsinline width="200" height="100"></video>
+      <video
+        id="vid"
+        autoplay
+        muted
+        loop
+        playsinline
+        width="200"
+        height="100"
+      ></video>
     </main>
     <script src="../../../dist/modo-simples.min.js"></script>
   </body>

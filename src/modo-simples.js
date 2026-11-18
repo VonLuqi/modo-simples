@@ -75,6 +75,7 @@ import { startFlashBlock, stopFlashBlock } from './features/flashBlock.js';
 import {
   startShortcutsCard,
   stopShortcutsCard,
+  hideShortcutsCard,
 } from './features/shortcutsCard.js';
 import {
   startManualSelect,
@@ -148,9 +149,10 @@ class ModoSimples {
 
   /** Cartão de atalhos fica do lado oposto ao botão flutuante. */
   _shortcutsSide() {
-    return String(this._config.position || '').endsWith('left')
-      ? 'right'
-      : 'left';
+    const fab =
+      this._side ??
+      (String(this._config.position || '').endsWith('left') ? 'left' : 'right');
+    return fab === 'left' ? 'right' : 'left';
   }
 
   /**
@@ -177,6 +179,8 @@ class ModoSimples {
     stopReadingRuler();
     stopFocusReader();
     stopMediaMute();
+    stopFlashBlock();
+    hideShortcutsCard();
     stopSpeaking();
     stopManualSelect();
     this._setPageInert(false);
@@ -516,7 +520,7 @@ class ModoSimples {
 
     if (prev.options.blockFlashing !== next.options.blockFlashing) {
       if (next.options.blockFlashing) startFlashBlock();
-      else stopFlashBlock({ keepMedia: next.options.muteMedia });
+      else stopFlashBlock();
     }
 
     if (prev.options.showShortcuts !== next.options.showShortcuts) {

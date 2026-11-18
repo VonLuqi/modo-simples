@@ -21,6 +21,49 @@ async function turnOn(page) {
 }
 
 test.describe('F7d — Bloqueio de intermitência', () => {
+  test('H1: entrada com fill-mode forwards termina VISÍVEL (não volta ao opacity:0)', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(PAGE);
+    await waitForLib(page);
+    await turnOn(page);
+    await expect
+      .poll(() => cs(page, '#fade', 'opacity'), { timeout: 3000 })
+      .toBe('1');
+    await page.locator(SWITCH).click(); // desligar: site volta a mandar (anima de novo)
+    expect(await cs(page, '#fade', 'animationName')).toBe('fi');
+  });
+
+  test('M5: mídia do usuário (sem autoplay) não é mutada nem pausada; autoplay só pausa', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(PAGE);
+    await waitForLib(page);
+    await page.evaluate(() => {
+      const v = document.createElement('video');
+      v.id = 'user-vid';
+      v.muted = false;
+      document.querySelector('main').append(v);
+    });
+    await turnOn(page);
+    expect(
+      await page.evaluate(() => document.getElementById('user-vid').muted),
+    ).toBe(false);
+    await page.evaluate(() => {
+      const a = document.createElement('video');
+      a.id = 'auto-vid';
+      a.setAttribute('autoplay', '');
+      a.muted = false;
+      document.querySelector('main').append(a);
+    });
+    await expect(page.locator('#auto-vid')).not.toHaveAttribute('autoplay');
+    expect(
+      await page.evaluate(() => document.getElementById('auto-vid').muted),
+    ).toBe(false); // pausa, não muta
+  });
+
   test('liga: animação e transição somem; desliga: voltam', async ({
     site,
   }) => {
@@ -29,7 +72,11 @@ test.describe('F7d — Bloqueio de intermitência', () => {
     await waitForLib(page);
     expect(await cs(page, '#anim', 'animationName')).toBe('pulse');
     await turnOn(page);
-    expect(await cs(page, '#anim', 'animationName')).toBe('none');
+    // laço infinito vira 1 volta de ~0 ms (não 'none'): fill-mode vai direto ao quadro final
+    expect(await cs(page, '#anim', 'animationIterationCount')).toBe('1');
+    expect(
+      parseFloat(await cs(page, '#anim', 'animationDuration')),
+    ).toBeLessThan(0.001);
     expect(await cs(page, '#anim', 'transitionDuration')).toBe('0s');
     // a UI da lib (shadow DOM) também não anima
     const host = page.locator('#ms-container');
@@ -48,10 +95,13 @@ test.describe('F7d — Bloqueio de intermitência', () => {
     const pos = async () =>
       (await page.locator('#marq').screenshot()).toString('base64');
     await turnOn(page);
+    await page.keyboard.press('Escape'); // no celular o painel cobre o marquee
     const a = await pos();
     await page.waitForTimeout(300);
     expect(await pos()).toBe(a); // parado
+    await openPanel(page);
     await page.locator(SWITCH).click();
+    await page.keyboard.press('Escape');
     await expect.poll(pos, { timeout: 4000 }).not.toBe(a); // voltou a correr
   });
 
@@ -137,7 +187,7 @@ test.describe('F7d — Bloqueio de intermitência', () => {
     await turnOn(page);
     await page.reload();
     await waitForLib(page);
-    expect(await cs(page, '#anim', 'animationName')).toBe('none');
+    expect(await cs(page, '#anim', 'animationIterationCount')).toBe('1');
     await expect(page.locator('[data-ms-gif-still]')).toHaveCount(1);
     await openPanel(page);
     await page.getByRole('button', { name: 'Desligar tudo' }).click();

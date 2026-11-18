@@ -8,6 +8,8 @@ import assert from 'node:assert/strict';
 
 import {
   CARD_ID,
+  hideShortcutsCard,
+  placeShortcutsCard,
   startShortcutsCard,
   stopShortcutsCard,
 } from '../../src/features/shortcutsCard.js';
@@ -122,5 +124,60 @@ describe('showShortcuts', () => {
     assert.equal(state.get().options.showShortcuts, false);
     assert.equal($(`#${CARD_ID}`), null);
     inst.destroy();
+  });
+});
+
+describe('achados do QA T148 (cartão)', () => {
+  it('M4: lado vem do botão real (_side) e o cartão troca ao mover o painel', () => {
+    const inst = new ModoSimples({ persistence: false });
+    inst.init();
+    state.set({ options: { ...state.get().options, showShortcuts: true } });
+    const lado = inst._side; // botão flutuante
+    const card = () => $(`#${CARD_ID}`);
+    const oposto = lado === 'left' ? 'right' : 'left';
+    assert.equal(card().style[oposto], '16px');
+    inst._movePanelSide();
+    const novo = inst._side === 'left' ? 'right' : 'left';
+    assert.equal(card().style[novo], '16px');
+    assert.equal(card().style[inst._side], 'auto'); // não fica embaixo do botão
+    inst.destroy();
+  });
+
+  it('placeShortcutsCard sem cartão aberto não faz nada', () => {
+    placeShortcutsCard('left');
+    assert.equal($(`#${CARD_ID}`), null);
+  });
+
+  it('sem sessionStorage (bloqueado), o cartão ainda abre e fecha', () => {
+    const real = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage');
+    Object.defineProperty(globalThis, 'sessionStorage', {
+      configurable: true,
+      get() {
+        throw new Error('bloqueado');
+      },
+    });
+    try {
+      startShortcutsCard();
+      assert.ok($(`#${CARD_ID}`));
+      $(`#${CARD_ID} button`).click();
+      assert.equal($(`#${CARD_ID}`), null);
+      stopShortcutsCard();
+    } finally {
+      if (real) Object.defineProperty(globalThis, 'sessionStorage', real);
+      else delete globalThis.sessionStorage;
+    }
+  });
+
+  it('accesskey vazio é ignorado; sem texto usa a própria tecla; hideShortcutsCard mantém o "Fechar"', () => {
+    document.body.innerHTML =
+      '<a accesskey=" ">a</a><button accesskey="z"></button>';
+    startShortcutsCard();
+    const txt = $(`#${CARD_ID}`).textContent;
+    assert.match(txt, /Alt\+Z/);
+    assert.equal(/Alt\+ /.test(txt), false);
+    $(`#${CARD_ID} button`).click();
+    hideShortcutsCard();
+    startShortcutsCard();
+    assert.equal($(`#${CARD_ID}`), null, 'segue fechado na sessão');
   });
 });
