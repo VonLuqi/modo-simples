@@ -22,7 +22,8 @@ export const MAP_PAGES = [
   'pesquisa.html',
 ];
 
-export const EXPECTED_NAV = [...MAP_PAGES];
+// pesquisa.html sai do menu (T238): a busca é o botão .header-search do cabeçalho, igual em todas as páginas
+export const EXPECTED_NAV = MAP_PAGES.filter((p) => p !== 'pesquisa.html');
 
 export const CANONICAL_CSS = ['tokens.css', 'shell.css', 'pages.css'];
 
