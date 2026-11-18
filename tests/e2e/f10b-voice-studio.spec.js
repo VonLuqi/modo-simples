@@ -86,12 +86,30 @@ test.describe('F10b — Estúdio de Voz', () => {
     const labels = await sel
       .locator('option')
       .evaluateAll((os) => os.map((o) => o.textContent));
+    // T211/P4: só português por padrão; as outras vozes ficam atrás de "Mostrar todas as vozes"
     expect(labels).toEqual([
+      'Automática (português)',
+      'Maria Brasil (pt-BR)',
+      'Ana Portugal (pt-PT)',
+    ]);
+    const all = page.locator('[data-action="voice-all"]');
+    await expect(all).toBeVisible();
+    await expect(all).toHaveText('Mostrar todas as vozes');
+    await expect(all).toHaveAttribute('aria-pressed', 'false');
+    await all.click();
+    await expect(all).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      await sel
+        .locator('option')
+        .evaluateAll((os) => os.map((o) => o.textContent)),
+    ).toEqual([
       'Automática (português)',
       'Maria Brasil (pt-BR)',
       'Ana Portugal (pt-PT)',
       'Zeta Inglês (en-US)',
     ]);
+    await all.click(); // volta a só português
+    await expect(sel.locator('option')).toHaveCount(3);
     for (const [key, label, text] of [
       ['voiceRate', 'Velocidade', '1,0×'],
       ['voicePitch', 'Tom', '1,0'],
@@ -159,6 +177,7 @@ test.describe('F10b — Estúdio de Voz', () => {
   }) => {
     const { page } = site;
     await boot(page);
+    await page.locator('[data-action="voice-all"]').click(); // Zeta (en-US) só aparece com "todas"
     await page.locator(SEL).selectOption('Zeta Inglês');
     await page.locator(range('voiceRate')).focus();
     await page.keyboard.press('End');

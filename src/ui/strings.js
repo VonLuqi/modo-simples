@@ -72,6 +72,10 @@ export const STRINGS = Object.freeze({
   panelVcListening: 'Ouvindo…',
   panelVcBlocked:
     'O microfone está bloqueado. Libere nas configurações do navegador.',
+  panelSpeechFailed:
+    'Seu navegador não conseguiu ler em voz alta: não há voz instalada. No Brave, abra-o com a opção --enable-speech-dispatcher, ou use Chrome ou Edge.',
+  panelVoiceAll: 'Mostrar todas as vozes',
+  panelVcBrave: 'O Brave não permite comandos de voz. Use Chrome ou Edge.',
   panelVcNoMic: 'Não achei um microfone.',
   panelVcError: 'Os comandos de voz pararam. Tente ligar de novo.',
   panelVcRevoke: 'Parar de enviar minha voz',

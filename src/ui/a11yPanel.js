@@ -11,6 +11,7 @@ import { TYPO_LIMITS } from '../core/state.js';
 import { isFocusReaderSupported } from '../features/focusReader.js';
 import {
   VOICE_LIMITS,
+  hasNoVoices,
   isVoiceSupported,
   listVoices,
   onVoicesChanged,
@@ -19,11 +20,14 @@ import {
 import {
   isPaused,
   isReadingMain,
+  onSpeakingChange,
+  onSpeechError,
   pauseSpeaking,
   resumeSpeaking,
 } from '../features/tts.js';
 import {
   getRecognitionMode,
+  getUnsupportedReason,
   installLocalModel,
 } from '../features/voiceCommands.js';
 import { createPageOutline } from '../features/pageOutline.js';
@@ -276,6 +280,10 @@ const CONTROLS = {
   pause: {
     html: `<button type="button" class="ms-tile" data-action="pause" hidden style="display:none" aria-label="${S.panelPauseLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M8 5v14"/><path d="M16 5v14"/>')}</span><span class="ms-tile-label" data-pause-text>${S.panelPause}</span></button>`,
   },
+  // T211: aviso quando a leitura falha / não há voz (região viva sempre presente; o texto entra e sai)
+  speechNotice: {
+    html: `<p class="ms-a11y-block--span ms-a11y-control-state" data-speech-notice role="status" aria-live="polite" style="margin:0"></p>`,
+  },
   readFocus: {
     html: switchTile({
       option: 'readFocus',
@@ -390,6 +398,8 @@ const CONTROLS = {
             <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-voiceVolume">${S.panelVoiceVolumeLabel}</label><span class="ms-a11y-control-state" data-state-for="voiceVolume" aria-hidden="true"></span></div>
             <input type="range" class="ms-range-input" id="ms-voice-voiceVolume" data-voice="voiceVolume">
           </div>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-all" aria-pressed="false" hidden style="display:none">${S.panelVoiceAll}</button>
+          <p class="ms-a11y-control-state" data-speech-notice-studio hidden>${S.panelSpeechFailed}</p>
           <p class="ms-a11y-control-state" data-voice-note hidden>${S.panelVoiceUnsupported}</p>
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-test" aria-label="${S.panelVoiceTestLabel}">${S.panelVoiceTest}</button>
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-reset" aria-label="${S.panelVoiceResetLabel}">${S.panelVoiceReset}</button>
@@ -509,6 +519,7 @@ const SECTIONS = [
       'readingRuler',
       'speak',
       'pause',
+      'speechNotice',
       'readFocus',
       'voiceStudio',
       'voiceCommands',
@@ -861,6 +872,12 @@ export function createA11yPanel({
     onSetOption('voiceName', voiceSel.value),
   );
   let voiceName = ''; // última voz salva (sync); reaplicada quando a lista de vozes muda
+  const voiceAllBtn = panel.querySelector('[data-action="voice-all"]');
+  let showAllVoices = false;
+  voiceAllBtn.addEventListener('click', () => {
+    showAllVoices = !showAllVoices;
+    fillVoices(voiceName); // monta a lista grande só agora (lazy)
+  });
   let voicesSig = null; // assinatura (nomes) da lista montada: só reconstrói se mudar
   const isVoiceSelFocused = () =>
     panel.getRootNode?.().activeElement === voiceSel;
@@ -871,7 +888,18 @@ export function createA11yPanel({
     } catch {
       /* speechSynthesis parcial (sem getVoices): só a opção Automática */
     }
-    const sig = voices.map((v) => `${v.name}|${v.lang}`).join('\n');
+    // P4: só português por padrão; as outras ficam atrás de "Mostrar todas as vozes" (por nome)
+    const isPt = (v) => /^pt([-_]|$)/i.test(v.lang || '');
+    const pt = voices.filter(isPt);
+    const rest = voices
+      .filter((v) => !isPt(v))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    if (selected && rest.some((v) => v.name === selected)) showAllVoices = true; // voz salva não-pt precisa aparecer
+    voiceAllBtn.hidden = rest.length === 0;
+    voiceAllBtn.style.display = rest.length === 0 ? 'none' : '';
+    voiceAllBtn.setAttribute('aria-pressed', String(showAllVoices));
+    voices = showAllVoices ? [...pt, ...rest] : pt;
+    const sig = `${showAllVoices}|${voices.map((v) => `${v.name}|${v.lang}`).join('\n')}`;
     if (sig === voicesSig) {
       // mesma lista: só ajusta a seleção, e nunca com o seletor em uso (L2: não fecha o menu aberto)
       if (!isVoiceSelFocused() && voiceSel.value !== (selected || '')) {
@@ -898,7 +926,47 @@ export function createA11yPanel({
   if (voiceSupported) onVoicesChanged(() => fillVoices(voiceName));
   panel
     .querySelector('[data-action="voice-test"]')
-    .addEventListener('click', () => previewVoice(voiceFromDom()));
+    .addEventListener('click', () => {
+      previewVoice(voiceFromDom());
+      checkNoVoices(); // sem voz instalada o teste também avisa
+    });
+
+  // T211: aviso visível quando a fala falha ou não há nenhuma voz instalada
+  const speechNotice = panel.querySelector('[data-speech-notice]');
+  const studioNotice = panel.querySelector('[data-speech-notice-studio]');
+  let speechFailed = false;
+  let noVoices = false;
+  let noticeOn = false;
+  const renderSpeechNotice = () => {
+    const on = speechFailed || noVoices;
+    if (on === noticeOn) return; // falha a cada Tab (leitura do foco): não reanuncia o mesmo aviso
+    noticeOn = on;
+    speechNotice.textContent = on ? S.panelSpeechFailed : '';
+    studioNotice.hidden = !on;
+  };
+  function checkNoVoices() {
+    if (!voiceSupported) return;
+    hasNoVoices()
+      .then((n) => {
+        noVoices = !!n;
+        renderSpeechNotice();
+      })
+      .catch(() => {});
+  }
+  const speechFailedNow = () => {
+    speechFailed = true;
+    renderSpeechNotice();
+  };
+  // 3º argumento 'speech-failed' de onSpeakingChange e onSpeechError (o que existir no núcleo)
+  onSpeakingChange((speaking, _paused, reason) => {
+    if (reason === 'speech-failed') speechFailedNow();
+    else if (speaking && speechFailed) {
+      speechFailed = false;
+      renderSpeechNotice();
+    }
+  });
+  onSpeechError(speechFailedNow);
+  checkNoVoices();
   panel
     .querySelector('[data-action="voice-reset"]')
     .addEventListener('click', () =>
@@ -958,6 +1026,10 @@ export function createA11yPanel({
   ) {
     recMode = 'none';
   }
+  // T211: motivo de não haver comandos de voz ('brave' | 'no-api' | 'insecure' | null)
+  const vcNoneText = () =>
+    getUnsupportedReason() === 'brave' ? S.panelVcBrave : S.panelVcUnsupported;
+  if (getUnsupportedReason()) recMode = 'none';
   const VC_TEXT = {
     listening: S.panelVcListening,
     blocked: S.panelVcBlocked,
@@ -965,13 +1037,14 @@ export function createA11yPanel({
     error: S.panelVcError,
     'needs-consent': VC['status_needs-consent'],
     'needs-model': VC['status_needs-model'],
-    unsupported: S.panelVcUnsupported,
   };
   const renderVcStatus = () => {
     if (recMode === 'none') return; // o motivo fixo é posto em sync()
     // sem núcleo que avise (versão antiga): ligado = ouvindo
     vcStatus.textContent = vcUnsub
-      ? VC_TEXT[vcCore] || ''
+      ? vcCore === 'unsupported'
+        ? vcNoneText() // ex.: Brave responde 'network' → o núcleo manda 'unsupported'
+        : VC_TEXT[vcCore] || ''
       : vcOn
         ? S.panelVcListening
         : '';
@@ -1397,12 +1470,12 @@ export function createA11yPanel({
     setShown(vcRevoke, vcConsent);
     if (recMode === 'none') {
       vcSwitch.disabled = true;
-      vcSwitch.setAttribute('title', S.panelVcUnsupported);
+      vcSwitch.setAttribute('title', vcNoneText());
       const st = vcSwitch.querySelector('[data-state]');
       if (st) st.textContent = S.panelReadFocusUnsupportedState;
       const d = panel.querySelector('#ms-desc-voiceCommands');
-      if (d) d.textContent = S.panelVcUnsupported;
-      vcStatus.textContent = S.panelVcUnsupported;
+      if (d) d.textContent = vcNoneText();
+      vcStatus.textContent = vcNoneText();
     }
 
     // Pausar/Continuar: só enquanto o "Ouvir" lê
@@ -1468,6 +1541,7 @@ export function createA11yPanel({
   function open() {
     panel.hidden = false;
     subscribeVoiceStatus();
+    checkNoVoices();
     _releaseFocus = trapFocus(panel);
     const closeBtn = panel.querySelector('.ms-a11y-close');
     if (closeBtn) closeBtn.focus();
