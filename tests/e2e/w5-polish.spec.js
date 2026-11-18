@@ -73,7 +73,10 @@ test.describe('W5 — polimento', () => {
       document.documentElement.classList.add('ms-text-scale-150'),
     );
     const depois = await m();
-    expect(parseFloat(depois.html)).toBeCloseTo(parseFloat(antes.html) * 1.5, 1);
+    expect(parseFloat(depois.html)).toBeCloseTo(
+      parseFloat(antes.html) * 1.5,
+      1,
+    );
     expect(depois.body).toBe(antes.body);
     expect(depois.zoom).toBe(antes.zoom);
     expect(depois.tf).toBe(antes.tf);
