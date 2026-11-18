@@ -3461,6 +3461,11 @@
       align-items: center;
       gap: calc(0.55 * var(--ms-u));
     }
+    /* no cabe\xE7alho (n\xE3o na barra de p\xEDlulas) o conte\xFAdo encolhe com o chrome em vez de empurrar
+       a p\xE1gina: fonte larga + texto 150% */
+    #ms-simples-chrome:not(.ms-simples-chrome--ms-nav) .ms-simples-chrome-inner {
+      min-width: 0;
+    }
     .ms-chrome-icon {
       width: 44px;
       height: 44px;
