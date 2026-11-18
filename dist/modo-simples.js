@@ -6592,7 +6592,7 @@
       padding: "8px 6px",
       "z-index": "2147483644",
       font: "600 20px/1 system-ui, sans-serif",
-      "max-height": "60vh"
+      "max-height": "70vh"
     });
     const hintRow = document.createElement("div");
     hintRow.dataset.vkHintrow = "";
