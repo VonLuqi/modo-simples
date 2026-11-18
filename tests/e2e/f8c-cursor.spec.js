@@ -58,6 +58,35 @@ test.describe('F8c — cursor grande', () => {
     expect(await cursorOf(page, 'main p')).toContain('data:image/svg+xml');
   });
 
+  test('contenteditable (true, vazio, plaintext-only) mantém o cursor text; false e texto comum não', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page);
+    await page.locator('#ms-sec-colors-btn').click();
+    await page.locator(`${group} [data-value="bigWhite"]`).click();
+    await page.evaluate(() => {
+      const add = (id, attr) => {
+        const d = document.createElement('div');
+        d.id = id;
+        d.textContent = 'texto';
+        if (attr !== null) d.setAttribute('contenteditable', attr);
+        document.querySelector('main').appendChild(d);
+      };
+      add('ce-true', 'true');
+      add('ce-vazio', '');
+      add('ce-plain', 'plaintext-only');
+      add('ce-false', 'false');
+      add('ce-nenhum', null);
+    });
+    for (const id of ['ce-true', 'ce-vazio', 'ce-plain'])
+      expect(await cursorOf(page, `#${id}`), id).toBe('text');
+    for (const id of ['ce-false', 'ce-nenhum'])
+      expect(await cursorOf(page, `#${id}`), id).toContain(
+        'data:image/svg+xml',
+      );
+  });
+
   test('radiogroup acessível: nome, estado marcado e setas selecionam', async ({
     site,
   }) => {

@@ -145,6 +145,14 @@ describe('F8c — CSS do cursor', () => {
     assert.match(PAGE_CSS, /textarea[^{]*\{\s*cursor: text !important/);
   });
 
+  it('contenteditable em qualquer forma editável (true, "", plaintext-only) mantém "text"; false não', () => {
+    const i = PAGE_CSS.indexOf(':is(textarea, [contenteditable]');
+    assert.ok(i > 0);
+    const sel = PAGE_CSS.slice(i, PAGE_CSS.indexOf('{', i));
+    assert.match(sel, /\[contenteditable\]:not\(\[contenteditable="false"\]\)/);
+    assert.equal(sel.includes('[contenteditable="true"]'), false);
+  });
+
   it('o tamanho de cada imagem fica abaixo do limite de cursor do navegador (128px)', () => {
     for (const m of PAGE_CSS.matchAll(/width='(\d+)' height='(\d+)'/g))
       assert.ok(Number(m[1]) <= 128 && Number(m[2]) <= 128);

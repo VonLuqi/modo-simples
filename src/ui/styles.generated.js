@@ -1134,7 +1134,7 @@ export const PAGE_CSS = `
     html:is(.ms-cursor-white, .ms-cursor-black).ms-manual-select-active * {
       cursor: var(--ms-cur-hand) !important;
     }
-    html:is(.ms-cursor-white, .ms-cursor-black) :is(textarea, [contenteditable="true"], input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"], [type="range"], [type="color"], [type="file"])) {
+    html:is(.ms-cursor-white, .ms-cursor-black) :is(textarea, [contenteditable]:not([contenteditable="false"]), input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"], [type="range"], [type="color"], [type="file"])) {
       cursor: text !important;
     }
     /* ── Session chrome (SIMPLES header) + barra sob o nav ───────────────── */
