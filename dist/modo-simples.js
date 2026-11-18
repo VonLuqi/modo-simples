@@ -1217,6 +1217,18 @@
       grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
       gap: calc(0.35 * var(--ms-u));
     }
+    .ms-swatch[hidden] { display: none; }
+    .ms-a11y-warn {
+      margin: calc(0.4 * var(--ms-u)) 0 0;
+      padding: calc(0.4 * var(--ms-u)) calc(0.55 * var(--ms-u));
+      border-left: 4px solid #b45309;
+      border-radius: 4px;
+      background: #fffbeb;
+      color: #7c2d12;
+      font-size: calc(0.8125 * var(--ms-u));
+      font-weight: 600;
+    }
+    .ms-a11y-warn:empty { display: none; }
     .ms-swatch {
       min-height: 36px;
       min-width: 36px;
@@ -1741,6 +1753,13 @@
     html.ms-custom-heading body :is(h1, h2, h3, h4, h5, h6):not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) * {
       color: var(--ms-custom-heading) !important;
     }
+    /* F8a QA M2: links n\xE3o viram "texto comum" sob cor personalizada \u2014 cor pr\xF3pria (\u2265 4,5:1 sobre o
+       fundo efetivo, calculada em domMutator) + sublinhado; vem por \xFAltimo para vencer texto e t\xEDtulos */
+    html.ms-custom-link body a:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *),
+    html.ms-custom-link body a:visited:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      color: var(--ms-custom-link) !important;
+      text-decoration: underline !important;
+    }
 
     /* \u2500\u2500 Reduced motion \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     html.ms-reduced-motion *,
@@ -1828,7 +1847,10 @@
       align-items: center;
       margin-left: auto;
       z-index: 50;
-      flex-shrink: 0;
+      /* encolhe em vez de transbordar a linha do header (texto ampliado no mobile) */
+      flex-shrink: 1;
+      min-width: 0;
+      max-width: 100%;
     }
     #ms-simples-chrome.ms-simples-chrome--fixed {
       position: fixed;
@@ -2336,6 +2358,8 @@
     panelCustomNone: "Padr\xE3o do site",
     panelCustomSwatchLabel: "Usar cor",
     panelCustomPickerLabel: "Escolher outra cor para",
+    panelCustomOther: "Personalizada",
+    panelContrastWarn: "Aten\xE7\xE3o: contraste baixo (recomendado 4,5:1 ou mais) em",
     // sessionChrome.js
     sessionOpenPanelLabel: "Abrir painel de acessibilidade",
     sessionOpenPanelTitle: "Acessibilidade",
@@ -2500,6 +2524,36 @@
     return () => document.removeEventListener("keydown", handleKeydown);
   }
 
+  // src/utils/colorContrast.js
+  var HEX = /^#[0-9a-f]{6}$/i;
+  function luminance(hex) {
+    const [r, g, b] = [1, 3, 5].map((i) => {
+      const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+  function contrastRatio(a, b) {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  }
+  var readableOn = (hex) => luminance(hex) > 0.179 ? "#000000" : "#ffffff";
+  function linkOn(bg) {
+    const best = ["#0000cc", "#93c5fd"].sort(
+      (a, b) => contrastRatio(b, bg) - contrastRatio(a, bg)
+    )[0];
+    return contrastRatio(best, bg) >= 4.5 ? best : readableOn(bg);
+  }
+  function effectiveColors({ customText, customHeading, customBg }) {
+    const ok = (v) => HEX.test(v || "") ? v : "";
+    const t = ok(customText);
+    const h = ok(customHeading);
+    const b = ok(customBg);
+    const bg = b || (t || h ? readableOn(t || h) : "");
+    const text = t || (bg ? readableOn(bg) : "");
+    return { text, heading: h, bg, link: bg ? linkOn(bg) : "" };
+  }
+
   // src/ui/a11yPanel.js
   var TYPO_KEYS = ["lineHeight", "wordSpacing", "letterSpacing"];
   var round2 = (n) => Math.round(n * 100) / 100;
@@ -2642,7 +2696,8 @@
       html: `
         ${radioHead("ms-label-cbg", STRINGS.panelCustomBgTitle, "customBg")}
         <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-cbg" data-option="customBg"></div>
-        <input type="color" class="ms-color-input" data-picker="customBg">`
+        <input type="color" class="ms-color-input" data-picker="customBg">
+        <p class="ms-a11y-warn" role="status" data-contrast-warn></p>`
     },
     dyslexiaFont: {
       html: switchTile({
@@ -2902,6 +2957,13 @@
         b.title = hex;
         group.appendChild(b);
       });
+      const other = radioBtn(
+        "ms-swatch ms-swatch--custom",
+        "x",
+        `${cfg.title}: ${STRINGS.panelCustomOther}`
+      );
+      other.hidden = true;
+      group.appendChild(other);
       panel.querySelector(`[data-picker="${key}"]`).setAttribute("aria-label", `${STRINGS.panelCustomPickerLabel} ${cfg.title}`);
     });
     let _releaseFocus = null;
@@ -2962,7 +3024,9 @@
     });
     panel.querySelectorAll('[role="radiogroup"]').forEach((group) => {
       group.addEventListener("keydown", (e) => {
-        const radios = [...group.querySelectorAll('[role="radio"]')];
+        const radios = [...group.querySelectorAll('[role="radio"]')].filter(
+          (r) => !r.hidden
+        );
         const i = radios.indexOf(e.target);
         if (i < 0) return;
         const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
@@ -2985,7 +3049,7 @@
     });
     panel.querySelector('[data-action="speak"]').addEventListener("click", () => onSpeak());
     function sync(s, ui = {}) {
-      var _a, _b, _c, _d, _e, _f, _g;
+      var _a, _b, _c, _d, _e, _f, _g, _h;
       const modoBtn = panel.querySelector('[data-action="modo-simples"]');
       if (modoBtn) {
         modoBtn.setAttribute("aria-checked", String(!!s.modoSimples));
@@ -3034,12 +3098,36 @@
       Object.keys(CUSTOM_COLORS).forEach((key) => {
         var _a2;
         const val = ((_a2 = s.options) == null ? void 0 : _a2[key]) || "";
+        const other = panel.querySelector(
+          `[data-option="${key}"] .ms-swatch--custom`
+        );
+        if (other) {
+          const isOther = !!val && !CUSTOM_COLORS[key].presets.includes(val);
+          other.hidden = !isOther;
+          other.setAttribute("data-value", isOther ? val : "x");
+          other.style.backgroundColor = isOther ? val : "";
+          other.title = isOther ? val : "";
+        }
         syncRadios(`[data-option="${key}"] .ms-swatch`, val);
         const input = panel.querySelector(`[data-picker="${key}"]`);
         if (input) input.value = val || "#000000";
         const st = panel.querySelector(`[data-state-for="${key}"]`);
         if (st) st.textContent = val || STRINGS.panelCustomNone;
       });
+      const warn = panel.querySelector("[data-contrast-warn]");
+      if (warn) {
+        const bg = (_d = s.options) == null ? void 0 : _d.customBg;
+        const low = [
+          ["customText", STRINGS.panelCustomTextTitle],
+          ["customHeading", STRINGS.panelCustomHeadingTitle]
+        ].filter(([k]) => {
+          var _a2;
+          return bg && ((_a2 = s.options) == null ? void 0 : _a2[k]);
+        }).map(([k, title]) => [title, contrastRatio(s.options[k], bg)]).filter(([, r]) => r < 4.5);
+        warn.textContent = low.map(
+          ([title, r]) => `${STRINGS.panelContrastWarn} ${title} / ${STRINGS.panelCustomBgTitle}: ${r.toFixed(1).replace(".", ",")}:1.`
+        ).join(" ");
+      }
       [
         "dyslexiaFont",
         "readingRuler",
@@ -3068,11 +3156,11 @@
       );
       setState(
         "colorTheme",
-        (_e = (_d = COLOR_THEMES.find((x) => x.value === theme)) == null ? void 0 : _d.label) != null ? _e : theme
+        (_f = (_e = COLOR_THEMES.find((x) => x.value === theme)) == null ? void 0 : _e.label) != null ? _f : theme
       );
       setState(
         "colorSaturation",
-        (_g = (_f = SATURATIONS.find((x) => x.value === sat)) == null ? void 0 : _f.label) != null ? _g : sat
+        (_h = (_g = SATURATIONS.find((x) => x.value === sat)) == null ? void 0 : _g.label) != null ? _h : sat
       );
       const speakBtn = panel.querySelector('[data-action="speak"]');
       if (speakBtn && ui.speaking !== void 0) {
@@ -4342,11 +4430,11 @@
     "ms-theme-lightHigh"
   ];
   var CUSTOM_COLORS2 = {
-    customText: ["ms-custom-text", "--ms-custom-text"],
-    customHeading: ["ms-custom-heading", "--ms-custom-heading"],
-    customBg: ["ms-custom-bg", "--ms-custom-bg"]
+    text: ["ms-custom-text", "--ms-custom-text"],
+    heading: ["ms-custom-heading", "--ms-custom-heading"],
+    bg: ["ms-custom-bg", "--ms-custom-bg"],
+    link: ["ms-custom-link", "--ms-custom-link"]
   };
-  var HEX_COLOR = /^#[0-9a-f]{6}$/i;
   var TYPO_VARS = {
     lineHeight: ["ms-lh", "--ms-lh", ""],
     wordSpacing: ["ms-ws", "--ms-ws", "em"],
@@ -4415,10 +4503,11 @@
     html.classList.add(`ms-theme-${theme}`);
     html.classList.toggle("ms-sat-low", opts.colorSaturation === "low");
     html.classList.toggle("ms-sat-high", opts.colorSaturation === "high");
+    const eff = effectiveColors(opts);
     for (const [key, [cls, prop]] of Object.entries(CUSTOM_COLORS2)) {
-      const on = HEX_COLOR.test(opts[key] || "");
+      const on = !!eff[key];
       html.classList.toggle(cls, on);
-      if (on) (_b = (_a = html.style) == null ? void 0 : _a.setProperty) == null ? void 0 : _b.call(_a, prop, opts[key]);
+      if (on) (_b = (_a = html.style) == null ? void 0 : _a.setProperty) == null ? void 0 : _b.call(_a, prop, eff[key]);
       else (_d = (_c = html.style) == null ? void 0 : _c.removeProperty) == null ? void 0 : _d.call(_c, prop);
     }
     html.classList.toggle("ms-dyslexia-font", !!opts.dyslexiaFont);

@@ -200,4 +200,11 @@
     html.ms-custom-heading body :is(h1, h2, h3, h4, h5, h6):not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) * {
       color: var(--ms-custom-heading) !important;
     }
+    /* F8a QA M2: links não viram "texto comum" sob cor personalizada — cor própria (≥ 4,5:1 sobre o
+       fundo efetivo, calculada em domMutator) + sublinhado; vem por último para vencer texto e títulos */
+    html.ms-custom-link body a:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *),
+    html.ms-custom-link body a:visited:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      color: var(--ms-custom-link) !important;
+      text-decoration: underline !important;
+    }
 

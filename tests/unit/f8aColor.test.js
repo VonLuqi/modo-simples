@@ -88,7 +88,7 @@ describe('F8a — cor personalizada', () => {
   it('cada alvo tem 8 presets + "padrão" e um seletor livre', () => {
     for (const [key] of alvos) {
       const sw = panel().querySelectorAll(`[data-option="${key}"] .ms-swatch`);
-      assert.equal(sw.length, 9, key); // 8 presets + padrão do site
+      assert.equal(sw.length, 10, key); // 8 presets + padrão do site + "Personalizada" (oculta)
       assert.ok(q(`input[type="color"][data-picker="${key}"]`), key);
       assert.ok(q(`input[data-picker="${key}"]`).getAttribute('aria-label'));
     }
@@ -97,7 +97,7 @@ describe('F8a — cor personalizada', () => {
   it('preset aplica classe + variável; "padrão" remove os dois', () => {
     for (const [key, cls, prop] of alvos) {
       const preset = q(
-        `[data-option="${key}"] .ms-swatch:not(.ms-swatch--none)`,
+        `[data-option="${key}"] .ms-swatch:not(.ms-swatch--none):not(.ms-swatch--custom)`,
       );
       const hex = preset.getAttribute('data-value');
       preset.click();
@@ -139,7 +139,7 @@ describe('F8a — cor personalizada', () => {
     };
     for (const key of ['customText', 'customHeading']) {
       for (const sw of panel().querySelectorAll(
-        `[data-option="${key}"] .ms-swatch:not(.ms-swatch--none)`,
+        `[data-option="${key}"] .ms-swatch:not(.ms-swatch--none):not(.ms-swatch--custom)`,
       )) {
         const hex = sw.getAttribute('data-value');
         assert.ok(

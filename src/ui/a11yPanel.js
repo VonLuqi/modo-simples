@@ -8,6 +8,7 @@
 import { trapFocus } from '../utils/focus.js';
 import { STRINGS as S } from './strings.js';
 import { TYPO_LIMITS } from '../core/state.js';
+import { contrastRatio } from '../utils/colorContrast.js';
 
 /** Sliders de tipografia (F8b): posição 0 = padrão do site; o resto mapeia para o valor real. */
 const TYPO_KEYS = ['lineHeight', 'wordSpacing', 'letterSpacing'];
@@ -184,7 +185,8 @@ const CONTROLS = {
     html: `
         ${radioHead('ms-label-cbg', S.panelCustomBgTitle, 'customBg')}
         <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-cbg" data-option="customBg"></div>
-        <input type="color" class="ms-color-input" data-picker="customBg">`,
+        <input type="color" class="ms-color-input" data-picker="customBg">
+        <p class="ms-a11y-warn" role="status" data-contrast-warn></p>`,
   },
   dyslexiaFont: {
     html: switchTile({
@@ -470,6 +472,15 @@ export function createA11yPanel({
       b.title = hex;
       group.appendChild(b);
     });
+    // L1 (QA): cor do seletor livre não coincide com preset — este rádio "Personalizada" aparece
+    // marcado (aria-checked) só enquanto vale, para o leitor de tela saber o estado
+    const other = radioBtn(
+      'ms-swatch ms-swatch--custom',
+      'x',
+      `${cfg.title}: ${S.panelCustomOther}`,
+    );
+    other.hidden = true;
+    group.appendChild(other);
     panel
       .querySelector(`[data-picker="${key}"]`)
       .setAttribute('aria-label', `${S.panelCustomPickerLabel} ${cfg.title}`);
@@ -558,7 +569,9 @@ export function createA11yPanel({
   // UX-10: radiogroup (APG) — roving tabindex (em sync) + setas movem e selecionam
   panel.querySelectorAll('[role="radiogroup"]').forEach((group) => {
     group.addEventListener('keydown', (e) => {
-      const radios = [...group.querySelectorAll('[role="radio"]')];
+      const radios = [...group.querySelectorAll('[role="radio"]')].filter(
+        (r) => !r.hidden,
+      );
       const i = radios.indexOf(e.target);
       if (i < 0) return;
       const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[
@@ -650,12 +663,44 @@ export function createA11yPanel({
     syncRadios('[data-option="colorSaturation"] .ms-segment', sat);
     Object.keys(CUSTOM_COLORS).forEach((key) => {
       const val = s.options?.[key] || '';
+      const other = panel.querySelector(
+        `[data-option="${key}"] .ms-swatch--custom`,
+      );
+      if (other) {
+        const isOther = !!val && !CUSTOM_COLORS[key].presets.includes(val);
+        other.hidden = !isOther;
+        other.setAttribute('data-value', isOther ? val : 'x');
+        other.style.backgroundColor = isOther ? val : '';
+        other.title = isOther ? val : '';
+      }
       syncRadios(`[data-option="${key}"] .ms-swatch`, val);
       const input = panel.querySelector(`[data-picker="${key}"]`);
       if (input) input.value = val || '#000000';
       const st = panel.querySelector(`[data-state-for="${key}"]`);
       if (st) st.textContent = val || S.panelCustomNone;
     });
+
+    // M1 (QA): aviso (não bloqueia) quando o par escolhido tem < 4,5:1; o lado não escolhido é
+    // completado automaticamente em domMutator (utils/colorContrast)
+    const warn = panel.querySelector('[data-contrast-warn]');
+    if (warn) {
+      const bg = s.options?.customBg;
+      const low = [
+        ['customText', S.panelCustomTextTitle],
+        ['customHeading', S.panelCustomHeadingTitle],
+      ]
+        .filter(([k]) => bg && s.options?.[k])
+        .map(([k, title]) => [title, contrastRatio(s.options[k], bg)])
+        .filter(([, r]) => r < 4.5);
+      warn.textContent = low
+        .map(
+          ([title, r]) =>
+            `${S.panelContrastWarn} ${title} / ${S.panelCustomBgTitle}: ${r
+              .toFixed(1)
+              .replace('.', ',')}:1.`,
+        )
+        .join(' ');
+    }
 
     [
       'dyslexiaFont',

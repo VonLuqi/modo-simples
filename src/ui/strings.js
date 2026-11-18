@@ -88,6 +88,8 @@ export const STRINGS = Object.freeze({
   panelCustomNone: 'Padrão do site',
   panelCustomSwatchLabel: 'Usar cor',
   panelCustomPickerLabel: 'Escolher outra cor para',
+  panelCustomOther: 'Personalizada',
+  panelContrastWarn: 'Atenção: contraste baixo (recomendado 4,5:1 ou mais) em',
 
   // sessionChrome.js
   sessionOpenPanelLabel: 'Abrir painel de acessibilidade',

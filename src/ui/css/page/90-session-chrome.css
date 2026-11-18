@@ -10,7 +10,10 @@
       align-items: center;
       margin-left: auto;
       z-index: 50;
-      flex-shrink: 0;
+      /* encolhe em vez de transbordar a linha do header (texto ampliado no mobile) */
+      flex-shrink: 1;
+      min-width: 0;
+      max-width: 100%;
     }
     #ms-simples-chrome.ms-simples-chrome--fixed {
       position: fixed;

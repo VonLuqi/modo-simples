@@ -61,6 +61,18 @@
       grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
       gap: calc(0.35 * var(--ms-u));
     }
+    .ms-swatch[hidden] { display: none; }
+    .ms-a11y-warn {
+      margin: calc(0.4 * var(--ms-u)) 0 0;
+      padding: calc(0.4 * var(--ms-u)) calc(0.55 * var(--ms-u));
+      border-left: 4px solid #b45309;
+      border-radius: 4px;
+      background: #fffbeb;
+      color: #7c2d12;
+      font-size: calc(0.8125 * var(--ms-u));
+      font-weight: 600;
+    }
+    .ms-a11y-warn:empty { display: none; }
     .ms-swatch {
       min-height: 36px;
       min-width: 36px;

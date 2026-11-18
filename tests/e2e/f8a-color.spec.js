@@ -148,9 +148,9 @@ test.describe('F8a — cor', () => {
       '#14532d',
     );
 
-    // "Padrão do site" remove só aquele alvo
+    // "Padrão do site" remove só a escolha do texto; com fundo escuro escolhido o texto vira o automático (M1)
     await page.locator(`${group('customText')} .ms-swatch--none`).click();
-    expect(await htmlHas(page, 'ms-custom-text')).toBe(false);
+    expect(await colorOf(page, 'main p')).toBe('rgb(255, 255, 255)');
     expect(await htmlHas(page, 'ms-custom-heading')).toBe(true);
 
     // persiste

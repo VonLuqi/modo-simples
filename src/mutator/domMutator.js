@@ -1,4 +1,5 @@
 import { clampTypo } from '../core/state.js';
+import { effectiveColors } from '../utils/colorContrast.js';
 import { detectMainContent } from '../heuristics/contentDetector.js';
 import { detectDistractions } from '../heuristics/distractionDetector.js';
 import {
@@ -39,13 +40,16 @@ const THEME_CLASSES = [
   'ms-theme-lightHigh',
 ];
 
-/** Cor personalizada: opção → [classe, variável CSS]. Só #rrggbb entra no style. */
+/**
+ * Cor personalizada: cor efetiva (ver effectiveColors) → [classe, variável CSS].
+ * Só #rrggbb entra no style; `link` é derivado (contraste ≥ 4,5:1 sobre o fundo efetivo).
+ */
 const CUSTOM_COLORS = {
-  customText: ['ms-custom-text', '--ms-custom-text'],
-  customHeading: ['ms-custom-heading', '--ms-custom-heading'],
-  customBg: ['ms-custom-bg', '--ms-custom-bg'],
+  text: ['ms-custom-text', '--ms-custom-text'],
+  heading: ['ms-custom-heading', '--ms-custom-heading'],
+  bg: ['ms-custom-bg', '--ms-custom-bg'],
+  link: ['ms-custom-link', '--ms-custom-link'],
 };
-const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
 /** F8b — tipografia fina: opção → [classe, variável CSS, unidade]. 0 = sem classe nem variável. */
 const TYPO_VARS = {
@@ -172,10 +176,11 @@ export function applyOptions(state) {
   // 'normal' = sem classe (não mexe no filtro do host)
   html.classList.toggle('ms-sat-low', opts.colorSaturation === 'low');
   html.classList.toggle('ms-sat-high', opts.colorSaturation === 'high');
+  const eff = effectiveColors(opts);
   for (const [key, [cls, prop]] of Object.entries(CUSTOM_COLORS)) {
-    const on = HEX_COLOR.test(opts[key] || '');
+    const on = !!eff[key];
     html.classList.toggle(cls, on);
-    if (on) html.style?.setProperty?.(prop, opts[key]);
+    if (on) html.style?.setProperty?.(prop, eff[key]);
     else html.style?.removeProperty?.(prop);
   }
 

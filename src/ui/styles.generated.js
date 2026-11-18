@@ -478,6 +478,18 @@ export const UI_CSS = `
       grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
       gap: calc(0.35 * var(--ms-u));
     }
+    .ms-swatch[hidden] { display: none; }
+    .ms-a11y-warn {
+      margin: calc(0.4 * var(--ms-u)) 0 0;
+      padding: calc(0.4 * var(--ms-u)) calc(0.55 * var(--ms-u));
+      border-left: 4px solid #b45309;
+      border-radius: 4px;
+      background: #fffbeb;
+      color: #7c2d12;
+      font-size: calc(0.8125 * var(--ms-u));
+      font-weight: 600;
+    }
+    .ms-a11y-warn:empty { display: none; }
     .ms-swatch {
       min-height: 36px;
       min-width: 36px;
@@ -1003,6 +1015,13 @@ export const PAGE_CSS = `
     html.ms-custom-heading body :is(h1, h2, h3, h4, h5, h6):not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) * {
       color: var(--ms-custom-heading) !important;
     }
+    /* F8a QA M2: links não viram "texto comum" sob cor personalizada — cor própria (≥ 4,5:1 sobre o
+       fundo efetivo, calculada em domMutator) + sublinhado; vem por último para vencer texto e títulos */
+    html.ms-custom-link body a:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *),
+    html.ms-custom-link body a:visited:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      color: var(--ms-custom-link) !important;
+      text-decoration: underline !important;
+    }
 
     /* ── Reduced motion ──────────────────────────────────────────────────── */
     html.ms-reduced-motion *,
@@ -1090,7 +1109,10 @@ export const PAGE_CSS = `
       align-items: center;
       margin-left: auto;
       z-index: 50;
-      flex-shrink: 0;
+      /* encolhe em vez de transbordar a linha do header (texto ampliado no mobile) */
+      flex-shrink: 1;
+      min-width: 0;
+      max-width: 100%;
     }
     #ms-simples-chrome.ms-simples-chrome--fixed {
       position: fixed;
