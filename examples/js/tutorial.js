@@ -304,6 +304,7 @@
     ui.link.hidden = !step.final;
     ui.count.textContent = T.counter(run.i + 1, total);
     ui.back.hidden = run.i === 0;
+    ui.skip.hidden = run.i === T.steps.length - 1; // no último passo "Concluir" já encerra
     ui.next.textContent = run.i === total - 1 ? T.done : T.next;
     announce(T.announce(run.i + 1, total, title, step.text));
   }

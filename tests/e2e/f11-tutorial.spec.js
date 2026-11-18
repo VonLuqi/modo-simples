@@ -122,6 +122,7 @@ test('fluxo só com teclado: percorre os passos, volta, e conclui sem mudar nada
     );
   }
   await expect(nextBtn(page)).toHaveText('Concluir');
+  await expect(page.getByRole('button', { name: 'Pular' })).toBeHidden();
   const link = page.getByRole('link', { name: /Responder ao formulário/ });
   await expect(link).toBeVisible();
   await expect(link).toHaveAttribute('href', FORM);
@@ -278,6 +279,91 @@ test.describe('um só "Pesquisar" por modo', () => {
       'page',
     );
   });
+});
+
+/** Itens do cabeçalho que o visitante vê (folhas: links do nav, Menu, busca, Tutorial, Entrar, chrome da lib). */
+const itensDoCabecalho = (page) =>
+  page.evaluate(() => {
+    const sels = [
+      '.site-header .brand',
+      '.main-nav .nav-toggle',
+      '.main-nav li a',
+      '.header-search',
+      '.header-tutorial',
+      '.site-header__actions .btn',
+      '.header-inner > :not(.brand):not(.main-nav):not(.header-search)',
+      '.header-inner > :not(.brand):not(.main-nav):not(.header-search) button',
+    ];
+    const nodes = [
+      ...new Set(sels.flatMap((s) => [...document.querySelectorAll(s)])),
+    ];
+    return nodes
+      .map((n) => {
+        const r = n.getBoundingClientRect();
+        return {
+          nome: (n.textContent || n.className || n.tagName).trim().slice(0, 24),
+          r: [r.left, r.top, r.right, r.bottom],
+          ok:
+            r.width > 0 &&
+            r.height > 0 &&
+            getComputedStyle(n).visibility !== 'hidden',
+        };
+      })
+      .filter((x) => x.ok);
+  });
+
+const intersecta = (a, b) =>
+  a[0] < b[2] - 0.5 &&
+  b[0] < a[2] - 0.5 &&
+  a[1] < b[3] - 0.5 &&
+  b[1] < a[3] - 0.5;
+
+test.describe('cabeçalho sem sobreposição', () => {
+  const PAGES = [
+    'index',
+    'sobrenos',
+    'cursos',
+    'psg',
+    'unidades',
+    'contato',
+    'aluno',
+    'pesquisa',
+  ];
+
+  for (const largura of [1024, 1280, 1440]) {
+    test(`${largura}px: itens do cabeçalho não se cruzam (8 páginas)`, async ({
+      site,
+    }, testInfo) => {
+      const { page } = site;
+      await page.setViewportSize({ width: largura, height: 800 });
+      for (const p of PAGES) {
+        await page.goto(`/examples/${p}.html`);
+        await waitForLib(page);
+        const itens = await itensDoCabecalho(page);
+        expect(itens.length).toBeGreaterThan(6);
+        for (let i = 0; i < itens.length; i++) {
+          for (let j = i + 1; j < itens.length; j++) {
+            // um contido no outro = wrapper e filho (chrome da lib), não sobreposição
+            const a = itens[i].r;
+            const b = itens[j].r;
+            const contem = (x, y) =>
+              x[0] <= y[0] && x[1] <= y[1] && x[2] >= y[2] && x[3] >= y[3];
+            if (contem(a, b) || contem(b, a)) continue;
+            expect(
+              intersecta(a, b),
+              `${p} @${largura}: "${itens[i].nome}" cruza "${itens[j].nome}"`,
+            ).toBe(false);
+          }
+        }
+        if (p === 'index' && process.env.F11_SHOTS && largura < 1440) {
+          await page.screenshot({
+            path: `${process.env.F11_SHOTS}/desktop-${largura}-index.png`,
+            clip: { x: 0, y: 0, width: largura, height: 240 },
+          });
+        }
+      }
+    });
+  }
 });
 
 test('botão Tutorial existe em todas as páginas do demo', async ({ site }) => {
