@@ -1,32 +1,136 @@
 import { test, expect, waitForLib, expectNoNewViolations } from './helpers.js';
 
 /**
- * F11b — tutorial guiado do demo (ADR-016): auto na 1ª visita, botão "Tutorial" para rever,
- * destaca cada parte do painel sem mudar nenhuma configuração. Também: um só "Pesquisar" por modo.
+ * F11b / T179 — tutorial guiado do demo (ADR-016): auto na 1ª visita, botão "Tutorial" para rever.
+ * Liga UMA ferramenta por passo (efeito visível), desliga ao avançar e devolve tudo ao estado do
+ * visitante no fim / Pular / Esc. Depois, botão "Responder formulário" no canto. Também: um só
+ * "Pesquisar" por modo e cabeçalho sem sobreposição.
  */
 const INDEX = '/examples/index.html';
 const PESQUISA = '/examples/pesquisa.html';
 const FORM = 'https://forms.cloud.microsoft/r/ZuaZ4S0i9t';
-const STEPS = 10;
+const STEPS = 31;
 const KEY = 'ms-demo-tutorial-seen';
+const CORNER_KEY = 'ms-demo-tutorial-corner';
+const PAGES = [
+  'index',
+  'sobrenos',
+  'cursos',
+  'psg',
+  'unidades',
+  'contato',
+  'aluno',
+  'pesquisa',
+];
 
 const tut = (page) => page.locator('#ms-tutorial');
 const balloon = (page) => page.locator('.ms-tut-balloon');
 const nextBtn = (page) => page.locator('.ms-tut-btn--primary');
 const panel = (page) => page.locator('#ms-a11y-panel');
+const corner = (page) => page.locator('#ms-tut-corner');
+const count = (page) => page.locator('.ms-tut-count');
 
-/** Fotografia do que o visitante configurou: storage (sem a flag do tutorial) + switches do painel. */
-const snapshot = (page) =>
-  page.evaluate((key) => {
+/** Tudo que o visitante configurou: storage ms_*, todos os controles do painel e classes do <html>. */
+const uiState = (page) =>
+  page.evaluate(() => {
     const store = Object.fromEntries(
-      Object.entries(localStorage).filter(([k]) => k !== key),
+      Object.entries(localStorage).filter(([k]) => k.startsWith('ms_')),
     );
     const sr = document.getElementById('ms-container').shadowRoot;
-    const checked = [...sr.querySelectorAll('[aria-checked]')].map((n) =>
-      n.getAttribute('aria-checked'),
+    const controls = [
+      ...sr.querySelectorAll(
+        '[aria-checked], [aria-pressed], [data-range], [data-picker]',
+      ),
+    ].map(
+      (n) =>
+        n.getAttribute('aria-checked') ??
+        n.getAttribute('aria-pressed') ??
+        n.value,
     );
-    return { store, checked, htmlClass: document.documentElement.className };
-  }, KEY);
+    const custom = [...sr.querySelectorAll('.ms-profile-custom')].map(
+      (n) => n.hidden,
+    );
+    return {
+      store,
+      controls,
+      custom,
+      htmlClass: document.documentElement.className,
+      htmlStyle: document.documentElement.getAttribute('style') || '',
+    };
+  });
+
+/** A ferramenta do passo está ligada? (null = não dá para afirmar neste navegador) */
+const toolOn = (page, tool) =>
+  page.evaluate((t) => {
+    const sr = document.getElementById('ms-container').shadowRoot;
+    const q = (s) => sr.querySelector(s);
+    if (t.t === 'switch') {
+      const b = q(`.ms-switch[data-option="${t.o}"]`);
+      return b.disabled ? null : b.getAttribute('aria-checked') === 'true';
+    }
+    if (t.t === 'radio') {
+      const r = q(`[data-option="${t.o}"] [role="radio"][aria-checked="true"]`);
+      return (r ? r.getAttribute('data-value') : '') !== t.off;
+    }
+    if (t.t === 'range') {
+      return [...sr.querySelectorAll('[data-range]')].some(
+        (i) => i.value !== '0',
+      );
+    }
+    if (t.t === 'outline') return !!q('.ms-outline');
+    if (t.t === 'grid') return !!document.getElementById('ms-mouse-grid');
+    if (t.t === 'vk') return !!document.getElementById('ms-virtual-keyboard');
+    if (t.t === 'profile') {
+      return (
+        q(`.ms-profile[data-profile="${t.v}"]`).getAttribute('aria-pressed') ===
+        'true'
+      );
+    }
+    if (t.t === 'modo') {
+      return (
+        q('[data-action="modo-simples"]').getAttribute('aria-checked') ===
+        'true'
+      );
+    }
+    return null; // speak: depende de voz do sistema
+  }, tool);
+
+const getSteps = (page) =>
+  page.evaluate(() =>
+    window.MSTutorialStrings.steps.map((s) => ({
+      tool: s.tool || null,
+      final: !!s.final,
+    })),
+  );
+
+/** Visitante com ajustes próprios, feitos pelo painel (switches, escala, tema, perfil). */
+const configurarVisitante = (page, comPerfil) =>
+  page.evaluate(async (perfil) => {
+    const sr = document.getElementById('ms-container').shadowRoot;
+    const click = (s) => sr.querySelector(s).click();
+    sr.querySelector('#ms-fab').click();
+    if (perfil) click('.ms-profile[data-profile="dyslexia"]');
+    click('.ms-switch[data-option="highlightLinks"]');
+    click('.ms-switch[data-option="strongFocus"]');
+    click('[data-option="textScale"] [data-value="125"]');
+    click('[data-option="colorTheme"] [data-value="soft"]');
+    await new Promise((r) => setTimeout(r, 300));
+    sr.querySelector('.ms-a11y-close').click();
+    await new Promise((r) => setTimeout(r, 300));
+  }, comPerfil);
+
+/** Abre o tutorial pelo botão e avança `n` passos pelo teclado (Enter no Próximo). */
+async function iniciar(page) {
+  await page.locator('.header-tutorial').click();
+  await expect(count(page)).toHaveText(`Passo 1 de ${STEPS}`);
+}
+async function avancar(page, ate) {
+  for (let n = 2; n <= ate; n++) {
+    await nextBtn(page).focus();
+    await page.keyboard.press('Enter');
+    await expect(count(page)).toHaveText(`Passo ${n} de ${STEPS}`);
+  }
+}
 
 test.describe('primeira visita', () => {
   test.use({ tutorialSeen: false });
@@ -39,16 +143,62 @@ test.describe('primeira visita', () => {
     await waitForLib(page);
     await expect(tut(page)).toBeVisible();
     await expect(balloon(page)).toBeFocused();
-    await expect(page.locator('.ms-tut-count')).toHaveText(
-      `Passo 1 de ${STEPS}`,
-    );
+    await expect(count(page)).toHaveText(`Passo 1 de ${STEPS}`);
     expect(await page.evaluate((k) => localStorage.getItem(k), KEY)).toBe('1');
+    await expect(corner(page)).toHaveCount(0); // escondido enquanto o tutorial roda
 
     await page.reload();
     await waitForLib(page);
     await page.waitForTimeout(400);
     await expect(tut(page)).toHaveCount(0);
+    await expect(corner(page)).toHaveCount(0); // ainda não terminou o tutorial
   });
+
+  test('Esc no tutorial aberto sozinho: foco no botão Tutorial (não no FAB) e aviso', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await expect(balloon(page)).toBeFocused();
+    await nextBtn(page).click(); // painel aberto pelo tutorial
+    await expect(panel(page)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(tut(page)).toHaveCount(0);
+    await expect(panel(page)).toBeHidden();
+    await expect(page.locator('.header-tutorial')).toBeFocused();
+    await expect(page.locator('#ms-tutorial-live')).toHaveText(
+      'Tutorial encerrado.',
+    );
+  });
+});
+
+test('Esc no replay (botão Tutorial): foco volta ao botão Tutorial', async ({
+  site,
+}) => {
+  const { page } = site;
+  await page.goto(INDEX);
+  await waitForLib(page);
+  await iniciar(page);
+  await nextBtn(page).click();
+  await expect(panel(page)).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(tut(page)).toHaveCount(0);
+  await expect(page.locator('.header-tutorial')).toBeFocused();
+});
+
+test('Esc no Modo Simples: foco na pílula Tutorial (cabeçalho oculto)', async ({
+  site,
+}) => {
+  const { page } = site;
+  await page.goto(INDEX);
+  await waitForLib(page);
+  await page.evaluate(() => window.ModoSimples.enable());
+  await page.evaluate(() => window.MSTutorial.start()); // sem opener útil
+  await expect(tut(page)).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(tut(page)).toHaveCount(0);
+  await expect(page.locator('.ms-pill--tutorial')).toBeFocused();
 });
 
 test('Pular fecha, devolve o foco ao botão Tutorial e o painel segue fechado', async ({
@@ -75,65 +225,192 @@ test('Pular fecha, devolve o foco ao botão Tutorial e o painel segue fechado', 
   );
 });
 
-test('fluxo só com teclado: percorre os passos, volta, e conclui sem mudar nada', async ({
+test('percurso completo só com teclado: cada passo liga a ferramenta e desliga ao avançar; estado idêntico no fim', async ({
+  site,
+}, testInfo) => {
+  test.setTimeout(240_000);
+  const { page } = site;
+  await page.goto(INDEX);
+  await waitForLib(page);
+  const before = await uiState(page);
+
+  await iniciar(page);
+  const steps = await getSteps(page);
+  expect(steps).toHaveLength(STEPS);
+  const live = page.locator('#ms-tutorial-live');
+  await expect(live).toContainText(`Passo 1 de ${STEPS}`);
+  const vp = page.viewportSize();
+  const link = page.locator('.ms-tut-link');
+  const shots = new Set([1, 8, 14, 21, 30]);
+  let prev = null;
+
+  for (let i = 0; i < STEPS; i++) {
+    if (i > 0) {
+      await nextBtn(page).focus();
+      await page.keyboard.press('Enter');
+      await expect(count(page)).toHaveText(`Passo ${i + 1} de ${STEPS}`);
+    }
+    // a ferramenta do passo anterior desligou ao avançar
+    if (prev)
+      expect(await toolOn(page, prev), `${i - 1} desligada`).not.toBe(true);
+
+    const step = steps[i];
+    if (step.tool) {
+      const on = await toolOn(page, step.tool);
+      if (on !== null) expect(on, `passo ${i + 1} ligado`).toBe(true);
+    }
+    // formulário "Responder agora" só no último passo
+    if (step.final) await expect(link).toBeVisible();
+    else await expect(link).toBeHidden();
+    // o foco nunca sai do balão
+    expect(
+      await balloon(page).evaluate((b) => b.contains(document.activeElement)),
+    ).toBe(true);
+    // balão dentro da tela
+    const box = await balloon(page).boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(vp.width);
+    expect(box.y + box.height).toBeLessThanOrEqual(vp.height);
+    if (process.env.F11_SHOTS && shots.has(i)) {
+      await page.screenshot({
+        path: `${process.env.F11_SHOTS}/${testInfo.project.name}-passo-${String(i + 1).padStart(2, '0')}.png`,
+      });
+    }
+    // o tutorial não fica inert enquanto o painel está aberto
+    expect(await tut(page).evaluate((n) => n.hasAttribute('inert'))).toBe(
+      false,
+    );
+    // no último passo tudo já voltou ao estado do visitante
+    if (step.final) expect(await uiState(page)).toEqual(before);
+    prev = step.tool;
+  }
+
+  await expect(nextBtn(page)).toHaveText('Explorar sozinho');
+  await expect(page.getByRole('button', { name: 'Pular' })).toBeHidden();
+  await expect(link).toHaveAttribute('href', FORM);
+  await expect(link).toHaveAttribute('target', '_blank');
+  expect(await link.getAttribute('rel')).toContain('noopener');
+
+  await page.keyboard.press('Enter'); // Explorar sozinho
+  await expect(tut(page)).toHaveCount(0);
+  await expect(panel(page)).toBeHidden(); // estava fechado: volta fechado
+  await expect(page.locator('#ms-fab')).toBeFocused();
+  expect(await uiState(page)).toEqual(before);
+  await expect(corner(page)).toBeVisible();
+});
+
+for (const perfil of [false, true]) {
+  const quem = perfil ? 'com perfil Dislexia + ajuste' : 'com ajustes próprios';
+
+  test(`visitante ${quem}: estado idêntico após o percurso inteiro`, async ({
+    site,
+  }) => {
+    test.setTimeout(240_000);
+    const { page } = site;
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await configurarVisitante(page, perfil);
+    const before = await uiState(page);
+    expect(Object.keys(before.store).length).toBeGreaterThan(0);
+
+    await iniciar(page);
+    await avancar(page, STEPS);
+    await nextBtn(page).focus();
+    await page.keyboard.press('Enter'); // Explorar sozinho
+    await expect(tut(page)).toHaveCount(0);
+    expect(await uiState(page)).toEqual(before);
+  });
+
+  test(`visitante ${quem}: estado idêntico após Pular no meio`, async ({
+    site,
+  }) => {
+    test.setTimeout(120_000);
+    const { page } = site;
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await configurarVisitante(page, perfil);
+    const before = await uiState(page);
+
+    await iniciar(page);
+    await avancar(page, 12);
+    await page.getByRole('button', { name: 'Pular' }).click();
+    await expect(tut(page)).toHaveCount(0);
+    expect(await uiState(page)).toEqual(before);
+    await expect(corner(page)).toBeVisible();
+  });
+
+  test(`visitante ${quem}: estado idêntico após Esc no meio (grade de mouse aberta)`, async ({
+    site,
+  }) => {
+    test.setTimeout(120_000);
+    const { page } = site;
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await configurarVisitante(page, perfil);
+    const before = await uiState(page);
+
+    await iniciar(page);
+    await avancar(page, 21); // 21 = grade de mouse
+    expect(await page.locator('#ms-mouse-grid').count()).toBe(1);
+    await page.keyboard.press('Escape');
+    await expect(tut(page)).toHaveCount(0);
+    await expect(page.locator('#ms-mouse-grid')).toHaveCount(0);
+    expect(await uiState(page)).toEqual(before);
+  });
+}
+
+test('Esc no teclado virtual (passo 22): fecha o teclado e restaura tudo', async ({
+  site,
+}) => {
+  test.setTimeout(120_000);
+  const { page } = site;
+  await page.goto(INDEX);
+  await waitForLib(page);
+  const before = await uiState(page);
+  await iniciar(page);
+  await avancar(page, 22);
+  await expect(page.locator('#ms-virtual-keyboard')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(tut(page)).toHaveCount(0);
+  await expect(page.locator('#ms-virtual-keyboard')).toHaveCount(0);
+  expect(await uiState(page)).toEqual(before);
+});
+
+test('sair da página no meio do tutorial devolve o storage do visitante', async ({
   site,
 }) => {
   const { page } = site;
   await page.goto(INDEX);
   await waitForLib(page);
-  const before = await snapshot(page);
+  await configurarVisitante(page, false);
+  const before = await uiState(page);
+  await iniciar(page);
+  await avancar(page, 6);
+  await page.goto(PESQUISA);
+  await waitForLib(page);
+  expect((await uiState(page)).store).toEqual(before.store);
+});
 
-  await page.locator('.header-tutorial').click();
-  const live = page.locator('#ms-tutorial-live');
-  await expect(live).toContainText('Passo 1 de 10');
-
-  // Passo 1 → 2 pelo teclado: o painel abre e o foco continua no balão (não no painel)
-  await nextBtn(page).focus();
-  await page.keyboard.press('Enter');
-  await expect(panel(page)).toBeVisible();
-  await expect(nextBtn(page)).toBeFocused();
-  await expect(live).toContainText('Passo 2 de 10');
-
-  // Tab nunca sai do balão (o trap do painel da lib não puxa o foco)
-  for (let i = 0; i < 8; i++) {
-    await page.keyboard.press('Tab');
-    const inside = await balloon(page).evaluate((b) =>
-      b.contains(document.activeElement),
-    );
-    expect(inside).toBe(true);
-  }
-  // o tutorial não fica inert enquanto o painel está aberto
-  expect(await tut(page).evaluate((n) => n.hasAttribute('inert'))).toBe(false);
-
-  await nextBtn(page).focus();
-  await page.keyboard.press('Enter'); // 3 (Texto e leitura)
-  await expect(page.locator('.ms-tut-title')).toHaveText('Texto e leitura');
-  await expect(page.locator('.ms-tut-tools li').first()).toBeVisible();
-
+test('fluxo: Voltar do último passo volta a demonstrar; Back ao 1º restaura', async ({
+  site,
+}) => {
+  test.setTimeout(240_000);
+  const { page } = site;
+  await page.goto(INDEX);
+  await waitForLib(page);
+  const before = await uiState(page);
+  await iniciar(page);
+  await avancar(page, 3);
   await page.getByRole('button', { name: 'Voltar' }).focus();
   await page.keyboard.press('Enter');
-  await expect(live).toContainText('Passo 2 de 10');
-  await nextBtn(page).focus();
-
-  for (let n = 3; n <= STEPS; n++) {
-    await page.keyboard.press('Enter');
-    await expect(page.locator('.ms-tut-count')).toHaveText(
-      `Passo ${n} de ${STEPS}`,
-    );
-  }
-  await expect(nextBtn(page)).toHaveText('Concluir');
-  await expect(page.getByRole('button', { name: 'Pular' })).toBeHidden();
-  const link = page.getByRole('link', { name: /Responder ao formulário/ });
-  await expect(link).toBeVisible();
-  await expect(link).toHaveAttribute('href', FORM);
-  await expect(link).toHaveAttribute('target', '_blank');
-  expect(await link.getAttribute('rel')).toContain('noopener');
-
-  await page.keyboard.press('Enter'); // Concluir
+  await expect(count(page)).toHaveText(`Passo 2 de ${STEPS}`);
+  expect(await toolOn(page, (await getSteps(page))[1].tool)).toBe(true);
+  await page.keyboard.press('Enter'); // Voltar (foco continua nele)
+  await expect(count(page)).toHaveText(`Passo 1 de ${STEPS}`);
+  expect(await uiState(page)).toEqual(before); // intro: nada ligado
+  await page.keyboard.press('Escape');
   await expect(tut(page)).toHaveCount(0);
-  await expect(panel(page)).toBeHidden(); // estava fechado: volta fechado
-
-  expect(await snapshot(page)).toEqual(before);
 });
 
 test('Esc fecha só o tutorial; painel aberto antes continua aberto', async ({
@@ -143,7 +420,7 @@ test('Esc fecha só o tutorial; painel aberto antes continua aberto', async ({
   await page.goto(INDEX);
   await waitForLib(page);
 
-  await page.locator('.header-tutorial').click();
+  await iniciar(page);
   await nextBtn(page).focus();
   await page.keyboard.press('Enter'); // painel aberto pelo tutorial
   await expect(panel(page)).toBeVisible();
@@ -161,62 +438,159 @@ test('Esc fecha só o tutorial; painel aberto antes continua aberto', async ({
   await expect(panel(page)).toBeVisible();
 });
 
-test('clique no balão não fecha o painel (clicar fora da lib)', async ({
+test('Recolher o balão esconde o texto e mantém Próximo/Voltar', async ({
   site,
 }) => {
   const { page } = site;
   await page.goto(INDEX);
   await waitForLib(page);
-  await page.locator('.header-tutorial').click();
+  await iniciar(page);
+  await nextBtn(page).click(); // passo 2 (ferramenta)
+  const peek = page.locator('.ms-tut-peek');
+  await expect(peek).toHaveAttribute('aria-expanded', 'true');
+  await peek.click();
+  await expect(peek).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('.ms-tut-text')).toBeHidden();
+  await expect(nextBtn(page)).toBeVisible();
   await nextBtn(page).click();
-  await expect(panel(page)).toBeVisible();
-  await nextBtn(page).click();
-  await expect(panel(page)).toBeVisible();
-  await expect(page.locator('.ms-tut-count')).toHaveText(`Passo 3 de ${STEPS}`);
+  await expect(page.locator('.ms-tut-text')).toBeHidden(); // vale para os próximos passos
 });
 
-test('balão cabe na tela e axe não acusa violação nova no passo do painel', async ({
+test('axe não acusa violação nova em passo de ferramenta (painel aberto)', async ({
   site,
 }, testInfo) => {
   const { page } = site;
   await page.goto(INDEX);
   await waitForLib(page);
-  await page.locator('.header-tutorial').click();
-  await nextBtn(page).click(); // passo 2: painel aberto
-
-  const vp = page.viewportSize();
-  for (let n = 2; n <= STEPS; n++) {
-    const box = await balloon(page).boundingBox();
-    expect(box.x).toBeGreaterThanOrEqual(0);
-    expect(box.y).toBeGreaterThanOrEqual(0);
-    expect(box.x + box.width).toBeLessThanOrEqual(vp.width);
-    expect(box.y + box.height).toBeLessThanOrEqual(vp.height);
-    if (process.env.F11_SHOTS) {
-      await page.screenshot({
-        path: `${process.env.F11_SHOTS}/${testInfo.project.name}-passo-${String(n).padStart(2, '0')}.png`,
-      });
-    }
-    if (n === 3) {
-      await expectNoNewViolations(page, testInfo, 'f11/tutorial-passo-3');
-    }
-    if (n < STEPS) await nextBtn(page).click();
-  }
+  await iniciar(page);
+  await avancar(page, 3);
+  await expectNoNewViolations(page, testInfo, 'f11/tutorial-passo-3');
 });
 
-test('passo 1 (botão) cabe na tela', async ({ site }, testInfo) => {
-  const { page } = site;
-  await page.goto(INDEX);
-  await waitForLib(page);
-  await page.locator('.header-tutorial').click();
-  const box = await balloon(page).boundingBox();
-  const vp = page.viewportSize();
-  expect(box.x + box.width).toBeLessThanOrEqual(vp.width);
-  expect(box.y + box.height).toBeLessThanOrEqual(vp.height);
-  if (process.env.F11_SHOTS) {
-    await page.screenshot({
-      path: `${process.env.F11_SHOTS}/${testInfo.project.name}-passo-01.png`,
+test.describe('botão "Responder formulário" no canto', () => {
+  const FINS = ['Explorar sozinho', 'Pular', 'Esc'];
+
+  async function encerrar(page, como) {
+    await iniciar(page);
+    if (como === 'Explorar sozinho') {
+      await avancar(page, STEPS);
+      await nextBtn(page).focus();
+      await page.keyboard.press('Enter');
+    } else if (como === 'Pular') {
+      await page.getByRole('button', { name: 'Pular' }).click();
+    } else {
+      await page.keyboard.press('Escape');
+    }
+    await expect(tut(page)).toHaveCount(0);
+  }
+
+  test('ausente antes do tutorial; escondido enquanto ele roda', async ({
+    site,
+  }) => {
+    const { page } = site;
+    for (const p of PAGES) {
+      await page.goto(`/examples/${p}.html`);
+      await waitForLib(page);
+      await expect(corner(page)).toHaveCount(0);
+    }
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await iniciar(page);
+    await expect(corner(page)).toHaveCount(0);
+  });
+
+  for (const como of FINS) {
+    test(`aparece depois de ${como}, nas 8 páginas, com link seguro`, async ({
+      site,
+    }) => {
+      test.setTimeout(como === FINS[0] ? 240_000 : 120_000);
+      const { page } = site;
+      await page.goto(INDEX);
+      await waitForLib(page);
+      await encerrar(page, como);
+      for (const p of PAGES) {
+        await page.goto(`/examples/${p}.html`);
+        await waitForLib(page);
+        const link = corner(page).getByRole('link', {
+          name: /Responder formulário/,
+        });
+        await expect(link).toBeVisible();
+        await expect(link).toHaveAttribute('href', FORM);
+        await expect(link).toHaveAttribute('target', '_blank');
+        expect(await link.getAttribute('rel')).toContain('noopener');
+        expect(await link.getAttribute('rel')).toContain('noreferrer');
+      }
     });
   }
+
+  test('alcançável pelo teclado e dispensável; a escolha persiste nas páginas', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await encerrar(page, 'Pular');
+    const link = corner(page).getByRole('link', {
+      name: /Responder formulário/,
+    });
+    await link.focus();
+    await expect(link).toBeFocused();
+    await page.keyboard.press('Tab');
+    const x = corner(page).getByRole('button', { name: /Dispensar/ });
+    await expect(x).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(corner(page)).toHaveCount(0);
+    expect(
+      await page.evaluate((k) => localStorage.getItem(k), CORNER_KEY),
+    ).toBe('x');
+    for (const p of ['sobrenos', 'pesquisa']) {
+      await page.goto(`/examples/${p}.html`);
+      await waitForLib(page);
+      await page.waitForTimeout(300);
+      await expect(corner(page)).toHaveCount(0);
+    }
+  });
+
+  test('não sobrepõe o botão da lib (FAB)', async ({ site }, testInfo) => {
+    const { page } = site;
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await encerrar(page, 'Pular');
+    await expect(corner(page)).toBeVisible();
+    const a = await corner(page).boundingBox();
+    const b = await page.locator('#ms-fab').boundingBox();
+    const cruza =
+      a.x < b.x + b.width &&
+      b.x < a.x + a.width &&
+      a.y < b.y + b.height &&
+      b.y < a.y + a.height;
+    expect(cruza, 'canto cruza o FAB').toBe(false);
+    const vp = page.viewportSize();
+    expect(a.x).toBeGreaterThanOrEqual(0);
+    expect(a.x + a.width).toBeLessThanOrEqual(vp.width);
+    if (process.env.F11_SHOTS) {
+      await page.screenshot({
+        path: `${process.env.F11_SHOTS}/${testInfo.project.name}-canto.png`,
+      });
+    }
+  });
+
+  test('some com o teclado virtual aberto', async ({ site }) => {
+    const { page } = site;
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await encerrar(page, 'Pular');
+    await expect(corner(page)).toBeVisible();
+    await page.evaluate(() => {
+      const sr = document.getElementById('ms-container').shadowRoot;
+      sr.querySelector('#ms-fab').click();
+    });
+    await page
+      .locator('[data-action="virtual-keyboard"]')
+      .evaluate((b) => b.click());
+    await expect(page.locator('#ms-virtual-keyboard')).toHaveCount(1);
+    await expect(corner(page)).toBeHidden();
+  });
 });
 
 test.describe('um só "Pesquisar" por modo', () => {

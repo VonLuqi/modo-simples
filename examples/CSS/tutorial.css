@@ -195,3 +195,174 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* T179: demonstração ao vivo — sem escurecer a página (o efeito precisa aparecer) */
+.ms-tut--live .ms-tut-spot {
+  box-shadow: 0 0 0 5px var(--ms-orange-brand);
+}
+
+.ms-tut-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ms-tut-head .ms-tut-title {
+  flex: 1;
+}
+
+.ms-tut-peek {
+  flex-shrink: 0;
+  min-height: 44px;
+  min-width: 44px;
+  margin: -0.35rem -0.4rem 0 0;
+  padding: 0.2rem 0.6rem;
+  border: 0;
+  background: transparent;
+  color: var(--senac-blue);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.ms-tut-peek:focus-visible,
+.ms-tut-corner__link:focus-visible,
+.ms-tut-corner__x:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--senac-blue);
+}
+
+.ms-tut-peek:focus-visible {
+  outline-color: var(--senac-blue);
+  box-shadow: 0 0 0 5px #fff;
+}
+
+/* Botão do formulário (depois do tutorial): canto oposto ao FAB da lib, embaixo */
+.ms-tut-corner {
+  position: fixed;
+  bottom: 16px;
+  z-index: 2147483000;
+  display: flex;
+  align-items: stretch;
+  max-width: calc(100vw - 96px);
+  background: var(--senac-blue);
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgb(0 24 48 / 30%);
+}
+
+.ms-tut-corner[hidden] {
+  display: none;
+}
+
+.ms-tut-corner[data-side='left'] {
+  left: 16px;
+}
+
+.ms-tut-corner[data-side='right'] {
+  right: 16px;
+}
+
+.ms-tut-corner__link,
+.ms-tut-corner__x {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+}
+
+.ms-tut-corner__link {
+  padding: 0 0.6rem 0 1.1rem;
+  text-decoration: none;
+  border-radius: 999px 0 0 999px;
+}
+
+.ms-tut-corner__link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ms-tut-corner__x {
+  justify-content: center;
+  min-width: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 1.3rem;
+  line-height: 1;
+  border-radius: 0 999px 999px 0;
+  cursor: pointer;
+}
+
+/*
+ * Os temas da lib (amarelo/preto etc.) pintam todo elemento do <body> com seletores de alta
+ * especificidade (vários :not(#id)). O balão e o botão do canto são o "cromo" do tutorial: ficam
+ * legíveis em qualquer tema. O #id repetido 7x só existe para vencer essa especificidade.
+ */
+#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial
+  .ms-tut-balloon {
+  background-color: #fff !important;
+  color: #1c2733 !important;
+  border: 2px solid var(--senac-blue) !important;
+}
+
+#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial
+  .ms-tut-balloon
+  * {
+  background-color: transparent !important;
+  color: inherit !important;
+  border-color: transparent !important;
+}
+
+#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial
+  .ms-tut-title {
+  color: var(--senac-blue-deep) !important;
+}
+
+#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial
+  .ms-tut-peek,
+#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial
+  .ms-tut-link,
+#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial
+  .ms-tut-btn--ghost {
+  color: var(--senac-blue) !important;
+}
+
+#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial
+  .ms-tut-note,
+#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial
+  .ms-tut-count,
+#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial
+  .ms-tut-btn--quiet {
+  color: #4a5764 !important;
+}
+
+#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial
+  .ms-tut-btn--ghost {
+  background-color: #fff !important;
+  border-color: var(--ms-border) !important;
+}
+
+#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial
+  .ms-tut-btn--primary {
+  background-color: var(--senac-blue) !important;
+  color: #fff !important;
+}
+
+#ms-tut-corner#ms-tut-corner#ms-tut-corner#ms-tut-corner#ms-tut-corner#ms-tut-corner#ms-tut-corner {
+  background-color: var(--senac-blue) !important;
+  border: 2px solid #fff !important;
+}
+
+#ms-tut-corner#ms-tut-corner#ms-tut-corner#ms-tut-corner#ms-tut-corner#ms-tut-corner#ms-tut-corner
+  * {
+  background-color: transparent !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
