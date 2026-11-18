@@ -100,6 +100,21 @@ async function boot(
   );
   await page.goto(PAGE);
   await waitForLib(page);
+  // Contrato T200 do núcleo: ModoSimples.onVoiceStatus(cb) → cancela; voiceStatus. Aqui é um stub
+  // controlável (window.__emit) para os testes não dependerem do que o núcleo emite em cada passo.
+  await page.evaluate(() => {
+    const subs = new Set();
+    const ms = window.ModoSimples;
+    ms.voiceStatus = 'stopped';
+    ms.onVoiceStatus = (cb) => {
+      subs.add(cb);
+      return () => subs.delete(cb);
+    };
+    window.__emit = (s) => {
+      ms.voiceStatus = s;
+      subs.forEach((cb) => cb(s));
+    };
+  });
   await openPanel(page);
 }
 
@@ -177,12 +192,15 @@ test.describe('F10e — Comandos de voz: avisos e consentimento', () => {
     await realClick(page, page.locator(SW));
     await expect(page.locator(SW)).toHaveAttribute('aria-checked', 'true');
     await expect(page.locator(DLG)).toHaveCount(0);
-    await expect(page.locator('[data-vc-status]')).toHaveText('Ouvindo…');
     await expect.poll(() => recStarts(page)).toBe(1);
+    await expect(page.locator('[data-vc-status]')).toHaveText('');
+    await page.evaluate(() => window.__emit('listening'));
+    await expect(page.locator('[data-vc-status]')).toHaveText('Ouvindo…');
     expect((await persisted(page)).voiceCommands).toBe(true);
     // desligar pelo mesmo interruptor
     await realClick(page, page.locator(SW));
     await expect(page.locator(SW)).toHaveAttribute('aria-checked', 'false');
+    await page.evaluate(() => window.__emit('stopped'));
     await expect(page.locator('[data-vc-status]')).toHaveText('');
     expect(errors).toEqual([]);
   });
@@ -371,14 +389,44 @@ test.describe('F10e — Comandos de voz: avisos e consentimento', () => {
     await expect.poll(() => recStarts(page)).toBe(1);
     await page.evaluate(() => window.__recError('not-allowed'));
     await expect(page.locator(SW)).toHaveAttribute('aria-checked', 'false');
+    await page.evaluate(() => window.__emit('blocked'));
     await expect(page.locator('[data-vc-status]')).toHaveText(
       'O microfone está bloqueado. Libere nas configurações do navegador.',
     );
+    // ligar de novo limpa o aviso antigo até o núcleo dizer o novo estado
+    await realClick(page, page.locator(SW));
+    await expect(page.locator('[data-vc-status]')).toHaveText('');
     // o status é região viva educada
     await expect(page.locator('[data-vc-status]')).toHaveAttribute(
       'aria-live',
       'polite',
     );
+  });
+
+  test('status do núcleo vira texto simples: sem microfone, erro, falta baixar, falta aceitar, parado', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page);
+    const st = page.locator('[data-vc-status]');
+    for (const [s, texto] of [
+      ['no-mic', 'Não achei um microfone.'],
+      ['error', 'Os comandos de voz pararam. Tente ligar de novo.'],
+      [
+        'needs-model',
+        'Falta baixar o reconhecimento de voz no seu aparelho para usar comandos de voz.',
+      ],
+      [
+        'needs-consent',
+        'Para usar comandos de voz, é preciso aceitar que sua voz vá para o servidor do navegador, por exemplo o Google.',
+      ],
+      ['listening', 'Ouvindo…'],
+      ['stopped', ''],
+    ]) {
+      await page.evaluate((x) => window.__emit(x), s);
+      await expect(st).toHaveText(texto);
+    }
+    await expect(st).toHaveAttribute('aria-live', 'polite');
   });
 
   test('"Ver comandos" abre e fecha a lista com as 13 frases', async ({

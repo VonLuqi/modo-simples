@@ -141,7 +141,7 @@ test.describe('F10b — Estúdio de Voz', () => {
     await page.locator(range('voicePitch')).focus();
     await page.keyboard.press('End'); // 2
     await page.locator(range('voiceVolume')).focus();
-    await page.keyboard.press('Home'); // 0%
+    await page.keyboard.press('Home'); // 10% (mínimo 0,1)
     await realClick(page, page.locator('[data-action="voice-test"]'));
     const out = await spoken(page);
     expect(out.at(-1)).toEqual({
@@ -149,7 +149,7 @@ test.describe('F10b — Estúdio de Voz', () => {
       voice: 'Maria Brasil',
       rate: 0.5,
       pitch: 2,
-      volume: 0,
+      volume: 0.1,
       lang: 'pt-BR',
     });
   });
@@ -168,6 +168,52 @@ test.describe('F10b — Estúdio de Voz', () => {
       'aria-valuetext',
       '1,0×',
     );
+  });
+
+  test('L1 (WCAG 2.5.3): o nome acessível de cada botão começa pelo texto visível', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page);
+    for (const action of ['voice-test', 'voice-reset']) {
+      const { visivel, nome } = await page
+        .locator(`[data-action="${action}"]`)
+        .evaluate((b) => ({
+          visivel: b.textContent.trim(),
+          nome: b.getAttribute('aria-label') || b.textContent.trim(),
+        }));
+      expect(nome.toLowerCase().startsWith(visivel.toLowerCase())).toBe(true);
+    }
+    await expect(
+      page.getByRole('button', { name: 'Voltar ao padrão', exact: false }),
+    ).toHaveCount(1);
+  });
+
+  test('L2: o seletor de voz não é reconstruído a cada atualização do painel (menu em uso)', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page);
+    const sel = page.locator(SEL);
+    await sel.focus();
+    await sel.evaluate((s) => {
+      s.querySelector('option').__marca = true; // se reconstruir, o nó some
+    });
+    // dispara atualizações do painel (sync) sem tirar o foco do seletor
+    for (const v of ['1.5', '1.6', '1.7']) {
+      await page.locator(range('voiceRate')).evaluate((i, val) => {
+        i.value = val;
+        i.dispatchEvent(new Event('input', { bubbles: true }));
+      }, v);
+    }
+    await expect(page.locator(range('voiceRate'))).toHaveAttribute(
+      'aria-valuetext',
+      '1,7×',
+    );
+    expect(
+      await sel.evaluate((s) => s.querySelector('option').__marca === true),
+    ).toBe(true);
+    await expect(sel).toBeFocused();
   });
 
   test('sem speechSynthesis: controles desligados com o motivo', async ({

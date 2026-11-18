@@ -56,7 +56,7 @@ export const STRINGS = Object.freeze({
   panelVoiceTest: 'Testar voz',
   panelVoiceTestLabel: 'Testar voz com estas configurações',
   panelVoiceReset: 'Voltar ao padrão',
-  panelVoiceResetLabel: 'Voltar voz, velocidade, tom e volume ao padrão',
+  panelVoiceResetLabel: 'Voltar ao padrão: voz, velocidade, tom e volume',
   panelVoiceUnsupported:
     'Este navegador não tem voz para ler. Tente outro navegador.',
   // F10e — pausar/continuar e comandos de voz no painel
@@ -72,6 +72,8 @@ export const STRINGS = Object.freeze({
   panelVcListening: 'Ouvindo…',
   panelVcBlocked:
     'O microfone está bloqueado. Libere nas configurações do navegador.',
+  panelVcNoMic: 'Não achei um microfone.',
+  panelVcError: 'Os comandos de voz pararam. Tente ligar de novo.',
   panelVcRevoke: 'Parar de enviar minha voz',
   panelVcRevokeLabel: 'Parar de enviar minha voz e desligar comandos de voz',
   panelVcShow: 'Ver comandos',

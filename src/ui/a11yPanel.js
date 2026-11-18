@@ -861,6 +861,9 @@ export function createA11yPanel({
     onSetOption('voiceName', voiceSel.value),
   );
   let voiceName = ''; // última voz salva (sync); reaplicada quando a lista de vozes muda
+  let voicesSig = null; // assinatura (nomes) da lista montada: só reconstrói se mudar
+  const isVoiceSelFocused = () =>
+    panel.getRootNode?.().activeElement === voiceSel;
   const fillVoices = (selected) => {
     let voices = [];
     try {
@@ -868,6 +871,16 @@ export function createA11yPanel({
     } catch {
       /* speechSynthesis parcial (sem getVoices): só a opção Automática */
     }
+    const sig = voices.map((v) => `${v.name}|${v.lang}`).join('\n');
+    if (sig === voicesSig) {
+      // mesma lista: só ajusta a seleção, e nunca com o seletor em uso (L2: não fecha o menu aberto)
+      if (!isVoiceSelFocused() && voiceSel.value !== (selected || '')) {
+        voiceSel.value = selected || '';
+      }
+      return;
+    }
+    if (isVoiceSelFocused()) return; // lista mudou com o menu em uso: a próxima sync reconstrói
+    voicesSig = sig;
     voiceSel.textContent = '';
     const auto = document.createElement('option');
     auto.value = '';
@@ -923,9 +936,19 @@ export function createA11yPanel({
   let recMode = null; // 'local' | 'download' | 'cloud' | 'none'
   let vcOn = false;
   let vcConsent = false;
-  let vcNote = ''; // 'blocked' | 'error' quando o núcleo desligou sozinho
-  let vcUserOff = false; // desligou por ação da pessoa (não é falha)
+  let vcCore = ''; // último status do núcleo (ModoSimples.onVoiceStatus); '' = ainda não sei
+  let vcUnsub = null;
   let lastSync = null;
+  // assina o status do núcleo na 1ª chance (a instância pública aparece depois de criar o painel)
+  const subscribeVoiceStatus = () => {
+    const ms = globalThis.ModoSimples;
+    if (vcUnsub || typeof ms?.onVoiceStatus !== 'function') return;
+    vcCore = ms.voiceStatus || '';
+    vcUnsub = ms.onVoiceStatus((st) => {
+      vcCore = st;
+      renderVcStatus();
+    });
+  };
   // sem consultar o navegador ao criar o painel (available() só quando a pessoa clica):
   // "none" = sem SpeechRecognition ou página sem HTTPS (mesma regra de getRecognitionMode)
   if (
@@ -934,14 +957,23 @@ export function createA11yPanel({
   ) {
     recMode = 'none';
   }
+  const VC_TEXT = {
+    listening: S.panelVcListening,
+    blocked: S.panelVcBlocked,
+    'no-mic': S.panelVcNoMic,
+    error: S.panelVcError,
+    'needs-consent': VC['status_needs-consent'],
+    'needs-model': VC['status_needs-model'],
+    unsupported: S.panelVcUnsupported,
+  };
   const renderVcStatus = () => {
-    vcStatus.textContent = vcOn
-      ? S.panelVcListening
-      : vcNote === 'blocked'
-        ? S.panelVcBlocked
-        : vcNote === 'error'
-          ? VC.status_error
-          : '';
+    if (recMode === 'none') return; // o motivo fixo é posto em sync()
+    // sem núcleo que avise (versão antiga): ligado = ouvindo
+    vcStatus.textContent = vcUnsub
+      ? VC_TEXT[vcCore] || ''
+      : vcOn
+        ? S.panelVcListening
+        : '';
   };
 
   // Diálogo próprio (role=dialog, modal): o resto do painel fica inerte, então o Tab não escapa
@@ -1030,7 +1062,8 @@ export function createA11yPanel({
     return el;
   };
   const turnOn = () => {
-    vcNote = '';
+    vcCore = ''; // a falha anterior (bloqueado etc.) sai da tela até o núcleo dizer o novo estado
+    renderVcStatus();
     onSetOption('voiceCommands', true);
   };
   const askCloud = (prefix = '') => {
@@ -1079,8 +1112,6 @@ export function createA11yPanel({
   };
   vcSwitch.addEventListener('click', async () => {
     if (vcOn) {
-      vcUserOff = true;
-      vcNote = '';
       onSetOption('voiceCommands', false);
       return;
     }
@@ -1092,16 +1123,9 @@ export function createA11yPanel({
     else sync(...lastSync); // 'none': o interruptor fica desligado com o motivo
   });
   vcRevoke.addEventListener('click', () => {
-    vcUserOff = true;
-    vcNote = '';
     onSetOption('voiceCommands', false);
     onSetOption('voiceCloudConsent', false);
   });
-  panel
-    .querySelector('[data-action="reset-all"]')
-    .addEventListener('click', () => {
-      vcUserOff = true;
-    });
   panel
     .querySelector('[data-action="move-side"]')
     .addEventListener('click', () => onMoveSide?.());
@@ -1358,22 +1382,9 @@ export function createA11yPanel({
     }
 
     // F10e: comandos de voz (status, motivo de desligar sozinho, revogar consentimento)
-    const wasOn = vcOn;
     vcOn = !!s.options?.voiceCommands;
     vcConsent = !!s.options?.voiceCloudConsent;
-    if (vcOn) vcNote = '';
-    else if (wasOn && !vcUserOff) {
-      // o núcleo desligou sozinho: mic sem permissão = bloqueado; senão, os comandos pararam
-      vcNote = 'error';
-      navigator.permissions
-        ?.query({ name: 'microphone' })
-        .then((r) => {
-          if (r.state !== 'granted') vcNote = 'blocked';
-        })
-        .catch(() => {})
-        .finally(renderVcStatus);
-    }
-    if (!vcOn) vcUserOff = false;
+    subscribeVoiceStatus();
     renderVcStatus();
     setShown(vcRevoke, vcConsent);
     if (recMode === 'none') {
@@ -1448,6 +1459,7 @@ export function createA11yPanel({
 
   function open() {
     panel.hidden = false;
+    subscribeVoiceStatus();
     _releaseFocus = trapFocus(panel);
     const closeBtn = panel.querySelector('.ms-a11y-close');
     if (closeBtn) closeBtn.focus();
