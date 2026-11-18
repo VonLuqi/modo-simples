@@ -151,6 +151,11 @@ describe('F8c — CSS do cursor', () => {
     const sel = PAGE_CSS.slice(i, PAGE_CSS.indexOf('{', i));
     assert.match(sel, /\[contenteditable\]:not\(\[contenteditable="false"\]\)/);
     assert.equal(sel.includes('[contenteditable="true"]'), false);
+    // descendentes do editável, exceto subárvores contenteditable="false"
+    assert.match(
+      sel,
+      /\[contenteditable\]:not\(\[contenteditable="false"\]\) \*:not\(\[contenteditable="false"\]\):not\(\[contenteditable="false"\] \*\)/,
+    );
   });
 
   it('o tamanho de cada imagem fica abaixo do limite de cursor do navegador (128px)', () => {

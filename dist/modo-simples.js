@@ -1886,7 +1886,9 @@
     html:is(.ms-cursor-white, .ms-cursor-black).ms-manual-select-active * {
       cursor: var(--ms-cur-hand) !important;
     }
-    html:is(.ms-cursor-white, .ms-cursor-black) :is(textarea, [contenteditable]:not([contenteditable="false"]), input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"], [type="range"], [type="color"], [type="file"])) {
+    html:is(.ms-cursor-white, .ms-cursor-black) :is(textarea, [contenteditable]:not([contenteditable="false"]), input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"], [type="range"], [type="color"], [type="file"])),
+    /* filhos de bloco edit\xE1vel (editores ricos p\xF5em p/span dentro), menos sub\xE1rvores contenteditable="false" */
+    html:is(.ms-cursor-white, .ms-cursor-black) [contenteditable]:not([contenteditable="false"]) *:not([contenteditable="false"]):not([contenteditable="false"] *) {
       cursor: text !important;
     }
     /* \u2500\u2500 Session chrome (SIMPLES header) + barra sob o nav \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */

@@ -87,6 +87,32 @@ test.describe('F8c — cursor grande', () => {
       );
   });
 
+  test('descendentes de bloco editável (p/span) têm cursor text; subárvore contenteditable=false aninhada mantém a seta grande', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page);
+    await page.locator('#ms-sec-colors-btn').click();
+    await page.locator(`${group} [data-value="bigBlack"]`).click();
+    await page.evaluate(() => {
+      const d = document.createElement('div');
+      d.id = 'editor';
+      d.setAttribute('contenteditable', 'true');
+      d.innerHTML =
+        '<p id="ed-p">um <span id="ed-span">dois <b id="ed-b">três</b></span></p>' +
+        '<div id="ed-lock" contenteditable="false"><p id="ed-lock-p">bloqueado <span id="ed-lock-span">x</span></p></div>';
+      document.querySelector('main').appendChild(d);
+    });
+    for (const id of ['editor', 'ed-p', 'ed-span', 'ed-b'])
+      expect(await cursorOf(page, `#${id}`), id).toBe('text');
+    for (const id of ['ed-lock', 'ed-lock-p', 'ed-lock-span'])
+      expect(await cursorOf(page, `#${id}`), id).toContain(
+        'data:image/svg+xml',
+      );
+    // fora do editor nada muda
+    expect(await cursorOf(page, 'main p')).toContain('data:image/svg+xml');
+  });
+
   test('radiogroup acessível: nome, estado marcado e setas selecionam', async ({
     site,
   }) => {
