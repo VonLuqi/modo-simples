@@ -2038,15 +2038,22 @@
       color: #000 !important;
     }
     html.ms-highlight-controls :is(button, [role="button"], input, select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
-      outline: 3px solid #0b57d0 !important;
-      outline-offset: 2px !important;
+      /* sombra, n\xE3o outline: o anel de foco nativo (outline) continua vis\xEDvel por cima do destaque */
+      box-shadow: 0 0 0 3px #0b57d0 !important;
     }
-    html.ms-enlarge-targets :is(a, button, [role="button"], input:not([type="hidden"], [type="checkbox"], [type="radio"]), select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
+    html.ms-enlarge-targets :is(button, [role="button"], input:not([type="hidden"], [type="checkbox"], [type="radio"]), select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
       min-width: 44px !important;
       min-height: 44px !important;
       box-sizing: border-box !important;
     }
-    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]):not(:has(img)) {
+    /* Links soltos (menu, bot\xE3o-link, lista de links) ganham 44px. Links no meio de texto corrido
+       (WCAG 2.5.8, exce\xE7\xE3o "em linha") ficam em linha, sem tamanho m\xEDnimo, para a frase quebrar normal. */
+    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
+      min-width: 44px !important;
+      min-height: 44px !important;
+      box-sizing: border-box !important;
+    }
+    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]):not(:has(img)):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
       display: inline-block !important;
     }
     /* \u2500\u2500 Foco bem vis\xEDvel (F7e): anel duplo (preto + amarelo), leg\xEDvel em qualquer fundo \u2500\u2500 */
@@ -6452,7 +6459,14 @@
   var _pending = null;
   var _escaped = false;
   var _last = "";
+  var _source = null;
+  var _scroll0 = { x: 0, y: 0 };
   var _listeners2 = [];
+  var SENSITIVE_AC = /^(cc-|one-time-code$|new-password$|current-password$)/;
+  function isSensitive(el2) {
+    const tokens = (el2.getAttribute("autocomplete") || "").toLowerCase().split(/\s+/);
+    return tokens.some((t) => SENSITIVE_AC.test(t));
+  }
   var clean3 = (s) => (s || "").replace(/\s+/g, " ").trim();
   function fieldText(el2) {
     var _a;
@@ -6464,9 +6478,13 @@
         return clean3(labelOf(el2));
       }
       if (["button", "submit", "reset"].includes(type)) return clean3(el2.value);
+      if (isSensitive(el2)) return clean3(labelOf(el2));
       return clean3(`${labelOf(el2)} ${el2.value || ""}`);
     }
-    if (tag === "TEXTAREA") return clean3(`${labelOf(el2)} ${el2.value || ""}`);
+    if (tag === "TEXTAREA") {
+      if (isSensitive(el2)) return clean3(labelOf(el2));
+      return clean3(`${labelOf(el2)} ${el2.value || ""}`);
+    }
     if (tag === "SELECT") {
       const opt = (_a = el2.selectedOptions) == null ? void 0 : _a[0];
       return clean3(`${labelOf(el2)} ${opt ? opt.textContent : ""}`);
@@ -6480,16 +6498,20 @@
     return labels || el2.getAttribute("placeholder") || "";
   }
   function magnifierTextFor(el2) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     if (!el2 || el2.nodeType !== 1) return "";
     if ((_a = el2.closest) == null ? void 0 : _a.call(el2, OWN2)) return "";
+    const ce = (_b = el2.closest) == null ? void 0 : _b.call(el2, "[contenteditable]");
+    if (ce && ce.getAttribute("contenteditable") !== "false") {
+      return clean3(ce.getAttribute("aria-label")).slice(0, MAX_CHARS);
+    }
     const tag = el2.tagName;
     if (["INPUT", "TEXTAREA", "SELECT"].includes(tag))
       return fieldText(el2).slice(0, MAX_CHARS);
     if (tag === "IMG") return clean3(el2.getAttribute("alt")).slice(0, MAX_CHARS);
     for (let n = el2; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
-      if ((_b = n.closest) == null ? void 0 : _b.call(n, OWN2)) return "";
-      if ((_c = n.matches) == null ? void 0 : _c.call(n, BLOCK)) {
+      if ((_c = n.closest) == null ? void 0 : _c.call(n, OWN2)) return "";
+      if ((_d = n.matches) == null ? void 0 : _d.call(n, BLOCK)) {
         const t = clean3(n.textContent);
         if (t) return t.slice(0, MAX_CHARS);
       }
@@ -6576,6 +6598,8 @@
       _last = text;
     }
     box.style.setProperty("display", "block", "important");
+    _source = pointer ? "pointer" : "focus";
+    _scroll0 = { x: window.scrollX || 0, y: window.scrollY || 0 };
     let rect = el2.getBoundingClientRect();
     const vh = window.innerHeight || document.documentElement.clientHeight;
     if (pointer && rect.height > vh / 2) {
@@ -6636,7 +6660,21 @@
       { passive: true }
     );
     on(document, "focusin", focus);
-    on(document, "focusout", () => hide2());
+    on(document, "focusout", () => {
+      if (_source === "focus") hide2();
+    });
+    on(document, "pointercancel", () => hide2(), { passive: true });
+    on(
+      document,
+      "scroll",
+      (e) => {
+        if (_source !== "pointer") return;
+        if (e.target === document && Math.abs((window.scrollX || 0) - _scroll0.x) < 1 && Math.abs((window.scrollY || 0) - _scroll0.y) < 1)
+          return;
+        hide2();
+      },
+      { capture: true, passive: true }
+    );
     on(document, "keydown", (e) => {
       if (e.key === "Escape") {
         _escaped = true;
@@ -6661,6 +6699,7 @@
     _pending = null;
     _escaped = false;
     _last = "";
+    _source = null;
     _box == null ? void 0 : _box.remove();
     _box = null;
   }

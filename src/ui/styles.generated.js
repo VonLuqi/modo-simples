@@ -1185,15 +1185,22 @@ export const PAGE_CSS = `
       color: #000 !important;
     }
     html.ms-highlight-controls :is(button, [role="button"], input, select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
-      outline: 3px solid #0b57d0 !important;
-      outline-offset: 2px !important;
+      /* sombra, não outline: o anel de foco nativo (outline) continua visível por cima do destaque */
+      box-shadow: 0 0 0 3px #0b57d0 !important;
     }
-    html.ms-enlarge-targets :is(a, button, [role="button"], input:not([type="hidden"], [type="checkbox"], [type="radio"]), select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
+    html.ms-enlarge-targets :is(button, [role="button"], input:not([type="hidden"], [type="checkbox"], [type="radio"]), select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
       min-width: 44px !important;
       min-height: 44px !important;
       box-sizing: border-box !important;
     }
-    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]):not(:has(img)) {
+    /* Links soltos (menu, botão-link, lista de links) ganham 44px. Links no meio de texto corrido
+       (WCAG 2.5.8, exceção "em linha") ficam em linha, sem tamanho mínimo, para a frase quebrar normal. */
+    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
+      min-width: 44px !important;
+      min-height: 44px !important;
+      box-sizing: border-box !important;
+    }
+    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]):not(:has(img)):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
       display: inline-block !important;
     }
     /* ── Foco bem visível (F7e): anel duplo (preto + amarelo), legível em qualquer fundo ── */

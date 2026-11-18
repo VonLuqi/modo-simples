@@ -25,8 +25,21 @@ let _raf = null;
 let _pending = null;
 let _escaped = false;
 let _last = '';
+/** 'pointer' (mouse/toque) ou 'focus' (teclado): quem mostrou a caixa agora */
+let _source = null;
+/** rolagem da janela quando a caixa foi mostrada (para ignorar scroll sem mudança) */
+let _scroll0 = { x: 0, y: 0 };
 /** @type {Array<[EventTarget, string, Function, object|boolean|undefined]>} */
 let _listeners = [];
+
+/** autocomplete que guarda dados sensíveis: mostra só o rótulo, nunca o valor */
+const SENSITIVE_AC = /^(cc-|one-time-code$|new-password$|current-password$)/;
+function isSensitive(el) {
+  const tokens = (el.getAttribute('autocomplete') || '')
+    .toLowerCase()
+    .split(/\s+/);
+  return tokens.some((t) => SENSITIVE_AC.test(t));
+}
 
 const clean = (s) => (s || '').replace(/\s+/g, ' ').trim();
 
@@ -40,9 +53,13 @@ function fieldText(el) {
       return clean(labelOf(el));
     }
     if (['button', 'submit', 'reset'].includes(type)) return clean(el.value);
+    if (isSensitive(el)) return clean(labelOf(el));
     return clean(`${labelOf(el)} ${el.value || ''}`);
   }
-  if (tag === 'TEXTAREA') return clean(`${labelOf(el)} ${el.value || ''}`);
+  if (tag === 'TEXTAREA') {
+    if (isSensitive(el)) return clean(labelOf(el));
+    return clean(`${labelOf(el)} ${el.value || ''}`);
+  }
   if (tag === 'SELECT') {
     const opt = el.selectedOptions?.[0];
     return clean(`${labelOf(el)} ${opt ? opt.textContent : ''}`);
@@ -66,6 +83,11 @@ function labelOf(el) {
 export function magnifierTextFor(el) {
   if (!el || el.nodeType !== 1) return '';
   if (el.closest?.(OWN)) return '';
+  // contenteditable: o conteúdo é um valor digitado; mostra só o rótulo
+  const ce = el.closest?.('[contenteditable]');
+  if (ce && ce.getAttribute('contenteditable') !== 'false') {
+    return clean(ce.getAttribute('aria-label')).slice(0, MAX_CHARS);
+  }
   const tag = el.tagName;
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag))
     return fieldText(el).slice(0, MAX_CHARS);
@@ -183,6 +205,8 @@ function show(el, pointer) {
     _last = text;
   }
   box.style.setProperty('display', 'block', 'important');
+  _source = pointer ? 'pointer' : 'focus';
+  _scroll0 = { x: window.scrollX || 0, y: window.scrollY || 0 };
   let rect = el.getBoundingClientRect();
   const vh = window.innerHeight || document.documentElement.clientHeight;
   // bloco alto (maior que meia tela): usa só a faixa do ponteiro, para não esconder o resto
@@ -248,7 +272,28 @@ export function startTextMagnifier() {
     { passive: true },
   );
   on(document, 'focusin', focus);
-  on(document, 'focusout', () => hide());
+  // tocar numa área sem foco tira o foco do campo anterior: isso não pode esconder a caixa do toque
+  on(document, 'focusout', () => {
+    if (_source === 'focus') hide();
+  });
+  // toque que vira rolagem cancela o ponteiro: a caixa ficaria no lugar velho
+  on(document, 'pointercancel', () => hide(), { passive: true });
+  // rolagem de verdade (janela mudou de posição ou um contêiner rolou) esconde a caixa do ponteiro
+  on(
+    document,
+    'scroll',
+    (e) => {
+      if (_source !== 'pointer') return;
+      if (
+        e.target === document &&
+        Math.abs((window.scrollX || 0) - _scroll0.x) < 1 &&
+        Math.abs((window.scrollY || 0) - _scroll0.y) < 1
+      )
+        return;
+      hide();
+    },
+    { capture: true, passive: true },
+  );
   on(document, 'keydown', (e) => {
     if (e.key === 'Escape') {
       _escaped = true;
@@ -275,6 +320,7 @@ export function stopTextMagnifier() {
   _pending = null;
   _escaped = false;
   _last = '';
+  _source = null;
   _box?.remove();
   _box = null;
 }

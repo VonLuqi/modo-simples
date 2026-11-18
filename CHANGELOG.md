@@ -4,6 +4,17 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 
 ## [Unreleased]
 
+### Corrigido (F9a–F9b, revisão do QA T159)
+
+- **Lupa de texto** no celular: a caixa não some mais logo depois do toque (tirar o foco de outro campo, barra de endereço mudando a altura da tela e rolagem atrasada não a escondem). Rolar a página (ou tocar e arrastar) agora esconde a caixa, que não fica mais parada no lugar antigo.
+- **Lupa de texto** não mostra o valor de campos com `autocomplete` de cartão (`cc-*`), código de uso único, senha nova/atual, nem o conteúdo de áreas `contenteditable`: aparece só o rótulo.
+- **Ampliar botões**: links no meio de texto corrido (`p`, `dd`, `blockquote`, `figcaption`, `label` e itens de lista/tabela fora de menus) ficam em linha, sem tamanho mínimo (exceção "em linha" da WCAG 2.5.8), e a frase quebra normalmente a 390 px com texto em 175%. Links soltos, botões e campos seguem com 44 × 44 px.
+- **Destacar botões e campos** usa sombra em vez de contorno, então o anel de foco do navegador continua aparecendo por cima do destaque (WCAG 2.4.7), mesmo sem "Foco bem visível".
+
+### Limites conhecidos (F9c — Estrutura da página)
+
+- A lista de títulos e áreas **não enxerga** o que está dentro de shadow roots da página (componentes web com shadow DOM aberto ou fechado); só o DOM comum é lido.
+
 ### Corrigido (F7f, revisão do QA T152)
 
 - **Desligar tudo** com perfil ativo agora faz **um anúncio só** ("Tudo desligado"), sem as mensagens por opção (movimento, vídeos e sons, bloqueio de animações) nem "Modo Simples desativado".

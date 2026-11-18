@@ -67,6 +67,9 @@ test.describe('F9b — Lupa de texto', () => {
       'Este é um parágrafo pequeno',
     );
     await expectBoxOk(page, '#p');
+    // QA M1: nenhum evento posterior (focusout, resize, scroll atrasado) pode esconder a caixa
+    await page.waitForTimeout(600);
+    await expectBoxOk(page, '#p');
   });
 
   test('perto do rodapé a caixa vai para cima do alvo e continua na tela', async ({
