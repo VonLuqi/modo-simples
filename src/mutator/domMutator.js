@@ -1,3 +1,4 @@
+import { clampTypo } from '../core/state.js';
 import { detectMainContent } from '../heuristics/contentDetector.js';
 import { detectDistractions } from '../heuristics/distractionDetector.js';
 import {
@@ -46,10 +47,18 @@ const CUSTOM_COLORS = {
 };
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
+/** F8b — tipografia fina: opção → [classe, variável CSS, unidade]. 0 = sem classe nem variável. */
+const TYPO_VARS = {
+  lineHeight: ['ms-lh', '--ms-lh', ''],
+  wordSpacing: ['ms-ws', '--ms-ws', 'em'],
+  letterSpacing: ['ms-ls', '--ms-ls', 'em'],
+};
+
 const OPTION_FLAG_CLASSES = [
   'ms-sat-low',
   'ms-sat-high',
   ...Object.values(CUSTOM_COLORS).map(([cls]) => cls),
+  ...Object.values(TYPO_VARS).map(([cls]) => cls),
   'ms-dyslexia-font',
   'ms-highlight-links',
   'ms-text-spacing',
@@ -174,6 +183,12 @@ export function applyOptions(state) {
   if (opts.dyslexiaFont) ensureLexendFont();
   html.classList.toggle('ms-highlight-links', !!opts.highlightLinks);
   html.classList.toggle('ms-text-spacing', !!opts.textSpacing);
+  for (const [key, [cls, prop, unit]] of Object.entries(TYPO_VARS)) {
+    const v = clampTypo(key, opts[key]);
+    html.classList.toggle(cls, v > 0);
+    if (v > 0) html.style?.setProperty?.(prop, `${v}${unit}`);
+    else html.style?.removeProperty?.(prop);
+  }
   html.classList.toggle('ms-reduced-motion', !!opts.reducedMotion);
   html.classList.toggle('ms-hide-images', !!opts.hideImages);
   html.classList.toggle('ms-reading-ruler', !!opts.readingRuler);
@@ -241,7 +256,10 @@ export function revert() {
     ...THEME_CLASSES,
     ...OPTION_FLAG_CLASSES,
   );
-  for (const [, prop] of Object.values(CUSTOM_COLORS)) {
+  for (const [, prop] of [
+    ...Object.values(CUSTOM_COLORS),
+    ...Object.values(TYPO_VARS),
+  ]) {
     document.documentElement.style?.removeProperty?.(prop);
   }
 }

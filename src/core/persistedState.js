@@ -1,3 +1,5 @@
+import { clampTypo } from './state.js';
+
 /**
  * Hydrate in-memory state from a persisted payload (localStorage).
  * Preferências do painel (tema, escala, etc.) persistem com ou sem Modo Simples.
@@ -54,6 +56,9 @@ export function hydratePersistedState(saved) {
       readingRuler: Boolean(opts.readingRuler),
       highlightLinks: Boolean(opts.highlightLinks),
       textSpacing: Boolean(opts.textSpacing),
+      lineHeight: clampTypo('lineHeight', opts.lineHeight),
+      wordSpacing: clampTypo('wordSpacing', opts.wordSpacing),
+      letterSpacing: clampTypo('letterSpacing', opts.letterSpacing),
       reducedMotion: Boolean(opts.reducedMotion),
       hideImages: Boolean(opts.hideImages),
       // Linguagem simples é acoplada ao MS; sem MS não reativa “órfã”

@@ -18,12 +18,32 @@ import eventBus from './eventBus.js';
  *       readingRuler:  boolean,
  *       highlightLinks: boolean,
  *       textSpacing:   boolean,
+ *       lineHeight / wordSpacing / letterSpacing: number (0 = padrão; ver TYPO_LIMITS),
  *       reducedMotion: boolean,
  *       hideImages:    boolean,
  *       simpleLanguage: boolean,
  *     }
  *   }
  */
+
+/**
+ * F8b — tipografia fina. 0 = sem override (usa o site / o preset textSpacing).
+ * lineHeight sem unidade; wordSpacing/letterSpacing em em. Os máximos passam do WCAG 1.4.12
+ * (linha 1,5 · palavra 0,16em · letra 0,12em).
+ */
+export const TYPO_LIMITS = {
+  lineHeight: { min: 1.1, max: 3, step: 0.1 },
+  wordSpacing: { min: 0, max: 0.8, step: 0.02 },
+  letterSpacing: { min: 0, max: 0.3, step: 0.01 },
+};
+
+/** Número seguro (vem de storage/painel): inválido ou ≤ 0 → 0; senão limitado ao intervalo. */
+export function clampTypo(key, value) {
+  const n = Number(value);
+  const lim = TYPO_LIMITS[key];
+  if (!lim || !Number.isFinite(n) || n <= 0) return 0;
+  return Math.round(Math.min(lim.max, Math.max(lim.min, n)) * 100) / 100;
+}
 
 const initialState = {
   modoSimples: false,
@@ -39,6 +59,9 @@ const initialState = {
     readingRuler: false,
     highlightLinks: false,
     textSpacing: false,
+    lineHeight: 0,
+    wordSpacing: 0,
+    letterSpacing: 0,
     reducedMotion: false,
     hideImages: false,
     simpleLanguage: false,

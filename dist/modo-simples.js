@@ -207,6 +207,17 @@
   var eventBus_default = eventBus;
 
   // src/core/state.js
+  var TYPO_LIMITS = {
+    lineHeight: { min: 1.1, max: 3, step: 0.1 },
+    wordSpacing: { min: 0, max: 0.8, step: 0.02 },
+    letterSpacing: { min: 0, max: 0.3, step: 0.01 }
+  };
+  function clampTypo(key, value) {
+    const n = Number(value);
+    const lim = TYPO_LIMITS[key];
+    if (!lim || !Number.isFinite(n) || n <= 0) return 0;
+    return Math.round(Math.min(lim.max, Math.max(lim.min, n)) * 100) / 100;
+  }
   var initialState = {
     modoSimples: false,
     panelOpen: false,
@@ -221,6 +232,9 @@
       readingRuler: false,
       highlightLinks: false,
       textSpacing: false,
+      lineHeight: 0,
+      wordSpacing: 0,
+      letterSpacing: 0,
       reducedMotion: false,
       hideImages: false,
       simpleLanguage: false
@@ -461,6 +475,9 @@
         readingRuler: Boolean(opts.readingRuler),
         highlightLinks: Boolean(opts.highlightLinks),
         textSpacing: Boolean(opts.textSpacing),
+        lineHeight: clampTypo("lineHeight", opts.lineHeight),
+        wordSpacing: clampTypo("wordSpacing", opts.wordSpacing),
+        letterSpacing: clampTypo("letterSpacing", opts.letterSpacing),
         reducedMotion: Boolean(opts.reducedMotion),
         hideImages: Boolean(opts.hideImages),
         // Linguagem simples é acoplada ao MS; sem MS não reativa “órfã”
@@ -1325,7 +1342,27 @@
       grid-template-columns: repeat(auto-fill, minmax(calc(5.4 * var(--ms-u)), 1fr));
       gap: calc(0.5 * var(--ms-u));
     }
-    .ms-a11y-block--wide { grid-column: 1 / -1; min-width: 0; }
+    .ms-a11y-block--wide,
+    .ms-a11y-block--span { grid-column: 1 / -1; min-width: 0; }
+    /* F8b: sliders de tipografia */
+    .ms-range { margin-bottom: calc(0.5 * var(--ms-u)); }
+    .ms-range-label {
+      font-size: calc(0.8125 * var(--ms-u));
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .ms-range-input {
+      width: 100%;
+      min-height: 44px;
+      margin: 0;
+      accent-color: var(--ms-blue);
+      cursor: pointer;
+    }
+    .ms-range-input:focus-visible {
+      outline: 2px solid var(--ms-orange);
+      outline-offset: 2px;
+    }
+    .ms-a11y-action--font { width: 100%; margin-top: calc(0.25 * var(--ms-u)); }
     .ms-a11y-control-head {
       display: flex;
       align-items: baseline;
@@ -1754,6 +1791,17 @@
       word-spacing: 0.16em !important;
     }
     html.ms-text-spacing p { margin-bottom: 1.5em !important; }
+
+    /* F8b \u2014 sliders: v\xEAm depois do preset (mesma especificidade) e vencem s\xF3 a propriedade movida */
+    html.ms-lh :is(body, p, li, h1, h2, h3, h4, h5, h6, td, th, dd, dt, blockquote, label) {
+      line-height: var(--ms-lh) !important;
+    }
+    html.ms-ws :is(body, p, li, h1, h2, h3, h4, h5, h6, td, th, dd, dt, blockquote, label) {
+      word-spacing: var(--ms-ws) !important;
+    }
+    html.ms-ls :is(body, p, li, h1, h2, h3, h4, h5, h6, td, th, dd, dt, blockquote, label) {
+      letter-spacing: var(--ms-ls) !important;
+    }
 
     /* \u2500\u2500 Hide images (content + logo; keep only [data-ms-keep-img]) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     html.ms-hide-images img:not([data-ms-keep-img]),
@@ -2271,6 +2319,13 @@
     themeMonoSub: "Tons de cinza",
     themeLightHigh: "Claro Alto Contraste",
     themeLightHighSub: "Fundo branco",
+    panelTypoGroupLabel: "Ajuste fino da tipografia",
+    panelLineHeightTitle: "Altura da linha",
+    panelWordSpacingTitle: "Espa\xE7o entre palavras",
+    panelLetterSpacingTitle: "Espa\xE7o entre letras",
+    panelTypoDefault: "Padr\xE3o do site",
+    panelResetFont: "Redefinir fonte",
+    panelResetFontLabel: "Redefinir fonte: tamanho, fonte acess\xEDvel e espa\xE7amentos",
     panelSaturationTitle: "Satura\xE7\xE3o das cores",
     panelSaturationLow: "Baixa",
     panelSaturationNormal: "Normal",
@@ -2446,6 +2501,11 @@
   }
 
   // src/ui/a11yPanel.js
+  var TYPO_KEYS = ["lineHeight", "wordSpacing", "letterSpacing"];
+  var round2 = (n) => Math.round(n * 100) / 100;
+  var typoValue = (key, idx) => idx <= 0 ? 0 : key === "lineHeight" ? round2(1 + idx * TYPO_LIMITS.lineHeight.step) : round2(idx * TYPO_LIMITS[key].step);
+  var typoIdx = (key, v) => !(v > 0) ? 0 : key === "lineHeight" ? Math.round((v - 1) / TYPO_LIMITS.lineHeight.step) : Math.round(v / TYPO_LIMITS[key].step);
+  var typoText = (key, v) => v > 0 ? `${String(v).replace(".", ",")}${key === "lineHeight" ? "" : " em"}` : STRINGS.panelTypoDefault;
   var TEXT_SCALES = [
     { value: "100", label: "100%", title: STRINGS.scaleDefault },
     { value: "125", label: "125%", title: STRINGS.scaleLarge },
@@ -2619,6 +2679,26 @@
         )
       })
     },
+    // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
+    typography: {
+      html: `
+        <div class="ms-a11y-block--span" role="group" aria-labelledby="ms-label-typo">
+          <p id="ms-label-typo" class="ms-a11y-control-label">${STRINGS.panelTypoGroupLabel}</p>
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-range-lineHeight">${STRINGS.panelLineHeightTitle}</label><span class="ms-a11y-control-state" data-state-for="lineHeight" aria-hidden="true"></span></div>
+            <input type="range" class="ms-range-input" id="ms-range-lineHeight" data-range="lineHeight" min="0" step="1" value="0">
+          </div>
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-range-wordSpacing">${STRINGS.panelWordSpacingTitle}</label><span class="ms-a11y-control-state" data-state-for="wordSpacing" aria-hidden="true"></span></div>
+            <input type="range" class="ms-range-input" id="ms-range-wordSpacing" data-range="wordSpacing" min="0" step="1" value="0">
+          </div>
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-range-letterSpacing">${STRINGS.panelLetterSpacingTitle}</label><span class="ms-a11y-control-state" data-state-for="letterSpacing" aria-hidden="true"></span></div>
+            <input type="range" class="ms-range-input" id="ms-range-letterSpacing" data-range="letterSpacing" min="0" step="1" value="0">
+          </div>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="reset-font" aria-label="${STRINGS.panelResetFontLabel}">${STRINGS.panelResetFont}</button>
+        </div>`
+    },
     textSpacing: {
       html: switchTile({
         option: "textSpacing",
@@ -2663,7 +2743,8 @@
         "dyslexiaFont",
         "textSpacing",
         "readingRuler",
-        "speak"
+        "speak",
+        "typography"
       ]
     },
     {
@@ -2719,6 +2800,7 @@
     onSetOption,
     onSpeak,
     onResetAll,
+    onResetFont,
     onMoveSide,
     brand
   }) {
@@ -2832,6 +2914,16 @@
     });
     panel.querySelector(".ms-a11y-close").addEventListener("click", () => onClose());
     panel.querySelector('[data-action="reset-all"]').addEventListener("click", () => onResetAll == null ? void 0 : onResetAll());
+    panel.querySelector('[data-action="reset-font"]').addEventListener("click", () => onResetFont == null ? void 0 : onResetFont());
+    TYPO_KEYS.forEach((key) => {
+      const input = panel.querySelector(`[data-range="${key}"]`);
+      input.max = String(typoIdx(key, TYPO_LIMITS[key].max));
+      input.setAttribute("aria-valuetext", typoText(key, 0));
+      input.addEventListener(
+        "input",
+        () => onSetOption(key, typoValue(key, Number(input.value)))
+      );
+    });
     panel.querySelector('[data-action="move-side"]').addEventListener("click", () => onMoveSide == null ? void 0 : onMoveSide());
     function setSide(side) {
       panel.setAttribute("data-ms-side", side);
@@ -2912,6 +3004,17 @@
         btn.setAttribute("aria-checked", String(on));
         btn.setAttribute("tabindex", on ? "0" : "-1");
         btn.classList.toggle("ms-theme-btn--on", on);
+      });
+      TYPO_KEYS.forEach((key) => {
+        var _a2;
+        const v = Number((_a2 = s.options) == null ? void 0 : _a2[key]) || 0;
+        const input = panel.querySelector(`[data-range="${key}"]`);
+        if (input) {
+          input.value = String(typoIdx(key, v));
+          input.setAttribute("aria-valuetext", typoText(key, v));
+        }
+        const st = panel.querySelector(`[data-state-for="${key}"]`);
+        if (st) st.textContent = typoText(key, v);
       });
       const syncRadios = (selector, value) => {
         const radios = [...panel.querySelectorAll(selector)];
@@ -3933,10 +4036,21 @@
     readingRuler: false,
     highlightLinks: false,
     textSpacing: false,
+    lineHeight: 0,
+    wordSpacing: 0,
+    letterSpacing: 0,
     reducedMotion: false,
     hideImages: false,
     simpleLanguage: false
   };
+  var FONT_KEYS = [
+    "textScale",
+    "dyslexiaFont",
+    "textSpacing",
+    "lineHeight",
+    "wordSpacing",
+    "letterSpacing"
+  ];
   function isEditableTarget(e) {
     const t = typeof e.composedPath === "function" ? e.composedPath()[0] : e.target;
     return !!(t && (t.isContentEditable || t.matches && t.matches(
@@ -3966,6 +4080,11 @@
       },
       onSpeak: () => ms._toggleSpeak(),
       onResetAll: () => ms._resetAll(),
+      onResetFont: () => state_default.set({
+        options: Object.fromEntries(
+          FONT_KEYS.map((k) => [k, RESET_OPTIONS[k]])
+        )
+      }),
       onMoveSide: () => ms._movePanelSide(),
       brand: ms._config.brand
     });
@@ -4228,10 +4347,16 @@
     customBg: ["ms-custom-bg", "--ms-custom-bg"]
   };
   var HEX_COLOR = /^#[0-9a-f]{6}$/i;
+  var TYPO_VARS = {
+    lineHeight: ["ms-lh", "--ms-lh", ""],
+    wordSpacing: ["ms-ws", "--ms-ws", "em"],
+    letterSpacing: ["ms-ls", "--ms-ls", "em"]
+  };
   var OPTION_FLAG_CLASSES = [
     "ms-sat-low",
     "ms-sat-high",
     ...Object.values(CUSTOM_COLORS2).map(([cls]) => cls),
+    ...Object.values(TYPO_VARS).map(([cls]) => cls),
     "ms-dyslexia-font",
     "ms-highlight-links",
     "ms-text-spacing",
@@ -4279,7 +4404,7 @@
     return { mainElement: _mainElement, confidence: result.confidence };
   }
   function applyOptions(state2) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     const html = document.documentElement;
     const opts = state2.options || {};
     html.classList.remove(...TEXT_SCALE_CLASSES);
@@ -4300,6 +4425,12 @@
     if (opts.dyslexiaFont) ensureLexendFont();
     html.classList.toggle("ms-highlight-links", !!opts.highlightLinks);
     html.classList.toggle("ms-text-spacing", !!opts.textSpacing);
+    for (const [key, [cls, prop, unit]] of Object.entries(TYPO_VARS)) {
+      const v = clampTypo(key, opts[key]);
+      html.classList.toggle(cls, v > 0);
+      if (v > 0) (_f = (_e = html.style) == null ? void 0 : _e.setProperty) == null ? void 0 : _f.call(_e, prop, `${v}${unit}`);
+      else (_h = (_g = html.style) == null ? void 0 : _g.removeProperty) == null ? void 0 : _h.call(_g, prop);
+    }
     html.classList.toggle("ms-reduced-motion", !!opts.reducedMotion);
     html.classList.toggle("ms-hide-images", !!opts.hideImages);
     html.classList.toggle("ms-reading-ruler", !!opts.readingRuler);
@@ -4336,7 +4467,10 @@
       ...THEME_CLASSES,
       ...OPTION_FLAG_CLASSES
     );
-    for (const [, prop] of Object.values(CUSTOM_COLORS2)) {
+    for (const [, prop] of [
+      ...Object.values(CUSTOM_COLORS2),
+      ...Object.values(TYPO_VARS)
+    ]) {
       (_b = (_a = document.documentElement.style) == null ? void 0 : _a.removeProperty) == null ? void 0 : _b.call(_a, prop);
     }
   }
@@ -4875,6 +5009,9 @@
         "readingRuler",
         "highlightLinks",
         "textSpacing",
+        "lineHeight",
+        "wordSpacing",
+        "letterSpacing",
         "reducedMotion",
         "hideImages",
         "simpleLanguage"

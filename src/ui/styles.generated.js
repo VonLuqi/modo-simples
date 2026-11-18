@@ -603,7 +603,27 @@ export const UI_CSS = `
       grid-template-columns: repeat(auto-fill, minmax(calc(5.4 * var(--ms-u)), 1fr));
       gap: calc(0.5 * var(--ms-u));
     }
-    .ms-a11y-block--wide { grid-column: 1 / -1; min-width: 0; }
+    .ms-a11y-block--wide,
+    .ms-a11y-block--span { grid-column: 1 / -1; min-width: 0; }
+    /* F8b: sliders de tipografia */
+    .ms-range { margin-bottom: calc(0.5 * var(--ms-u)); }
+    .ms-range-label {
+      font-size: calc(0.8125 * var(--ms-u));
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .ms-range-input {
+      width: 100%;
+      min-height: 44px;
+      margin: 0;
+      accent-color: var(--ms-blue);
+      cursor: pointer;
+    }
+    .ms-range-input:focus-visible {
+      outline: 2px solid var(--ms-orange);
+      outline-offset: 2px;
+    }
+    .ms-a11y-action--font { width: 100%; margin-top: calc(0.25 * var(--ms-u)); }
     .ms-a11y-control-head {
       display: flex;
       align-items: baseline;
@@ -1033,6 +1053,17 @@ export const PAGE_CSS = `
       word-spacing: 0.16em !important;
     }
     html.ms-text-spacing p { margin-bottom: 1.5em !important; }
+
+    /* F8b — sliders: vêm depois do preset (mesma especificidade) e vencem só a propriedade movida */
+    html.ms-lh :is(body, p, li, h1, h2, h3, h4, h5, h6, td, th, dd, dt, blockquote, label) {
+      line-height: var(--ms-lh) !important;
+    }
+    html.ms-ws :is(body, p, li, h1, h2, h3, h4, h5, h6, td, th, dd, dt, blockquote, label) {
+      word-spacing: var(--ms-ws) !important;
+    }
+    html.ms-ls :is(body, p, li, h1, h2, h3, h4, h5, h6, td, th, dd, dt, blockquote, label) {
+      letter-spacing: var(--ms-ls) !important;
+    }
 
     /* ── Hide images (content + logo; keep only [data-ms-keep-img]) ───────── */
     html.ms-hide-images img:not([data-ms-keep-img]),

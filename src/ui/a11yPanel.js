@@ -7,6 +7,27 @@
 
 import { trapFocus } from '../utils/focus.js';
 import { STRINGS as S } from './strings.js';
+import { TYPO_LIMITS } from '../core/state.js';
+
+/** Sliders de tipografia (F8b): posição 0 = padrão do site; o resto mapeia para o valor real. */
+const TYPO_KEYS = ['lineHeight', 'wordSpacing', 'letterSpacing'];
+const round2 = (n) => Math.round(n * 100) / 100;
+const typoValue = (key, idx) =>
+  idx <= 0
+    ? 0
+    : key === 'lineHeight'
+      ? round2(1 + idx * TYPO_LIMITS.lineHeight.step)
+      : round2(idx * TYPO_LIMITS[key].step);
+const typoIdx = (key, v) =>
+  !(v > 0)
+    ? 0
+    : key === 'lineHeight'
+      ? Math.round((v - 1) / TYPO_LIMITS.lineHeight.step)
+      : Math.round(v / TYPO_LIMITS[key].step);
+const typoText = (key, v) =>
+  v > 0
+    ? `${String(v).replace('.', ',')}${key === 'lineHeight' ? '' : ' em'}`
+    : S.panelTypoDefault;
 
 const TEXT_SCALES = [
   { value: '100', label: '100%', title: S.scaleDefault },
@@ -200,6 +221,26 @@ const CONTROLS = {
       ),
     }),
   },
+  // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
+  typography: {
+    html: `
+        <div class="ms-a11y-block--span" role="group" aria-labelledby="ms-label-typo">
+          <p id="ms-label-typo" class="ms-a11y-control-label">${S.panelTypoGroupLabel}</p>
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-range-lineHeight">${S.panelLineHeightTitle}</label><span class="ms-a11y-control-state" data-state-for="lineHeight" aria-hidden="true"></span></div>
+            <input type="range" class="ms-range-input" id="ms-range-lineHeight" data-range="lineHeight" min="0" step="1" value="0">
+          </div>
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-range-wordSpacing">${S.panelWordSpacingTitle}</label><span class="ms-a11y-control-state" data-state-for="wordSpacing" aria-hidden="true"></span></div>
+            <input type="range" class="ms-range-input" id="ms-range-wordSpacing" data-range="wordSpacing" min="0" step="1" value="0">
+          </div>
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-range-letterSpacing">${S.panelLetterSpacingTitle}</label><span class="ms-a11y-control-state" data-state-for="letterSpacing" aria-hidden="true"></span></div>
+            <input type="range" class="ms-range-input" id="ms-range-letterSpacing" data-range="letterSpacing" min="0" step="1" value="0">
+          </div>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="reset-font" aria-label="${S.panelResetFontLabel}">${S.panelResetFont}</button>
+        </div>`,
+  },
   textSpacing: {
     html: switchTile({
       option: 'textSpacing',
@@ -250,6 +291,7 @@ const SECTIONS = [
       'textSpacing',
       'readingRuler',
       'speak',
+      'typography',
     ],
   },
   {
@@ -321,6 +363,7 @@ export function createA11yPanel({
   onSetOption,
   onSpeak,
   onResetAll,
+  onResetFont,
   onMoveSide,
   brand,
 }) {
@@ -452,6 +495,19 @@ export function createA11yPanel({
     .querySelector('[data-action="reset-all"]')
     .addEventListener('click', () => onResetAll?.());
   panel
+    .querySelector('[data-action="reset-font"]')
+    .addEventListener('click', () => onResetFont?.());
+
+  // F8b: faixa e rótulo falado de cada slider; teclado (setas/Home/End/PageUp/Down) é o nativo
+  TYPO_KEYS.forEach((key) => {
+    const input = panel.querySelector(`[data-range="${key}"]`);
+    input.max = String(typoIdx(key, TYPO_LIMITS[key].max));
+    input.setAttribute('aria-valuetext', typoText(key, 0));
+    input.addEventListener('input', () =>
+      onSetOption(key, typoValue(key, Number(input.value))),
+    );
+  });
+  panel
     .querySelector('[data-action="move-side"]')
     .addEventListener('click', () => onMoveSide?.());
 
@@ -562,6 +618,17 @@ export function createA11yPanel({
         btn.setAttribute('tabindex', on ? '0' : '-1');
         btn.classList.toggle('ms-theme-btn--on', on);
       });
+
+    TYPO_KEYS.forEach((key) => {
+      const v = Number(s.options?.[key]) || 0;
+      const input = panel.querySelector(`[data-range="${key}"]`);
+      if (input) {
+        input.value = String(typoIdx(key, v));
+        input.setAttribute('aria-valuetext', typoText(key, v));
+      }
+      const st = panel.querySelector(`[data-state-for="${key}"]`);
+      if (st) st.textContent = typoText(key, v);
+    });
 
     // Radiogroups extras: saturação e cores personalizadas (roving tabindex; sem match → 1º tabulável)
     const syncRadios = (selector, value) => {

@@ -35,10 +35,23 @@ const RESET_OPTIONS = {
   readingRuler: false,
   highlightLinks: false,
   textSpacing: false,
+  lineHeight: 0,
+  wordSpacing: 0,
+  letterSpacing: 0,
   reducedMotion: false,
   hideImages: false,
   simpleLanguage: false,
 };
+
+/** "Redefinir fonte": só as opções de tipografia (F8b). */
+const FONT_KEYS = [
+  'textScale',
+  'dyslexiaFont',
+  'textSpacing',
+  'lineHeight',
+  'wordSpacing',
+  'letterSpacing',
+];
 
 /** Alvo do atalho/teclado é campo editável (inclui dentro de shadow DOM)? */
 function isEditableTarget(e) {
@@ -81,6 +94,12 @@ export function buildUI(ms) {
     },
     onSpeak: () => ms._toggleSpeak(),
     onResetAll: () => ms._resetAll(),
+    onResetFont: () =>
+      state.set({
+        options: Object.fromEntries(
+          FONT_KEYS.map((k) => [k, RESET_OPTIONS[k]]),
+        ),
+      }),
     onMoveSide: () => ms._movePanelSide(),
     brand: ms._config.brand,
   });
