@@ -6,7 +6,7 @@
  * Reaproveita o speechSynthesis do tts.js; não interrompe a leitura "Ouvir" do conteúdo principal.
  */
 
-import { isReadingMain } from './tts.js';
+import { isReadingMain, isSpeechFailure, notifySpeechError } from './tts.js';
 import state from '../core/state.js';
 import { applyVoice } from './voice.js';
 import { STRINGS as S } from '../ui/strings.js';
@@ -140,6 +140,9 @@ function speakNow(target) {
   const utterance = new SpeechSynthesisUtterance(text);
   applyVoice(utterance, state.get().options);
   _spoke = true;
+  utterance.onerror = (e) => {
+    if (isSpeechFailure(e)) notifySpeechError();
+  };
   speechSynthesis.speak(utterance);
 }
 

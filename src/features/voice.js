@@ -41,6 +41,37 @@ export function listVoices() {
   );
 }
 
+/**
+ * As vozes chegam depois da página (voiceschanged). Resolve assim que houver vozes, ou ao fim do
+ * prazo com a lista que houver (possivelmente vazia: navegador sem voz instalada).
+ * @param {number} [timeoutMs]
+ * @returns {Promise<SpeechSynthesisVoice[]>}
+ */
+export function waitForVoices(timeoutMs = 1500) {
+  if (!isVoiceSupported()) return Promise.resolve([]);
+  const now = listVoices();
+  if (now.length || !speechSynthesis.addEventListener)
+    return Promise.resolve(now);
+  return new Promise((resolve) => {
+    let timer;
+    const done = () => {
+      clearTimeout(timer);
+      speechSynthesis.removeEventListener('voiceschanged', onChange);
+      resolve(listVoices());
+    };
+    const onChange = () => {
+      if (listVoices().length) done();
+    };
+    speechSynthesis.addEventListener('voiceschanged', onChange);
+    timer = setTimeout(done, timeoutMs);
+  });
+}
+
+/** true se o navegador sabe falar mas não tem nenhuma voz instalada (Brave/Chromium no Linux). */
+export async function hasNoVoices() {
+  return isVoiceSupported() && (await waitForVoices()).length === 0;
+}
+
 /** O navegador carrega as vozes depois; avisa quando mudarem. Retorna o cancelamento. */
 export function onVoicesChanged(cb) {
   if (!isVoiceSupported() || !speechSynthesis.addEventListener) {

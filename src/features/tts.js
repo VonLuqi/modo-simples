@@ -31,13 +31,57 @@ let _paused = false;
 /** Onde retomar: bloco/pedaço atual (ou o texto único do fallback). */
 let _resume = null;
 
-function notify() {
+/** Ouvintes de falha de fala (tts e leitura do foco): recebem 'speech-failed'. */
+const _errListeners = new Set();
+
+/**
+ * Falha real de síntese (sem voz instalada, sem permissão, áudio indisponível...). Cancelar ou
+ * interromper uma fala (troca de leitura, parar) NÃO é falha.
+ * @param {{error?: string}|undefined} e evento onerror do utterance
+ */
+export function isSpeechFailure(e) {
+  return Boolean(
+    e && e.error && e.error !== 'interrupted' && e.error !== 'canceled',
+  );
+}
+
+/** Avisa os ouvintes de onSpeechError. */
+export function notifySpeechError() {
+  for (const cb of Array.from(_errListeners)) {
+    try {
+      cb('speech-failed');
+    } catch (_) {
+      // um ouvinte com erro não pode travar a leitura
+    }
+  }
+}
+
+/**
+ * Registra um ouvinte de falha de fala: recebe 'speech-failed' quando o navegador não consegue
+ * falar (tts "Ouvir" ou "Ler o que eu seleciono").
+ * @param {(reason: 'speech-failed') => void} cb
+ * @returns {() => void} cancela o registro
+ */
+export function onSpeechError(cb) {
+  _errListeners.add(cb);
+  return () => {
+    _errListeners.delete(cb);
+  };
+}
+
+/** Falha de síntese durante a leitura: para tudo (sem encadear o próximo bloco) e avisa. */
+function failSpeech() {
+  stopSpeaking('speech-failed');
+  notifySpeechError();
+}
+
+function notify(reason) {
   if (_speaking === _notified && _paused === _notifiedPaused) return;
   _notified = _speaking;
   _notifiedPaused = _paused;
   for (const cb of Array.from(_listeners)) {
     try {
-      cb(_speaking, _paused);
+      cb(_speaking, _paused, reason);
     } catch (_) {
       // um ouvinte com erro não pode travar a leitura
     }
@@ -47,7 +91,8 @@ function notify() {
 /**
  * Registra um ouvinte do estado da leitura: recebe true ao começar e false ao terminar,
  * ser parada ou falhar. O 2º argumento diz se a leitura está pausada (F10c).
- * @param {(speaking: boolean, paused?: boolean) => void} cb
+ * Se terminou por falha de síntese, o 3º argumento é 'speech-failed'.
+ * @param {(speaking: boolean, paused?: boolean, reason?: string) => void} cb
  * @returns {() => void} cancela o registro
  */
 export function onSpeakingChange(cb) {
@@ -297,7 +342,11 @@ function speakChunk(index, chunks, i, run) {
     else speakBlockAt(index + 1, run);
   };
   utterance.onend = next;
-  utterance.onerror = next;
+  utterance.onerror = (e) => {
+    if (run !== _runId) return;
+    if (isSpeechFailure(e)) failSpeech();
+    else next();
+  };
   speechSynthesis.speak(utterance);
 }
 
@@ -314,7 +363,11 @@ function speakFallback(text, run) {
     notify();
   };
   utterance.onend = done;
-  utterance.onerror = done;
+  utterance.onerror = (e) => {
+    if (run !== _runId) return;
+    if (isSpeechFailure(e)) failSpeech();
+    else done();
+  };
   speechSynthesis.speak(utterance);
 }
 
@@ -351,7 +404,7 @@ export function speakMainContent() {
 /**
  * Cancel any ongoing speech and clear highlight.
  */
-export function stopSpeaking() {
+export function stopSpeaking(reason) {
   _runId += 1; // invalida qualquer evento pendente da leitura que está sendo parada
   _speaking = false;
   _paused = false;
@@ -359,7 +412,7 @@ export function stopSpeaking() {
   _blocks = [];
   _blockIndex = 0;
   clearHighlight();
-  notify();
+  notify(typeof reason === 'string' ? reason : undefined);
   if (typeof speechSynthesis === 'undefined') return;
   speechSynthesis.cancel();
   _utterance = null;

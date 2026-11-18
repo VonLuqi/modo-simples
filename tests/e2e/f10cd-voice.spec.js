@@ -15,10 +15,16 @@ const KEY = 'ms_state:127.0.0.1';
  */
 async function boot(
   page,
-  { voiceCommands = false, consent = false, rec = 'local' } = {},
+  {
+    voiceCommands = false,
+    consent = false,
+    rec = 'local',
+    speakError = '',
+    brave = false,
+  } = {},
 ) {
   await page.addInitScript(
-    ([key, vc, cs, mode]) => {
+    ([key, vc, cs, mode, speakError, brave]) => {
       try {
         if (!localStorage.getItem(key)) {
           localStorage.setItem(
@@ -38,6 +44,12 @@ async function boot(
         configurable: true,
         value: navigator.userAgent.replace('HeadlessChrome', 'Chrome'),
       });
+      if (brave) {
+        Object.defineProperty(navigator, 'brave', {
+          configurable: true,
+          value: { isBrave: async () => true },
+        });
+      }
       window.__spoken = [];
       window.__utts = [];
       window.__cancels = 0;
@@ -61,6 +73,13 @@ async function boot(
             window.__spoken.push(u.text);
             window.__utts.push({ text: u.text, rate: u.rate, lang: u.lang });
             window.__pending.push(u);
+            // navegador sem voz instalada: toda fala falha na hora (Brave/Chromium no Linux)
+            if (speakError) {
+              setTimeout(
+                () => u.onerror && u.onerror({ error: speakError }),
+                0,
+              );
+            }
           },
         },
       });
@@ -100,7 +119,7 @@ async function boot(
         window.__recs[window.__recs.length - 1].onerror({ error });
       };
     },
-    [KEY, voiceCommands, consent, rec],
+    [KEY, voiceCommands, consent, rec, speakError, brave],
   );
   await page.goto(PAGE);
   await waitForLib(page);
@@ -294,6 +313,54 @@ test.describe('F10d — modo de reconhecimento e consentimento', () => {
     await boot(page, { voiceCommands: false, rec: 'local' });
     await page.waitForTimeout(300);
     expect(await page.evaluate(() => window.__recs.length)).toBe(0);
+  });
+});
+
+test.describe('Falha de fala é alta, não silenciosa', () => {
+  test('synthesis-failed: "ler página" fala só o 1º bloco e para (sem queimar a página inteira)', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page, {
+      voiceCommands: true,
+      rec: 'local',
+      speakError: 'synthesis-failed',
+    });
+    await listening(page);
+    await say(page, 'ler página');
+    await expect.poll(() => spoken(page).then((s) => s.length)).toBe(1);
+    await page.waitForTimeout(300);
+    expect((await spoken(page)).length).toBe(1);
+  });
+
+  test('Brave (navigator.brave): comandos de voz não escutam e o status é unsupported', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page, {
+      voiceCommands: true,
+      consent: true,
+      rec: 'cloud',
+      brave: true,
+    });
+    await flipsOff(page);
+    expect(await page.evaluate(() => window.__recs.length)).toBe(0);
+    expect(await page.evaluate(() => window.ModoSimples.voiceStatus)).toBe(
+      'unsupported',
+    );
+  });
+
+  test("erro 'network' ao escutar: para, desliga e o status é unsupported", async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page, { voiceCommands: true, consent: true, rec: 'cloud' });
+    await listening(page);
+    await page.evaluate(() => window.__recError('network'));
+    await flipsOff(page);
+    expect(await page.evaluate(() => window.ModoSimples.voiceStatus)).toBe(
+      'unsupported',
+    );
   });
 });
 

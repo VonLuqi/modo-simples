@@ -24,10 +24,23 @@ function getCtor() {
 
 const secure = () => globalThis.isSecureContext !== false;
 
+/**
+ * Por que este navegador não faz comandos de voz (null = pode tentar).
+ * 'brave': tem o construtor mas sem serviço de voz (erro 'network');
+ * 'no-api': sem SpeechRecognition; 'insecure': página sem HTTPS.
+ * @returns {'brave'|'no-api'|'insecure'|null}
+ */
+export function getUnsupportedReason() {
+  if (globalThis.navigator?.brave) return 'brave';
+  if (!getCtor()) return 'no-api';
+  if (!secure()) return 'insecure';
+  return null;
+}
+
 /** @returns {Promise<'local'|'download'|'cloud'|'none'>} */
 export async function getRecognitionMode() {
   const Ctor = getCtor();
-  if (!Ctor || !secure()) return 'none';
+  if (getUnsupportedReason()) return 'none';
   // headless-shell (UA HeadlessChrome) derruba o renderizador em available() com processLocally
   // (QA T202): nesses UAs nem pergunta; Chrome, Brave e Edge de verdade não usam esse UA
   const headless = /HeadlessChrome/.test(globalThis.navigator?.userAgent || '');
@@ -155,8 +168,8 @@ export function startVoiceCommands({ mode, onCommand, onStatus } = {}) {
     if (err === 'not-allowed' || err === 'service-not-allowed') {
       teardown();
       status('blocked');
-    } else if (err === 'language-not-supported') {
-      teardown();
+    } else if (err === 'language-not-supported' || err === 'network') {
+      teardown(); // 'network': o navegador não tem serviço de voz (Brave) ou está sem internet
       status('unsupported');
     } else if (err === 'audio-capture') {
       teardown();

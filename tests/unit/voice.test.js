@@ -13,6 +13,8 @@ import {
   onVoicesChanged,
   applyVoice,
   previewVoice,
+  waitForVoices,
+  hasNoVoices,
 } from '../../src/features/voice.js';
 
 const V = (name, lang) => ({ name, lang });
@@ -148,5 +150,51 @@ describe('voice.js', () => {
     assert.equal(spoken[0].rate, 1.5);
     previewVoice({}, 'Olá');
     assert.equal(spoken[1].text, 'Olá');
+  });
+});
+
+describe('waitForVoices / hasNoVoices', () => {
+  it('com vozes já carregadas resolve na hora', async () => {
+    const t0 = Date.now();
+    const lista = await waitForVoices(5000);
+    assert.ok(Date.now() - t0 < 500);
+    assert.equal(lista.length, 5);
+    assert.equal(lista[0].name, 'Ana'); // mesma ordem de listVoices
+    assert.equal(await hasNoVoices(), false);
+  });
+
+  it('sem vozes: resolve no voiceschanged assim que chegarem', async () => {
+    const todas = voices;
+    voices = [];
+    const p = waitForVoices(5000);
+    voices = todas;
+    for (const cb of [...listeners]) cb();
+    const lista = await p;
+    assert.equal(lista.length, 5);
+    assert.equal(listeners.size, 0, 'remove o ouvinte');
+  });
+
+  it('voiceschanged com lista ainda vazia continua esperando até o prazo', async () => {
+    voices = [];
+    const p = waitForVoices(60);
+    for (const cb of [...listeners]) cb(); // continua vazia
+    const lista = await p;
+    assert.deepEqual(lista, []);
+    assert.equal(listeners.size, 0);
+  });
+
+  it('prazo esgotado: devolve a lista (vazia) e hasNoVoices é true', async () => {
+    voices = [];
+    const t0 = Date.now();
+    assert.deepEqual(await waitForVoices(50), []);
+    assert.ok(Date.now() - t0 >= 40);
+    voices = [];
+    assert.equal(await hasNoVoices(), true);
+  });
+
+  it('sem a API de fala: lista vazia e hasNoVoices é false (não é "sem voz instalada")', async () => {
+    delete globalThis.speechSynthesis;
+    assert.deepEqual(await waitForVoices(50), []);
+    assert.equal(await hasNoVoices(), false);
   });
 });

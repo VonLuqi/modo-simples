@@ -11,6 +11,7 @@ import ModoSimples from '../../src/modo-simples.js';
 import { installHappy } from './helpers/happyEnv.js';
 import {
   getRecognitionMode,
+  getUnsupportedReason,
   installLocalModel,
   parseCommand,
   startVoiceCommands,
@@ -305,8 +306,8 @@ describe('M1 — erros e laço de reinício', () => {
     assert.equal(recs[0].starts, 1);
   });
 
-  it('qualquer outro erro (bad-grammar, network, ...): para e avisa error', () => {
-    for (const err of ['bad-grammar', 'network', 'coisa-nova']) {
+  it('qualquer outro erro (bad-grammar, ...): para e avisa error', () => {
+    for (const err of ['bad-grammar', 'coisa-nova']) {
       status.length = 0;
       installRecognition();
       go('local');
@@ -504,5 +505,54 @@ describe('GAP2 — onVoiceStatus / voiceStatus', () => {
     assert.equal(inst.voiceStatus, 'stopped');
     assert.equal(inst._voiceListeners.size, 0);
     assert.deepEqual(seen, ['stopped']); // o destroy ainda avisa a parada
+  });
+});
+
+describe('getUnsupportedReason e erro network (Brave)', () => {
+  const setNav = (nav) =>
+    Object.defineProperty(globalThis, 'navigator', {
+      configurable: true,
+      value: nav,
+    });
+  let antes;
+  beforeEach(() => {
+    antes = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  });
+  afterEach(() => {
+    if (antes) Object.defineProperty(globalThis, 'navigator', antes);
+    else delete globalThis.navigator;
+  });
+
+  it('brave quando navigator.brave existe (mesmo com SpeechRecognition); getRecognitionMode vira none sem chamar available()', async () => {
+    let chamou = 0;
+    installRecognition({
+      available: async () => {
+        chamou++;
+        return 'available';
+      },
+    });
+    setNav({ userAgent: 'Mozilla/5.0 Chrome/157', brave: { isBrave() {} } });
+    assert.equal(getUnsupportedReason(), 'brave');
+    assert.equal(await getRecognitionMode(), 'none');
+    assert.equal(chamou, 0);
+  });
+
+  it('no-api sem construtor; insecure em página sem HTTPS; null quando dá para tentar', () => {
+    setNav({ userAgent: 'Mozilla/5.0 Chrome/157' });
+    assert.equal(getUnsupportedReason(), 'no-api');
+    installRecognition();
+    assert.equal(getUnsupportedReason(), null);
+    globalThis.isSecureContext = false;
+    assert.equal(getUnsupportedReason(), 'insecure');
+  });
+
+  it("erro 'network' no reconhecimento: para e avisa unsupported (não error)", () => {
+    setNav({ userAgent: 'Mozilla/5.0 Chrome/157' });
+    installRecognition();
+    consent(true);
+    go('cloud');
+    recs[0].onerror({ error: 'network' });
+    assert.equal(isListening(), false);
+    assert.equal(status.at(-1), 'unsupported');
   });
 });
