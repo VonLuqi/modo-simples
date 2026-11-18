@@ -125,6 +125,32 @@ test.describe('seleção manual (IMP-22)', () => {
   });
 });
 
+test('aviso de confiança baixa não fica sob o botão flutuante nem corta o texto (QA T144 M1)', async ({
+  site,
+}) => {
+  const { page } = site;
+  await page.setViewportSize({ width: 390, height: 780 });
+  await page.goto(PAGE);
+  await waitForLib(page);
+  await page.evaluate(() => window.ModoSimples.enable());
+  const aviso = page.locator(NOTICE);
+  await expect(aviso).toContainText('Não achei o conteúdo principal');
+  const a = await aviso.boundingBox();
+  const fab = await page.locator('#ms-fab').boundingBox();
+  expect(a.x).toBeGreaterThanOrEqual(0);
+  expect(a.x + a.width).toBeLessThanOrEqual(390);
+  // nenhum botão do aviso se sobrepõe ao FAB
+  for (const b of await aviso.locator('button').all()) {
+    const r = await b.boundingBox();
+    const cruza =
+      r.x < fab.x + fab.width &&
+      r.x + r.width > fab.x &&
+      r.y < fab.y + fab.height &&
+      r.y + r.height > fab.y;
+    expect(cruza).toBe(false);
+  }
+});
+
 test.describe('seleção manual — teclado e toque (IMP-07)', () => {
   test('Tab escolhe, Enter confirma: oculta em volta e fecha o banner', async ({
     site,

@@ -49,15 +49,25 @@ afterEach(() => {
 });
 
 describe('seleção manual com confiança baixa (IMP-22)', () => {
-  it('confiança baixa (UX-21): aviso em linguagem simples, sem seleção aberta, nada oculto nem marcado', () => {
+  it('confiança baixa (UX-21): aviso em linguagem simples, sem seleção aberta, nada oculto nem marcado', async () => {
     baixaConfianca();
     assert.equal(banner(), null, 'a seleção manual não abre sozinha');
     assert.ok(notice(), 'aviso aberto');
-    assert.equal(notice().getAttribute('aria-live'), 'polite');
-    assert.match(notice().textContent, /Não achei o conteúdo principal/);
+    // QA T144 M3: região viva (polite) entra vazia e recebe o texto depois da inserção
+    const viva = notice().querySelector('[aria-live="polite"]');
+    assert.ok(viva, 'região aria-live polite');
+    assert.equal(viva.textContent, '', 'vazia na inserção');
+    await env.wait(120);
+    assert.match(viva.textContent, /Não achei o conteúdo principal/);
     assert.equal(hidden().length, 0);
     assert.equal(document.querySelectorAll('[data-ms-principal]').length, 0);
     assert.ok(document.documentElement.classList.contains('ms-ativo'));
+  });
+
+  it('aviso fica no topo (não sob o botão flutuante embaixo) — QA T144 M1', () => {
+    baixaConfianca();
+    assert.equal(notice().style.top, '0px');
+    assert.equal(notice().style.bottom, '');
   });
 
   it('"Fechar" dispensa o aviso e mantém a página simplificada', () => {

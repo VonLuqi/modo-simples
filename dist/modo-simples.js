@@ -2375,10 +2375,11 @@
     panelVoiceButton: "Ouvir",
     panelVoiceStopButton: "Parar",
     panelVoiceStopLabel: "Parar leitura",
+    mediaOtherSiteNotice: "Este v\xEDdeo \xE9 de outro site. N\xE3o consigo tirar o som dele.",
     panelMuteMediaTitle: "Pausar e mutar tudo",
     panelMuteMediaDesc: "Pausa e silencia v\xEDdeos e sons da p\xE1gina, inclusive os que come\xE7am sozinhos",
     panelReadFocusTitle: "Ler o que eu seleciono",
-    panelReadFocusDesc: "A voz l\xEA o bot\xE3o, link, campo ou texto em que voc\xEA clicar ou parar com a tecla Tab",
+    panelReadFocusDesc: "A voz l\xEA o bot\xE3o, link, campo ou texto em que voc\xEA clicar ou parar com a tecla Tab. Se voc\xEA usa leitor de tela, pode ouvir duas vezes",
     panelReadFocusUnsupported: "Este navegador n\xE3o tem voz para ler em voz alta",
     panelReadFocusUnsupportedState: "Sem voz",
     stateOn: "Ligado",
@@ -2463,12 +2464,28 @@
     sessionImagesVisible: "VIS\xCDVEIS",
     sessionExit: "Voltar",
     sessionExitPost: " ao site normal",
+    // features/focusReader.js (papéis e estados falados)
+    roleButton: "bot\xE3o",
+    roleLink: "link",
+    roleHeading: "t\xEDtulo",
+    roleField: "campo",
+    roleCheckbox: "caixa de sele\xE7\xE3o",
+    roleRadio: "op\xE7\xE3o",
+    roleSwitch: "interruptor",
+    roleSelect: "lista de op\xE7\xF5es",
+    focusSubmitName: "Enviar",
+    focusSwitchOn: "ligado",
+    focusSwitchOff: "desligado",
+    focusChecked: "marcado",
+    focusUnchecked: "desmarcado",
     // features/manualSelect.js (linguagem simples, U-02 / UX-21)
     lowConfNotice: "N\xE3o achei o conte\xFAdo principal, quer escolher?",
     lowConfChoose: "Escolher o conte\xFAdo",
     lowConfClose: "Fechar",
     manualInstruction: "Clique ou toque no que voc\xEA quer ler. No teclado: Tab muda de bloco, setas aumentam ou diminuem a \xE1rea, Enter confirma, Esc volta.",
     manualCurrent: "Voc\xEA escolheu:",
+    manualChosen: "Conte\xFAdo principal definido",
+    manualCancelled: "Sele\xE7\xE3o manual cancelada",
     manualCancel: "Voltar",
     manualCancelLabel: "Voltar sem escolher"
   });
@@ -2889,7 +2906,9 @@
     const type = (el.getAttribute("type") || "").toLowerCase();
     if (tag === "input") {
       if (["button", "submit", "reset"].includes(type)) {
-        return cap(clean(el.value) || (type === "submit" ? "Enviar" : ""));
+        return cap(
+          clean(el.value) || (type === "submit" ? STRINGS.focusSubmitName : "")
+        );
       }
       return cap(clean(el.getAttribute("placeholder")));
     }
@@ -2900,26 +2919,27 @@
     const tag = el.tagName.toLowerCase();
     const role = (el.getAttribute("role") || "").toLowerCase();
     const type = (el.getAttribute("type") || "").toLowerCase();
-    if (role === "switch") return "interruptor";
-    if (role === "checkbox") return "caixa de sele\xE7\xE3o";
-    if (role === "radio") return "op\xE7\xE3o";
-    if (role === "button") return "bot\xE3o";
-    if (role === "link") return "link";
-    if (role === "heading") return "t\xEDtulo";
-    if (role === "textbox" || role === "searchbox") return "campo";
-    if (role === "combobox" || role === "listbox") return "lista de op\xE7\xF5es";
-    if (tag === "button") return "bot\xE3o";
-    if (tag === "a") return "link";
-    if (/^h[1-6]$/.test(tag)) return "t\xEDtulo";
-    if (tag === "select") return "lista de op\xE7\xF5es";
-    if (tag === "textarea") return "campo";
+    if (role === "switch") return STRINGS.roleSwitch;
+    if (role === "checkbox") return STRINGS.roleCheckbox;
+    if (role === "radio") return STRINGS.roleRadio;
+    if (role === "button") return STRINGS.roleButton;
+    if (role === "link") return STRINGS.roleLink;
+    if (role === "heading") return STRINGS.roleHeading;
+    if (role === "textbox" || role === "searchbox") return STRINGS.roleField;
+    if (role === "combobox" || role === "listbox") return STRINGS.roleSelect;
+    if (tag === "button") return STRINGS.roleButton;
+    if (tag === "a") return STRINGS.roleLink;
+    if (/^h[1-6]$/.test(tag)) return STRINGS.roleHeading;
+    if (tag === "select") return STRINGS.roleSelect;
+    if (tag === "textarea") return STRINGS.roleField;
     if (tag === "input") {
-      if (["button", "submit", "reset", "image"].includes(type)) return "bot\xE3o";
-      if (type === "checkbox") return "caixa de sele\xE7\xE3o";
-      if (type === "radio") return "op\xE7\xE3o";
-      return "campo";
+      if (["button", "submit", "reset", "image"].includes(type))
+        return STRINGS.roleButton;
+      if (type === "checkbox") return STRINGS.roleCheckbox;
+      if (type === "radio") return STRINGS.roleRadio;
+      return STRINGS.roleField;
     }
-    if (el.isContentEditable) return "campo";
+    if (el.isContentEditable) return STRINGS.roleField;
     return "";
   }
   function stateWord(el) {
@@ -2929,8 +2949,8 @@
     const nativo = el.tagName === "INPUT" && ["checkbox", "radio"].includes(type);
     if (checked === null && !nativo) return "";
     const on = checked !== null ? checked === "true" : el.checked;
-    if (isSwitch) return on ? "ligado" : "desligado";
-    return on ? "marcado" : "desmarcado";
+    if (isSwitch) return on ? STRINGS.focusSwitchOn : STRINGS.focusSwitchOff;
+    return on ? STRINGS.focusChecked : STRINGS.focusUnchecked;
   }
   function describeFocus(el) {
     if (!el || el.nodeType !== 1) return "";
@@ -4372,13 +4392,13 @@
     });
     const box = document.createElement("div");
     box.id = NOTICE_ID;
-    box.setAttribute("role", "status");
-    box.setAttribute("aria-live", "polite");
+    box.setAttribute("data-ms-live", "");
     Object.assign(box.style, {
       position: "fixed",
       left: "0",
       right: "0",
-      bottom: "0",
+      top: "0",
+      // embaixo ficam o botão flutuante e a dica dele (QA T144 M1)
       zIndex: "2147483646",
       display: "flex",
       flexWrap: "wrap",
@@ -4390,11 +4410,15 @@
       color: "#fff",
       fontFamily: "system-ui, sans-serif",
       fontSize: "1rem",
-      boxShadow: "0 -4px 16px rgba(0,0,0,0.25)"
+      boxShadow: "0 4px 16px rgba(0,0,0,0.25)"
     });
     const msg = document.createElement("span");
-    msg.textContent = STRINGS.lowConfNotice;
+    msg.setAttribute("role", "status");
+    msg.setAttribute("aria-live", "polite");
     box.appendChild(msg);
+    setTimeout(() => {
+      msg.textContent = STRINGS.lowConfNotice;
+    }, 50);
     const mk = (text, onClick) => {
       const b = document.createElement("button");
       b.type = "button";
@@ -5170,13 +5194,13 @@
   var OWN_HOST = "#ms-container";
   var BADGE_ATTR = "data-ms-media-badge";
   var MEDIA_SELECTOR = "video, audio";
-  var BADGE_TEXT = "Este v\xEDdeo \xE9 de outro site. N\xE3o consigo tirar o som dele.";
-  var VIDEO_HOSTS = /(^|\.)(youtube\.com|youtube-nocookie\.com|youtu\.be|vimeo\.com|dailymotion\.com|twitch\.tv|facebook\.com|tiktok\.com|wistia\.com|wistia\.net|jwplatform\.com|brightcove\.net)$/i;
+  var VIDEO_HOSTS = /(^|\.)(youtube\.com|youtube-nocookie\.com|youtu\.be|vimeo\.com|dailymotion\.com|twitch\.tv|tiktok\.com|wistia\.com|wistia\.net|jwplatform\.com|brightcove\.net)$/i;
   var _prior = /* @__PURE__ */ new WeakMap();
   var _tracked = /* @__PURE__ */ new Set();
   var _badges = /* @__PURE__ */ new Map();
   var _observer2 = null;
   var _on2 = false;
+  var _roots = /* @__PURE__ */ new Set();
   var userActive = () => {
     var _a;
     return !!((_a = navigator.userActivation) == null ? void 0 : _a.isActive);
@@ -5190,8 +5214,18 @@
     for (const el of els) {
       if (el.id === "ms-container" || isOwn(el)) continue;
       visit(el);
-      if (el.shadowRoot) walk(el.shadowRoot, visit);
+      if (el.shadowRoot) {
+        if (_on2) watchRoot(el.shadowRoot);
+        walk(el.shadowRoot, visit);
+      }
     }
+  }
+  function watchRoot(sr) {
+    if (_roots.has(sr)) return;
+    _roots.add(sr);
+    _observer2 == null ? void 0 : _observer2.observe(sr, { childList: true, subtree: true });
+    sr.addEventListener("play", onPlay, true);
+    sr.addEventListener("volumechange", onVolume, true);
   }
   function muteOne(el) {
     if (!_prior.has(el)) {
@@ -5234,10 +5268,12 @@
   }
   function badgeFor(frame) {
     if (_badges.has(frame)) return;
+    const r = frame.getBoundingClientRect();
+    if (!r.width || !r.height) return;
     const badge = document.createElement("div");
     badge.setAttribute(BADGE_ATTR, "");
     badge.setAttribute("role", "note");
-    badge.textContent = BADGE_TEXT;
+    badge.textContent = STRINGS.mediaOtherSiteNotice;
     Object.assign(badge.style, {
       position: "absolute",
       zIndex: "2147483644",
@@ -5286,11 +5322,11 @@
     const el = e.target;
     if (!((_a = el == null ? void 0 : el.matches) == null ? void 0 : _a.call(el, MEDIA_SELECTOR)) || isOwn(el)) return;
     if (!el.muted && !userActive()) el.muted = true;
+    else if (!el.muted) _prior.delete(el);
   }
   function startMediaMute() {
     if (_on2) return;
     _on2 = true;
-    scan2(document);
     document.addEventListener("play", onPlay, true);
     document.addEventListener("volumechange", onVolume, true);
     window.addEventListener("resize", relayout);
@@ -5306,6 +5342,7 @@
       childList: true,
       subtree: true
     });
+    scan2(document);
   }
   function stopMediaMute() {
     if (!_on2) return;
@@ -5314,6 +5351,11 @@
     _observer2 = null;
     document.removeEventListener("play", onPlay, true);
     document.removeEventListener("volumechange", onVolume, true);
+    for (const sr of _roots) {
+      sr.removeEventListener("play", onPlay, true);
+      sr.removeEventListener("volumechange", onVolume, true);
+    }
+    _roots.clear();
     window.removeEventListener("resize", relayout);
     for (const badge of _badges.values()) badge.remove();
     _badges.clear();
@@ -5612,11 +5654,11 @@
           setPrincipal(el, this._config);
           this._savePrincipalPath(path, el);
           applyModoSimples(state_default.get(), this._config);
-          announce("Conte\xFAdo principal definido");
+          announce(STRINGS.manualChosen);
         },
         onCancel: () => {
           this._setPageInert(state_default.get().panelOpen);
-          announce("Sele\xE7\xE3o manual cancelada");
+          announce(STRINGS.manualCancelled);
         }
       });
     }

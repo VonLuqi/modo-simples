@@ -25,6 +25,12 @@ const $ = (s) => document.querySelector(s);
 const html = (h) => (document.body.innerHTML = h);
 
 /** happy-dom não toca mídia: simula paused/pause()/play() */
+/** happy-dom não faz layout: dá tamanho ao elemento (iframe sem tamanho não ganha aviso) */
+function sized(el, w = 300, h = 150) {
+  el.getBoundingClientRect = () => ({ top: 0, left: 0, width: w, height: h });
+  return el;
+}
+
 function fake(el, { paused = false, muted = false } = {}) {
   for (const [k, v] of [
     ['paused', paused],
@@ -120,6 +126,7 @@ describe('startMediaMute — mídia tardia, iframes e desligar', () => {
         `<iframe id="meu" src="/mesmo-site"></iframe>` +
         `<iframe id="outro" src="https://exemplo.org/doc"></iframe>`,
     );
+    document.querySelectorAll('iframe').forEach((f) => sized(f));
     startMediaMute();
     const badges = document.querySelectorAll('[data-ms-media-badge]');
     assert.equal(badges.length, 1, 'só o iframe de vídeo de outro site');
@@ -136,8 +143,61 @@ describe('startMediaMute — mídia tardia, iframes e desligar', () => {
     html(
       `<iframe src="https://player.exemplo.org/x" allow="autoplay; fullscreen"></iframe>`,
     );
+    sized($('iframe'));
     startMediaMute();
     assert.equal(document.querySelectorAll('[data-ms-media-badge]').length, 1);
+  });
+
+  it('iframe sem tamanho (display:none / 0x0) não ganha aviso; facebook.com sozinho também não (L1)', () => {
+    html(
+      `<iframe id="z" src="https://www.youtube.com/embed/x"></iframe>` +
+        `<iframe id="fb" src="https://www.facebook.com/plugins/like.php"></iframe>`,
+    );
+    sized($('#z'), 0, 0);
+    sized($('#fb'), 90, 20);
+    startMediaMute();
+    assert.equal(document.querySelectorAll('[data-ms-media-badge]').length, 0);
+  });
+
+  it('vídeo adicionado DEPOIS dentro de um shadow root já existente é mutado (M2)', async () => {
+    html('<div id="host"></div>');
+    const sr = $('#host').attachShadow({ mode: 'open' });
+    startMediaMute();
+    const v = fake(document.createElement('video'), { muted: false });
+    sr.appendChild(v);
+    await env.wait(30);
+    assert.equal(v.muted, true);
+    assert.equal(v.paused, true);
+  });
+
+  it('play() de script dentro do shadow root (evento não composed) é pausado (M2)', () => {
+    html('<div id="host"></div>');
+    const sr = $('#host').attachShadow({ mode: 'open' });
+    sr.innerHTML = '<video id="v"></video>';
+    const v = fake(sr.querySelector('#v'), { paused: true });
+    startMediaMute();
+    v.paused = false;
+    v.dispatchEvent(new env.win.Event('play'));
+    assert.equal(v.muted, true);
+    assert.equal(v.paused, true);
+  });
+
+  it('se o usuário ligou o som por gesto, desligar não o silencia de volta (L3)', () => {
+    html('<video id="v"></video>');
+    const v = fake($('#v'), { muted: true }); // estava mudo antes
+    Object.defineProperty(navigator, 'userActivation', {
+      configurable: true,
+      value: { isActive: true },
+    });
+    try {
+      startMediaMute();
+      v.muted = false; // usuário liga o som
+      v.dispatchEvent(new env.win.Event('volumechange'));
+      stopMediaMute();
+      assert.equal(v.muted, false, 'não refaz o muted antigo');
+    } finally {
+      delete navigator.userActivation;
+    }
   });
 });
 

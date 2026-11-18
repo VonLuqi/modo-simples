@@ -34,6 +34,7 @@ import {
 import { announce } from './utils/aria.js';
 import { hasSimpleLanguagePairs } from './utils/simpleLanguage.js';
 import { getPageStyles, getUIStyles } from './ui/styles.js';
+import { STRINGS } from './ui/strings.js';
 import {
   buildUI,
   syncSessionChrome,
@@ -428,12 +429,12 @@ class ModoSimples {
         setPrincipal(el, this._config);
         this._savePrincipalPath(path, el);
         applyModoSimples(state.get(), this._config);
-        announce('Conteúdo principal definido');
+        announce(STRINGS.manualChosen);
       },
       onCancel: () => {
         // sem escolha: ms-ativo + opções, SEM principal e nada persistido; o hold continua.
         this._setPageInert(state.get().panelOpen);
-        announce('Seleção manual cancelada');
+        announce(STRINGS.manualCancelled);
       },
     });
   }

@@ -41,12 +41,14 @@ export const STRINGS = Object.freeze({
   panelVoiceButton: 'Ouvir',
   panelVoiceStopButton: 'Parar',
   panelVoiceStopLabel: 'Parar leitura',
+  mediaOtherSiteNotice:
+    'Este vídeo é de outro site. Não consigo tirar o som dele.',
   panelMuteMediaTitle: 'Pausar e mutar tudo',
   panelMuteMediaDesc:
     'Pausa e silencia vídeos e sons da página, inclusive os que começam sozinhos',
   panelReadFocusTitle: 'Ler o que eu seleciono',
   panelReadFocusDesc:
-    'A voz lê o botão, link, campo ou texto em que você clicar ou parar com a tecla Tab',
+    'A voz lê o botão, link, campo ou texto em que você clicar ou parar com a tecla Tab. Se você usa leitor de tela, pode ouvir duas vezes',
   panelReadFocusUnsupported: 'Este navegador não tem voz para ler em voz alta',
   panelReadFocusUnsupportedState: 'Sem voz',
   stateOn: 'Ligado',
@@ -139,6 +141,21 @@ export const STRINGS = Object.freeze({
   sessionExit: 'Voltar',
   sessionExitPost: ' ao site normal',
 
+  // features/focusReader.js (papéis e estados falados)
+  roleButton: 'botão',
+  roleLink: 'link',
+  roleHeading: 'título',
+  roleField: 'campo',
+  roleCheckbox: 'caixa de seleção',
+  roleRadio: 'opção',
+  roleSwitch: 'interruptor',
+  roleSelect: 'lista de opções',
+  focusSubmitName: 'Enviar',
+  focusSwitchOn: 'ligado',
+  focusSwitchOff: 'desligado',
+  focusChecked: 'marcado',
+  focusUnchecked: 'desmarcado',
+
   // features/manualSelect.js (linguagem simples, U-02 / UX-21)
   lowConfNotice: 'Não achei o conteúdo principal, quer escolher?',
   lowConfChoose: 'Escolher o conteúdo',
@@ -146,6 +163,8 @@ export const STRINGS = Object.freeze({
   manualInstruction:
     'Clique ou toque no que você quer ler. No teclado: Tab muda de bloco, setas aumentam ou diminuem a área, Enter confirma, Esc volta.',
   manualCurrent: 'Você escolheu:',
+  manualChosen: 'Conteúdo principal definido',
+  manualCancelled: 'Seleção manual cancelada',
   manualCancel: 'Voltar',
   manualCancelLabel: 'Voltar sem escolher',
 });

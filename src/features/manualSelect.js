@@ -386,13 +386,12 @@ export function showLowConfidenceNotice(opts = {}) {
   });
   const box = document.createElement('div');
   box.id = NOTICE_ID;
-  box.setAttribute('role', 'status');
-  box.setAttribute('aria-live', 'polite');
+  box.setAttribute('data-ms-live', ''); // nó vivo da lib: não fica inert com o painel aberto nem dispara reprocess
   Object.assign(box.style, {
     position: 'fixed',
     left: '0',
     right: '0',
-    bottom: '0',
+    top: '0', // embaixo ficam o botão flutuante e a dica dele (QA T144 M1)
     zIndex: '2147483646',
     display: 'flex',
     flexWrap: 'wrap',
@@ -404,11 +403,16 @@ export function showLowConfidenceNotice(opts = {}) {
     color: '#fff',
     fontFamily: 'system-ui, sans-serif',
     fontSize: '1rem',
-    boxShadow: '0 -4px 16px rgba(0,0,0,0.25)',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
   });
   const msg = document.createElement('span');
-  msg.textContent = STRINGS.lowConfNotice;
+  // região viva vazia primeiro; o texto entra depois da inserção para o leitor de tela anunciar
+  msg.setAttribute('role', 'status');
+  msg.setAttribute('aria-live', 'polite');
   box.appendChild(msg);
+  setTimeout(() => {
+    msg.textContent = STRINGS.lowConfNotice;
+  }, 50);
   const mk = (text, onClick) => {
     const b = document.createElement('button');
     b.type = 'button';

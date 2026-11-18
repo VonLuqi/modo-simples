@@ -10,13 +10,14 @@
  * - pauseAutoplay(root) e restoreMedia() são exportadas para reuso (F7d, bloco piscante).
  */
 
+import { STRINGS as S } from '../ui/strings.js';
+
 const OWN_HOST = '#ms-container';
 const BADGE_ATTR = 'data-ms-media-badge';
 const MEDIA_SELECTOR = 'video, audio';
-const BADGE_TEXT = 'Este vídeo é de outro site. Não consigo tirar o som dele.';
 /** Hospedeiros de vídeo conhecidos: o iframe toca sozinho e não dá para controlar. */
 const VIDEO_HOSTS =
-  /(^|\.)(youtube\.com|youtube-nocookie\.com|youtu\.be|vimeo\.com|dailymotion\.com|twitch\.tv|facebook\.com|tiktok\.com|wistia\.com|wistia\.net|jwplatform\.com|brightcove\.net)$/i;
+  /(^|\.)(youtube\.com|youtube-nocookie\.com|youtu\.be|vimeo\.com|dailymotion\.com|twitch\.tv|tiktok\.com|wistia\.com|wistia\.net|jwplatform\.com|brightcove\.net)$/i;
 
 /** @type {WeakMap<Element, boolean>} estado `muted` de antes de mexermos */
 const _prior = new WeakMap();
@@ -27,6 +28,8 @@ const _badges = new Map();
 /** @type {MutationObserver|null} */
 let _observer = null;
 let _on = false;
+/** @type {Set<ShadowRoot>} shadow roots abertos já observados */
+const _roots = new Set();
 
 const userActive = () => !!navigator.userActivation?.isActive;
 
@@ -43,8 +46,20 @@ function walk(root, visit) {
   for (const el of els) {
     if (el.id === 'ms-container' || isOwn(el)) continue;
     visit(el);
-    if (el.shadowRoot) walk(el.shadowRoot, visit);
+    if (el.shadowRoot) {
+      if (_on) watchRoot(el.shadowRoot);
+      walk(el.shadowRoot, visit);
+    }
   }
+}
+
+/** Mídia criada depois dentro de um shadow root já existente: observer e eventos próprios. */
+function watchRoot(sr) {
+  if (_roots.has(sr)) return;
+  _roots.add(sr);
+  _observer?.observe(sr, { childList: true, subtree: true });
+  sr.addEventListener('play', onPlay, true); // `play` não é composed: não sai do shadow
+  sr.addEventListener('volumechange', onVolume, true);
 }
 
 function muteOne(el) {
@@ -113,10 +128,12 @@ function placeBadge(frame, badge) {
 
 function badgeFor(frame) {
   if (_badges.has(frame)) return;
+  const r = frame.getBoundingClientRect();
+  if (!r.width || !r.height) return; // display:none / 0x0: nada a cobrir
   const badge = document.createElement('div');
   badge.setAttribute(BADGE_ATTR, '');
   badge.setAttribute('role', 'note');
-  badge.textContent = BADGE_TEXT;
+  badge.textContent = S.mediaOtherSiteNotice;
   Object.assign(badge.style, {
     position: 'absolute',
     zIndex: '2147483644',
@@ -167,12 +184,12 @@ function onVolume(e) {
   const el = e.target;
   if (!el?.matches?.(MEDIA_SELECTOR) || isOwn(el)) return;
   if (!el.muted && !userActive()) el.muted = true;
+  else if (!el.muted) _prior.delete(el); // o usuário ligou o som: restaurar não mexe mais
 }
 
 export function startMediaMute() {
   if (_on) return;
   _on = true;
-  scan(document);
   document.addEventListener('play', onPlay, true);
   document.addEventListener('volumechange', onVolume, true);
   window.addEventListener('resize', relayout);
@@ -188,6 +205,7 @@ export function startMediaMute() {
     childList: true,
     subtree: true,
   });
+  scan(document); // depois do observer: shadow roots já existentes passam a ser observados
 }
 
 export function stopMediaMute() {
@@ -197,6 +215,11 @@ export function stopMediaMute() {
   _observer = null;
   document.removeEventListener('play', onPlay, true);
   document.removeEventListener('volumechange', onVolume, true);
+  for (const sr of _roots) {
+    sr.removeEventListener('play', onPlay, true);
+    sr.removeEventListener('volumechange', onVolume, true);
+  }
+  _roots.clear();
   window.removeEventListener('resize', relayout);
   for (const badge of _badges.values()) badge.remove();
   _badges.clear();

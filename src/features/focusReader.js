@@ -7,6 +7,7 @@
  */
 
 import { isReadingMain } from './tts.js';
+import { STRINGS as S } from '../ui/strings.js';
 
 const MAX_TEXT = 200;
 const DEBOUNCE_MS = 150;
@@ -66,7 +67,9 @@ export function accessibleName(el) {
   const type = (el.getAttribute('type') || '').toLowerCase();
   if (tag === 'input') {
     if (['button', 'submit', 'reset'].includes(type)) {
-      return cap(clean(el.value) || (type === 'submit' ? 'Enviar' : ''));
+      return cap(
+        clean(el.value) || (type === 'submit' ? S.focusSubmitName : ''),
+      );
     }
     return cap(clean(el.getAttribute('placeholder')));
   }
@@ -79,26 +82,27 @@ export function roleWord(el) {
   const tag = el.tagName.toLowerCase();
   const role = (el.getAttribute('role') || '').toLowerCase();
   const type = (el.getAttribute('type') || '').toLowerCase();
-  if (role === 'switch') return 'interruptor';
-  if (role === 'checkbox') return 'caixa de seleção';
-  if (role === 'radio') return 'opção';
-  if (role === 'button') return 'botão';
-  if (role === 'link') return 'link';
-  if (role === 'heading') return 'título';
-  if (role === 'textbox' || role === 'searchbox') return 'campo';
-  if (role === 'combobox' || role === 'listbox') return 'lista de opções';
-  if (tag === 'button') return 'botão';
-  if (tag === 'a') return 'link';
-  if (/^h[1-6]$/.test(tag)) return 'título';
-  if (tag === 'select') return 'lista de opções';
-  if (tag === 'textarea') return 'campo';
+  if (role === 'switch') return S.roleSwitch;
+  if (role === 'checkbox') return S.roleCheckbox;
+  if (role === 'radio') return S.roleRadio;
+  if (role === 'button') return S.roleButton;
+  if (role === 'link') return S.roleLink;
+  if (role === 'heading') return S.roleHeading;
+  if (role === 'textbox' || role === 'searchbox') return S.roleField;
+  if (role === 'combobox' || role === 'listbox') return S.roleSelect;
+  if (tag === 'button') return S.roleButton;
+  if (tag === 'a') return S.roleLink;
+  if (/^h[1-6]$/.test(tag)) return S.roleHeading;
+  if (tag === 'select') return S.roleSelect;
+  if (tag === 'textarea') return S.roleField;
   if (tag === 'input') {
-    if (['button', 'submit', 'reset', 'image'].includes(type)) return 'botão';
-    if (type === 'checkbox') return 'caixa de seleção';
-    if (type === 'radio') return 'opção';
-    return 'campo';
+    if (['button', 'submit', 'reset', 'image'].includes(type))
+      return S.roleButton;
+    if (type === 'checkbox') return S.roleCheckbox;
+    if (type === 'radio') return S.roleRadio;
+    return S.roleField;
   }
-  if (el.isContentEditable) return 'campo';
+  if (el.isContentEditable) return S.roleField;
   return '';
 }
 
@@ -110,8 +114,8 @@ function stateWord(el) {
   const nativo = el.tagName === 'INPUT' && ['checkbox', 'radio'].includes(type);
   if (checked === null && !nativo) return '';
   const on = checked !== null ? checked === 'true' : el.checked;
-  if (isSwitch) return on ? 'ligado' : 'desligado';
-  return on ? 'marcado' : 'desmarcado';
+  if (isSwitch) return on ? S.focusSwitchOn : S.focusSwitchOff;
+  return on ? S.focusChecked : S.focusUnchecked;
 }
 
 /** Texto a falar para o elemento focado ('' = nada a dizer). */

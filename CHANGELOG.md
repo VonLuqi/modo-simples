@@ -4,6 +4,13 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 
 ## [Unreleased]
 
+### Corrigido (F7a–c, revisão do QA T144)
+
+- **Aviso de confiança baixa** (UX-21) agora fica no **topo** da tela (embaixo cobria parte do texto e do "Fechar" com o botão flutuante e a dica dele no celular) e o texto entra na região `aria-live` depois da inserção, para o leitor de tela anunciar.
+- **Pausar e mutar tudo:** vídeo criado depois dentro de um shadow root **já existente** agora também é pausado e mutado (cada shadow root aberto é observado e escuta `play`/`volumechange`); iframe sem tamanho (`display:none`/0×0) não ganha aviso e `facebook.com` saiu da lista de hospedeiros de vídeo (só ganha aviso com `allow=autoplay`).
+- **Limites conhecidos:** ao desligar, o `autoplay` removido **não** é restaurado (só o `muted` volta; nunca há `play()`). Se o usuário ligou o som por gesto, desligar não o silencia de volta.
+- Textos de papéis/estados do "Leia o foco", do aviso de vídeo e dos anúncios da seleção manual foram para `src/ui/strings.js`; a descrição de "Ler o que eu seleciono" avisa que quem usa leitor de tela pode ouvir duas vezes.
+
 ### Adicionado (F7c — "Pausar e mutar tudo")
 
 - **Opção `muteMedia`** (booleano, padrão desligado, persistida, zerada pelo "Desligar tudo", anunciada ao alternar) com interruptor "Pausar e mutar tudo" na seção "Movimento e imagens". Ligada, todo `<video>`/`<audio>` da página (inclusive em shadow roots abertos) é pausado, mutado e perde o `autoplay`; mídia que aparece depois (e `play()` de script sem gesto do usuário) recebe o mesmo tratamento. O usuário ainda pode dar play/ligar o som manualmente (não se briga com ele).

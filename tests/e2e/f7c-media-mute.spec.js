@@ -126,4 +126,35 @@ test.describe('F7c — Pausar e mutar tudo', () => {
     await page.locator(SWITCH).click();
     await expect(aviso).toHaveCount(0);
   });
+
+  test('vídeo criado DEPOIS dentro de shadow root já existente também é mutado (QA T144 M2)', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page);
+    await page.evaluate(() => {
+      const host = document.createElement('div');
+      host.id = 'sh';
+      host.attachShadow({ mode: 'open' });
+      document.querySelector('main').appendChild(host);
+    });
+    await openPanel(page);
+    await page.locator('#ms-sec-motion-btn').click();
+    await page.locator(SWITCH).click();
+    await page.evaluate(() => {
+      const v = document.createElement('video');
+      v.id = 'tardio-sh';
+      v.setAttribute('autoplay', '');
+      document.getElementById('sh').shadowRoot.appendChild(v);
+    });
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            document.getElementById('sh').shadowRoot.getElementById('tardio-sh')
+              .muted,
+        ),
+      )
+      .toBe(true);
+  });
 });
