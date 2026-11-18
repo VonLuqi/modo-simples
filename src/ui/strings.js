@@ -74,6 +74,7 @@ export const STRINGS = Object.freeze({
   panelHighlightHeadings: 'Destacar cabeçalhos',
   panelHighlightControls: 'Destacar botões e campos',
   panelEnlargeTargets: 'Ampliar botões',
+  panelTextMagnifier: 'Lupa de texto',
   panelTextSpacing: 'Espaçamento de texto',
   panelReducedMotion: 'Reduzir movimento',
   panelHideImages: 'Ocultar imagens',

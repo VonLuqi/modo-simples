@@ -15,6 +15,7 @@ const TOGGLE_ANNOUNCEMENTS = {
     'Destaque de botões e campos ativado',
     'Destaque de botões e campos desativado',
   ],
+  textMagnifier: ['Lupa de texto ligada', 'Lupa de texto desligada'],
   enlargeTargets: ['Botões ampliados', 'Botões com tamanho normal'],
   textSpacing: [
     'Espaçamento de texto ativado',

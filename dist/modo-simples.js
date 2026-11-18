@@ -237,6 +237,7 @@
       highlightHeadings: false,
       highlightControls: false,
       enlargeTargets: false,
+      textMagnifier: false,
       textSpacing: false,
       lineHeight: 0,
       wordSpacing: 0,
@@ -304,6 +305,7 @@
       "Destaque de bot\xF5es e campos ativado",
       "Destaque de bot\xF5es e campos desativado"
     ],
+    textMagnifier: ["Lupa de texto ligada", "Lupa de texto desligada"],
     enlargeTargets: ["Bot\xF5es ampliados", "Bot\xF5es com tamanho normal"],
     textSpacing: [
       "Espa\xE7amento de texto ativado",
@@ -350,9 +352,9 @@
         next.options.readingRuler ? "R\xE9gua de leitura ativada" : "R\xE9gua de leitura desativada"
       );
     }
-    Object.entries(TOGGLE_ANNOUNCEMENTS).forEach(([k, [on, off]]) => {
+    Object.entries(TOGGLE_ANNOUNCEMENTS).forEach(([k, [on2, off]]) => {
       if (prev.options[k] !== next.options[k])
-        out.push(next.options[k] ? on : off);
+        out.push(next.options[k] ? on2 : off);
     });
     if (prev.options.textScale !== next.options.textScale) {
       out.push(`Tamanho do texto ${next.options.textScale}%`);
@@ -576,6 +578,7 @@
         highlightHeadings: Boolean(opts.highlightHeadings),
         highlightControls: Boolean(opts.highlightControls),
         enlargeTargets: Boolean(opts.enlargeTargets),
+        textMagnifier: Boolean(opts.textMagnifier),
         textSpacing: Boolean(opts.textSpacing),
         lineHeight: clampTypo("lineHeight", opts.lineHeight),
         wordSpacing: clampTypo("wordSpacing", opts.wordSpacing),
@@ -673,21 +676,21 @@
   var STATE_KEY = "state";
   var PRINCIPAL_KEY = "principal";
   var SIDE_KEY = "panelSide";
-  function saveHideImagesBeforeMs(ms, hide2) {
-    ms._hideImagesBeforeMs = !!hide2;
+  function saveHideImagesBeforeMs(ms, hide3) {
+    ms._hideImagesBeforeMs = !!hide3;
     if (!ms._config.persistence) return;
     const key = "hideImagesBeforeMs";
     if (ms._config.hostnamePersistence) {
-      persistence_default.saveForHost(key, !!hide2);
+      persistence_default.saveForHost(key, !!hide3);
     } else {
-      persistence_default.save(key, !!hide2);
+      persistence_default.save(key, !!hide3);
     }
   }
   function takeHideImagesBeforeMs(ms) {
-    let hide2 = ms._hideImagesBeforeMs;
-    if (hide2 === null && ms._config.persistence) {
+    let hide3 = ms._hideImagesBeforeMs;
+    if (hide3 === null && ms._config.persistence) {
       const key = "hideImagesBeforeMs";
-      hide2 = ms._config.hostnamePersistence ? persistence_default.loadForHost(key, null) : persistence_default.load(key, null);
+      hide3 = ms._config.hostnamePersistence ? persistence_default.loadForHost(key, null) : persistence_default.load(key, null);
     }
     ms._hideImagesBeforeMs = null;
     if (ms._config.persistence) {
@@ -698,7 +701,7 @@
         persistence_default.remove(key);
       }
     }
-    return !!hide2;
+    return !!hide3;
   }
   function loadPreferShowImages(ms) {
     if (!ms._config.persistence) return false;
@@ -706,13 +709,13 @@
     const v = ms._config.hostnamePersistence ? persistence_default.loadForHost(key, false) : persistence_default.load(key, false);
     return !!v;
   }
-  function savePreferShowImages(ms, show) {
+  function savePreferShowImages(ms, show2) {
     if (!ms._config.persistence) return;
     const key = "preferShowImagesInMs";
     if (ms._config.hostnamePersistence) {
-      persistence_default.saveForHost(key, !!show);
+      persistence_default.saveForHost(key, !!show2);
     } else {
-      persistence_default.save(key, !!show);
+      persistence_default.save(key, !!show2);
     }
   }
   function loadPanelSide(ms) {
@@ -2601,6 +2604,7 @@
     panelHighlightHeadings: "Destacar cabe\xE7alhos",
     panelHighlightControls: "Destacar bot\xF5es e campos",
     panelEnlargeTargets: "Ampliar bot\xF5es",
+    panelTextMagnifier: "Lupa de texto",
     panelTextSpacing: "Espa\xE7amento de texto",
     panelReducedMotion: "Reduzir movimento",
     panelHideImages: "Ocultar imagens",
@@ -3188,9 +3192,9 @@
     const type = (el2.getAttribute("type") || "").toLowerCase();
     const nativo = el2.tagName === "INPUT" && ["checkbox", "radio"].includes(type);
     if (checked === null && !nativo) return "";
-    const on = checked !== null ? checked === "true" : el2.checked;
-    if (isSwitch) return on ? STRINGS.focusSwitchOn : STRINGS.focusSwitchOff;
-    return on ? STRINGS.focusChecked : STRINGS.focusUnchecked;
+    const on2 = checked !== null ? checked === "true" : el2.checked;
+    if (isSwitch) return on2 ? STRINGS.focusSwitchOn : STRINGS.focusSwitchOff;
+    return on2 ? STRINGS.focusChecked : STRINGS.focusUnchecked;
   }
   function describeFocus(el2) {
     if (!el2 || el2.nodeType !== 1) return "";
@@ -3514,6 +3518,16 @@
         )
       })
     },
+    textMagnifier: {
+      html: switchTile({
+        option: "textMagnifier",
+        title: STRINGS.panelTextMagnifier,
+        label: STRINGS.panelTextMagnifier,
+        icon: svgIcon(
+          '<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/><path d="M8 10h4"/>'
+        )
+      })
+    },
     // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
     typography: {
       html: `
@@ -3647,7 +3661,12 @@
       icon: svgIcon(
         '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 14h8"/>'
       ),
-      controls: ["highlightHeadings", "highlightControls", "enlargeTargets"]
+      controls: [
+        "highlightHeadings",
+        "highlightControls",
+        "enlargeTargets",
+        "textMagnifier"
+      ]
     },
     {
       id: "motion",
@@ -3949,17 +3968,17 @@
       }
       const scale = ((_a = s.options) == null ? void 0 : _a.textScale) || "100";
       panel.querySelectorAll('[data-option="textScale"] .ms-segment').forEach((btn) => {
-        const on = btn.getAttribute("data-value") === scale;
-        btn.setAttribute("aria-checked", String(on));
-        btn.setAttribute("tabindex", on ? "0" : "-1");
-        btn.classList.toggle("ms-segment--on", on);
+        const on2 = btn.getAttribute("data-value") === scale;
+        btn.setAttribute("aria-checked", String(on2));
+        btn.setAttribute("tabindex", on2 ? "0" : "-1");
+        btn.classList.toggle("ms-segment--on", on2);
       });
       const theme = ((_b = s.options) == null ? void 0 : _b.colorTheme) || "senac";
       panel.querySelectorAll('[data-option="colorTheme"] .ms-theme-btn').forEach((btn) => {
-        const on = btn.getAttribute("data-value") === theme;
-        btn.setAttribute("aria-checked", String(on));
-        btn.setAttribute("tabindex", on ? "0" : "-1");
-        btn.classList.toggle("ms-theme-btn--on", on);
+        const on2 = btn.getAttribute("data-value") === theme;
+        btn.setAttribute("aria-checked", String(on2));
+        btn.setAttribute("tabindex", on2 ? "0" : "-1");
+        btn.classList.toggle("ms-theme-btn--on", on2);
       });
       TYPO_KEYS.forEach((key) => {
         var _a2;
@@ -3976,12 +3995,12 @@
         const radios = [...panel.querySelectorAll(selector)];
         const hit = radios.some((b) => b.getAttribute("data-value") === value);
         radios.forEach((btn, i) => {
-          const on = btn.getAttribute("data-value") === value;
-          btn.setAttribute("aria-checked", String(on));
-          btn.setAttribute("tabindex", on || !hit && i === 0 ? "0" : "-1");
+          const on2 = btn.getAttribute("data-value") === value;
+          btn.setAttribute("aria-checked", String(on2));
+          btn.setAttribute("tabindex", on2 || !hit && i === 0 ? "0" : "-1");
           btn.classList.toggle(
             btn.classList.contains("ms-swatch") ? "ms-swatch--on" : "ms-segment--on",
-            on
+            on2
           );
         });
       };
@@ -4027,6 +4046,7 @@
         "highlightHeadings",
         "highlightControls",
         "enlargeTargets",
+        "textMagnifier",
         "textSpacing",
         "reducedMotion",
         "hideImages",
@@ -4039,11 +4059,11 @@
         var _a2;
         const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
         if (!btn) return;
-        const on = !!((_a2 = s.options) == null ? void 0 : _a2[key]);
-        btn.setAttribute("aria-checked", String(on));
-        btn.classList.toggle("ms-switch--on", on);
+        const on2 = !!((_a2 = s.options) == null ? void 0 : _a2[key]);
+        btn.setAttribute("aria-checked", String(on2));
+        btn.classList.toggle("ms-switch--on", on2);
         const st = btn.querySelector("[data-state]");
-        if (st) st.textContent = on ? STRINGS.stateOn : STRINGS.stateOff;
+        if (st) st.textContent = on2 ? STRINGS.stateOn : STRINGS.stateOff;
         if (key === "readFocus" && !isFocusReaderSupported()) {
           btn.disabled = true;
           btn.setAttribute("title", STRINGS.panelReadFocusUnsupported);
@@ -4185,8 +4205,8 @@
     _mountChrome(chrome, mount);
     _mountBar(bar, mount);
     chrome.querySelector('[data-action="toggle-simples"]').addEventListener("click", (e) => {
-      const on = e.currentTarget.getAttribute("aria-checked") !== "true";
-      onToggleModoSimples(on);
+      const on2 = e.currentTarget.getAttribute("aria-checked") !== "true";
+      onToggleModoSimples(on2);
     });
     chrome.querySelector('[data-action="open-panel"]').addEventListener("click", () => onOpenPanel());
     const focusIn = (selector) => {
@@ -4216,23 +4236,23 @@
     });
     function sync(s, ui = {}) {
       var _a, _b;
-      const on = !!s.modoSimples;
+      const on2 = !!s.modoSimples;
       const sw = chrome.querySelector('[data-action="toggle-simples"]');
       const wrap = chrome.querySelector(".ms-simples-toggle-wrap");
       const sub = chrome.querySelector("[data-sub]");
       if (sw) {
-        sw.setAttribute("aria-checked", String(on));
-        sw.classList.toggle("ms-switch--on", on);
+        sw.setAttribute("aria-checked", String(on2));
+        sw.classList.toggle("ms-switch--on", on2);
       }
-      if (wrap) wrap.setAttribute("data-active", String(on));
-      if (sub) sub.textContent = on ? STRINGS.sessionSubOn : STRINGS.sessionSubOff;
-      _placeChrome(chrome, on, mount);
+      if (wrap) wrap.setAttribute("data-active", String(on2));
+      if (sub) sub.textContent = on2 ? STRINGS.sessionSubOn : STRINGS.sessionSubOff;
+      _placeChrome(chrome, on2, mount);
       const inner = bar.querySelector(".ms-session-bar-inner");
       const off = bar.querySelector(".ms-session-off");
       const onBlock = bar.querySelector(".ms-session-on");
-      if (inner) inner.setAttribute("data-state", on ? "on" : "off");
-      if (off) off.hidden = on;
-      if (onBlock) onBlock.hidden = !on;
+      if (inner) inner.setAttribute("data-state", on2 ? "on" : "off");
+      if (off) off.hidden = on2;
+      if (onBlock) onBlock.hidden = !on2;
       const langAvailable = hasSimpleLanguagePairs();
       const langOn = langAvailable && !!((_a = s.options) == null ? void 0 : _a.simpleLanguage);
       const langBtn = bar.querySelector('[data-action="lang"]');
@@ -4881,9 +4901,9 @@
       return false;
     }
   }
-  function setDismissed(on) {
+  function setDismissed(on2) {
     try {
-      if (on) sessionStorage.setItem(DISMISS_KEY, "1");
+      if (on2) sessionStorage.setItem(DISMISS_KEY, "1");
       else sessionStorage.removeItem(DISMISS_KEY);
     } catch (_) {
     }
@@ -5019,6 +5039,7 @@
     highlightHeadings: false,
     highlightControls: false,
     enlargeTargets: false,
+    textMagnifier: false,
     textSpacing: false,
     lineHeight: 0,
     wordSpacing: 0,
@@ -5110,9 +5131,9 @@
         onOpenPanel: () => ms._openPanel(),
         onSpeak: () => ms._toggleSpeak(),
         onToggleSimpleLanguage: (value) => state_default.set({ options: { simpleLanguage: value } }),
-        onToggleHideImages: (hide2) => {
-          state_default.set({ options: { hideImages: hide2 } });
-          if (state_default.get().modoSimples) ms._savePreferShowImages(!hide2);
+        onToggleHideImages: (hide3) => {
+          state_default.set({ options: { hideImages: hide3 } });
+          if (state_default.get().modoSimples) ms._savePreferShowImages(!hide3);
         }
       });
       ms._chrome.sync(state_default.get());
@@ -5191,13 +5212,13 @@
     ms._fab.sync({ panelOpen: true });
     announce("Painel de acessibilidade aberto");
   }
-  function setPageInert(ms, on) {
+  function setPageInert(ms, on2) {
     var _a;
     (_a = ms._inertObserver) == null ? void 0 : _a.disconnect();
     ms._inertObserver = null;
     for (const el2 of ms._inerted || []) el2.removeAttribute("inert");
     ms._inerted = [];
-    if (!on) return;
+    if (!on2) return;
     for (const el2 of document.body.children) ms._inertSibling(el2);
     ms._inertObserver = new MutationObserver((records) => {
       for (const r of records) {
@@ -5405,8 +5426,8 @@
   var _manualPrincipal = null;
   var _manualPath = "";
   var _holdPrincipal = false;
-  function holdPrincipal(on) {
-    _holdPrincipal = !!on;
+  function holdPrincipal(on2) {
+    _holdPrincipal = !!on2;
   }
   function injectPageStyles(css = "") {
     if (!css || document.getElementById(PAGE_STYLE_ID)) return;
@@ -5438,18 +5459,18 @@
     _distractionElements = detectDistractions(_mainElement, config);
     return { mainElement: _mainElement, confidence: result.confidence };
   }
-  function setHostCursor(on) {
+  function setHostCursor(on2) {
     var _a;
     const host = (_a = document.querySelector) == null ? void 0 : _a.call(document, "#ms-container");
     if (!host) return;
-    if (on) host.setAttribute("data-ms-cursor", "");
+    if (on2) host.setAttribute("data-ms-cursor", "");
     else host.removeAttribute("data-ms-cursor");
   }
-  function setHostFlag(name, on) {
+  function setHostFlag(name, on2) {
     var _a;
     const host = (_a = document.querySelector) == null ? void 0 : _a.call(document, "#ms-container");
     if (!host) return;
-    if (on) host.setAttribute(name, "");
+    if (on2) host.setAttribute(name, "");
     else host.removeAttribute(name);
   }
   function applyOptions(state2) {
@@ -5471,9 +5492,9 @@
     );
     const eff = effectiveColors(opts);
     for (const [key, [cls, prop]] of Object.entries(CUSTOM_COLORS2)) {
-      const on = !!eff[key];
-      html.classList.toggle(cls, on);
-      if (on) (_b = (_a = html.style) == null ? void 0 : _a.setProperty) == null ? void 0 : _b.call(_a, prop, eff[key]);
+      const on2 = !!eff[key];
+      html.classList.toggle(cls, on2);
+      if (on2) (_b = (_a = html.style) == null ? void 0 : _a.setProperty) == null ? void 0 : _b.call(_a, prop, eff[key]);
       else (_d = (_c = html.style) == null ? void 0 : _c.removeProperty) == null ? void 0 : _d.call(_c, prop);
     }
     html.classList.toggle("ms-dyslexia-font", !!opts.dyslexiaFont);
@@ -5592,6 +5613,7 @@
     "#ms-simples-chrome",
     "#ms-manual-select-banner",
     "#ms-reading-ruler",
+    "#ms-text-magnifier",
     "[data-ms-media-badge]",
     "#ms-shortcuts-card",
     "[data-ms-pills][data-ms-injected]",
@@ -6130,6 +6152,231 @@
     _autoplayed.clear();
   }
 
+  // src/features/textMagnifier.js
+  var MAGNIFIER_ID = "ms-text-magnifier";
+  var MIN_FONT_PX = 32;
+  var GAP = 12;
+  var MAX_CHARS = 280;
+  var OWN = "#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #" + MAGNIFIER_ID;
+  var BLOCK = "p, li, h1, h2, h3, h4, h5, h6, td, th, dt, dd, blockquote, figcaption, label, legend, caption, summary, button, a, pre";
+  var _box = null;
+  var _raf2 = null;
+  var _pending = null;
+  var _escaped = false;
+  var _last = "";
+  var _listeners2 = [];
+  var clean2 = (s) => (s || "").replace(/\s+/g, " ").trim();
+  function fieldText(el2) {
+    var _a;
+    const tag = el2.tagName;
+    if (tag === "INPUT") {
+      const type = (el2.getAttribute("type") || "text").toLowerCase();
+      if (type === "password" || type === "hidden") return "";
+      if (["checkbox", "radio", "file", "range", "color"].includes(type)) {
+        return clean2(labelOf(el2));
+      }
+      if (["button", "submit", "reset"].includes(type)) return clean2(el2.value);
+      return clean2(`${labelOf(el2)} ${el2.value || ""}`);
+    }
+    if (tag === "TEXTAREA") return clean2(`${labelOf(el2)} ${el2.value || ""}`);
+    if (tag === "SELECT") {
+      const opt = (_a = el2.selectedOptions) == null ? void 0 : _a[0];
+      return clean2(`${labelOf(el2)} ${opt ? opt.textContent : ""}`);
+    }
+    return "";
+  }
+  function labelOf(el2) {
+    const aria = el2.getAttribute("aria-label");
+    if (aria) return aria;
+    const labels = el2.labels ? [...el2.labels].map((l) => l.textContent).join(" ") : "";
+    return labels || el2.getAttribute("placeholder") || "";
+  }
+  function magnifierTextFor(el2) {
+    var _a, _b, _c;
+    if (!el2 || el2.nodeType !== 1) return "";
+    if ((_a = el2.closest) == null ? void 0 : _a.call(el2, OWN)) return "";
+    const tag = el2.tagName;
+    if (["INPUT", "TEXTAREA", "SELECT"].includes(tag))
+      return fieldText(el2).slice(0, MAX_CHARS);
+    if (tag === "IMG") return clean2(el2.getAttribute("alt")).slice(0, MAX_CHARS);
+    for (let n = el2; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+      if ((_b = n.closest) == null ? void 0 : _b.call(n, OWN)) return "";
+      if ((_c = n.matches) == null ? void 0 : _c.call(n, BLOCK)) {
+        const t = clean2(n.textContent);
+        if (t) return t.slice(0, MAX_CHARS);
+      }
+    }
+    const own = [...el2.childNodes].filter((c) => c.nodeType === 3).map((c) => c.textContent).join(" ");
+    return clean2(own).slice(0, MAX_CHARS);
+  }
+  function rgb(c) {
+    const m = /rgba?\(([^)]+)\)/.exec(c || "");
+    if (!m) return null;
+    const [r, g, b, a = 1] = m[1].split(/[ ,/]+/).filter(Boolean).map(Number);
+    return { r, g, b, a };
+  }
+  var lum = ({ r, g, b }) => (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  function themeColors() {
+    const cs = getComputedStyle(document.body);
+    const fg = rgb(cs.color) || { r: 0, g: 0, b: 0, a: 1 };
+    let bg = rgb(cs.backgroundColor);
+    if (!bg || bg.a < 0.5) {
+      const html = rgb(
+        getComputedStyle(document.documentElement).backgroundColor
+      );
+      bg = html && html.a >= 0.5 ? html : lum(fg) > 0.5 ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
+    }
+    const css = ({ r, g, b }) => `rgb(${r}, ${g}, ${b})`;
+    return { color: css(fg), background: css(bg) };
+  }
+  function ensureBox() {
+    if (_box) return _box;
+    _box = document.createElement("div");
+    _box.id = MAGNIFIER_ID;
+    _box.setAttribute("aria-hidden", "true");
+    const set = (k, v) => _box.style.setProperty(k, v, "important");
+    set("position", "fixed");
+    set("left", "0");
+    set("top", "0");
+    set("display", "none");
+    set("box-sizing", "border-box");
+    set("width", "min(720px, calc(100vw - 32px))");
+    set("max-height", "40vh");
+    set("overflow", "hidden");
+    set("padding", "14px 18px");
+    set("font", `600 ${MIN_FONT_PX}px/1.35 system-ui, sans-serif`);
+    set("border-radius", "12px");
+    set("border", "3px solid");
+    set("box-shadow", "0 6px 24px rgba(0,0,0,0.4)");
+    set("pointer-events", "none");
+    set("z-index", "2147483645");
+    set("word-break", "break-word");
+    document.documentElement.appendChild(_box);
+    return _box;
+  }
+  function hide2() {
+    _last = "";
+    if (_box) _box.style.setProperty("display", "none", "important");
+  }
+  function place(rect) {
+    const vw = window.innerWidth || document.documentElement.clientWidth;
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    const w = _box.offsetWidth;
+    const h = _box.offsetHeight;
+    let top;
+    if (rect.bottom + GAP + h <= vh) top = rect.bottom + GAP;
+    else if (rect.top - GAP - h >= 0) top = rect.top - GAP - h;
+    else top = rect.top > vh - rect.bottom ? 8 : vh - h - 8;
+    const left = Math.min(Math.max(8, rect.left), Math.max(8, vw - w - 8));
+    _box.style.setProperty("left", `${Math.round(left)}px`, "important");
+    _box.style.setProperty(
+      "top",
+      `${Math.round(Math.max(0, top))}px`,
+      "important"
+    );
+  }
+  function show(el2, pointer) {
+    const text = magnifierTextFor(el2);
+    if (!text) return hide2();
+    const box = ensureBox();
+    if (text !== _last || box.style.display === "none") {
+      const { color, background } = themeColors();
+      box.style.setProperty("color", color, "important");
+      box.style.setProperty("background", background, "important");
+      box.style.setProperty("border-color", color, "important");
+      box.textContent = text;
+      _last = text;
+    }
+    box.style.setProperty("display", "block", "important");
+    let rect = el2.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    if (pointer && rect.height > vh / 2) {
+      rect = {
+        top: pointer.y - 12,
+        bottom: pointer.y + 12,
+        left: rect.left,
+        right: rect.right
+      };
+    }
+    place(rect);
+  }
+  function schedule2(el2, pointer) {
+    _pending = { el: el2, pointer };
+    if (_raf2 !== null) return;
+    _raf2 = requestAnimationFrame(() => {
+      _raf2 = null;
+      const p = _pending;
+      _pending = null;
+      if (p && !_escaped && _listeners2.length) show(p.el, p.pointer);
+    });
+  }
+  function on(target, type, fn, opts) {
+    target.addEventListener(type, fn, opts);
+    _listeners2.push([target, type, fn, opts]);
+  }
+  function startTextMagnifier() {
+    if (_listeners2.length) return;
+    const move = (e) => {
+      var _a, _b;
+      if (e.pointerType === "touch") return;
+      _escaped = false;
+      if ((_b = (_a = e.target) == null ? void 0 : _a.closest) == null ? void 0 : _b.call(_a, "#ms-container")) return hide2();
+      schedule2(e.target, { x: e.clientX, y: e.clientY });
+    };
+    const tap = (e) => {
+      var _a, _b;
+      if (e.pointerType !== "touch") return;
+      _escaped = false;
+      if ((_b = (_a = e.target) == null ? void 0 : _a.closest) == null ? void 0 : _b.call(_a, "#ms-container")) return hide2();
+      schedule2(e.target, { x: e.clientX, y: e.clientY });
+    };
+    const focus = (e) => {
+      var _a, _b;
+      _escaped = false;
+      if (!e.target || e.target === document.body || ((_b = (_a = e.target).closest) == null ? void 0 : _b.call(_a, "#ms-container")))
+        return hide2();
+      schedule2(e.target, null);
+    };
+    on(document, "pointermove", move, { passive: true });
+    on(document, "pointerdown", tap, { passive: true });
+    on(
+      document,
+      "pointerout",
+      (e) => {
+        if (!e.relatedTarget && e.pointerType !== "touch") hide2();
+      },
+      { passive: true }
+    );
+    on(document, "focusin", focus);
+    on(document, "focusout", () => hide2());
+    on(document, "keydown", (e) => {
+      if (e.key === "Escape") {
+        _escaped = true;
+        hide2();
+      }
+    });
+    on(document, "wheel", () => hide2(), { passive: true });
+    let width = window.innerWidth;
+    on(window, "resize", () => {
+      if (window.innerWidth !== width) hide2();
+      width = window.innerWidth;
+    });
+  }
+  function stopTextMagnifier() {
+    for (const [t, type, fn, opts] of _listeners2)
+      t.removeEventListener(type, fn, opts);
+    _listeners2 = [];
+    if (_raf2 !== null) {
+      cancelAnimationFrame(_raf2);
+      _raf2 = null;
+    }
+    _pending = null;
+    _escaped = false;
+    _last = "";
+    _box == null ? void 0 : _box.remove();
+    _box = null;
+  }
+
   // src/modo-simples.js
   var ModoSimples = class {
     constructor(userConfig = {}) {
@@ -6177,6 +6424,7 @@
       if (currentState.options.readFocus) startFocusReader();
       if (currentState.options.muteMedia) startMediaMute();
       if (currentState.options.blockFlashing) startFlashBlock();
+      if (currentState.options.textMagnifier) startTextMagnifier();
       if (currentState.options.showShortcuts) {
         startShortcutsCard({ side: this._shortcutsSide() });
       }
@@ -6220,6 +6468,7 @@
       stopFocusReader();
       stopMediaMute();
       stopFlashBlock();
+      stopTextMagnifier();
       hideShortcutsCard();
       stopSpeaking();
       stopManualSelect();
@@ -6275,8 +6524,8 @@
      * Preferências do painel (tema, escala, Lexend, etc.) permanecem.
      * @param {boolean} on
      */
-    _setModoSimples(on) {
-      if (on) {
+    _setModoSimples(on2) {
+      if (on2) {
         const preferShow = this._loadPreferShowImages();
         if (!state_default.get().modoSimples) {
           this._saveHideImagesBeforeMs(state_default.get().options.hideImages);
@@ -6300,8 +6549,8 @@
       }
     }
     /** Guarda (memória + storage) se as imagens estavam ocultas antes de ligar o MS. */
-    _saveHideImagesBeforeMs(hide2) {
-      saveHideImagesBeforeMs(this, hide2);
+    _saveHideImagesBeforeMs(hide3) {
+      saveHideImagesBeforeMs(this, hide3);
     }
     /** Lê e esquece o valor guardado; sem registro (ex.: MS já estava ligado) = imagens visíveis. */
     _takeHideImagesBeforeMs() {
@@ -6312,8 +6561,8 @@
       return loadPreferShowImages(this);
     }
     /** Delegate: ver savePreferShowImages() em src/core/instancePersistence.js. */
-    _savePreferShowImages(show) {
-      savePreferShowImages(this, show);
+    _savePreferShowImages(show2) {
+      savePreferShowImages(this, show2);
     }
     configure(patch) {
       this._config = mergeConfig(this._config, patch);
@@ -6358,8 +6607,8 @@
       openPanel(this);
     }
     /** Delegate: ver setPageInert() em src/ui/binding.js. */
-    _setPageInert(on) {
-      setPageInert(this, on);
+    _setPageInert(on2) {
+      setPageInert(this, on2);
     }
     /** Delegate: ver inertSibling() em src/ui/binding.js. */
     _inertSibling(el2) {
@@ -6475,6 +6724,7 @@
         "highlightHeadings",
         "highlightControls",
         "enlargeTargets",
+        "textMagnifier",
         "textSpacing",
         "lineHeight",
         "wordSpacing",
@@ -6506,6 +6756,10 @@
       if (prev.options.blockFlashing !== next.options.blockFlashing) {
         if (next.options.blockFlashing) startFlashBlock();
         else stopFlashBlock();
+      }
+      if (prev.options.textMagnifier !== next.options.textMagnifier) {
+        if (next.options.textMagnifier) startTextMagnifier();
+        else stopTextMagnifier();
       }
       if (prev.options.showShortcuts !== next.options.showShortcuts) {
         if (next.options.showShortcuts) {

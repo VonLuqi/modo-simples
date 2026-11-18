@@ -63,6 +63,7 @@ export function hydratePersistedState(saved) {
       highlightHeadings: Boolean(opts.highlightHeadings),
       highlightControls: Boolean(opts.highlightControls),
       enlargeTargets: Boolean(opts.enlargeTargets),
+      textMagnifier: Boolean(opts.textMagnifier),
       textSpacing: Boolean(opts.textSpacing),
       lineHeight: clampTypo('lineHeight', opts.lineHeight),
       wordSpacing: clampTypo('wordSpacing', opts.wordSpacing),

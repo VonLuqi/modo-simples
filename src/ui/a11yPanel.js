@@ -283,6 +283,16 @@ const CONTROLS = {
       ),
     }),
   },
+  textMagnifier: {
+    html: switchTile({
+      option: 'textMagnifier',
+      title: S.panelTextMagnifier,
+      label: S.panelTextMagnifier,
+      icon: svgIcon(
+        '<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/><path d="M8 10h4"/>',
+      ),
+    }),
+  },
   // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
   typography: {
     html: `
@@ -421,7 +431,12 @@ const SECTIONS = [
     icon: svgIcon(
       '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 14h8"/>',
     ),
-    controls: ['highlightHeadings', 'highlightControls', 'enlargeTargets'],
+    controls: [
+      'highlightHeadings',
+      'highlightControls',
+      'enlargeTargets',
+      'textMagnifier',
+    ],
   },
   {
     id: 'motion',
@@ -891,6 +906,7 @@ export function createA11yPanel({
       'highlightHeadings',
       'highlightControls',
       'enlargeTargets',
+      'textMagnifier',
       'textSpacing',
       'reducedMotion',
       'hideImages',

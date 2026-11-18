@@ -76,6 +76,10 @@ import { startFocusReader, stopFocusReader } from './features/focusReader.js';
 import { startMediaMute, stopMediaMute } from './features/mediaMute.js';
 import { startFlashBlock, stopFlashBlock } from './features/flashBlock.js';
 import {
+  startTextMagnifier,
+  stopTextMagnifier,
+} from './features/textMagnifier.js';
+import {
   startShortcutsCard,
   stopShortcutsCard,
   hideShortcutsCard,
@@ -140,6 +144,7 @@ class ModoSimples {
     if (currentState.options.readFocus) startFocusReader();
     if (currentState.options.muteMedia) startMediaMute();
     if (currentState.options.blockFlashing) startFlashBlock();
+    if (currentState.options.textMagnifier) startTextMagnifier();
     if (currentState.options.showShortcuts) {
       startShortcutsCard({ side: this._shortcutsSide() });
     }
@@ -189,6 +194,7 @@ class ModoSimples {
     stopFocusReader();
     stopMediaMute();
     stopFlashBlock();
+    stopTextMagnifier();
     hideShortcutsCard();
     stopSpeaking();
     stopManualSelect();
@@ -499,6 +505,7 @@ class ModoSimples {
       'highlightHeadings',
       'highlightControls',
       'enlargeTargets',
+      'textMagnifier',
       'textSpacing',
       'lineHeight',
       'wordSpacing',
@@ -533,6 +540,11 @@ class ModoSimples {
     if (prev.options.blockFlashing !== next.options.blockFlashing) {
       if (next.options.blockFlashing) startFlashBlock();
       else stopFlashBlock();
+    }
+
+    if (prev.options.textMagnifier !== next.options.textMagnifier) {
+      if (next.options.textMagnifier) startTextMagnifier();
+      else stopTextMagnifier();
     }
 
     if (prev.options.showShortcuts !== next.options.showShortcuts) {
