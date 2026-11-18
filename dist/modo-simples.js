@@ -6408,6 +6408,7 @@
   }
   function render2() {
     if (!_root3) return;
+    layoutRows();
     const has = !!_target;
     _root3.querySelector("[data-vk-hint]").style.setProperty("display", has ? "none" : "block", "important");
     _root3.querySelector("[data-vk-hintrow]").style.setProperty("display", has ? "none" : "flex", "important");
@@ -6495,9 +6496,48 @@
   };
   var GLYPH = { Backspace: "\u2190", Caps: "\u21EA", Shift: "\u21E7" };
   var rowUnits = (row) => row.reduce((n, d) => n + (WEIGHT[d] || 1), 0);
-  var MAX_UNITS = Math.max(...ROWS.map(rowUnits));
-  var UNIT = `min(calc((100% - ${(MAX_UNITS - 1) * GAP2}px) / ${MAX_UNITS}), 56px)`;
-  var basis = (w) => `calc(${w} * ${UNIT} + ${(w - 1) * GAP2}px)`;
+  var NARROW = 375;
+  function splitIndex(row) {
+    const total = rowUnits(row);
+    let acc = 0;
+    let best = 1;
+    let bestMax = Infinity;
+    for (let k = 1; k < row.length; k++) {
+      acc += WEIGHT[row[k - 1]] || 1;
+      const m = Math.max(acc, total - acc);
+      if (m < bestMax) {
+        bestMax = m;
+        best = k;
+      }
+    }
+    return best;
+  }
+  var unitsOf = (row, narrow) => {
+    if (!narrow) return rowUnits(row);
+    const k = splitIndex(row);
+    return Math.max(rowUnits(row.slice(0, k)), rowUnits(row.slice(k)));
+  };
+  var unitCss = (narrow) => {
+    const n = Math.max(...ROWS.map((r) => unitsOf(r, narrow)));
+    return `min(calc((100% - ${(n - 1) * GAP2}px) / ${n}), 56px)`;
+  };
+  var basis = (w) => `calc(${w} * var(--vk-u) + ${(w - 1) * GAP2}px)`;
+  var _lines = [];
+  function layoutRows() {
+    var _a;
+    if (!_root3) return;
+    const narrow = (win().innerWidth || 1024) < NARROW;
+    _root3.style.setProperty("--vk-u", unitCss(narrow), "important");
+    for (const { line, row } of _lines) {
+      (_a = line.querySelector("[data-vk-break]")) == null ? void 0 : _a.remove();
+      setStyle(line, { "flex-wrap": narrow ? "wrap" : "nowrap" });
+      if (!narrow) continue;
+      const br = document.createElement("div");
+      br.dataset.vkBreak = "";
+      setStyle(br, { "flex-basis": "100%", height: "0", margin: "0" });
+      line.children[splitIndex(row) - 1].after(br);
+    }
+  }
   function buildRow(row) {
     const line = document.createElement("div");
     setStyle(line, {
@@ -6507,6 +6547,7 @@
       "justify-content": "center",
       margin: "0 0 4px"
     });
+    _lines.push({ line, row });
     for (const def of row) {
       const w = WEIGHT[def] || 1;
       const btn = document.createElement("button");
@@ -6521,7 +6562,7 @@
         "min-height": "44px",
         margin: "0",
         padding: "0",
-        font: `600 ${GLYPH[def] ? 12 : 18}px/1 system-ui, sans-serif`,
+        font: `600 ${GLYPH[def] ? 16 : 18}px/1 system-ui, sans-serif`,
         "border-radius": "8px",
         cursor: "pointer"
       });
@@ -6548,7 +6589,7 @@
       display: "flex",
       "flex-direction": "column",
       "box-sizing": "border-box",
-      padding: "8px",
+      padding: "8px 6px",
       "z-index": "2147483644",
       font: "600 20px/1 system-ui, sans-serif",
       "max-height": "60vh"
@@ -6624,6 +6665,7 @@
     _caps = false;
     _dead = null;
     _keys = [];
+    _lines = [];
     _root3 = build2();
     document.documentElement.appendChild(_root3);
     hideFab();
@@ -6673,6 +6715,7 @@
     _altgr = false;
     _caps = false;
     _keys = [];
+    _lines = [];
     if (!silent) announce(STRINGS.vkClosed);
   }
 
