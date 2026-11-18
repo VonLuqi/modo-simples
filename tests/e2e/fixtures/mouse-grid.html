@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Grade de mouse — fixture do Modo Simples</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+      /* centro em 5/6 da largura e da altura = célula 9 → célula 5 */
+      #target {
+        position: fixed;
+        left: 83.3333%;
+        top: 83.3333%;
+        width: 80px;
+        height: 48px;
+        transform: translate(-50%, -50%);
+      }
+      #other {
+        position: fixed;
+        left: 8px;
+        top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Grade de mouse</h1>
+      <button id="other" type="button">Outro botão</button>
+      <button id="target" type="button">Alvo</button>
+    </main>
+    <script>
+      window.__clicks = [];
+      const t = document.getElementById('target');
+      for (const type of [
+        'pointerdown',
+        'mousedown',
+        'pointerup',
+        'mouseup',
+        'click',
+      ]) {
+        t.addEventListener(type, () => window.__clicks.push(type));
+      }
+    </script>
+    <script src="../../../dist/modo-simples.min.js"></script>
+  </body>
+</html>

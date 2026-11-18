@@ -1,6 +1,8 @@
     /* ── F9c: Estrutura da página (diálogo dentro do painel) ─────────────── */
-    .ms-tile[data-action="page-outline"]:hover { background: #eef3fb; }
+    .ms-tile[data-action="page-outline"]:hover,
+    .ms-tile[data-action="mouse-grid"]:hover { background: #eef3fb; }
     .ms-tile[data-action="page-outline"]:focus-visible,
+    .ms-tile[data-action="mouse-grid"]:focus-visible,
     .ms-outline-link:focus-visible { outline: 3px solid var(--ms-blue); outline-offset: 2px; }
     .ms-outline {
       position: absolute;

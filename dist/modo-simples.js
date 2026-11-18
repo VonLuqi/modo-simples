@@ -257,11 +257,11 @@
     return { ...s, options: { ...s.options } };
   }
   function createState(initial) {
-    let current = cloneState(initial);
+    let current2 = cloneState(initial);
     return {
       /** Returns a snapshot — never a direct reference to internal state. */
       get() {
-        return cloneState(current);
+        return cloneState(current2);
       },
       /**
        * Merge a patch into current state and emit 'stateChange'.
@@ -272,17 +272,17 @@
        * @param {Object} patch
        */
       set(patch) {
-        const prev = cloneState(current);
+        const prev = cloneState(current2);
         if (patch.options) {
-          current = {
-            ...current,
+          current2 = {
+            ...current2,
             ...patch,
-            options: { ...current.options, ...patch.options }
+            options: { ...current2.options, ...patch.options }
           };
         } else {
-          current = { ...current, ...patch };
+          current2 = { ...current2, ...patch };
         }
-        eventBus_default.emit("stateChange", { prev, next: cloneState(current) });
+        eventBus_default.emit("stateChange", { prev, next: cloneState(current2) });
       },
       /** Reset state to initial values (e.g. on destroy). */
       reset() {
@@ -1508,7 +1508,7 @@
 
     .ms-switch.ms-tile,
     .ms-btn-ouvir.ms-tile,
-    .ms-tile[data-action="page-outline"] {
+    .ms-tile[data-action="page-outline"], .ms-tile[data-action="mouse-grid"] {
       position: relative;
       display: flex;
       flex-direction: column;
@@ -1705,8 +1705,10 @@
     }
     .ms-profile-custom[hidden] { display: none; }
     /* \u2500\u2500 F9c: Estrutura da p\xE1gina (di\xE1logo dentro do painel) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
-    .ms-tile[data-action="page-outline"]:hover { background: #eef3fb; }
+    .ms-tile[data-action="page-outline"]:hover,
+    .ms-tile[data-action="mouse-grid"]:hover { background: #eef3fb; }
     .ms-tile[data-action="page-outline"]:focus-visible,
+    .ms-tile[data-action="mouse-grid"]:focus-visible,
     .ms-outline-link:focus-visible { outline: 3px solid var(--ms-blue); outline-offset: 2px; }
     .ms-outline {
       position: absolute;
@@ -2031,29 +2033,29 @@
     }
 
     /* \u2500\u2500 Ferramentas de p\xE1gina (F9a) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
-    html.ms-highlight-headings :is(h1, h2, h3, h4, h5, h6, [role="heading"]):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
+    html.ms-highlight-headings :is(h1, h2, h3, h4, h5, h6, [role="heading"]):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, [data-ms-hidden]) {
       outline: 3px solid #6a1b9a !important;
       outline-offset: 2px !important;
       background-color: #f3e5f5 !important;
       color: #000 !important;
     }
-    html.ms-highlight-controls :is(button, [role="button"], input, select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
+    html.ms-highlight-controls :is(button, [role="button"], input, select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, [data-ms-hidden]) {
       /* sombra, n\xE3o outline: o anel de foco nativo (outline) continua vis\xEDvel por cima do destaque */
       box-shadow: 0 0 0 3px #0b57d0 !important;
     }
-    html.ms-enlarge-targets :is(button, [role="button"], input:not([type="hidden"], [type="checkbox"], [type="radio"]), select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
+    html.ms-enlarge-targets :is(button, [role="button"], input:not([type="hidden"], [type="checkbox"], [type="radio"]), select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, [data-ms-hidden]) {
       min-width: 44px !important;
       min-height: 44px !important;
       box-sizing: border-box !important;
     }
     /* Links soltos (menu, bot\xE3o-link, lista de links) ganham 44px. Links no meio de texto corrido
        (WCAG 2.5.8, exce\xE7\xE3o "em linha") ficam em linha, sem tamanho m\xEDnimo, para a frase quebrar normal. */
-    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
+    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, [data-ms-hidden]):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
       min-width: 44px !important;
       min-height: 44px !important;
       box-sizing: border-box !important;
     }
-    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]):not(:has(img)):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
+    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, [data-ms-hidden]):not(:has(img)):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
       display: inline-block !important;
     }
     /* \u2500\u2500 Foco bem vis\xEDvel (F7e): anel duplo (preto + amarelo), leg\xEDvel em qualquer fundo \u2500\u2500 */
@@ -2655,6 +2657,19 @@
     panelEnlargeTargets: "Ampliar bot\xF5es",
     panelTextMagnifier: "Lupa de texto",
     panelPageOutline: "Estrutura da p\xE1gina",
+    panelMouseGrid: "Grade de mouse",
+    gridDialogLabel: "Grade de mouse",
+    gridOpen: "Grade aberta. Escolha de 1 a 9.",
+    gridLevelPre: "N\xEDvel",
+    gridChoose: "Escolha de 1 a 9.",
+    gridMin: "\xC1rea m\xEDnima. Aperte Enter para clicar.",
+    gridTop: "Voc\xEA j\xE1 est\xE1 no primeiro n\xEDvel.",
+    gridClosed: "Grade fechada.",
+    gridClicked: "Clique feito.",
+    gridCellLabel: "C\xE9lula",
+    gridClickBtn: "Clicar aqui (Enter)",
+    gridBackBtn: "Voltar (Backspace)",
+    gridCloseBtn: "Fechar (Esc)",
     outlineTitle: "Estrutura da p\xE1gina",
     outlineClose: "Fechar",
     outlineLandmarks: "\xC1reas da p\xE1gina",
@@ -2792,6 +2807,10 @@
   });
   var SHORTCUTS = Object.freeze([
     { keys: "Alt+Shift+A", text: "Abrir o painel de acessibilidade" },
+    {
+      keys: "Alt+Shift+G",
+      text: "Abrir a grade de mouse (1 a 9 escolhe, Enter clica)"
+    },
     { keys: "Esc", text: "Fechar o painel ou sair da escolha de conte\xFAdo" },
     { keys: "Tab", text: "Ir ao pr\xF3ximo item" },
     { keys: "Shift+Tab", text: "Voltar ao item anterior" },
@@ -2854,12 +2873,12 @@
       e.stopPropagation();
       onHide == null ? void 0 : onHide();
     });
-    const box = document.createElement("div");
-    box.className = "ms-fab-box";
-    box.appendChild(btn);
-    box.appendChild(hideBtn);
+    const box2 = document.createElement("div");
+    box2.className = "ms-fab-box";
+    box2.appendChild(btn);
+    box2.appendChild(hideBtn);
     wrap.appendChild(tip);
-    wrap.appendChild(box);
+    wrap.appendChild(box2);
     function sync({ panelOpen }) {
       btn.setAttribute("aria-expanded", String(panelOpen));
       btn.setAttribute(
@@ -3801,6 +3820,10 @@
     pageOutline: {
       html: `<button type="button" class="ms-tile" data-action="page-outline" aria-haspopup="dialog"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M4 6h16"/><path d="M8 12h12"/><path d="M12 18h8"/>')}</span><span class="ms-tile-label">${STRINGS.panelPageOutline}</span></button>`
     },
+    // F9d: ação de sessão (fecha o painel e abre a grade), não é opção persistida
+    mouseGrid: {
+      html: `<button type="button" class="ms-tile" data-action="mouse-grid"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/>')}</span><span class="ms-tile-label">${STRINGS.panelMouseGrid}</span></button>`
+    },
     // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
     typography: {
       html: `
@@ -3939,7 +3962,8 @@
         "highlightControls",
         "enlargeTargets",
         "textMagnifier",
-        "pageOutline"
+        "pageOutline",
+        "mouseGrid"
       ]
     },
     {
@@ -4025,6 +4049,7 @@
     onSelectProfile,
     onMoveSide,
     onOutlineJump,
+    onOpenMouseGrid,
     brand
   }) {
     const texts = { ...DEFAULT_BRAND, ...brand };
@@ -4167,6 +4192,7 @@
       container: panel,
       onJump: (el2) => onOutlineJump == null ? void 0 : onOutlineJump(el2)
     });
+    panel.querySelector('[data-action="mouse-grid"]').addEventListener("click", () => onOpenMouseGrid == null ? void 0 : onOpenMouseGrid());
     panel.querySelector('[data-action="page-outline"]').addEventListener("click", (e) => outline.open(e.currentTarget));
     TYPO_KEYS.forEach((key) => {
       const input = panel.querySelector(`[data-range="${key}"]`);
@@ -4253,9 +4279,9 @@
         btn.setAttribute("tabindex", on2 ? "0" : "-1");
         btn.classList.toggle("ms-segment--on", on2);
       });
-      const theme = ((_b = s.options) == null ? void 0 : _b.colorTheme) || "senac";
+      const theme2 = ((_b = s.options) == null ? void 0 : _b.colorTheme) || "senac";
       panel.querySelectorAll('[data-option="colorTheme"] .ms-theme-btn').forEach((btn) => {
-        const on2 = btn.getAttribute("data-value") === theme;
+        const on2 = btn.getAttribute("data-value") === theme2;
         btn.setAttribute("aria-checked", String(on2));
         btn.setAttribute("tabindex", on2 ? "0" : "-1");
         btn.classList.toggle("ms-theme-btn--on", on2);
@@ -4363,7 +4389,7 @@
       );
       setState(
         "colorTheme",
-        (_g = (_f = COLOR_THEMES.find((x) => x.value === theme)) == null ? void 0 : _f.label) != null ? _g : theme
+        (_g = (_f = COLOR_THEMES.find((x) => x.value === theme2)) == null ? void 0 : _f.label) != null ? _g : theme2
       );
       setState(
         "colorSaturation",
@@ -4824,26 +4850,26 @@
       return `#${escapeIdent(el2.id)}`;
     }
     const parts = [];
-    let current = el2;
+    let current2 = el2;
     const root = typeof document !== "undefined" ? document.documentElement : null;
-    while (current && current.nodeType === 1 && current !== root) {
-      let part = current.tagName.toLowerCase();
-      if (current.id) {
-        parts.unshift(`#${escapeIdent(current.id)}`);
+    while (current2 && current2.nodeType === 1 && current2 !== root) {
+      let part = current2.tagName.toLowerCase();
+      if (current2.id) {
+        parts.unshift(`#${escapeIdent(current2.id)}`);
         break;
       }
-      const parent = current.parentElement;
+      const parent = current2.parentElement;
       if (parent && parent.children) {
         const siblings = Array.from(parent.children).filter(
-          (c) => c.tagName === current.tagName
+          (c) => c.tagName === current2.tagName
         );
         if (siblings.length > 1) {
-          const index = siblings.indexOf(current) + 1;
+          const index = siblings.indexOf(current2) + 1;
           part += `:nth-of-type(${index})`;
         }
       }
       parts.unshift(part);
-      current = parent;
+      current2 = parent;
     }
     return parts.join(" > ");
   }
@@ -5069,10 +5095,10 @@
     queueMicrotask(() => {
       if (document.getElementById(NOTICE_ID)) _noticePrev = deepActiveElement();
     });
-    const box = document.createElement("div");
-    box.id = NOTICE_ID;
-    box.setAttribute("data-ms-live", "");
-    Object.assign(box.style, {
+    const box2 = document.createElement("div");
+    box2.id = NOTICE_ID;
+    box2.setAttribute("data-ms-live", "");
+    Object.assign(box2.style, {
       position: "fixed",
       left: "0",
       right: "0",
@@ -5094,7 +5120,7 @@
     const msg = document.createElement("span");
     msg.setAttribute("role", "status");
     msg.setAttribute("aria-live", "polite");
-    box.appendChild(msg);
+    box2.appendChild(msg);
     setTimeout(() => {
       msg.textContent = STRINGS.lowConfNotice;
     }, 50);
@@ -5117,14 +5143,14 @@
         e.stopPropagation();
         onClick();
       });
-      box.appendChild(b);
+      box2.appendChild(b);
     };
     mk(STRINGS.lowConfChoose, () => {
       var _a;
       return (_a = opts.onChoose) == null ? void 0 : _a.call(opts);
     });
     mk(STRINGS.lowConfClose, hideLowConfidenceNotice);
-    document.body.appendChild(box);
+    document.body.appendChild(box2);
   }
   function hideLowConfidenceNotice() {
     var _a;
@@ -5313,6 +5339,290 @@
     hide();
   }
 
+  // src/features/mouseGrid.js
+  var MOUSE_GRID_ID = "ms-mouse-grid";
+  var MIN_CELL_PX = 24;
+  var FOCUSABLE2 = 'a[href], button, input, select, textarea, summary, [tabindex], [contenteditable=""], [contenteditable="true"]';
+  var _root2 = null;
+  var _prevFocus2 = null;
+  var _releaseTrap = null;
+  var _stack = [];
+  var viewport = () => ({
+    w: document.documentElement.clientWidth || window.innerWidth || 1,
+    h: document.documentElement.clientHeight || window.innerHeight || 1
+  });
+  var current = () => _stack[_stack.length - 1];
+  function px(a) {
+    const v = viewport();
+    return { x: a.x * v.w, y: a.y * v.h, w: a.w * v.w, h: a.h * v.h };
+  }
+  function canSubdivide(area) {
+    const p = px(area);
+    return Math.min(p.w, p.h) / 3 >= MIN_CELL_PX;
+  }
+  function cellArea(area, n) {
+    const col = (n - 1) % 3;
+    const row = Math.floor((n - 1) / 3);
+    const w = area.w / 3;
+    const h = area.h / 3;
+    return { x: area.x + col * w, y: area.y + row * h, w, h };
+  }
+  function areaCenter(area) {
+    const p = px(area);
+    return { x: p.x + p.w / 2, y: p.y + p.h / 2 };
+  }
+  var rgbaOf = (css, alpha) => {
+    const m = /rgba?\(([^)]+)\)/.exec(css || "");
+    if (!m) return css;
+    const [r, g, b] = m[1].split(/[ ,/]+/).filter(Boolean).map(Number);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+  function theme() {
+    const cs = getComputedStyle(document.body);
+    const fg = cs.color || "rgb(0, 0, 0)";
+    let bg = cs.backgroundColor;
+    if (!bg || /rgba\([^)]*,\s*0\)/.test(bg) || bg === "transparent") {
+      bg = getComputedStyle(document.documentElement).backgroundColor;
+    }
+    if (!bg || /rgba\([^)]*,\s*0\)/.test(bg) || bg === "transparent") {
+      bg = "rgb(255, 255, 255)";
+    }
+    return { fg, bg };
+  }
+  function box(parent, style) {
+    const d = document.createElement("div");
+    Object.assign(d.style, style);
+    parent.appendChild(d);
+    return d;
+  }
+  function render() {
+    if (!_root2) return;
+    const { fg, bg } = theme();
+    _root2.textContent = "";
+    const a = px(current());
+    box(_root2, {
+      position: "absolute",
+      left: `${a.x}px`,
+      top: `${a.y}px`,
+      width: `${a.w}px`,
+      height: `${a.h}px`,
+      boxSizing: "border-box",
+      border: `3px solid ${fg}`,
+      boxShadow: `0 0 0 100vmax ${rgbaOf(bg, 0.55)}`,
+      pointerEvents: "none"
+    });
+    if (canSubdivide(current())) {
+      for (let n = 1; n <= 9; n++) {
+        const c = px(cellArea(current(), n));
+        const b = document.createElement("button");
+        b.type = "button";
+        b.setAttribute("data-cell", String(n));
+        b.setAttribute("aria-label", `${STRINGS.gridCellLabel} ${n}`);
+        b.textContent = String(n);
+        Object.assign(b.style, {
+          position: "absolute",
+          left: `${c.x}px`,
+          top: `${c.y}px`,
+          width: `${c.w}px`,
+          height: `${c.h}px`,
+          boxSizing: "border-box",
+          margin: "0",
+          padding: "0",
+          border: `2px solid ${fg}`,
+          background: rgbaOf(bg, 0.6),
+          color: fg,
+          font: `700 ${Math.max(14, Math.min(64, c.h * 0.5))}px/1 sans-serif`,
+          cursor: "pointer"
+        });
+        b.addEventListener("click", (e) => {
+          e.stopPropagation();
+          selectCell(n);
+        });
+        _root2.appendChild(b);
+      }
+    }
+    const bar = box(_root2, {
+      position: "absolute",
+      left: "50%",
+      bottom: "8px",
+      transform: "translateX(-50%)",
+      display: "flex",
+      gap: "8px",
+      maxWidth: "100%",
+      flexWrap: "wrap",
+      justifyContent: "center",
+      zIndex: "1"
+    });
+    const mk = (label, fn) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = label;
+      Object.assign(b.style, {
+        minHeight: "44px",
+        padding: "0 14px",
+        border: `3px solid ${fg}`,
+        borderRadius: "8px",
+        background: bg,
+        color: fg,
+        font: "700 16px/1 sans-serif",
+        cursor: "pointer"
+      });
+      b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        fn();
+      });
+      bar.appendChild(b);
+    };
+    mk(STRINGS.gridClickBtn, () => clickCurrent());
+    mk(STRINGS.gridBackBtn, () => goBack());
+    mk(STRINGS.gridCloseBtn, () => closeMouseGrid());
+  }
+  function levelText() {
+    return canSubdivide(current()) ? `${STRINGS.gridLevelPre} ${_stack.length}. ${STRINGS.gridChoose}` : STRINGS.gridMin;
+  }
+  function deepElementAt(x, y) {
+    let el2 = document.elementFromPoint(x, y);
+    while (el2 == null ? void 0 : el2.shadowRoot) {
+      const inner = el2.shadowRoot.elementFromPoint(x, y);
+      if (!inner || inner === el2) break;
+      el2 = inner;
+    }
+    return el2;
+  }
+  function onKeydown(e) {
+    var _a, _b;
+    if (!_root2) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const m = /^(?:Digit|Numpad)([1-9])$/.exec(e.code || "");
+    if (m) {
+      e.preventDefault();
+      e.stopPropagation();
+      selectCell(Number(m[1]));
+    } else if (e.key === "Enter") {
+      if (((_b = (_a = e.target) == null ? void 0 : _a.closest) == null ? void 0 : _b.call(_a, `#${MOUSE_GRID_ID}`)) && e.target.closest("button")) {
+        e.stopPropagation();
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      clickCurrent();
+    } else if (e.key === "Backspace") {
+      e.preventDefault();
+      e.stopPropagation();
+      goBack();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
+      closeMouseGrid();
+    }
+  }
+  function onResize() {
+    render();
+  }
+  function openMouseGrid() {
+    if (_root2) {
+      _stack = [{ x: 0, y: 0, w: 1, h: 1 }];
+      render();
+      announce(STRINGS.gridOpen);
+      return;
+    }
+    _prevFocus2 = document.activeElement;
+    _stack = [{ x: 0, y: 0, w: 1, h: 1 }];
+    _root2 = document.createElement("div");
+    _root2.id = MOUSE_GRID_ID;
+    _root2.setAttribute("role", "dialog");
+    _root2.setAttribute("aria-modal", "true");
+    _root2.setAttribute("aria-label", STRINGS.gridDialogLabel);
+    _root2.tabIndex = -1;
+    Object.assign(_root2.style, {
+      position: "fixed",
+      inset: "0",
+      zIndex: "2147483647",
+      overflow: "hidden",
+      outline: "none",
+      background: "transparent"
+    });
+    document.body.appendChild(_root2);
+    render();
+    document.addEventListener("keydown", onKeydown, true);
+    window.addEventListener("resize", onResize);
+    _releaseTrap = trapFocus(_root2);
+    _root2.focus();
+    announce(STRINGS.gridOpen);
+  }
+  function selectCell(n) {
+    if (!_root2 || !Number.isInteger(n) || n < 1 || n > 9) return false;
+    if (!canSubdivide(current())) return false;
+    _stack.push(cellArea(current(), n));
+    render();
+    const prevFocus = _root2.contains(document.activeElement);
+    if (!prevFocus) _root2.focus();
+    announce(levelText());
+    return true;
+  }
+  function goBack() {
+    if (!_root2) return false;
+    if (_stack.length < 2) {
+      announce(STRINGS.gridTop);
+      return false;
+    }
+    _stack.pop();
+    render();
+    _root2.focus();
+    announce(levelText());
+    return true;
+  }
+  function closeMouseGrid({ restoreFocus = true, silent = false } = {}) {
+    var _a;
+    if (!_root2) return;
+    document.removeEventListener("keydown", onKeydown, true);
+    window.removeEventListener("resize", onResize);
+    _releaseTrap == null ? void 0 : _releaseTrap();
+    _releaseTrap = null;
+    _root2.remove();
+    _root2 = null;
+    _stack = [];
+    const prev = _prevFocus2;
+    _prevFocus2 = null;
+    if (restoreFocus && (prev == null ? void 0 : prev.isConnected)) (_a = prev.focus) == null ? void 0 : _a.call(prev);
+    if (!silent) announce(STRINGS.gridClosed);
+  }
+  function clickCurrent() {
+    var _a, _b;
+    if (!_root2) return null;
+    const { x, y } = areaCenter(current());
+    closeMouseGrid({ restoreFocus: false, silent: true });
+    const target = deepElementAt(x, y);
+    if (!target) {
+      announce(STRINGS.gridClosed);
+      return null;
+    }
+    const init = (buttons) => ({
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      view: window,
+      clientX: x,
+      clientY: y,
+      button: 0,
+      buttons
+    });
+    const Ptr = typeof window.PointerEvent === "function" ? window.PointerEvent : window.MouseEvent;
+    target.dispatchEvent(
+      new Ptr("pointerdown", { ...init(1), pointerType: "mouse" })
+    );
+    target.dispatchEvent(new window.MouseEvent("mousedown", init(1)));
+    target.dispatchEvent(
+      new Ptr("pointerup", { ...init(0), pointerType: "mouse" })
+    );
+    target.dispatchEvent(new window.MouseEvent("mouseup", init(0)));
+    target.dispatchEvent(new window.MouseEvent("click", init(0)));
+    const focusable = (_a = target.closest) == null ? void 0 : _a.call(target, FOCUSABLE2);
+    if (focusable && !focusable.disabled) (_b = focusable.focus) == null ? void 0 : _b.call(focusable);
+    announce(STRINGS.gridClicked);
+    return target;
+  }
+
   // src/ui/binding.js
   var RESET_OPTIONS = {
     textScale: "100",
@@ -5394,6 +5704,11 @@
         ms._closePanel();
         jumpToElement(el2);
       },
+      // F9d: fecha o painel (devolve o foco ao FAB) e abre a grade; Esc volta a esse foco
+      onOpenMouseGrid: () => {
+        ms._closePanel();
+        openMouseGrid();
+      },
       brand: ms._config.brand
     });
     ms._shadow.appendChild(ms._panel.element);
@@ -5445,6 +5760,12 @@
       if (e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.repeat && e.code === "KeyA" && !isEditableTarget(e)) {
         e.preventDefault();
         ms._showWidget();
+        return;
+      }
+      if (e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.repeat && e.code === "KeyG" && !isEditableTarget(e)) {
+        e.preventDefault();
+        if (state_default.get().panelOpen) ms._closePanel();
+        openMouseGrid();
         return;
       }
       if (e.key === "Escape" && state_default.get().panelOpen) {
@@ -5558,6 +5879,7 @@
   function resetAll(ms) {
     var _a, _b;
     (_b = (_a = ms._panel) == null ? void 0 : _a.closeOutline) == null ? void 0 : _b.call(_a);
+    closeMouseGrid({ restoreFocus: false });
     ms._reducedMotionUser = null;
     ms._applyingProfile = true;
     try {
@@ -5776,8 +6098,8 @@
     const scale = opts.textScale || "100";
     if (scale !== "100") html.classList.add(`ms-text-scale-${scale}`);
     html.classList.remove(...THEME_CLASSES);
-    const theme = opts.colorTheme || "senac";
-    html.classList.add(`ms-theme-${theme}`);
+    const theme2 = opts.colorTheme || "senac";
+    html.classList.add(`ms-theme-${theme2}`);
     html.classList.toggle("ms-sat-low", opts.colorSaturation === "low");
     html.classList.toggle("ms-sat-high", opts.colorSaturation === "high");
     html.classList.toggle("ms-cursor-white", opts.cursorStyle === "bigWhite");
@@ -5911,6 +6233,7 @@
     "#ms-text-magnifier",
     "[data-ms-media-badge]",
     "#ms-shortcuts-card",
+    "#ms-mouse-grid",
     "[data-ms-pills][data-ms-injected]",
     "[data-ms-live]"
   ].join(",");
@@ -6452,7 +6775,7 @@
   var MIN_FONT_PX = 32;
   var GAP = 12;
   var MAX_CHARS = 280;
-  var OWN2 = "#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #" + MAGNIFIER_ID;
+  var OWN2 = "#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #ms-mouse-grid, #" + MAGNIFIER_ID;
   var BLOCK = "p, li, h1, h2, h3, h4, h5, h6, td, th, dt, dd, blockquote, figcaption, label, legend, caption, summary, button, a, pre";
   var _box = null;
   var _raf2 = null;
@@ -6588,16 +6911,16 @@
   function show(el2, pointer) {
     const text = magnifierTextFor(el2);
     if (!text) return hide2();
-    const box = ensureBox();
-    if (text !== _last || box.style.display === "none") {
+    const box2 = ensureBox();
+    if (text !== _last || box2.style.display === "none") {
       const { color, background } = themeColors();
-      box.style.setProperty("color", color, "important");
-      box.style.setProperty("background", background, "important");
-      box.style.setProperty("border-color", color, "important");
-      box.textContent = text;
+      box2.style.setProperty("color", color, "important");
+      box2.style.setProperty("background", background, "important");
+      box2.style.setProperty("border-color", color, "important");
+      box2.textContent = text;
       _last = text;
     }
-    box.style.setProperty("display", "block", "important");
+    box2.style.setProperty("display", "block", "important");
     _source = pointer ? "pointer" : "focus";
     _scroll0 = { x: window.scrollX || 0, y: window.scrollY || 0 };
     let rect = el2.getBoundingClientRect();
@@ -6800,6 +7123,7 @@
       stopSpeaking();
       stopManualSelect();
       (_b = (_a = this._panel) == null ? void 0 : _a.closeOutline) == null ? void 0 : _b.call(_a);
+      closeMouseGrid({ restoreFocus: false, silent: true });
       this._setPageInert(false);
       revert();
       stopObserving();

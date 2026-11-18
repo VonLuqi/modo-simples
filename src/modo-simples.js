@@ -79,6 +79,7 @@ import {
   startTextMagnifier,
   stopTextMagnifier,
 } from './features/textMagnifier.js';
+import { closeMouseGrid } from './features/mouseGrid.js';
 import {
   startShortcutsCard,
   stopShortcutsCard,
@@ -199,6 +200,7 @@ class ModoSimples {
     stopSpeaking();
     stopManualSelect();
     this._panel?.closeOutline?.();
+    closeMouseGrid({ restoreFocus: false, silent: true });
     this._setPageInert(false);
     revert();
     stopObserving();

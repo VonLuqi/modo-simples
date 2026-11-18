@@ -298,6 +298,10 @@ const CONTROLS = {
   pageOutline: {
     html: `<button type="button" class="ms-tile" data-action="page-outline" aria-haspopup="dialog"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M4 6h16"/><path d="M8 12h12"/><path d="M12 18h8"/>')}</span><span class="ms-tile-label">${S.panelPageOutline}</span></button>`,
   },
+  // F9d: ação de sessão (fecha o painel e abre a grade), não é opção persistida
+  mouseGrid: {
+    html: `<button type="button" class="ms-tile" data-action="mouse-grid"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/>')}</span><span class="ms-tile-label">${S.panelMouseGrid}</span></button>`,
+  },
   // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
   typography: {
     html: `
@@ -442,6 +446,7 @@ const SECTIONS = [
       'enlargeTargets',
       'textMagnifier',
       'pageOutline',
+      'mouseGrid',
     ],
   },
   {
@@ -545,6 +550,7 @@ export function createA11yPanel({
   onSelectProfile,
   onMoveSide,
   onOutlineJump,
+  onOpenMouseGrid,
   brand,
 }) {
   const texts = { ...DEFAULT_BRAND, ...brand };
@@ -709,6 +715,9 @@ export function createA11yPanel({
     container: panel,
     onJump: (el) => onOutlineJump?.(el),
   });
+  panel
+    .querySelector('[data-action="mouse-grid"]')
+    .addEventListener('click', () => onOpenMouseGrid?.());
   panel
     .querySelector('[data-action="page-outline"]')
     .addEventListener('click', (e) => outline.open(e.currentTarget));

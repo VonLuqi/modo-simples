@@ -15,7 +15,7 @@ const MIN_FONT_PX = 32;
 const GAP = 12;
 const MAX_CHARS = 280;
 const OWN =
-  '#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #' +
+  '#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #ms-mouse-grid, #' +
   MAGNIFIER_ID;
 const BLOCK =
   'p, li, h1, h2, h3, h4, h5, h6, td, th, dt, dd, blockquote, figcaption, label, legend, caption, summary, button, a, pre';

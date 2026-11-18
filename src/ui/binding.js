@@ -23,6 +23,7 @@ import {
 import { isManualSelectActive } from '../features/manualSelect.js';
 import { placeShortcutsCard } from '../features/shortcutsCard.js';
 import { jumpToElement } from '../features/pageOutline.js';
+import { openMouseGrid, closeMouseGrid } from '../features/mouseGrid.js';
 import { STRINGS as S } from './strings.js';
 import { getProfile } from '../core/profiles.js';
 
@@ -122,6 +123,11 @@ export function buildUI(ms) {
       ms._closePanel();
       jumpToElement(el);
     },
+    // F9d: fecha o painel (devolve o foco ao FAB) e abre a grade; Esc volta a esse foco
+    onOpenMouseGrid: () => {
+      ms._closePanel();
+      openMouseGrid();
+    },
     brand: ms._config.brand,
   });
   ms._shadow.appendChild(ms._panel.element);
@@ -192,6 +198,21 @@ export function bindEvents(ms) {
     ) {
       e.preventDefault();
       ms._showWidget();
+      return;
+    }
+    // Alt+Shift+G: abre a grade de mouse (F9d); fecha o painel se estiver aberto
+    if (
+      e.altKey &&
+      e.shiftKey &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      !e.repeat &&
+      e.code === 'KeyG' &&
+      !isEditableTarget(e)
+    ) {
+      e.preventDefault();
+      if (state.get().panelOpen) ms._closePanel();
+      openMouseGrid();
       return;
     }
     if (e.key === 'Escape' && state.get().panelOpen) {
@@ -349,6 +370,7 @@ export function syncSpeaking(ms, speaking) {
 /** Desliga o Modo Simples e volta todas as opções ao padrão; o estado resultante é persistido. */
 export function resetAll(ms) {
   ms._panel?.closeOutline?.();
+  closeMouseGrid({ restoreFocus: false });
   ms._reducedMotionUser = null; // volta a seguir o SO (padrão)
   // um anúncio só ("Tudo desligado"): sem os por opção nem o "Modo Simples desativado" (QA T152 L1)
   ms._applyingProfile = true;
