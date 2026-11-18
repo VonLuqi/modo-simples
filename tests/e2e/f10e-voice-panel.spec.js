@@ -20,10 +20,19 @@ async function boot(
     consent = false,
     on = false,
     mic = 'granted',
+    shim = true, // false = deixa o UA HeadlessChrome do Playwright (caminho sem available())
   } = {},
 ) {
   await page.addInitScript(
-    ([key, mode, installOk, cs, vc, micState]) => {
+    ([key, mode, installOk, cs, vc, micState, uaShim]) => {
+      // O núcleo não chama available() em HeadlessChrome (queda do renderizador, QA T202):
+      // para testar os modos local/baixar, o UA vira "Chrome" como no navegador de verdade.
+      if (uaShim) {
+        Object.defineProperty(navigator, 'userAgent', {
+          configurable: true,
+          value: navigator.userAgent.replace('HeadlessChrome', 'Chrome'),
+        });
+      }
       try {
         if (!localStorage.getItem(key)) {
           localStorage.setItem(
@@ -85,6 +94,7 @@ async function boot(
       if (mode === 'local') Rec.available = async () => 'available';
       if (mode === 'download') {
         Rec.available = async () => {
+          window.__availCalls = (window.__availCalls || 0) + 1;
           // resposta lenta do navegador (window.__slowAvail = ms): dá tempo de um 2º clique
           if (window.__slowAvail) {
             await new Promise((r) => setTimeout(r, window.__slowAvail));
@@ -102,7 +112,7 @@ async function boot(
         window.__recs[window.__recs.length - 1].onerror({ error });
       };
     },
-    [KEY, rec, install, consent, on, mic],
+    [KEY, rec, install, consent, on, mic, shim],
   );
   await page.goto(PAGE);
   await waitForLib(page);
@@ -232,6 +242,26 @@ test.describe('F10e — Comandos de voz: avisos e consentimento', () => {
     await expect(page.locator(SW)).toHaveAttribute('aria-checked', 'true');
     await expect(page.locator(SW)).toBeFocused();
     await expect.poll(() => recStarts(page)).toBe(1);
+  });
+
+  test('UA HeadlessChrome (sem shim): não chama available() e cai direto no aviso da internet', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page, { rec: 'download', shim: false });
+    expect(await page.evaluate(() => navigator.userAgent)).toContain(
+      'HeadlessChrome',
+    );
+    await realClick(page, page.locator(SW));
+    const dlg = page.locator(DLG);
+    await expect(dlg).toContainText('enviado para a empresa do navegador');
+    await expect(dlg).not.toContainText('baixar o português');
+    expect(await page.evaluate(() => window.__availCalls || 0)).toBe(0);
+    await realClick(
+      page,
+      dlg.getByRole('button', { name: 'Ligar e enviar minha voz' }),
+    );
+    expect((await persisted(page)).voiceCloudConsent).toBe(true);
   });
 
   test('L1: fechar o painel com o aviso aberto não deixa nada inerte ao reabrir; foco no Fechar', async ({
