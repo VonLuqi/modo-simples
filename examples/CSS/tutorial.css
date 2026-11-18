@@ -1,0 +1,197 @@
+/* Tutorial guiado do demo (ADR-016 / F11b) — só do demo. Tokens de CSS/tokens.css. */
+
+/* Busca: um "Pesquisar" por modo. Na página de busca o nav já marca a página atual;
+   o botão do cabeçalho (também aria-current) duplicava a pílula. */
+.header-search[aria-current='page'] {
+  display: none;
+}
+
+.header-tutorial {
+  flex-shrink: 0;
+}
+
+.ms-pill--tutorial {
+  min-height: 44px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.ms-tut {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+}
+
+.ms-tut-shield {
+  position: fixed;
+  inset: 0;
+  pointer-events: auto; /* engole cliques: o tour nunca muda uma configuração por acidente */
+}
+
+.ms-tut-spot {
+  position: fixed;
+  border-radius: 14px;
+  outline: 3px solid #fff;
+  box-shadow:
+    0 0 0 6px var(--ms-orange-brand),
+    0 0 0 100vmax rgb(0 24 48 / 62%);
+  pointer-events: none;
+}
+
+.ms-tut-spot[hidden],
+.ms-tut-balloon [hidden] {
+  display: none !important;
+}
+
+.ms-tut-balloon {
+  position: fixed;
+  width: min(340px, calc(100vw - 24px));
+  max-height: min(70dvh, 560px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 1rem 1.1rem 0.9rem;
+  background: #fff;
+  color: var(--ms-text);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 8%),
+    0 2px 4px rgb(0 0 0 / 6%),
+    0 12px 32px rgb(0 24 48 / 28%);
+  pointer-events: auto;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.ms-tut-balloon:focus {
+  outline: none;
+}
+
+.ms-tut-balloon--sheet {
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  width: auto;
+  max-height: 46dvh;
+}
+
+.ms-tut-balloon--sheet-top {
+  top: 12px;
+  bottom: auto;
+}
+
+.ms-tut-title {
+  margin: 0 0 0.4rem;
+  font-size: 1.1rem;
+  line-height: 1.3;
+  color: var(--senac-blue-deep);
+}
+
+.ms-tut-text {
+  margin: 0;
+}
+
+.ms-tut-tools {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.ms-tut-link {
+  display: inline-block;
+  margin-top: 0.6rem;
+  color: var(--senac-blue);
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
+.ms-tut-note {
+  font-weight: 400;
+  color: var(--ms-text-muted);
+}
+
+.ms-tut-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.ms-tut-count {
+  flex: 1 0 100%;
+  order: -1;
+  text-align: left;
+  font-size: 0.85rem;
+  color: var(--ms-text-muted);
+}
+
+.ms-tut-btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ms-tut-btn--primary {
+  background: var(--senac-blue);
+  color: #fff;
+}
+
+.ms-tut-btn--ghost {
+  background: #fff;
+  color: var(--senac-blue);
+  border-color: var(--ms-border);
+}
+
+.ms-tut-btn--quiet {
+  margin-right: auto;
+  background: transparent;
+  color: var(--ms-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ms-tut-btn:focus-visible,
+.ms-tut-link:focus-visible {
+  outline: 3px solid var(--senac-blue);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px #fff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ms-tut-btn--primary:hover {
+    background: var(--senac-blue-deep);
+  }
+  .ms-tut-btn--ghost:hover {
+    border-color: var(--senac-blue);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ms-tut-balloon,
+  .ms-tut-spot {
+    animation: ms-tut-in 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+  @keyframes ms-tut-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+.ms-tut-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

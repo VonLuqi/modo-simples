@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="CSS/tokens.css" />
     <link rel="stylesheet" href="CSS/shell.css" />
     <link rel="stylesheet" href="CSS/pages.css" />
+    <link rel="stylesheet" href="CSS/tutorial.css" />
   </head>
   <body>
     <header class="site-header">
@@ -40,6 +41,7 @@
           aria-current="page"
           >Pesquisar</a
         >
+        <button class="btn btn-ghost header-tutorial" type="button" data-tutorial-start aria-label="Tutorial: conhecer o painel de acessibilidade">Tutorial</button>
       </div>
     </header>
     <nav class="ms-pills-nav ms-simple-only" data-ms-pills aria-label="Navegação do Modo Simples">
@@ -50,6 +52,7 @@
         <a class="ms-pill" href="unidades.html"><span class="ms-pill__full">Onde tem Senac?</span><span class="ms-pill__short">Unidades</span></a>
         <a class="ms-pill" href="contato.html"><span class="ms-pill__full">Falar com Atendente</span><span class="ms-pill__short">Atendente</span></a>
         <a class="ms-pill" href="aluno.html"><span class="ms-pill__full">Área do Aluno</span><span class="ms-pill__short">Área do Aluno</span></a>
+        <button class="ms-pill ms-pill--tutorial" type="button" data-tutorial-start>Tutorial</button>
       </div>
     </nav>
 
@@ -179,5 +182,7 @@
     <script src="./js/ms-config.js"></script>
     <script src="../dist/modo-simples.min.js"></script>
     <script src="js/nav-toggle.js" defer></script>
+    <script src="js/tutorial-strings.js"></script>
+    <script src="js/tutorial.js" defer></script>
   </body>
 </html>
