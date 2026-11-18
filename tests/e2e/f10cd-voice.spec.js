@@ -10,8 +10,8 @@ const KEY = 'ms_state:127.0.0.1';
 
 /**
  * @param {import('@playwright/test').Page} page
- * @param {{voiceCommands?: boolean, consent?: boolean, rec?: 'none'|'cloud'|'local'}} o
- *   rec: 'none' = sem SpeechRecognition; 'cloud' = sem .available; 'local' = available() → 'available'
+ * @param {{voiceCommands?: boolean, consent?: boolean, rec?: 'none'|'cloud'|'local'|'download'}} o
+ *   rec: 'none' = sem SpeechRecognition; 'cloud' = sem .available; 'local' = available() → 'available'; 'download' = available() → 'downloadable'
  */
 async function boot(
   page,
@@ -82,6 +82,7 @@ async function boot(
         }
       }
       if (mode === 'local') Rec.available = async () => 'available';
+      if (mode === 'download') Rec.available = async () => 'downloadable';
       window.SpeechRecognition = Rec;
       window.__say = (text) => {
         const r = window.__recs[window.__recs.length - 1];
@@ -171,6 +172,54 @@ test.describe('F10d — modo de reconhecimento e consentimento', () => {
     await waitForLib(page);
     await listening(page);
     expect((await persisted(page)).voiceCommands).toBe(true);
+  });
+
+  test('modelo local por baixar + consentimento: escuta em nuvem (sem processLocally) e segue ligado', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page, { voiceCommands: true, consent: true, rec: 'download' });
+    await listening(page);
+    expect(await page.evaluate(() => window.__recs[0].processLocally)).toBe(
+      undefined,
+    );
+    expect((await persisted(page)).voiceCommands).toBe(true);
+  });
+
+  test('modelo local por baixar SEM consentimento: não escuta e desliga (needs-model)', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page, { voiceCommands: true, consent: false, rec: 'download' });
+    await flipsOff(page);
+    expect(await page.evaluate(() => window.__recs.length)).toBe(0);
+    expect(await page.evaluate(() => window.ModoSimples.voiceStatus)).toBe(
+      'needs-model',
+    );
+  });
+
+  test('status pela instância: voiceStatus e onVoiceStatus acompanham escutar, bloquear e desligar', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page, { voiceCommands: true, rec: 'local' });
+    await listening(page);
+    await expect
+      .poll(() => page.evaluate(() => window.ModoSimples.voiceStatus))
+      .toBe('listening');
+    await page.evaluate(() => {
+      window.__seen = [];
+      window.__off = window.ModoSimples.onVoiceStatus((s) =>
+        window.__seen.push(s),
+      );
+      window.__recError('not-allowed');
+    });
+    await flipsOff(page);
+    expect(await page.evaluate(() => window.__seen)).toEqual(['blocked']);
+    expect(await page.evaluate(() => window.ModoSimples.voiceStatus)).toBe(
+      'blocked',
+    );
+    await page.evaluate(() => window.__off());
   });
 
   test('sem SpeechRecognition: não escuta e o interruptor desliga', async ({

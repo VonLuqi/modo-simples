@@ -191,8 +191,12 @@ class ModoSimples {
   /** F10d: escolhe o modo de reconhecimento e começa a escutar (a nuvem exige consentimento). */
   async _startVoiceCommands() {
     const run = (this._voiceRun = (this._voiceRun || 0) + 1);
-    const mode = await getRecognitionMode();
+    let mode = await getRecognitionMode();
     if (run !== this._voiceRun || !state.get().options.voiceCommands) return;
+    // quem aceitou usar pela internet não espera o modelo local: escuta em nuvem (GAP1)
+    if (mode === 'download' && state.get().options.voiceCloudConsent === true) {
+      mode = 'cloud';
+    }
     this._voiceMode = mode;
     startVoiceCommands({
       mode,
@@ -201,7 +205,31 @@ class ModoSimples {
     });
   }
 
+  /** Último status dos comandos de voz (começa 'stopped'). */
+  get voiceStatus() {
+    return this._voiceStatusLast || 'stopped';
+  }
+
+  /**
+   * Avisa a UI de toda mudança de status dos comandos de voz:
+   * 'listening'|'stopped'|'blocked'|'no-mic'|'needs-consent'|'needs-model'|'unsupported'|'error'.
+   * @param {(status: string) => void} cb
+   * @returns {() => void} cancela o registro
+   */
+  onVoiceStatus(cb) {
+    (this._voiceListeners ||= new Set()).add(cb);
+    return () => this._voiceListeners.delete(cb);
+  }
+
   _voiceStatus(s) {
+    this._voiceStatusLast = s;
+    for (const cb of Array.from(this._voiceListeners || [])) {
+      try {
+        cb(s);
+      } catch (_) {
+        // ouvinte com erro não pode travar os comandos de voz
+      }
+    }
     if (VC[`status_${s}`]) announce(VC[`status_${s}`]);
     // sem escutar de fato: o interruptor não pode ficar ligado mentindo
     if (
@@ -307,6 +335,8 @@ class ModoSimples {
     hideShortcutsCard();
     this._voiceRun = (this._voiceRun || 0) + 1;
     stopVoiceCommands();
+    this._voiceListeners?.clear();
+    this._voiceStatusLast = 'stopped';
     stopSpeaking();
     stopManualSelect();
     this._panel?.closeOutline?.();

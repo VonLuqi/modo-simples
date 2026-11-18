@@ -347,3 +347,113 @@ describe('M2 — tirar o consentimento com a nuvem escutando', () => {
     assert.equal(state.get().options.voiceCommands, true);
   });
 });
+
+describe('GAP1 — modo download com consentimento', () => {
+  let env;
+  let inst;
+  const download = async () => 'downloadable';
+
+  const boot = async (consent) => {
+    env = installHappy();
+    installRecognition({ available: download });
+    state.set({
+      options: { voiceCommands: true, voiceCloudConsent: consent },
+    });
+    inst = new ModoSimples({ persistence: false });
+    inst.init();
+    await env.wait(30);
+  };
+
+  afterEach(() => {
+    inst?.destroy();
+    inst = null;
+    env?.restore();
+    state.set({ options: { voiceCommands: false } });
+  });
+
+  it('com consentimento: escuta em nuvem (sem processLocally) e o interruptor segue ligado', async () => {
+    await boot(true);
+    assert.equal(isListening(), true);
+    assert.equal(recs[0].processLocally, undefined);
+    assert.equal(state.get().options.voiceCommands, true);
+    assert.equal(inst.voiceStatus, 'listening');
+  });
+
+  it('com consentimento, tirá-lo derruba a escuta (o modo virou nuvem)', async () => {
+    await boot(true);
+    state.set({ options: { voiceCloudConsent: false } });
+    assert.equal(isListening(), false);
+    assert.equal(state.get().options.voiceCommands, false);
+  });
+
+  it('sem consentimento: continua pedindo o modelo (needs-model) e desliga', async () => {
+    await boot(false);
+    assert.equal(isListening(), false);
+    assert.equal(recs.length, 0);
+    assert.equal(inst.voiceStatus, 'needs-model');
+    assert.equal(state.get().options.voiceCommands, false);
+  });
+});
+
+describe('GAP2 — onVoiceStatus / voiceStatus', () => {
+  let env;
+  let inst;
+
+  beforeEach(() => {
+    env = installHappy();
+    installRecognition({ available: async () => 'available' });
+    state.set({ options: { voiceCommands: false } });
+    inst = new ModoSimples({ persistence: false });
+    inst.init();
+  });
+
+  afterEach(() => {
+    inst?.destroy();
+    inst = null;
+    env?.restore();
+    state.set({ options: { voiceCommands: false } });
+  });
+
+  it('começa em stopped; liga → listening; desliga → stopped; cada mudança chega ao ouvinte', async () => {
+    assert.equal(inst.voiceStatus, 'stopped');
+    const seen = [];
+    inst.onVoiceStatus((s) => seen.push(s));
+    state.set({ options: { voiceCommands: true } });
+    await env.wait(30);
+    assert.equal(inst.voiceStatus, 'listening');
+    state.set({ options: { voiceCommands: false } });
+    assert.deepEqual(seen, ['listening', 'stopped']);
+    assert.equal(inst.voiceStatus, 'stopped');
+  });
+
+  it('bloqueio do microfone chega como blocked antes de o interruptor desligar', async () => {
+    const seen = [];
+    inst.onVoiceStatus((s) =>
+      seen.push([s, state.get().options.voiceCommands]),
+    );
+    state.set({ options: { voiceCommands: true } });
+    await env.wait(30);
+    recs[0].onerror({ error: 'not-allowed' });
+    assert.deepEqual(seen.at(-1), ['blocked', true]);
+    assert.equal(inst.voiceStatus, 'blocked');
+    assert.equal(state.get().options.voiceCommands, false);
+  });
+
+  it('cancelar o registro para os avisos; ouvinte com erro não trava; destroy limpa tudo', async () => {
+    const seen = [];
+    const off = inst.onVoiceStatus((s) => seen.push(s));
+    inst.onVoiceStatus(() => {
+      throw new Error('ouvinte ruim');
+    });
+    off();
+    state.set({ options: { voiceCommands: true } });
+    await env.wait(30);
+    assert.deepEqual(seen, []);
+    assert.equal(inst.voiceStatus, 'listening');
+    inst.onVoiceStatus((s) => seen.push(s));
+    inst.destroy();
+    assert.equal(inst.voiceStatus, 'stopped');
+    assert.equal(inst._voiceListeners.size, 0);
+    assert.deepEqual(seen, ['stopped']); // o destroy ainda avisa a parada
+  });
+});
