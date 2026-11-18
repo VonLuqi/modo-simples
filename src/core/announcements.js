@@ -7,6 +7,15 @@
 const TOGGLE_ANNOUNCEMENTS = {
   dyslexiaFont: ['Fonte Lexend ativada', 'Fonte Lexend desativada'],
   highlightLinks: ['Destaque de links ativado', 'Destaque de links desativado'],
+  highlightHeadings: [
+    'Destaque de cabeçalhos ativado',
+    'Destaque de cabeçalhos desativado',
+  ],
+  highlightControls: [
+    'Destaque de botões e campos ativado',
+    'Destaque de botões e campos desativado',
+  ],
+  enlargeTargets: ['Botões ampliados', 'Botões com tamanho normal'],
   textSpacing: [
     'Espaçamento de texto ativado',
     'Espaçamento de texto desativado',

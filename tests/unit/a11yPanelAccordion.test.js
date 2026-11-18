@@ -31,10 +31,10 @@ beforeEach(() => {
 afterEach(() => env.restore());
 
 describe('a11yPanel — sanfona (F6b)', () => {
-  it('4 seções, cada uma com botão aria-expanded + aria-controls e região rotulada', () => {
+  it('5 seções, cada uma com botão aria-expanded + aria-controls e região rotulada', () => {
     const el = montar();
     const btns = [...el.querySelectorAll('.ms-a11y-section-toggle')];
-    assert.equal(btns.length, 4);
+    assert.equal(btns.length, 5);
     for (const btn of btns) {
       assert.equal(btn.tagName, 'BUTTON');
       const region = el.querySelector(`#${btn.getAttribute('aria-controls')}`);
@@ -54,6 +54,7 @@ describe('a11yPanel — sanfona (F6b)', () => {
     );
     assert.deepEqual(states, [
       ['true', false],
+      ['false', true],
       ['false', true],
       ['false', true],
       ['false', true],

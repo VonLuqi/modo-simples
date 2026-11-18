@@ -253,6 +253,36 @@ const CONTROLS = {
       ),
     }),
   },
+  highlightHeadings: {
+    html: switchTile({
+      option: 'highlightHeadings',
+      title: S.panelHighlightHeadings,
+      label: S.panelHighlightHeadings,
+      icon: svgIcon(
+        '<path d="M6 4v16"/><path d="M18 4v16"/><path d="M6 12h12"/>',
+      ),
+    }),
+  },
+  highlightControls: {
+    html: switchTile({
+      option: 'highlightControls',
+      title: S.panelHighlightControls,
+      label: S.panelHighlightControls,
+      icon: svgIcon(
+        '<rect x="3" y="7" width="18" height="10" rx="2"/><path d="M8 12h8"/>',
+      ),
+    }),
+  },
+  enlargeTargets: {
+    html: switchTile({
+      option: 'enlargeTargets',
+      title: S.panelEnlargeTargets,
+      label: S.panelEnlargeTargets,
+      icon: svgIcon(
+        '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 15l6-6"/><path d="M10 9h5v5"/>',
+      ),
+    }),
+  },
   // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
   typography: {
     html: `
@@ -384,6 +414,14 @@ const SECTIONS = [
       'cursorStyle',
       'highlightLinks',
     ],
+  },
+  {
+    id: 'pageTools',
+    title: S.sectionPageToolsTitle,
+    icon: svgIcon(
+      '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 14h8"/>',
+    ),
+    controls: ['highlightHeadings', 'highlightControls', 'enlargeTargets'],
   },
   {
     id: 'motion',
@@ -850,6 +888,9 @@ export function createA11yPanel({
       'dyslexiaFont',
       'readingRuler',
       'highlightLinks',
+      'highlightHeadings',
+      'highlightControls',
+      'enlargeTargets',
       'textSpacing',
       'reducedMotion',
       'hideImages',

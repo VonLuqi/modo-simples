@@ -234,6 +234,9 @@
       dyslexiaFont: false,
       readingRuler: false,
       highlightLinks: false,
+      highlightHeadings: false,
+      highlightControls: false,
+      enlargeTargets: false,
       textSpacing: false,
       lineHeight: 0,
       wordSpacing: 0,
@@ -293,6 +296,15 @@
   var TOGGLE_ANNOUNCEMENTS = {
     dyslexiaFont: ["Fonte Lexend ativada", "Fonte Lexend desativada"],
     highlightLinks: ["Destaque de links ativado", "Destaque de links desativado"],
+    highlightHeadings: [
+      "Destaque de cabe\xE7alhos ativado",
+      "Destaque de cabe\xE7alhos desativado"
+    ],
+    highlightControls: [
+      "Destaque de bot\xF5es e campos ativado",
+      "Destaque de bot\xF5es e campos desativado"
+    ],
+    enlargeTargets: ["Bot\xF5es ampliados", "Bot\xF5es com tamanho normal"],
     textSpacing: [
       "Espa\xE7amento de texto ativado",
       "Espa\xE7amento de texto desativado"
@@ -561,6 +573,9 @@
         dyslexiaFont: Boolean(opts.dyslexiaFont),
         readingRuler: Boolean(opts.readingRuler),
         highlightLinks: Boolean(opts.highlightLinks),
+        highlightHeadings: Boolean(opts.highlightHeadings),
+        highlightControls: Boolean(opts.highlightControls),
+        enlargeTargets: Boolean(opts.enlargeTargets),
         textSpacing: Boolean(opts.textSpacing),
         lineHeight: clampTypo("lineHeight", opts.lineHeight),
         wordSpacing: clampTypo("wordSpacing", opts.wordSpacing),
@@ -1970,6 +1985,25 @@
       outline-offset: 2px !important;
     }
 
+    /* \u2500\u2500 Ferramentas de p\xE1gina (F9a) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    html.ms-highlight-headings :is(h1, h2, h3, h4, h5, h6, [role="heading"]):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
+      outline: 3px solid #6a1b9a !important;
+      outline-offset: 2px !important;
+      background-color: #f3e5f5 !important;
+      color: #000 !important;
+    }
+    html.ms-highlight-controls :is(button, [role="button"], input, select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
+      outline: 3px solid #0b57d0 !important;
+      outline-offset: 2px !important;
+    }
+    html.ms-enlarge-targets :is(a, button, [role="button"], input:not([type="hidden"], [type="checkbox"], [type="radio"]), select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
+      min-width: 44px !important;
+      min-height: 44px !important;
+      box-sizing: border-box !important;
+    }
+    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]):not(:has(img)) {
+      display: inline-block !important;
+    }
     /* \u2500\u2500 Foco bem vis\xEDvel (F7e): anel duplo (preto + amarelo), leg\xEDvel em qualquer fundo \u2500\u2500 */
     html.ms-strong-focus :focus-visible:not(#ms-container, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *) {
       outline: 3px solid #000 !important;
@@ -2563,6 +2597,10 @@
     sectionKeyboardTitle: "Teclado e foco",
     sectionMotionTitle: "Movimento e imagens",
     panelHighlightLinks: "Destacar links",
+    sectionPageToolsTitle: "Ferramentas de p\xE1gina",
+    panelHighlightHeadings: "Destacar cabe\xE7alhos",
+    panelHighlightControls: "Destacar bot\xF5es e campos",
+    panelEnlargeTargets: "Ampliar bot\xF5es",
     panelTextSpacing: "Espa\xE7amento de texto",
     panelReducedMotion: "Reduzir movimento",
     panelHideImages: "Ocultar imagens",
@@ -3446,6 +3484,36 @@
         )
       })
     },
+    highlightHeadings: {
+      html: switchTile({
+        option: "highlightHeadings",
+        title: STRINGS.panelHighlightHeadings,
+        label: STRINGS.panelHighlightHeadings,
+        icon: svgIcon(
+          '<path d="M6 4v16"/><path d="M18 4v16"/><path d="M6 12h12"/>'
+        )
+      })
+    },
+    highlightControls: {
+      html: switchTile({
+        option: "highlightControls",
+        title: STRINGS.panelHighlightControls,
+        label: STRINGS.panelHighlightControls,
+        icon: svgIcon(
+          '<rect x="3" y="7" width="18" height="10" rx="2"/><path d="M8 12h8"/>'
+        )
+      })
+    },
+    enlargeTargets: {
+      html: switchTile({
+        option: "enlargeTargets",
+        title: STRINGS.panelEnlargeTargets,
+        label: STRINGS.panelEnlargeTargets,
+        icon: svgIcon(
+          '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 15l6-6"/><path d="M10 9h5v5"/>'
+        )
+      })
+    },
     // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
     typography: {
       html: `
@@ -3572,6 +3640,14 @@
         "cursorStyle",
         "highlightLinks"
       ]
+    },
+    {
+      id: "pageTools",
+      title: STRINGS.sectionPageToolsTitle,
+      icon: svgIcon(
+        '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 14h8"/>'
+      ),
+      controls: ["highlightHeadings", "highlightControls", "enlargeTargets"]
     },
     {
       id: "motion",
@@ -3948,6 +4024,9 @@
         "dyslexiaFont",
         "readingRuler",
         "highlightLinks",
+        "highlightHeadings",
+        "highlightControls",
+        "enlargeTargets",
         "textSpacing",
         "reducedMotion",
         "hideImages",
@@ -4937,6 +5016,9 @@
     dyslexiaFont: false,
     readingRuler: false,
     highlightLinks: false,
+    highlightHeadings: false,
+    highlightControls: false,
+    enlargeTargets: false,
     textSpacing: false,
     lineHeight: 0,
     wordSpacing: 0,
@@ -5307,6 +5389,9 @@
     ...Object.values(TYPO_VARS).map(([cls]) => cls),
     "ms-dyslexia-font",
     "ms-highlight-links",
+    "ms-highlight-headings",
+    "ms-highlight-controls",
+    "ms-enlarge-targets",
     "ms-text-spacing",
     "ms-reduced-motion",
     "ms-block-flashing",
@@ -5394,6 +5479,9 @@
     html.classList.toggle("ms-dyslexia-font", !!opts.dyslexiaFont);
     if (opts.dyslexiaFont) ensureLexendFont();
     html.classList.toggle("ms-highlight-links", !!opts.highlightLinks);
+    html.classList.toggle("ms-highlight-headings", !!opts.highlightHeadings);
+    html.classList.toggle("ms-highlight-controls", !!opts.highlightControls);
+    html.classList.toggle("ms-enlarge-targets", !!opts.enlargeTargets);
     html.classList.toggle("ms-text-spacing", !!opts.textSpacing);
     for (const [key, [cls, prop, unit]] of Object.entries(TYPO_VARS)) {
       const v = clampTypo(key, opts[key]);
@@ -6384,6 +6472,9 @@
         "dyslexiaFont",
         "readingRuler",
         "highlightLinks",
+        "highlightHeadings",
+        "highlightControls",
+        "enlargeTargets",
         "textSpacing",
         "lineHeight",
         "wordSpacing",

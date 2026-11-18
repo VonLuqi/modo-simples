@@ -1135,6 +1135,25 @@ export const PAGE_CSS = `
       outline-offset: 2px !important;
     }
 
+    /* ── Ferramentas de página (F9a) ─────────────────────────────────────── */
+    html.ms-highlight-headings :is(h1, h2, h3, h4, h5, h6, [role="heading"]):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
+      outline: 3px solid #6a1b9a !important;
+      outline-offset: 2px !important;
+      background-color: #f3e5f5 !important;
+      color: #000 !important;
+    }
+    html.ms-highlight-controls :is(button, [role="button"], input, select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
+      outline: 3px solid #0b57d0 !important;
+      outline-offset: 2px !important;
+    }
+    html.ms-enlarge-targets :is(a, button, [role="button"], input:not([type="hidden"], [type="checkbox"], [type="radio"]), select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]) {
+      min-width: 44px !important;
+      min-height: 44px !important;
+      box-sizing: border-box !important;
+    }
+    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, [data-ms-hidden]):not(:has(img)) {
+      display: inline-block !important;
+    }
     /* ── Foco bem visível (F7e): anel duplo (preto + amarelo), legível em qualquer fundo ── */
     html.ms-strong-focus :focus-visible:not(#ms-container, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *) {
       outline: 3px solid #000 !important;

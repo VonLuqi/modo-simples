@@ -67,6 +67,9 @@ const OPTION_FLAG_CLASSES = [
   ...Object.values(TYPO_VARS).map(([cls]) => cls),
   'ms-dyslexia-font',
   'ms-highlight-links',
+  'ms-highlight-headings',
+  'ms-highlight-controls',
+  'ms-enlarge-targets',
   'ms-text-spacing',
   'ms-reduced-motion',
   'ms-block-flashing',
@@ -213,6 +216,9 @@ export function applyOptions(state) {
   html.classList.toggle('ms-dyslexia-font', !!opts.dyslexiaFont);
   if (opts.dyslexiaFont) ensureLexendFont();
   html.classList.toggle('ms-highlight-links', !!opts.highlightLinks);
+  html.classList.toggle('ms-highlight-headings', !!opts.highlightHeadings);
+  html.classList.toggle('ms-highlight-controls', !!opts.highlightControls);
+  html.classList.toggle('ms-enlarge-targets', !!opts.enlargeTargets);
   html.classList.toggle('ms-text-spacing', !!opts.textSpacing);
   for (const [key, [cls, prop, unit]] of Object.entries(TYPO_VARS)) {
     const v = clampTypo(key, opts[key]);
