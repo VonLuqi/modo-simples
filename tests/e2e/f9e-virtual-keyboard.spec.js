@@ -273,6 +273,84 @@ test.describe('F9e — Teclado virtual', () => {
     });
   }
 
+  // T185: telas baixas — as fileiras rolam dentro do teclado, sem sobreposição; a linha de baixo fica sempre à vista
+  for (const [w, h] of [
+    [320, 568],
+    [360, 640],
+    [375, 667],
+    [390, 844],
+    [1280, 800],
+  ]) {
+    test(`${w}x${h}: teclas sem sobreposição, linha de baixo visível e toda tecla alcançável pela rolagem`, async ({
+      site,
+    }) => {
+      const { page } = site;
+      await page.setViewportSize({ width: w, height: h });
+      await open(page);
+      await page.locator('#last').focus();
+      await expect(page.locator(`${KB} [data-vk-keys]`)).toBeVisible();
+      const m = await page.evaluate(() => {
+        const root = document.getElementById('ms-virtual-keyboard');
+        const scroll = root.querySelector('[data-vk-scroll]');
+        const bottom = root.querySelector('[data-vk-bottom]');
+        const rect = (e) => e.getBoundingClientRect();
+        const inside = (b, box) =>
+          b.top >= box.top - 1 && b.bottom <= box.bottom + 1;
+        const scrolled = [...scroll.querySelectorAll('[data-vk]')];
+        // alcança cada tecla rolando a área e conferindo que ela cabe na janela da área
+        const unreachable = scrolled
+          .filter((b) => {
+            b.scrollIntoView({ block: 'nearest' });
+            return !inside(rect(b), rect(scroll));
+          })
+          .map((b) => b.dataset.vk);
+        scroll.scrollTop = 0;
+        const all = [...root.querySelectorAll('[data-vk]')];
+        const sBox = rect(scroll);
+        // só conta o que o usuário vê: teclas dentro da janela da área rolável + as de baixo
+        const shown = all.filter(
+          (b) => bottom.contains(b) || inside(rect(b), sBox),
+        );
+        let overlaps = 0;
+        for (const b of shown)
+          for (const c of shown) {
+            if (b === c) continue;
+            const x = rect(b);
+            const y = rect(c);
+            if (
+              x.left < y.right - 1 &&
+              y.left < x.right - 1 &&
+              x.top < y.bottom - 1 &&
+              y.top < x.bottom - 1
+            )
+              overlaps++;
+          }
+        return {
+          unreachable,
+          overlaps,
+          bottomVisible: [...bottom.querySelectorAll('[data-vk]')].every(
+            (b) => rect(b).top >= 0 && rect(b).bottom <= innerHeight + 1,
+          ),
+          scrollAboveBottom: sBox.bottom <= rect(bottom).top + 1,
+          rootInViewport: rect(root).top >= 0,
+          minH: Math.min(...all.map((b) => rect(b).height)),
+          minW: Math.min(...all.map((b) => rect(b).width)),
+        };
+      });
+      expect(m.unreachable).toEqual([]);
+      expect(m.overlaps).toBe(0);
+      expect(m.bottomVisible).toBe(true);
+      expect(m.scrollAboveBottom).toBe(true);
+      expect(m.rootInViewport).toBe(true);
+      expect(m.minH).toBeGreaterThanOrEqual(44);
+      expect(m.minW).toBeGreaterThanOrEqual(24);
+      if (process.env.VK_SHOTS)
+        await page.screenshot({
+          path: `${process.env.VK_SHOTS}/kb-${w}x${h}.png`,
+        });
+    });
+  }
+
   test('"Desligar tudo" fecha o teclado', async ({ site }) => {
     const { page } = site;
     await open(page);
