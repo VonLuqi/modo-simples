@@ -8,7 +8,7 @@
  * e devolvem o foco ao botão que o abriu.
  */
 
-import { STRINGS as S } from '../ui/strings.js';
+import { t as tr } from '../i18n/index.js';
 
 export const OUTLINE_ID = 'ms-page-outline';
 const OWN =
@@ -100,14 +100,14 @@ function landmarkRole(el) {
 
 const NAME_REQUIRED = new Set(['form', 'search', 'region']);
 const ROLE_LABEL = {
-  main: S.outlineLmMain,
-  nav: S.outlineLmNav,
-  banner: S.outlineLmBanner,
-  footer: S.outlineLmFooter,
-  aside: S.outlineLmAside,
-  form: S.outlineLmForm,
-  search: S.outlineLmSearch,
-  region: S.outlineLmRegion,
+  main: tr('outlineLmMain'),
+  nav: tr('outlineLmNav'),
+  banner: tr('outlineLmBanner'),
+  footer: tr('outlineLmFooter'),
+  aside: tr('outlineLmAside'),
+  form: tr('outlineLmForm'),
+  search: tr('outlineLmSearch'),
+  region: tr('outlineLmRegion'),
 };
 
 function headingLevel(el) {
@@ -130,7 +130,7 @@ export function collectOutline(root = document) {
     const level = headingLevel(el);
     if (level) {
       const text =
-        clean(el.textContent) || accessibleName(el) || S.outlineNoText;
+        clean(el.textContent) || accessibleName(el) || tr('outlineNoText');
       headings.push({ el, level, text });
       continue;
     }
@@ -185,7 +185,7 @@ export function createPageOutline({ container, onJump }) {
     const b = el('button', 'ms-outline-link', text);
     b.type = 'button';
     if (level) {
-      b.setAttribute('aria-label', `${S.outlineLevel} ${level}: ${text}`);
+      b.setAttribute('aria-label', `${tr('outlineLevel')} ${level}: ${text}`);
     }
     b.addEventListener('click', () => {
       close({ restoreFocus: false });
@@ -213,22 +213,22 @@ export function createPageOutline({ container, onJump }) {
     dlg.setAttribute('aria-modal', 'true');
     dlg.setAttribute('aria-labelledby', `${OUTLINE_ID}-title`);
     const head = el('div', 'ms-outline-head');
-    const title = el('h2', 'ms-outline-title', S.outlineTitle);
+    const title = el('h2', 'ms-outline-title', tr('outlineTitle'));
     title.id = `${OUTLINE_ID}-title`;
     const closeBtn = el(
       'button',
       'ms-a11y-action ms-outline-close',
-      S.outlineClose,
+      tr('outlineClose'),
     );
     closeBtn.type = 'button';
     closeBtn.addEventListener('click', () => close());
     head.append(title, closeBtn);
     const body = el('div', 'ms-outline-body');
     if (!headings.length && !landmarks.length) {
-      body.appendChild(el('p', 'ms-outline-empty', S.outlineEmpty));
+      body.appendChild(el('p', 'ms-outline-empty', tr('outlineEmpty')));
     } else {
-      group(body, S.outlineLandmarks, landmarks);
-      group(body, S.outlineHeadings, headings, (r) => r.level);
+      group(body, tr('outlineLandmarks'), landmarks);
+      group(body, tr('outlineHeadings'), headings, (r) => r.level);
     }
     dlg.append(head, body);
     dlg.addEventListener('keydown', (e) => {

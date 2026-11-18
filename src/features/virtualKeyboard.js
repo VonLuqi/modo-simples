@@ -16,7 +16,7 @@
  * isVirtualKeyboardOpen(), insertText(), deleteBack(), pressEnter(), composeDead().
  */
 
-import { STRINGS as S } from '../ui/strings.js';
+import { t as tr, getLocale } from '../i18n/index.js';
 import { announce } from '../utils/aria.js';
 import { themeColors } from './textMagnifier.js';
 
@@ -152,13 +152,83 @@ const ALTGR = {
   w: '?',
   e: '°',
 };
-const DEAD_NAMES = {
-  '´': S.vkDeadAcute,
-  '`': S.vkDeadGrave,
-  '~': S.vkDeadTilde,
-  '^': S.vkDeadCircumflex,
-  '¨': S.vkDeadDiaeresis,
+const DEAD_NAME_KEYS = {
+  '´': 'vkDeadAcute',
+  '`': 'vkDeadGrave',
+  '~': 'vkDeadTilde',
+  '^': 'vkDeadCircumflex',
+  '¨': 'vkDeadDiaeresis',
 };
+const deadName = (ch) => tr(DEAD_NAME_KEYS[ch]);
+
+/** Inglês: QWERTY US (sem teclas mortas nem AltGr). */
+const ROWS_EN = [
+  [
+    '`~',
+    '1!',
+    '2@',
+    '3#',
+    '4$',
+    '5%',
+    '6^',
+    '7&',
+    '8*',
+    '9(',
+    '0)',
+    '-_',
+    '=+',
+    'Backspace',
+  ],
+  ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[{', ']}', '\\|'],
+  ['Caps', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';:', '\'"'],
+  ['Shift', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',<', '.>', '/?', 'Shift'],
+  ['Fechar', 'Space', 'Enter'],
+];
+
+/** Espanhol: QWERTY ES (ñ, ç, ¡¿; mortas ` ^ ´ ¨). */
+const ROWS_ES = [
+  [
+    'ºª',
+    '1!',
+    '2"',
+    '3·',
+    '4$',
+    '5%',
+    '6&',
+    '7/',
+    '8(',
+    '9)',
+    '0=',
+    "'?",
+    '¡¿',
+    'Backspace',
+  ],
+  ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '`^', '+*'],
+  ['Caps', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ñ', '´¨', 'ç'],
+  ['Shift', '<>', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',;', '.:', '-_', 'Shift'],
+  ['Fechar', 'AltGr', 'Space', 'Enter'],
+];
+const ALTGR_ES = {
+  ºª: '\\',
+  '1!': '|',
+  '2"': '@',
+  '3·': '#',
+  '4$': '~',
+  '6&': '¬',
+  '`^': '[',
+  '+*': ']',
+  '´¨': '{',
+  ç: '}',
+  e: '€',
+};
+
+/** Layout do idioma atual: linhas, nível AltGr e teclas mortas. Lido na hora de montar o teclado. */
+const LAYOUTS = {
+  pt: { rows: ROWS, altgr: ALTGR, dead: DEAD_KEYS },
+  en: { rows: ROWS_EN, altgr: {}, dead: [] },
+  es: { rows: ROWS_ES, altgr: ALTGR_ES, dead: ['´', '`', '^', '¨'] },
+};
+const layout = () => LAYOUTS[getLocale()];
 const SPECIAL = [
   'Backspace',
   'Caps',
@@ -454,7 +524,7 @@ function on(target, type, fn, opts) {
 
 /** Caractere que a tecla gera agora (Shift/Caps aplicados). */
 function charOf(def) {
-  const ag = _altgr && ALTGR[def];
+  const ag = _altgr && layout().altgr[def];
   if (ag) return ag;
   if (def.length === 1) return _shift !== _caps ? def.toUpperCase() : def;
   return _shift ? def[1] : def[0];
@@ -463,19 +533,19 @@ function charOf(def) {
 function labelOf(def) {
   switch (def) {
     case 'Backspace':
-      return S.vkBackspace;
+      return tr('vkBackspace');
     case 'Caps':
-      return S.vkCaps;
+      return tr('vkCaps');
     case 'Enter':
-      return S.vkEnter;
+      return tr('vkEnter');
     case 'Shift':
-      return S.vkShift;
+      return tr('vkShift');
     case 'AltGr':
-      return S.vkAltGr;
+      return tr('vkAltGr');
     case 'Fechar':
-      return S.vkClose;
+      return tr('vkClose');
     case 'Space':
-      return S.vkSpace;
+      return tr('vkSpace');
     default:
       return charOf(def);
   }
@@ -489,7 +559,7 @@ function setStyle(el, styles) {
 function updatePreview() {
   const p = _root?.querySelector('[data-vk-preview]');
   if (!p) return;
-  p.textContent = _num ? `${S.vkPendingPre} ${_num.text}` : '';
+  p.textContent = _num ? `${tr('vkPendingPre')} ${_num.text}` : '';
   p.style.setProperty('display', _num ? 'block' : 'none', 'important');
   reserve();
 }
@@ -529,7 +599,7 @@ function paint() {
       (def === 'AltGr' && _altgr) ||
       (_dead &&
         def.length === 2 &&
-        DEAD_KEYS.includes(charOf(def)) &&
+        layout().dead.includes(charOf(def)) &&
         charOf(def) === _dead);
     btn.setAttribute('aria-pressed', String(!!pressed));
     setStyle(
@@ -541,8 +611,8 @@ function paint() {
     if (!SPECIAL.includes(def)) {
       const ch = charOf(def);
       btn.textContent = ch;
-      const dead = DEAD_KEYS.includes(ch);
-      btn.setAttribute('aria-label', dead ? DEAD_NAMES[ch] : ch);
+      const dead = layout().dead.includes(ch);
+      btn.setAttribute('aria-label', dead ? deadName(ch) : ch);
       btn.dataset.char = ch;
     }
   }
@@ -656,7 +726,7 @@ function press(def) {
     typeChar(' ');
   } else {
     const ch = charOf(def);
-    if (DEAD_KEYS.includes(ch)) {
+    if (layout().dead.includes(ch)) {
       if (_dead) typeChar(' '); // segunda morta: escreve a primeira como símbolo
       _dead = ch;
     } else {
@@ -705,7 +775,7 @@ const unitsOf = (row, narrow) => {
 };
 /** 1 unidade = a linha mais larga que cabe numa linha só (sem esticar), no máximo 56px nas telas largas. */
 const unitCss = (narrow) => {
-  const n = Math.max(...ROWS.map((r) => unitsOf(r, narrow)));
+  const n = Math.max(...layout().rows.map((r) => unitsOf(r, narrow)));
   return `min(calc((100% - ${(n - 1) * GAP}px) / ${n}), 56px)`;
 };
 const basis = (w) => `calc(${w} * var(--vk-u) + ${(w - 1) * GAP}px)`;
@@ -772,7 +842,7 @@ function build() {
   const root = document.createElement('div');
   root.id = KEYBOARD_ID;
   root.setAttribute('role', 'group');
-  root.setAttribute('aria-label', S.vkLabel);
+  root.setAttribute('aria-label', tr('vkLabel'));
   setStyle(root, {
     position: 'fixed',
     left: '0',
@@ -795,7 +865,7 @@ function build() {
   });
   const hint = document.createElement('p');
   hint.dataset.vkHint = '';
-  hint.textContent = S.vkHint;
+  hint.textContent = tr('vkHint');
   setStyle(hint, {
     margin: '4px 8px',
     font: '600 18px/1.4 system-ui, sans-serif',
@@ -805,7 +875,7 @@ function build() {
   const hintClose = document.createElement('button');
   hintClose.type = 'button';
   hintClose.dataset.vkHintClose = '';
-  hintClose.textContent = S.vkClose;
+  hintClose.textContent = tr('vkClose');
   setStyle(hintClose, {
     'min-width': '44px',
     'min-height': '44px',
@@ -843,8 +913,8 @@ function build() {
     'min-height': '0',
     flex: '1 1 auto',
   });
-  for (const row of ROWS.slice(0, -1)) scroll.append(buildRow(row));
-  const bottom = buildRow(ROWS[ROWS.length - 1]);
+  for (const row of layout().rows.slice(0, -1)) scroll.append(buildRow(row));
+  const bottom = buildRow(layout().rows.at(-1));
   bottom.dataset.vkBottom = '';
   bottom.style.setProperty('flex', '0 0 auto', 'important');
   bottom.style.setProperty('margin', '4px 0 0', 'important');
@@ -885,7 +955,7 @@ export function openVirtualKeyboard({ touch } = {}) {
   const ae = document.activeElement;
   setTarget(isEditableField(ae) ? ae : null);
   render();
-  announce(S.vkOpened);
+  announce(tr('vkOpened'));
 }
 
 /** @param {{silent?: boolean}} [opts] */
@@ -917,5 +987,5 @@ export function closeVirtualKeyboard({ silent = false } = {}) {
   _caps = false;
   _keys = [];
   _lines = [];
-  if (!silent) announce(S.vkClosed);
+  if (!silent) announce(tr('vkClosed'));
 }

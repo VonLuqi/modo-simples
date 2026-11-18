@@ -34,7 +34,7 @@ import {
 import { announce } from './utils/aria.js';
 import { hasSimpleLanguagePairs } from './utils/simpleLanguage.js';
 import { getPageStyles, getUIStyles } from './ui/styles.js';
-import { STRINGS, VOICE_CMD_STRINGS as VC } from './ui/strings.js';
+import { t, setLocale } from './i18n/index.js';
 import { profileDiffers } from './core/profiles.js';
 import {
   buildUI,
@@ -135,6 +135,7 @@ class ModoSimples {
     this._initialized = true;
 
     this._loadPersistedState();
+    setLocale(state.get().options.language); // 'auto' = lang do site → navegador → pt
     injectPageStyles(getPageStyles());
     setLexendFontUrl(this._config.fontUrl);
     this._buildUI();
@@ -230,7 +231,8 @@ class ModoSimples {
         // ouvinte com erro não pode travar os comandos de voz
       }
     }
-    if (VC[`status_${s}`]) announce(VC[`status_${s}`]);
+    const statusKey = `status_${s}`;
+    if (t(statusKey) !== statusKey) announce(t(statusKey));
     // sem escutar de fato: o interruptor não pode ficar ligado mentindo
     if (
       [
@@ -302,7 +304,7 @@ class ModoSimples {
       case 'help': {
         if (typeof speechSynthesis === 'undefined') break;
         stopSpeaking();
-        const u = new SpeechSynthesisUtterance(VC.helpSpoken);
+        const u = new SpeechSynthesisUtterance(t('helpSpoken'));
         applyVoice(u, o);
         speechSynthesis.speak(u);
         break;
@@ -317,7 +319,7 @@ class ModoSimples {
     } catch (_) {
       return;
     }
-    announce(STRINGS.announceStillOn);
+    announce(t('announceStillOn'));
   }
 
   destroy() {
@@ -575,7 +577,7 @@ class ModoSimples {
         setPrincipal(el, this._config);
         document.documentElement.classList.add('ms-ativo');
         applyOptions(currentState);
-        if (doAnnounce) announce(STRINGS.announceOn);
+        if (doAnnounce) announce(t('announceOn'));
         return;
       }
       // caminho inválido, sumiu ou o texto encolheu demais: não é mais a mesma área (IMP-06).
@@ -596,7 +598,7 @@ class ModoSimples {
       applyModoSimples(currentState, this._config);
     }
 
-    if (doAnnounce) announce(STRINGS.announceOn);
+    if (doAnnounce) announce(t('announceOn'));
   }
 
   /** Seleção manual opcional (IMP-22 vale aqui: nada oculto antes de confirmar; cancelar mantém a página). */
@@ -608,12 +610,12 @@ class ModoSimples {
         setPrincipal(el, this._config);
         this._savePrincipalPath(path, el);
         applyModoSimples(state.get(), this._config);
-        announce(STRINGS.manualChosen);
+        announce(t('manualChosen'));
       },
       onCancel: () => {
         // sem escolha: ms-ativo + opções, SEM principal e nada persistido; o hold continua.
         this._setPageInert(state.get().panelOpen);
-        announce(STRINGS.manualCancelled);
+        announce(t('manualCancelled'));
       },
     });
   }
@@ -632,7 +634,7 @@ class ModoSimples {
         stopManualSelect();
         revertModoSimples();
         applyOptions(next);
-        if (!this._applyingProfile) announce(STRINGS.announceOff);
+        if (!this._applyingProfile) announce(t('announceOff'));
       }
     }
 
@@ -671,6 +673,9 @@ class ModoSimples {
       'voiceVolume',
       'language',
     ];
+    if (prev.options.language !== next.options.language) {
+      setLocale(next.options.language); // emite ms:localechange; a UI se redesenha
+    }
     const optionChanged = optionKeys.some(
       (k) => prev.options[k] !== next.options[k],
     );

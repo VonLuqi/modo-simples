@@ -47,6 +47,8 @@ const COVERAGE_FLOOR = { lines: 90, branches: 80, functions: 80 };
 const tapFile = path.join(os.tmpdir(), `ms-test-${process.pid}.tap`);
 
 const args = [
+  '--import',
+  path.join(root, 'unit', 'helpers', 'pinLocale.js'),
   '--test',
   ...(isWatch ? ['--watch'] : []),
   ...(isCoverage

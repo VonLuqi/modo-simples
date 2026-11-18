@@ -10,7 +10,7 @@
  * - pauseAutoplay(root) e restoreMedia() são exportadas para reuso (F7d, bloco piscante).
  */
 
-import { STRINGS as S } from '../ui/strings.js';
+import { t as tr } from '../i18n/index.js';
 
 const OWN_HOST = '#ms-container';
 const BADGE_ATTR = 'data-ms-media-badge';
@@ -133,7 +133,7 @@ function badgeFor(frame) {
   const badge = document.createElement('div');
   badge.setAttribute(BADGE_ATTR, '');
   badge.setAttribute('role', 'note');
-  badge.textContent = S.mediaOtherSiteNotice;
+  badge.textContent = tr('mediaOtherSiteNotice');
   Object.assign(badge.style, {
     position: 'absolute',
     zIndex: '2147483644',

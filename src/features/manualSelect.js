@@ -7,7 +7,7 @@
  * data-ms-principal and returns a CSS path.
  */
 
-import { STRINGS } from '../ui/strings.js';
+import { t as tr } from '../i18n/index.js';
 
 const BANNER_ID = 'ms-manual-select-banner';
 const HIGHLIGHT_ID = 'ms-manual-select-highlight';
@@ -164,7 +164,7 @@ function setCurrent(el) {
     width: `${r.width}px`,
     height: `${r.height}px`,
   });
-  _status.textContent = ` ${STRINGS.manualCurrent} ${describe(el)}.`;
+  _status.textContent = ` ${tr('manualCurrent')} ${describe(el)}.`;
 }
 
 /** @param {1|-1} step */
@@ -247,14 +247,14 @@ export function startManualSelect(opts = {}) {
     boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
     cursor: 'default',
   });
-  _banner.append(STRINGS.manualInstruction);
+  _banner.append(tr('manualInstruction'));
   _status = document.createElement('span');
   _banner.appendChild(_status);
 
   const cancelBtn = document.createElement('button');
   cancelBtn.type = 'button';
-  cancelBtn.textContent = STRINGS.manualCancel;
-  cancelBtn.setAttribute('aria-label', STRINGS.manualCancelLabel);
+  cancelBtn.textContent = tr('manualCancel');
+  cancelBtn.setAttribute('aria-label', tr('manualCancelLabel'));
   Object.assign(cancelBtn.style, {
     marginLeft: '1rem',
     padding: '0.3rem 0.75rem',
@@ -411,7 +411,7 @@ export function showLowConfidenceNotice(opts = {}) {
   msg.setAttribute('aria-live', 'polite');
   box.appendChild(msg);
   setTimeout(() => {
-    msg.textContent = STRINGS.lowConfNotice;
+    msg.textContent = tr('lowConfNotice');
   }, 50);
   const mk = (text, onClick) => {
     const b = document.createElement('button');
@@ -434,8 +434,8 @@ export function showLowConfidenceNotice(opts = {}) {
     });
     box.appendChild(b);
   };
-  mk(STRINGS.lowConfChoose, () => opts.onChoose?.());
-  mk(STRINGS.lowConfClose, hideLowConfidenceNotice);
+  mk(tr('lowConfChoose'), () => opts.onChoose?.());
+  mk(tr('lowConfClose'), hideLowConfidenceNotice);
   document.body.appendChild(box);
 }
 

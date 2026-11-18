@@ -13,7 +13,7 @@
  * Limites: ver CHANGELOG (GIF em background CSS/shadow root, WebP/APNG animado, SVG-SMIL, JS).
  */
 
-import { STRINGS as S } from '../ui/strings.js';
+import { t as tr } from '../i18n/index.js';
 
 const OWN_HOST = '#ms-container';
 const STILL_ATTR = 'data-ms-gif-still';
@@ -104,7 +104,7 @@ function freeze(img) {
     still.type = 'button';
     still.setAttribute(
       'aria-label',
-      alt ? `${S.gifShowLabel}: ${alt}` : S.gifShowLabel,
+      alt ? `${tr('gifShowLabel')}: ${alt}` : tr('gifShowLabel'),
     );
   } else if (alt) {
     still.setAttribute('role', 'img');
@@ -129,7 +129,7 @@ function freeze(img) {
   if (interactive) {
     const tag = document.createElement('span');
     tag.setAttribute('aria-hidden', 'true');
-    tag.textContent = `▶ ${S.gifShowLabel}`;
+    tag.textContent = `▶ ${tr('gifShowLabel')}`;
     Object.assign(tag.style, {
       position: 'absolute',
       left: '6px',

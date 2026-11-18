@@ -4,6 +4,8 @@
  * Integrators can override any value by passing a config object to the
  * ModoSimples constructor. All keys are optional.
  */
+import { t } from '../i18n/index.js';
+
 const defaults = {
   /**
    * CSS selectors tried in order to locate the main content.
@@ -132,9 +134,14 @@ const defaults = {
    * @type {{ title: string, subtitle: string, footer: string }}
    */
   brand: {
-    title: 'Acessibilidade Digital',
+    // getters: o texto segue o idioma atual no momento em que o painel é montado (spread lê)
+    get title() {
+      return t('panelDefaultTitle');
+    },
     subtitle: '',
-    footer: 'Preferências salvas neste navegador',
+    get footer() {
+      return t('panelDefaultFooter');
+    },
   },
 
   /**

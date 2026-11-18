@@ -10,8 +10,10 @@
  */
 
 import state from '../core/state.js';
+import { BCP47, getLocale } from '../i18n/index.js';
 
-const LANG = 'pt-BR';
+/** Idioma de reconhecimento: segue o idioma da UI. */
+const lang = () => BCP47[getLocale()];
 const MAX_WORDS = 5; // fala longa é conversa, não comando
 // reinício automático: mais de 5 fins em 10 s = laço (ex.: sem microfone); para e avisa
 const MAX_RESTARTS = 5;
@@ -46,7 +48,7 @@ export async function getRecognitionMode() {
   const headless = /HeadlessChrome/.test(globalThis.navigator?.userAgent || '');
   if (!headless && typeof Ctor.available === 'function') {
     try {
-      const r = await Ctor.available({ langs: [LANG], processLocally: true });
+      const r = await Ctor.available({ langs: [lang()], processLocally: true });
       if (r === 'available') return 'local';
       if (r === 'downloadable' || r === 'downloading') return 'download';
     } catch (_) {
@@ -56,12 +58,14 @@ export async function getRecognitionMode() {
   return 'cloud';
 }
 
-/** Baixa o modelo local pt-BR. Precisa de gesto do usuário (clique). */
+/** Baixa o modelo local do idioma atual. Precisa de gesto do usuário (clique). */
 export async function installLocalModel() {
   const Ctor = getCtor();
   if (!Ctor || typeof Ctor.install !== 'function') return false;
   try {
-    return Boolean(await Ctor.install({ langs: [LANG], processLocally: true }));
+    return Boolean(
+      await Ctor.install({ langs: [lang()], processLocally: true }),
+    );
   } catch (_) {
     return false;
   }
@@ -76,28 +80,63 @@ const norm = (s) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-// ordem importa: "desligar modo simples" antes de "ligar modo simples"
-const TABLE = [
-  ['msOff', /\bdesligar\b.*\bmodo simples\b/],
-  ['msOn', /\bligar\b.*\bmodo simples\b/],
-  ['panelOpen', /\babrir\b.*\bpainel\b/],
-  ['panelClose', /\bfechar\b.*\bpainel\b/],
-  ['faster', /\bmais rapido\b/],
-  ['slower', /\bmais devagar\b/],
-  ['scrollDown', /\bdescer\b/],
-  ['scrollUp', /\bsubir\b/],
-  ['pause', /\bpausar\b|\bpausa\b/],
-  ['resume', /\bcontinuar\b|\bcontinue\b/],
-  ['stop', /^(parar|pare|para)$/],
-  ['help', /\bajuda\b|\bcomandos\b/],
-  ['read', /\bler\b|\bleia\b/],
-];
+// Gramática por idioma (texto já normalizado: minúsculo, sem acento).
+// Ordem importa: "desligar modo simples" antes de "ligar modo simples".
+const TABLES = {
+  pt: [
+    ['msOff', /\bdesligar\b.*\bmodo simples\b/],
+    ['msOn', /\bligar\b.*\bmodo simples\b/],
+    ['panelOpen', /\babrir\b.*\bpainel\b/],
+    ['panelClose', /\bfechar\b.*\bpainel\b/],
+    ['faster', /\bmais rapido\b/],
+    ['slower', /\bmais devagar\b/],
+    ['scrollDown', /\bdescer\b/],
+    ['scrollUp', /\bsubir\b/],
+    ['pause', /\bpausar\b|\bpausa\b/],
+    ['resume', /\bcontinuar\b|\bcontinue\b/],
+    ['stop', /^(parar|pare|para)$/],
+    ['help', /\bajuda\b|\bcomandos\b/],
+    ['read', /\bler\b|\bleia\b/],
+  ],
+  en: [
+    ['msOff', /\b(turn|switch) off\b.*\bsimple mode\b/],
+    ['msOn', /\b(turn|switch) on\b.*\bsimple mode\b/],
+    ['panelOpen', /\bopen\b.*\bpanel\b/],
+    ['panelClose', /\bclose\b.*\bpanel\b/],
+    ['faster', /\bfaster\b|\bspeed up\b/],
+    ['slower', /\bslower\b|\bslow down\b/],
+    ['scrollDown', /\bscroll down\b|^down$/],
+    ['scrollUp', /\bscroll up\b|^up$/],
+    ['pause', /\bpause\b/],
+    ['resume', /\bresume\b|\bcontinue\b/],
+    ['stop', /^(stop)$/],
+    ['help', /\bhelp\b|\bcommands\b/],
+    ['read', /\bread\b/],
+  ],
+  es: [
+    ['msOff', /\b(desactivar|apagar)\b.*\bmodo simple\b/],
+    ['msOn', /\b(activar|encender)\b.*\bmodo simple\b/],
+    ['panelOpen', /\babrir\b.*\bpanel\b/],
+    ['panelClose', /\bcerrar\b.*\bpanel\b/],
+    ['faster', /\bmas rapido\b/],
+    ['slower', /\bmas lento\b|\bmas despacio\b/],
+    ['scrollDown', /\bbajar\b/],
+    ['scrollUp', /\bsubir\b/],
+    ['pause', /\bpausar\b|\bpausa\b/],
+    ['resume', /\bcontinuar\b|\bcontinua\b/],
+    ['stop', /^(parar|para|detener)$/],
+    ['help', /\bayuda\b|\bcomandos\b/],
+    ['read', /\bleer\b|\blee\b/],
+  ],
+};
 
 /** @returns {{action: string, arg?: *}|null} */
 export function parseCommand(text) {
   const t = norm(text);
   if (!t || t.split(' ').length > MAX_WORDS) return null;
-  for (const [action, re] of TABLE) if (re.test(t)) return { action };
+  for (const [action, re] of TABLES[getLocale()]) {
+    if (re.test(t)) return { action };
+  }
   return null;
 }
 
@@ -150,7 +189,7 @@ export function startVoiceCommands({ mode, onCommand, onStatus } = {}) {
   _restarts = [];
 
   const rec = new Ctor();
-  rec.lang = LANG;
+  rec.lang = lang();
   rec.continuous = true;
   rec.interimResults = false;
   if (mode === 'local') rec.processLocally = true;

@@ -8,7 +8,7 @@
  * Fica fora da armadilha de foco do painel e é ignorado pelo domObserver.
  */
 
-import { STRINGS as S, SHORTCUTS } from '../ui/strings.js';
+import { t as tr, getShortcuts } from '../i18n/index.js';
 
 export const CARD_ID = 'ms-shortcuts-card';
 const DISMISS_KEY = 'ms-shortcuts-dismissed';
@@ -48,7 +48,7 @@ function pageAccessKeys() {
       .replace(/\s+/g, ' ')
       .slice(0, 40);
     out.push({
-      keys: `${S.shortcutAccessKeyPrefix}${key.toUpperCase()}`,
+      keys: `${tr('shortcutAccessKeyPrefix')}${key.toUpperCase()}`,
       text: name || key,
     });
   }
@@ -84,9 +84,9 @@ function build(side) {
   });
   card.id = CARD_ID;
   card.setAttribute('role', 'region');
-  card.setAttribute('aria-label', S.shortcutsTitle);
+  card.setAttribute('aria-label', tr('shortcutsTitle'));
   card.append(
-    el('h2', S.shortcutsTitle, {
+    el('h2', tr('shortcutsTitle'), {
       margin: '0 0 8px',
       font: '700 16px/1.3 system-ui, sans-serif',
       color: '#fff',
@@ -97,7 +97,7 @@ function build(side) {
     padding: '0',
     'list-style': 'none',
   });
-  for (const s of [...SHORTCUTS, ...pageAccessKeys()]) {
+  for (const s of [...getShortcuts(), ...pageAccessKeys()]) {
     const li = el('li', '', { margin: '0 0 6px', color: '#fff' });
     li.append(
       el('kbd', s.keys, {
@@ -113,7 +113,7 @@ function build(side) {
     );
     list.append(li);
   }
-  const close = el('button', S.shortcutsClose, {
+  const close = el('button', tr('shortcutsClose'), {
     'min-width': '44px',
     'min-height': '44px',
     padding: '0 16px',

@@ -11,7 +11,7 @@
  * closeMouseGrid().
  */
 
-import { STRINGS as S } from '../ui/strings.js';
+import { t as tr } from '../i18n/index.js';
 import { announce } from '../utils/aria.js';
 import { trapFocus } from '../utils/focus.js';
 
@@ -137,9 +137,11 @@ function render() {
     });
     bar.appendChild(b);
   };
-  mk(compact ? S.gridClickShort : S.gridClickBtn, () => clickCurrent());
-  mk(compact ? S.gridBackShort : S.gridBackBtn, () => goBack());
-  mk(compact ? S.gridCloseShort : S.gridCloseBtn, () => closeMouseGrid());
+  mk(compact ? tr('gridClickShort') : tr('gridClickBtn'), () => clickCurrent());
+  mk(compact ? tr('gridBackShort') : tr('gridBackBtn'), () => goBack());
+  mk(compact ? tr('gridCloseShort') : tr('gridCloseBtn'), () =>
+    closeMouseGrid(),
+  );
   _barH = bar.offsetHeight + 16;
   const a = px(current());
   // área atual: o resto da tela escurece (sombra), a área fica com moldura forte
@@ -160,7 +162,7 @@ function render() {
       const b = document.createElement('button');
       b.type = 'button';
       b.setAttribute('data-cell', String(n));
-      b.setAttribute('aria-label', `${S.gridCellLabel} ${n}`);
+      b.setAttribute('aria-label', `${tr('gridCellLabel')} ${n}`);
       b.textContent = String(n);
       Object.assign(b.style, {
         position: 'absolute',
@@ -188,8 +190,8 @@ function render() {
 
 function levelText() {
   return canSubdivide(current())
-    ? `${S.gridLevelPre} ${_stack.length}. ${S.gridChoose}`
-    : S.gridMin;
+    ? `${tr('gridLevelPre')} ${_stack.length}. ${tr('gridChoose')}`
+    : tr('gridMin');
 }
 
 /** Ponto elementFromPoint atravessando shadow roots abertos. */
@@ -245,7 +247,7 @@ export function openMouseGrid() {
   if (_root) {
     _stack = [{ x: 0, y: 0, w: 1, h: 1 }];
     render();
-    announce(S.gridOpen);
+    announce(tr('gridOpen'));
     return;
   }
   _prevFocus = document.activeElement;
@@ -254,7 +256,7 @@ export function openMouseGrid() {
   _root.id = MOUSE_GRID_ID;
   _root.setAttribute('role', 'dialog');
   _root.setAttribute('aria-modal', 'true');
-  _root.setAttribute('aria-label', S.gridDialogLabel);
+  _root.setAttribute('aria-label', tr('gridDialogLabel'));
   _root.tabIndex = -1;
   Object.assign(_root.style, {
     position: 'fixed',
@@ -270,7 +272,7 @@ export function openMouseGrid() {
   window.addEventListener('resize', onResize);
   _releaseTrap = trapFocus(_root);
   _root.focus();
-  announce(S.gridOpen);
+  announce(tr('gridOpen'));
 }
 
 /**
@@ -292,7 +294,7 @@ export function selectCell(n) {
 function goBack() {
   if (!_root) return false;
   if (_stack.length < 2) {
-    announce(S.gridTop);
+    announce(tr('gridTop'));
     return false;
   }
   _stack.pop();
@@ -320,7 +322,7 @@ export function closeMouseGrid({ restoreFocus = true, silent = false } = {}) {
   const prev = _prevFocus;
   _prevFocus = null;
   if (restoreFocus && prev?.isConnected) prev.focus?.();
-  if (!silent) announce(S.gridClosed);
+  if (!silent) announce(tr('gridClosed'));
 }
 
 /**
@@ -334,7 +336,7 @@ export function clickCurrent() {
   closeMouseGrid({ restoreFocus: false, silent: true });
   const target = deepElementAt(x, y);
   if (!target) {
-    announce(S.gridClosed);
+    announce(tr('gridClosed'));
     return null;
   }
   const init = (buttons) => ({
@@ -365,6 +367,6 @@ export function clickCurrent() {
   );
   const focusable = target.closest?.(FOCUSABLE);
   if (focusable && !focusable.disabled) focusable.focus?.();
-  announce(S.gridClicked);
+  announce(tr('gridClicked'));
   return target;
 }

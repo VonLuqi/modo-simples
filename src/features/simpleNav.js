@@ -5,6 +5,8 @@
  * Não altera markup de páginas que já têm [data-ms-pills] próprio (ex.: protótipo Senac).
  */
 
+import { t } from '../i18n/index.js';
+
 /**
  * @typedef {{ label: string, href: string, short?: string }} SimpleNavItem
  */
@@ -89,7 +91,7 @@ export function createSimpleNav() {
       nav.className = 'ms-pills-nav ms-simple-only';
       nav.setAttribute('data-ms-pills', '');
       nav.setAttribute('data-ms-injected', '');
-      nav.setAttribute('aria-label', 'Navegação do Modo Simples');
+      nav.setAttribute('aria-label', t('simpleNavLabel'));
 
       const inner = document.createElement('div');
       inner.className = 'ms-pills-nav__inner';
