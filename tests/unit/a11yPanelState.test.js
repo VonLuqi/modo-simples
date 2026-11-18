@@ -100,7 +100,7 @@ describe('a11yPanel — texto de estado dos blocos (F6c)', () => {
   it('radiogroups ocupam a linha inteira da grade', () => {
     const { element } = montar();
     const wide = element.querySelectorAll('.ms-a11y-block--wide');
-    assert.equal(wide.length, 6); // textScale, colorTheme, colorSaturation, 3 cores personalizadas (F8a)
+    assert.equal(wide.length, 7); // textScale, colorTheme, saturação, 3 cores, cursor (F8a/F8c)
     for (const w of wide) assert.ok(w.querySelector('[role="radiogroup"]'));
   });
 });

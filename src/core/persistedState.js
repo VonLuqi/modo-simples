@@ -59,6 +59,11 @@ export function hydratePersistedState(saved) {
       lineHeight: clampTypo('lineHeight', opts.lineHeight),
       wordSpacing: clampTypo('wordSpacing', opts.wordSpacing),
       letterSpacing: clampTypo('letterSpacing', opts.letterSpacing),
+      cursorStyle: ['default', 'bigWhite', 'bigBlack'].includes(
+        opts.cursorStyle,
+      )
+        ? opts.cursorStyle
+        : 'default',
       reducedMotion: Boolean(opts.reducedMotion),
       hideImages: Boolean(opts.hideImages),
       // Linguagem simples é acoplada ao MS; sem MS não reativa “órfã”

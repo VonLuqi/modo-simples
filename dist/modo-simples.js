@@ -208,7 +208,7 @@
 
   // src/core/state.js
   var TYPO_LIMITS = {
-    lineHeight: { min: 1.1, max: 3, step: 0.1 },
+    lineHeight: { min: 1.5, max: 3, step: 0.1 },
     wordSpacing: { min: 0, max: 0.8, step: 0.02 },
     letterSpacing: { min: 0, max: 0.3, step: 0.01 }
   };
@@ -235,6 +235,7 @@
       lineHeight: 0,
       wordSpacing: 0,
       letterSpacing: 0,
+      cursorStyle: "default",
       reducedMotion: false,
       hideImages: false,
       simpleLanguage: false
@@ -304,6 +305,11 @@
     lightHigh: "Claro Alto Contraste"
   };
   var SATURATION_LABELS = { low: "baixa", normal: "normal", high: "alta" };
+  var CURSOR_LABELS = {
+    default: "padr\xE3o",
+    bigWhite: "grande branco",
+    bigBlack: "grande preto"
+  };
   var CUSTOM_LABELS = {
     customText: "texto",
     customHeading: "t\xEDtulos",
@@ -331,6 +337,11 @@
     if (prev.options.colorSaturation !== next.options.colorSaturation) {
       out.push(
         `Satura\xE7\xE3o ${SATURATION_LABELS[next.options.colorSaturation] || next.options.colorSaturation}`
+      );
+    }
+    if (prev.options.cursorStyle !== next.options.cursorStyle) {
+      out.push(
+        `Cursor ${CURSOR_LABELS[next.options.cursorStyle] || next.options.cursorStyle}`
       );
     }
     Object.entries(CUSTOM_LABELS).forEach(([k, label]) => {
@@ -478,6 +489,9 @@
         lineHeight: clampTypo("lineHeight", opts.lineHeight),
         wordSpacing: clampTypo("wordSpacing", opts.wordSpacing),
         letterSpacing: clampTypo("letterSpacing", opts.letterSpacing),
+        cursorStyle: ["default", "bigWhite", "bigBlack"].includes(
+          opts.cursorStyle
+        ) ? opts.cursorStyle : "default",
         reducedMotion: Boolean(opts.reducedMotion),
         hideImages: Boolean(opts.hideImages),
         // Linguagem simples é acoplada ao MS; sem MS não reativa “órfã”
@@ -1209,7 +1223,8 @@
       background: linear-gradient(90deg, #fff 50%, #000 50%);
       border-color: #000;
     }
-    .ms-segmented[data-option="colorSaturation"] {
+    .ms-segmented[data-option="colorSaturation"],
+    .ms-segmented[data-option="cursorStyle"] {
       grid-template-columns: repeat(3, 1fr);
     }
     .ms-swatches {
@@ -1835,6 +1850,34 @@
 
     html.ms-manual-select-active { cursor: pointer !important; }
 
+    /* \u2500\u2500 F8c: cursor grande branco/preto (setas SVG 48px com contorno contrastante) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+       Seta: ponta em (6,3). M\xE3o (links/bot\xF5es): ponta do dedo em (19,4). Fallback: auto / pointer.
+       Preced\xEAncia: o cursor grande vence o crosshair da r\xE9gua (80-ruler.css) e o pointer do modo de
+       sele\xE7\xE3o manual vira a m\xE3o grande. Campos de texto mant\xEAm o cursor "text" nativo.
+       Telas de toque n\xE3o t\xEAm cursor: a classe n\xE3o faz nada, sem erro. */
+    html.ms-cursor-white,
+    html.ms-cursor-white * {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M6 3v36l9-8 6 14 7-3-6-13h12z' fill='%23fff' stroke='%23000' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 6 3, auto !important;
+    }
+    html.ms-cursor-black,
+    html.ms-cursor-black * {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M6 3v36l9-8 6 14 7-3-6-13h12z' fill='%23000' stroke='%23fff' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 6 3, auto !important;
+    }
+    html.ms-cursor-white :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"], input:is([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"])),
+    html.ms-cursor-white :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"]) *,
+    html.ms-cursor-white.ms-manual-select-active,
+    html.ms-cursor-white.ms-manual-select-active * {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M16 6a3.5 3.5 0 0 1 7 0v15.5l2-.4a3 3 0 0 1 3.5 2.3 3 3 0 0 1 3.2-.2 3 3 0 0 1 3.1 2 3 3 0 0 1 3.2 3.1V35c0 6-4 10-10 10h-4c-4 0-6-2-8-5l-7-10a3 3 0 0 1 4.6-3.8L16 30z' fill='%23fff' stroke='%23000' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 19 4, pointer !important;
+    }
+    html.ms-cursor-black :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"], input:is([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"])),
+    html.ms-cursor-black :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"]) *,
+    html.ms-cursor-black.ms-manual-select-active,
+    html.ms-cursor-black.ms-manual-select-active * {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M16 6a3.5 3.5 0 0 1 7 0v15.5l2-.4a3 3 0 0 1 3.5 2.3 3 3 0 0 1 3.2-.2 3 3 0 0 1 3.1 2 3 3 0 0 1 3.2 3.1V35c0 6-4 10-10 10h-4c-4 0-6-2-8-5l-7-10a3 3 0 0 1 4.6-3.8L16 30z' fill='%23000' stroke='%23fff' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 19 4, pointer !important;
+    }
+    html:is(.ms-cursor-white, .ms-cursor-black) :is(textarea, [contenteditable="true"], input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"], [type="range"], [type="color"], [type="file"])) {
+      cursor: text !important;
+    }
     /* \u2500\u2500 Session chrome (SIMPLES header) + barra sob o nav \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     /* UX-14: 1 unidade = 16px fixos, sem depender do html { font-size } do host */
     #ms-simples-chrome,
@@ -2347,6 +2390,11 @@
     panelLetterSpacingTitle: "Espa\xE7o entre letras",
     panelTypoDefault: "Padr\xE3o do site",
     panelResetFont: "Redefinir fonte",
+    announceResetFont: "Fonte redefinida: tamanho, fonte acess\xEDvel e espa\xE7amentos voltaram ao padr\xE3o.",
+    panelCursorTitle: "Cursor do mouse",
+    panelCursorDefault: "Padr\xE3o",
+    panelCursorBigWhite: "Grande branco",
+    panelCursorBigBlack: "Grande preto",
     panelResetFontLabel: "Redefinir fonte: tamanho, fonte acess\xEDvel e espa\xE7amentos",
     panelSaturationTitle: "Satura\xE7\xE3o das cores",
     panelSaturationLow: "Baixa",
@@ -2557,8 +2605,12 @@
   // src/ui/a11yPanel.js
   var TYPO_KEYS = ["lineHeight", "wordSpacing", "letterSpacing"];
   var round2 = (n) => Math.round(n * 100) / 100;
-  var typoValue = (key, idx) => idx <= 0 ? 0 : key === "lineHeight" ? round2(1 + idx * TYPO_LIMITS.lineHeight.step) : round2(idx * TYPO_LIMITS[key].step);
-  var typoIdx = (key, v) => !(v > 0) ? 0 : key === "lineHeight" ? Math.round((v - 1) / TYPO_LIMITS.lineHeight.step) : Math.round(v / TYPO_LIMITS[key].step);
+  var typoValue = (key, idx) => idx <= 0 ? 0 : key === "lineHeight" ? round2(
+    TYPO_LIMITS.lineHeight.min + (idx - 1) * TYPO_LIMITS.lineHeight.step
+  ) : round2(idx * TYPO_LIMITS[key].step);
+  var typoIdx = (key, v) => !(v > 0) ? 0 : key === "lineHeight" ? Math.round(
+    (v - TYPO_LIMITS.lineHeight.min) / TYPO_LIMITS.lineHeight.step
+  ) + 1 : Math.round(v / TYPO_LIMITS[key].step);
   var typoText = (key, v) => v > 0 ? `${String(v).replace(".", ",")}${key === "lineHeight" ? "" : " em"}` : STRINGS.panelTypoDefault;
   var TEXT_SCALES = [
     { value: "100", label: "100%", title: STRINGS.scaleDefault },
@@ -2587,6 +2639,11 @@
     { value: "low", label: STRINGS.panelSaturationLow },
     { value: "normal", label: STRINGS.panelSaturationNormal },
     { value: "high", label: STRINGS.panelSaturationHigh }
+  ];
+  var CURSORS = [
+    { value: "default", label: STRINGS.panelCursorDefault },
+    { value: "bigWhite", label: STRINGS.panelCursorBigWhite },
+    { value: "bigBlack", label: STRINGS.panelCursorBigBlack }
   ];
   var CUSTOM_COLORS = {
     customText: {
@@ -2676,6 +2733,13 @@
       html: `
         ${radioHead("ms-label-sat", STRINGS.panelSaturationTitle, "colorSaturation")}
         <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-sat" data-option="colorSaturation"></div>`
+    },
+    // Segmentos preenchidos em createA11yPanel. Em tela de toque não há cursor: o controle fica e é inofensivo
+    cursorStyle: {
+      wide: true,
+      html: `
+        ${radioHead("ms-label-cursor", STRINGS.panelCursorTitle, "cursorStyle")}
+        <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-cursor" data-option="cursorStyle"></div>`
     },
     customText: {
       wide: true,
@@ -2814,6 +2878,7 @@
         "customText",
         "customHeading",
         "customBg",
+        "cursorStyle",
         "highlightLinks"
       ]
     },
@@ -2938,6 +3003,16 @@
       b.textContent = s.label;
       satGroup.appendChild(b);
     });
+    const cursorGroup = panel.querySelector('[data-option="cursorStyle"]');
+    CURSORS.forEach((c) => {
+      const b = radioBtn(
+        "ms-segment",
+        c.value,
+        `${STRINGS.panelCursorTitle} ${c.label}`
+      );
+      b.textContent = c.label;
+      cursorGroup.appendChild(b);
+    });
     Object.entries(CUSTOM_COLORS).forEach(([key, cfg]) => {
       const group = panel.querySelector(`[data-option="${key}"]`);
       const none = radioBtn(
@@ -3049,7 +3124,7 @@
     });
     panel.querySelector('[data-action="speak"]').addEventListener("click", () => onSpeak());
     function sync(s, ui = {}) {
-      var _a, _b, _c, _d, _e, _f, _g, _h;
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
       const modoBtn = panel.querySelector('[data-action="modo-simples"]');
       if (modoBtn) {
         modoBtn.setAttribute("aria-checked", String(!!s.modoSimples));
@@ -3094,7 +3169,9 @@
         });
       };
       const sat = ((_c = s.options) == null ? void 0 : _c.colorSaturation) || "normal";
+      const cursor = ((_d = s.options) == null ? void 0 : _d.cursorStyle) || "default";
       syncRadios('[data-option="colorSaturation"] .ms-segment', sat);
+      syncRadios('[data-option="cursorStyle"] .ms-segment', cursor);
       Object.keys(CUSTOM_COLORS).forEach((key) => {
         var _a2;
         const val = ((_a2 = s.options) == null ? void 0 : _a2[key]) || "";
@@ -3116,7 +3193,7 @@
       });
       const warn = panel.querySelector("[data-contrast-warn]");
       if (warn) {
-        const bg = (_d = s.options) == null ? void 0 : _d.customBg;
+        const bg = (_e = s.options) == null ? void 0 : _e.customBg;
         const low = [
           ["customText", STRINGS.panelCustomTextTitle],
           ["customHeading", STRINGS.panelCustomHeadingTitle]
@@ -3156,11 +3233,15 @@
       );
       setState(
         "colorTheme",
-        (_f = (_e = COLOR_THEMES.find((x) => x.value === theme)) == null ? void 0 : _e.label) != null ? _f : theme
+        (_g = (_f = COLOR_THEMES.find((x) => x.value === theme)) == null ? void 0 : _f.label) != null ? _g : theme
       );
       setState(
         "colorSaturation",
-        (_h = (_g = SATURATIONS.find((x) => x.value === sat)) == null ? void 0 : _g.label) != null ? _h : sat
+        (_i = (_h = SATURATIONS.find((x) => x.value === sat)) == null ? void 0 : _h.label) != null ? _i : sat
+      );
+      setState(
+        "cursorStyle",
+        (_k = (_j = CURSORS.find((x) => x.value === cursor)) == null ? void 0 : _j.label) != null ? _k : cursor
       );
       const speakBtn = panel.querySelector('[data-action="speak"]');
       if (speakBtn && ui.speaking !== void 0) {
@@ -4127,6 +4208,7 @@
     lineHeight: 0,
     wordSpacing: 0,
     letterSpacing: 0,
+    cursorStyle: "default",
     reducedMotion: false,
     hideImages: false,
     simpleLanguage: false
@@ -4168,11 +4250,14 @@
       },
       onSpeak: () => ms._toggleSpeak(),
       onResetAll: () => ms._resetAll(),
-      onResetFont: () => state_default.set({
-        options: Object.fromEntries(
-          FONT_KEYS.map((k) => [k, RESET_OPTIONS[k]])
-        )
-      }),
+      onResetFont: () => {
+        state_default.set({
+          options: Object.fromEntries(
+            FONT_KEYS.map((k) => [k, RESET_OPTIONS[k]])
+          )
+        });
+        announce(STRINGS.announceResetFont);
+      },
       onMoveSide: () => ms._movePanelSide(),
       brand: ms._config.brand
     });
@@ -4443,6 +4528,8 @@
   var OPTION_FLAG_CLASSES = [
     "ms-sat-low",
     "ms-sat-high",
+    "ms-cursor-white",
+    "ms-cursor-black",
     ...Object.values(CUSTOM_COLORS2).map(([cls]) => cls),
     ...Object.values(TYPO_VARS).map(([cls]) => cls),
     "ms-dyslexia-font",
@@ -4503,6 +4590,8 @@
     html.classList.add(`ms-theme-${theme}`);
     html.classList.toggle("ms-sat-low", opts.colorSaturation === "low");
     html.classList.toggle("ms-sat-high", opts.colorSaturation === "high");
+    html.classList.toggle("ms-cursor-white", opts.cursorStyle === "bigWhite");
+    html.classList.toggle("ms-cursor-black", opts.cursorStyle === "bigBlack");
     const eff = effectiveColors(opts);
     for (const [key, [cls, prop]] of Object.entries(CUSTOM_COLORS2)) {
       const on = !!eff[key];
@@ -5101,6 +5190,7 @@
         "lineHeight",
         "wordSpacing",
         "letterSpacing",
+        "cursorStyle",
         "reducedMotion",
         "hideImages",
         "simpleLanguage"

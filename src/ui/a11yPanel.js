@@ -17,13 +17,17 @@ const typoValue = (key, idx) =>
   idx <= 0
     ? 0
     : key === 'lineHeight'
-      ? round2(1 + idx * TYPO_LIMITS.lineHeight.step)
+      ? round2(
+          TYPO_LIMITS.lineHeight.min + (idx - 1) * TYPO_LIMITS.lineHeight.step,
+        ) // 1.º passo = 1,5
       : round2(idx * TYPO_LIMITS[key].step);
 const typoIdx = (key, v) =>
   !(v > 0)
     ? 0
     : key === 'lineHeight'
-      ? Math.round((v - 1) / TYPO_LIMITS.lineHeight.step)
+      ? Math.round(
+          (v - TYPO_LIMITS.lineHeight.min) / TYPO_LIMITS.lineHeight.step,
+        ) + 1
       : Math.round(v / TYPO_LIMITS[key].step);
 const typoText = (key, v) =>
   v > 0
@@ -60,6 +64,12 @@ const SATURATIONS = [
   { value: 'low', label: S.panelSaturationLow },
   { value: 'normal', label: S.panelSaturationNormal },
   { value: 'high', label: S.panelSaturationHigh },
+];
+
+const CURSORS = [
+  { value: 'default', label: S.panelCursorDefault },
+  { value: 'bigWhite', label: S.panelCursorBigWhite },
+  { value: 'bigBlack', label: S.panelCursorBigBlack },
 ];
 
 /** Cor personalizada: título + 8 presets com contraste ≥ 7:1 contra branco ou preto. */
@@ -165,6 +175,13 @@ const CONTROLS = {
     html: `
         ${radioHead('ms-label-sat', S.panelSaturationTitle, 'colorSaturation')}
         <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-sat" data-option="colorSaturation"></div>`,
+  },
+  // Segmentos preenchidos em createA11yPanel. Em tela de toque não há cursor: o controle fica e é inofensivo
+  cursorStyle: {
+    wide: true,
+    html: `
+        ${radioHead('ms-label-cursor', S.panelCursorTitle, 'cursorStyle')}
+        <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-cursor" data-option="cursorStyle"></div>`,
   },
   customText: {
     wide: true,
@@ -308,6 +325,7 @@ const SECTIONS = [
       'customText',
       'customHeading',
       'customBg',
+      'cursorStyle',
       'highlightLinks',
     ],
   },
@@ -452,6 +470,16 @@ export function createA11yPanel({
     );
     b.textContent = s.label;
     satGroup.appendChild(b);
+  });
+  const cursorGroup = panel.querySelector('[data-option="cursorStyle"]');
+  CURSORS.forEach((c) => {
+    const b = radioBtn(
+      'ms-segment',
+      c.value,
+      `${S.panelCursorTitle} ${c.label}`,
+    );
+    b.textContent = c.label;
+    cursorGroup.appendChild(b);
   });
   Object.entries(CUSTOM_COLORS).forEach(([key, cfg]) => {
     const group = panel.querySelector(`[data-option="${key}"]`);
@@ -660,7 +688,9 @@ export function createA11yPanel({
       });
     };
     const sat = s.options?.colorSaturation || 'normal';
+    const cursor = s.options?.cursorStyle || 'default';
     syncRadios('[data-option="colorSaturation"] .ms-segment', sat);
+    syncRadios('[data-option="cursorStyle"] .ms-segment', cursor);
     Object.keys(CUSTOM_COLORS).forEach((key) => {
       const val = s.options?.[key] || '';
       const other = panel.querySelector(
@@ -736,6 +766,10 @@ export function createA11yPanel({
     setState(
       'colorSaturation',
       SATURATIONS.find((x) => x.value === sat)?.label ?? sat,
+    );
+    setState(
+      'cursorStyle',
+      CURSORS.find((x) => x.value === cursor)?.label ?? cursor,
     );
 
     const speakBtn = panel.querySelector('[data-action="speak"]');

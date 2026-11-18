@@ -58,7 +58,7 @@ describe('F8b — sliders', () => {
   });
 
   it('WCAG 1.4.12 é alcançável: 1,5 / 0,16em / 0,12em por posição inteira do slider', () => {
-    mover('lineHeight', 5);
+    mover('lineHeight', 1);
     mover('wordSpacing', 8);
     mover('letterSpacing', 12);
     const o = state.get().options;

@@ -61,6 +61,8 @@ const TYPO_VARS = {
 const OPTION_FLAG_CLASSES = [
   'ms-sat-low',
   'ms-sat-high',
+  'ms-cursor-white',
+  'ms-cursor-black',
   ...Object.values(CUSTOM_COLORS).map(([cls]) => cls),
   ...Object.values(TYPO_VARS).map(([cls]) => cls),
   'ms-dyslexia-font',
@@ -176,6 +178,9 @@ export function applyOptions(state) {
   // 'normal' = sem classe (não mexe no filtro do host)
   html.classList.toggle('ms-sat-low', opts.colorSaturation === 'low');
   html.classList.toggle('ms-sat-high', opts.colorSaturation === 'high');
+  // F8c: 'default' = sem classe (cursor do site). Em tela de toque a classe é inofensiva.
+  html.classList.toggle('ms-cursor-white', opts.cursorStyle === 'bigWhite');
+  html.classList.toggle('ms-cursor-black', opts.cursorStyle === 'bigBlack');
   const eff = effectiveColors(opts);
   for (const [key, [cls, prop]] of Object.entries(CUSTOM_COLORS)) {
     const on = !!eff[key];

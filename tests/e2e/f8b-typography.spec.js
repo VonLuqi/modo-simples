@@ -45,7 +45,7 @@ test.describe('F8b — tipografia', () => {
     await expect(slider).toHaveAttribute('aria-valuetext', 'Padrão do site');
 
     await slider.focus();
-    for (let i = 0; i < 5; i++) await page.keyboard.press('ArrowRight');
+    for (let i = 0; i < 1; i++) await page.keyboard.press('ArrowRight');
     await expect(slider).toHaveAttribute('aria-valuetext', '1,5');
     expect((await spacing(page, 'main p')).line).toBeCloseTo(1.5, 1);
 
@@ -66,7 +66,7 @@ test.describe('F8b — tipografia', () => {
       await page.keyboard.press('Home');
       for (let i = 0; i < n; i++) await page.keyboard.press('ArrowRight');
     };
-    await set('lineHeight', 5);
+    await set('lineHeight', 1);
     await set('wordSpacing', 8);
     await set('letterSpacing', 12);
     const s = await spacing(page, 'main p');

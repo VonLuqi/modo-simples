@@ -459,6 +459,7 @@ class ModoSimples {
       'lineHeight',
       'wordSpacing',
       'letterSpacing',
+      'cursorStyle',
       'reducedMotion',
       'hideImages',
       'simpleLanguage',

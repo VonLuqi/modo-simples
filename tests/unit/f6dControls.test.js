@@ -76,6 +76,7 @@ describe('Desligar tudo', () => {
       lineHeight: 0,
       wordSpacing: 0,
       letterSpacing: 0,
+      cursorStyle: 'default',
       reducedMotion: false,
       hideImages: false,
       simpleLanguage: false,

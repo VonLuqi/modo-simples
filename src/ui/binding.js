@@ -38,6 +38,7 @@ const RESET_OPTIONS = {
   lineHeight: 0,
   wordSpacing: 0,
   letterSpacing: 0,
+  cursorStyle: 'default',
   reducedMotion: false,
   hideImages: false,
   simpleLanguage: false,
@@ -94,12 +95,14 @@ export function buildUI(ms) {
     },
     onSpeak: () => ms._toggleSpeak(),
     onResetAll: () => ms._resetAll(),
-    onResetFont: () =>
+    onResetFont: () => {
       state.set({
         options: Object.fromEntries(
           FONT_KEYS.map((k) => [k, RESET_OPTIONS[k]]),
         ),
-      }),
+      });
+      announce(S.announceResetFont); // depois dos anúncios por opção: é o que fica no aria-live
+    },
     onMoveSide: () => ms._movePanelSide(),
     brand: ms._config.brand,
   });

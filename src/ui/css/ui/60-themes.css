@@ -53,7 +53,8 @@
       background: linear-gradient(90deg, #fff 50%, #000 50%);
       border-color: #000;
     }
-    .ms-segmented[data-option="colorSaturation"] {
+    .ms-segmented[data-option="colorSaturation"],
+    .ms-segmented[data-option="cursorStyle"] {
       grid-template-columns: repeat(3, 1fr);
     }
     .ms-swatches {

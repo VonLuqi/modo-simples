@@ -470,7 +470,8 @@ export const UI_CSS = `
       background: linear-gradient(90deg, #fff 50%, #000 50%);
       border-color: #000;
     }
-    .ms-segmented[data-option="colorSaturation"] {
+    .ms-segmented[data-option="colorSaturation"],
+    .ms-segmented[data-option="cursorStyle"] {
       grid-template-columns: repeat(3, 1fr);
     }
     .ms-swatches {
@@ -1097,6 +1098,34 @@ export const PAGE_CSS = `
 
     html.ms-manual-select-active { cursor: pointer !important; }
 
+    /* ── F8c: cursor grande branco/preto (setas SVG 48px com contorno contrastante) ──────────────
+       Seta: ponta em (6,3). Mão (links/botões): ponta do dedo em (19,4). Fallback: auto / pointer.
+       Precedência: o cursor grande vence o crosshair da régua (80-ruler.css) e o pointer do modo de
+       seleção manual vira a mão grande. Campos de texto mantêm o cursor "text" nativo.
+       Telas de toque não têm cursor: a classe não faz nada, sem erro. */
+    html.ms-cursor-white,
+    html.ms-cursor-white * {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M6 3v36l9-8 6 14 7-3-6-13h12z' fill='%23fff' stroke='%23000' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 6 3, auto !important;
+    }
+    html.ms-cursor-black,
+    html.ms-cursor-black * {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M6 3v36l9-8 6 14 7-3-6-13h12z' fill='%23000' stroke='%23fff' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 6 3, auto !important;
+    }
+    html.ms-cursor-white :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"], input:is([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"])),
+    html.ms-cursor-white :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"]) *,
+    html.ms-cursor-white.ms-manual-select-active,
+    html.ms-cursor-white.ms-manual-select-active * {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M16 6a3.5 3.5 0 0 1 7 0v15.5l2-.4a3 3 0 0 1 3.5 2.3 3 3 0 0 1 3.2-.2 3 3 0 0 1 3.1 2 3 3 0 0 1 3.2 3.1V35c0 6-4 10-10 10h-4c-4 0-6-2-8-5l-7-10a3 3 0 0 1 4.6-3.8L16 30z' fill='%23fff' stroke='%23000' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 19 4, pointer !important;
+    }
+    html.ms-cursor-black :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"], input:is([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"])),
+    html.ms-cursor-black :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"]) *,
+    html.ms-cursor-black.ms-manual-select-active,
+    html.ms-cursor-black.ms-manual-select-active * {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M16 6a3.5 3.5 0 0 1 7 0v15.5l2-.4a3 3 0 0 1 3.5 2.3 3 3 0 0 1 3.2-.2 3 3 0 0 1 3.1 2 3 3 0 0 1 3.2 3.1V35c0 6-4 10-10 10h-4c-4 0-6-2-8-5l-7-10a3 3 0 0 1 4.6-3.8L16 30z' fill='%23000' stroke='%23fff' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 19 4, pointer !important;
+    }
+    html:is(.ms-cursor-white, .ms-cursor-black) :is(textarea, [contenteditable="true"], input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"], [type="range"], [type="color"], [type="file"])) {
+      cursor: text !important;
+    }
     /* ── Session chrome (SIMPLES header) + barra sob o nav ───────────────── */
     /* UX-14: 1 unidade = 16px fixos, sem depender do html { font-size } do host */
     #ms-simples-chrome,

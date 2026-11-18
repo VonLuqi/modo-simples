@@ -76,6 +76,12 @@ export const STRINGS = Object.freeze({
   panelLetterSpacingTitle: 'Espaço entre letras',
   panelTypoDefault: 'Padrão do site',
   panelResetFont: 'Redefinir fonte',
+  announceResetFont:
+    'Fonte redefinida: tamanho, fonte acessível e espaçamentos voltaram ao padrão.',
+  panelCursorTitle: 'Cursor do mouse',
+  panelCursorDefault: 'Padrão',
+  panelCursorBigWhite: 'Grande branco',
+  panelCursorBigBlack: 'Grande preto',
   panelResetFontLabel:
     'Redefinir fonte: tamanho, fonte acessível e espaçamentos',
   panelSaturationTitle: 'Saturação das cores',

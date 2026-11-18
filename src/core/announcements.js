@@ -30,6 +30,12 @@ const THEME_LABELS = {
 
 const SATURATION_LABELS = { low: 'baixa', normal: 'normal', high: 'alta' };
 
+const CURSOR_LABELS = {
+  default: 'padrão',
+  bigWhite: 'grande branco',
+  bigBlack: 'grande preto',
+};
+
 const CUSTOM_LABELS = {
   customText: 'texto',
   customHeading: 'títulos',
@@ -70,6 +76,11 @@ export function diffStateAnnouncements(prev, next) {
   if (prev.options.colorSaturation !== next.options.colorSaturation) {
     out.push(
       `Saturação ${SATURATION_LABELS[next.options.colorSaturation] || next.options.colorSaturation}`,
+    );
+  }
+  if (prev.options.cursorStyle !== next.options.cursorStyle) {
+    out.push(
+      `Cursor ${CURSOR_LABELS[next.options.cursorStyle] || next.options.cursorStyle}`,
     );
   }
   Object.entries(CUSTOM_LABELS).forEach(([k, label]) => {
