@@ -41,6 +41,11 @@ export const STRINGS = Object.freeze({
   panelVoiceButton: 'Ouvir',
   panelVoiceStopButton: 'Parar',
   panelVoiceStopLabel: 'Parar leitura',
+  panelReadFocusTitle: 'Ler o que eu seleciono',
+  panelReadFocusDesc:
+    'A voz lê o botão, link, campo ou texto em que você clicar ou parar com a tecla Tab',
+  panelReadFocusUnsupported: 'Este navegador não tem voz para ler em voz alta',
+  panelReadFocusUnsupportedState: 'Sem voz',
   stateOn: 'Ligado',
   stateOff: 'Desligado',
   sectionTextTitle: 'Texto e leitura',

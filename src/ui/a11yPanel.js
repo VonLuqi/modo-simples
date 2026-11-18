@@ -8,6 +8,7 @@
 import { trapFocus } from '../utils/focus.js';
 import { STRINGS as S } from './strings.js';
 import { TYPO_LIMITS } from '../core/state.js';
+import { isFocusReaderSupported } from '../features/focusReader.js';
 import { contrastRatio, effectiveColors } from '../utils/colorContrast.js';
 
 /** Sliders de tipografia (F8b): posição 0 = padrão do site; o resto mapeia para o valor real. */
@@ -230,6 +231,17 @@ const CONTROLS = {
   speak: {
     html: `<button type="button" class="ms-btn-ouvir ms-tile" data-action="speak" aria-label="${S.panelVoiceLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>')}</span><span class="ms-tile-label" data-speak-text>${S.panelVoiceButton}</span></button>`,
   },
+  readFocus: {
+    html: switchTile({
+      option: 'readFocus',
+      title: S.panelReadFocusTitle,
+      label: S.panelReadFocusTitle,
+      desc: S.panelReadFocusDesc,
+      icon: svgIcon(
+        '<path d="M5 4v14l4-3.5 2.5 5 2.5-1-2.5-5H16z"/><path d="M17.5 5.5a4 4 0 0 1 0 5"/>',
+      ),
+    }),
+  },
   highlightLinks: {
     html: switchTile({
       option: 'highlightLinks',
@@ -310,6 +322,7 @@ const SECTIONS = [
       'textSpacing',
       'readingRuler',
       'speak',
+      'readFocus',
       'typography',
     ],
   },
@@ -744,6 +757,7 @@ export function createA11yPanel({
       'textSpacing',
       'reducedMotion',
       'hideImages',
+      'readFocus',
     ].forEach((key) => {
       const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
       if (!btn) return;
@@ -752,6 +766,14 @@ export function createA11yPanel({
       btn.classList.toggle('ms-switch--on', on);
       const st = btn.querySelector('[data-state]');
       if (st) st.textContent = on ? S.stateOn : S.stateOff;
+      if (key === 'readFocus' && !isFocusReaderSupported()) {
+        // sem speechSynthesis: opção desligada, com o motivo em palavras simples
+        btn.disabled = true;
+        btn.setAttribute('title', S.panelReadFocusUnsupported);
+        if (st) st.textContent = S.panelReadFocusUnsupportedState;
+        const d = panel.querySelector('#ms-desc-readFocus');
+        if (d) d.textContent = S.panelReadFocusUnsupported;
+      }
     });
 
     // Texto de estado dos radiogroups (valor atual); aria-hidden: aria-checked já o anuncia

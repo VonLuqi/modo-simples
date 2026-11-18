@@ -66,6 +66,7 @@ export function hydratePersistedState(saved) {
         : 'default',
       reducedMotion: Boolean(opts.reducedMotion),
       hideImages: Boolean(opts.hideImages),
+      readFocus: Boolean(opts.readFocus),
       // Linguagem simples é acoplada ao MS; sem MS não reativa “órfã”
       simpleLanguage: modoSimples ? Boolean(opts.simpleLanguage) : false,
     },

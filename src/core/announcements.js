@@ -17,6 +17,7 @@ const TOGGLE_ANNOUNCEMENTS = {
     'Movimento reduzido desativado',
   ],
   simpleLanguage: ['Linguagem simples ligada', 'Linguagem simples desligada'],
+  readFocus: ['Leitura do foco ligada', 'Leitura do foco desligada'],
 };
 
 const THEME_LABELS = {

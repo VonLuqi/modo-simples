@@ -4,6 +4,12 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 
 ## [Unreleased]
 
+### Adicionado (F7b — "Leia o foco")
+
+- **Opção `readFocus`** (booleano, padrão desligado, persistida, zerada pelo "Desligar tudo", anunciada ao alternar) com interruptor "Ler o que eu seleciono" na seção "Texto e leitura". Ligada, a voz (`speechSynthesis`, pt-BR) lê o que recebe foco por Tab ou clique, na página e no painel: nome acessível (`aria-labelledby` > `aria-label` > label/`alt`/`title` > texto, até ~200 caracteres) + papel em português (botão, link, campo, caixa de seleção, interruptor, lista de opções, título) e o estado de caixas/interruptores.
+- Novo foco cancela a fala anterior; debounce de 150 ms; não interrompe a leitura "Ouvir" do conteúdo principal (`isReadingMain()` em `tts.js`). Módulo novo: `src/features/focusReader.js`.
+- Sem `speechSynthesis` o interruptor fica desabilitado, com o motivo em linguagem simples. Pensado para os perfis TDAH/Teclado (F7f) ligarem a opção.
+
 ### Alterado / mudança de comportamento (F7a — UX-21, U-02)
 
 - **UX-21 (ADR-018)** — com confiança baixa o Modo Simples **não abre mais a seleção manual sozinho**: liga na página inteira (sem principal e sem ocultar nada em volta) e mostra o aviso "Não achei o conteúdo principal, quer escolher?" (`aria-live="polite"`, botões ≥ 44 px): **Escolher o conteúdo** abre a seleção manual, **Fechar** dispensa o aviso. Ao recarregar com confiança baixa vale o mesmo fallback (sem seleção automática).

@@ -349,6 +349,11 @@ export function stopSpeaking() {
   _utterance = null;
 }
 
+/** @returns {boolean} true enquanto a leitura "Ouvir" do conteúdo principal está ativa */
+export function isReadingMain() {
+  return _speaking;
+}
+
 /**
  * @returns {boolean}
  */

@@ -68,6 +68,7 @@ import {
   stopReadingRuler,
 } from './features/readingRuler.js';
 import { stopSpeaking, isSpeaking } from './features/tts.js';
+import { startFocusReader, stopFocusReader } from './features/focusReader.js';
 import {
   startManualSelect,
   stopManualSelect,
@@ -125,6 +126,7 @@ class ModoSimples {
     if (currentState.options.readingRuler) {
       startReadingRuler();
     }
+    if (currentState.options.readFocus) startFocusReader();
 
     if (currentState.modoSimples) {
       this._activateModoSimples(currentState, { announce: false });
@@ -154,6 +156,7 @@ class ModoSimples {
       this._removeSpeakListener = null;
     }
     stopReadingRuler();
+    stopFocusReader();
     stopSpeaking();
     stopManualSelect();
     this._setPageInert(false);
@@ -468,6 +471,7 @@ class ModoSimples {
       'reducedMotion',
       'hideImages',
       'simpleLanguage',
+      'readFocus',
     ];
     const optionChanged = optionKeys.some(
       (k) => prev.options[k] !== next.options[k],
@@ -479,6 +483,11 @@ class ModoSimples {
     if (prev.options.readingRuler !== next.options.readingRuler) {
       if (next.options.readingRuler) startReadingRuler();
       else stopReadingRuler();
+    }
+
+    if (prev.options.readFocus !== next.options.readFocus) {
+      if (next.options.readFocus) startFocusReader();
+      else stopFocusReader();
     }
 
     diffStateAnnouncements(prev, next).forEach((msg) => announce(msg));

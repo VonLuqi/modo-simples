@@ -23,6 +23,7 @@ import eventBus from './eventBus.js';
  *       reducedMotion: boolean,
  *       hideImages:    boolean,
  *       simpleLanguage: boolean,
+ *       readFocus:     boolean,  // F7b: lê em voz alta o elemento focado
  *     }
  *   }
  */
@@ -67,6 +68,7 @@ const initialState = {
     reducedMotion: false,
     hideImages: false,
     simpleLanguage: false,
+    readFocus: false,
   },
 };
 

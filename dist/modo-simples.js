@@ -238,7 +238,8 @@
       cursorStyle: "default",
       reducedMotion: false,
       hideImages: false,
-      simpleLanguage: false
+      simpleLanguage: false,
+      readFocus: false
     }
   };
   function cloneState(s) {
@@ -294,7 +295,8 @@
       "Movimento reduzido ativado",
       "Movimento reduzido desativado"
     ],
-    simpleLanguage: ["Linguagem simples ligada", "Linguagem simples desligada"]
+    simpleLanguage: ["Linguagem simples ligada", "Linguagem simples desligada"],
+    readFocus: ["Leitura do foco ligada", "Leitura do foco desligada"]
   };
   var THEME_LABELS = {
     senac: "Cores do site",
@@ -494,6 +496,7 @@
         ) ? opts.cursorStyle : "default",
         reducedMotion: Boolean(opts.reducedMotion),
         hideImages: Boolean(opts.hideImages),
+        readFocus: Boolean(opts.readFocus),
         // Linguagem simples é acoplada ao MS; sem MS não reativa “órfã”
         simpleLanguage: modoSimples ? Boolean(opts.simpleLanguage) : false
       }
@@ -2369,6 +2372,10 @@
     panelVoiceButton: "Ouvir",
     panelVoiceStopButton: "Parar",
     panelVoiceStopLabel: "Parar leitura",
+    panelReadFocusTitle: "Ler o que eu seleciono",
+    panelReadFocusDesc: "A voz l\xEA o bot\xE3o, link, campo ou texto em que voc\xEA clicar ou parar com a tecla Tab",
+    panelReadFocusUnsupported: "Este navegador n\xE3o tem voz para ler em voz alta",
+    panelReadFocusUnsupportedState: "Sem voz",
     stateOn: "Ligado",
     stateOff: "Desligado",
     sectionTextTitle: "Texto e leitura",
@@ -2592,6 +2599,379 @@
     }
     document.addEventListener("keydown", handleKeydown);
     return () => document.removeEventListener("keydown", handleKeydown);
+  }
+
+  // src/features/tts.js
+  var _utterance = null;
+  var _speaking = false;
+  var _blocks = [];
+  var _blockIndex = 0;
+  var _activeEl = null;
+  var _runId = 0;
+  var _listeners = /* @__PURE__ */ new Set();
+  var _notified = false;
+  function notify() {
+    if (_speaking === _notified) return;
+    _notified = _speaking;
+    for (const cb of Array.from(_listeners)) {
+      try {
+        cb(_speaking);
+      } catch (_) {
+      }
+    }
+  }
+  function onSpeakingChange(cb) {
+    _listeners.add(cb);
+    return () => {
+      _listeners.delete(cb);
+    };
+  }
+  var BLOCK_TAGS = [
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "p",
+    "li",
+    "dt",
+    "dd",
+    "figcaption",
+    "blockquote"
+  ];
+  function closestSafe(el, selector) {
+    var _a, _b, _c;
+    if (!el) return null;
+    if (typeof el.closest === "function") return el.closest(selector);
+    let node = el;
+    while (node) {
+      if (node.matches && node.matches(selector)) return node;
+      const parts = selector.split(",").map((s) => s.trim());
+      for (const part of parts) {
+        if (part.startsWith(".") && ((_a = node.classList) == null ? void 0 : _a.contains(part.slice(1))))
+          return node;
+        if (part.startsWith("#") && node.id === part.slice(1)) return node;
+        if (part.startsWith("[") && part.endsWith("]")) {
+          const attr = part.slice(1, -1).split("=")[0];
+          if ((_b = node.hasAttribute) == null ? void 0 : _b.call(node, attr)) return node;
+        }
+        if (/^[a-z][a-z0-9]*$/i.test(part) && ((_c = node.tagName) == null ? void 0 : _c.toLowerCase()) === part.toLowerCase()) {
+          return node;
+        }
+      }
+      node = node.parentElement;
+    }
+    return null;
+  }
+  function getRoot() {
+    return document.querySelector("[data-ms-principal]") || document.querySelector("main") || document.querySelector('[role="main"]') || document.body;
+  }
+  function isVisiblyReadable(el) {
+    if (!el || closestSafe(el, "#ms-container") || closestSafe(el, "#ms-simples-chrome") || closestSafe(el, "#ms-session-bar")) {
+      return false;
+    }
+    if (closestSafe(el, "[data-ms-hidden]")) return false;
+    const html = document.documentElement;
+    const msOn = html.classList.contains("ms-ativo");
+    const simpleLang = html.classList.contains("ms-simple-language");
+    if (msOn && closestSafe(el, ".ms-simple-hide")) return false;
+    if (!msOn && closestSafe(el, ".ms-simple-only")) return false;
+    if (simpleLang && closestSafe(el, "[data-ms-plain]")) return false;
+    if (!simpleLang && closestSafe(el, "[data-ms-simple]")) return false;
+    return (el.textContent || "").trim().length > 0;
+  }
+  function collectBlocks() {
+    const root = getRoot();
+    if (!root) return [];
+    const nodes = Array.from(root.querySelectorAll(BLOCK_TAGS.join(",")));
+    const readable = new Set(nodes.filter(isVisiblyReadable));
+    return nodes.filter((el) => {
+      if (!readable.has(el)) return false;
+      let parent = el.parentElement;
+      while (parent && parent !== root) {
+        if (readable.has(parent)) return false;
+        parent = parent.parentElement;
+      }
+      return true;
+    });
+  }
+  var MAX_UTTERANCE = 200;
+  function splitForSpeech(text, max = MAX_UTTERANCE) {
+    if (text.length <= max) return [text];
+    const chunks = [];
+    let cur = "";
+    const flush = () => {
+      const t = cur.trim();
+      if (t) chunks.push(t);
+      cur = "";
+    };
+    const sentences = text.match(/[\s\S]+?(?:[.!?…]+(?=\s|$)|$)\s*/g) || [text];
+    for (const s of sentences) {
+      if (s.length > max) {
+        flush();
+        const words = s.match(/\S+\s*/g) || [s];
+        for (const w of words) {
+          if (w.length > max) {
+            flush();
+            for (let i = 0; i < w.length; i += max)
+              chunks.push(w.slice(i, i + max));
+          } else if ((cur + w).trim().length > max) {
+            flush();
+            cur = w;
+          } else {
+            cur += w;
+          }
+        }
+        continue;
+      }
+      if ((cur + s).trim().length > max) {
+        flush();
+        cur = s;
+      } else {
+        cur += s;
+      }
+    }
+    flush();
+    return chunks;
+  }
+  function clearHighlight() {
+    document.querySelectorAll("[data-ms-tts-active]").forEach((node) => {
+      node.removeAttribute("data-ms-tts-active");
+    });
+    _activeEl = null;
+  }
+  function highlightAndScroll(el) {
+    clearHighlight();
+    el.setAttribute("data-ms-tts-active", "");
+    _activeEl = el;
+    const reduceMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (typeof el.scrollIntoView === "function") {
+      try {
+        el.scrollIntoView({
+          block: "center",
+          behavior: reduceMotion ? "auto" : "smooth"
+        });
+      } catch (_) {
+        el.scrollIntoView(true);
+      }
+    }
+  }
+  function speakBlockAt(index, run) {
+    if (!_speaking || run !== _runId) return;
+    if (index >= _blocks.length) {
+      stopSpeaking();
+      return;
+    }
+    const el = _blocks[index];
+    _blockIndex = index;
+    highlightAndScroll(el);
+    const text = (el.innerText || el.textContent || "").replace(/\s+/g, " ").trim();
+    if (!text) {
+      speakBlockAt(index + 1, run);
+      return;
+    }
+    const chunks = splitForSpeech(text);
+    const speakChunk = (i) => {
+      if (!_speaking || run !== _runId) return;
+      const utterance = new SpeechSynthesisUtterance(chunks[i]);
+      _utterance = utterance;
+      utterance.lang = "pt-BR";
+      utterance.rate = 1;
+      const next = () => {
+        if (run !== _runId) return;
+        _utterance = null;
+        if (!_speaking) return;
+        if (i + 1 < chunks.length) speakChunk(i + 1);
+        else speakBlockAt(index + 1, run);
+      };
+      utterance.onend = next;
+      utterance.onerror = next;
+      speechSynthesis.speak(utterance);
+    };
+    speakChunk(0);
+  }
+  function speakMainContent() {
+    if (typeof speechSynthesis === "undefined") return;
+    stopSpeaking();
+    const run = _runId;
+    _blocks = collectBlocks();
+    if (!_blocks.length) {
+      const root = getRoot();
+      const text = root ? (root.innerText || root.textContent || "").replace(/\s+/g, " ").trim() : "";
+      if (!text) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      _utterance = utterance;
+      utterance.lang = "pt-BR";
+      utterance.rate = 1;
+      const done = () => {
+        if (run !== _runId) return;
+        _speaking = false;
+        _utterance = null;
+        notify();
+      };
+      utterance.onend = done;
+      utterance.onerror = done;
+      _speaking = true;
+      notify();
+      speechSynthesis.speak(utterance);
+      return;
+    }
+    _speaking = true;
+    notify();
+    speakBlockAt(0, run);
+  }
+  function stopSpeaking() {
+    _runId += 1;
+    _speaking = false;
+    _blocks = [];
+    _blockIndex = 0;
+    clearHighlight();
+    notify();
+    if (typeof speechSynthesis === "undefined") return;
+    speechSynthesis.cancel();
+    _utterance = null;
+  }
+  function isReadingMain() {
+    return _speaking;
+  }
+  function isSpeaking() {
+    if (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking) {
+      return true;
+    }
+    return _speaking;
+  }
+
+  // src/features/focusReader.js
+  var MAX_TEXT = 200;
+  var DEBOUNCE_MS = 150;
+  var _timer = null;
+  var _on = false;
+  var _spoke = false;
+  var _root = null;
+  function isFocusReaderSupported() {
+    return typeof speechSynthesis !== "undefined" && typeof SpeechSynthesisUtterance !== "undefined";
+  }
+  var clean = (t) => (t || "").replace(/\s+/g, " ").trim();
+  var cap = (t) => t.length > MAX_TEXT ? t.slice(0, MAX_TEXT).trim() : t;
+  function accessibleName(el) {
+    var _a, _b, _c;
+    const ids = el.getAttribute("aria-labelledby");
+    if (ids) {
+      const root = ((_a = el.getRootNode) == null ? void 0 : _a.call(el)) || document;
+      const text = clean(
+        ids.split(/\s+/).map((id) => {
+          var _a2, _b2;
+          return ((_b2 = (_a2 = root.getElementById) == null ? void 0 : _a2.call(root, id)) == null ? void 0 : _b2.textContent) || "";
+        }).join(" ")
+      );
+      if (text) return cap(text);
+    }
+    const aria = clean(el.getAttribute("aria-label"));
+    if (aria) return cap(aria);
+    const tag = el.tagName.toLowerCase();
+    let label = "";
+    if (el.labels && el.labels.length) {
+      label = clean(
+        Array.from(el.labels).map((l) => l.textContent).join(" ")
+      );
+    } else if (["input", "select", "textarea"].includes(tag)) {
+      label = clean((_c = (_b = el.closest) == null ? void 0 : _b.call(el, "label")) == null ? void 0 : _c.textContent);
+    }
+    if (label) return cap(label);
+    const alt = clean(el.getAttribute("alt"));
+    if (alt) return cap(alt);
+    const title = clean(el.getAttribute("title"));
+    if (title) return cap(title);
+    const type = (el.getAttribute("type") || "").toLowerCase();
+    if (tag === "input") {
+      if (["button", "submit", "reset"].includes(type)) {
+        return cap(clean(el.value) || (type === "submit" ? "Enviar" : ""));
+      }
+      return cap(clean(el.getAttribute("placeholder")));
+    }
+    if (["select", "textarea"].includes(tag)) return "";
+    return cap(clean(el.textContent));
+  }
+  function roleWord(el) {
+    const tag = el.tagName.toLowerCase();
+    const role = (el.getAttribute("role") || "").toLowerCase();
+    const type = (el.getAttribute("type") || "").toLowerCase();
+    if (role === "switch") return "interruptor";
+    if (role === "checkbox") return "caixa de sele\xE7\xE3o";
+    if (role === "radio") return "op\xE7\xE3o";
+    if (role === "button") return "bot\xE3o";
+    if (role === "link") return "link";
+    if (role === "heading") return "t\xEDtulo";
+    if (role === "textbox" || role === "searchbox") return "campo";
+    if (role === "combobox" || role === "listbox") return "lista de op\xE7\xF5es";
+    if (tag === "button") return "bot\xE3o";
+    if (tag === "a") return "link";
+    if (/^h[1-6]$/.test(tag)) return "t\xEDtulo";
+    if (tag === "select") return "lista de op\xE7\xF5es";
+    if (tag === "textarea") return "campo";
+    if (tag === "input") {
+      if (["button", "submit", "reset", "image"].includes(type)) return "bot\xE3o";
+      if (type === "checkbox") return "caixa de sele\xE7\xE3o";
+      if (type === "radio") return "op\xE7\xE3o";
+      return "campo";
+    }
+    if (el.isContentEditable) return "campo";
+    return "";
+  }
+  function stateWord(el) {
+    const checked = el.getAttribute("aria-checked");
+    const isSwitch = (el.getAttribute("role") || "") === "switch";
+    const type = (el.getAttribute("type") || "").toLowerCase();
+    const nativo = el.tagName === "INPUT" && ["checkbox", "radio"].includes(type);
+    if (checked === null && !nativo) return "";
+    const on = checked !== null ? checked === "true" : el.checked;
+    if (isSwitch) return on ? "ligado" : "desligado";
+    return on ? "marcado" : "desmarcado";
+  }
+  function describeFocus(el) {
+    if (!el || el.nodeType !== 1) return "";
+    const tag = el.tagName.toLowerCase();
+    if (tag === "body" || tag === "html") return "";
+    const role = roleWord(el);
+    const name = accessibleName(el);
+    const parts = [name, role, role ? stateWord(el) : ""].filter(Boolean);
+    return parts.join(", ");
+  }
+  function speakNow(target) {
+    _timer = null;
+    if (!_on || isReadingMain()) return;
+    const text = describeFocus(target);
+    if (!text) return;
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "pt-BR";
+    utterance.rate = 1;
+    _spoke = true;
+    speechSynthesis.speak(utterance);
+  }
+  function onFocusIn(e) {
+    var _a;
+    const target = ((_a = e.composedPath) == null ? void 0 : _a.call(e)[0]) || e.target;
+    if (_timer !== null) clearTimeout(_timer);
+    _timer = setTimeout(() => speakNow(target), DEBOUNCE_MS);
+  }
+  function startFocusReader() {
+    var _a;
+    if (_on || !isFocusReaderSupported()) return;
+    _on = true;
+    document.addEventListener("focusin", onFocusIn, true);
+    _root = ((_a = document.querySelector("#ms-container")) == null ? void 0 : _a.shadowRoot) || null;
+    _root == null ? void 0 : _root.addEventListener("focusin", onFocusIn, true);
+  }
+  function stopFocusReader() {
+    if (!_on) return;
+    _on = false;
+    document.removeEventListener("focusin", onFocusIn, true);
+    _root == null ? void 0 : _root.removeEventListener("focusin", onFocusIn, true);
+    _root = null;
+    if (_timer !== null) clearTimeout(_timer);
+    _timer = null;
+    if (_spoke && !isReadingMain()) speechSynthesis.cancel();
+    _spoke = false;
   }
 
   // src/utils/colorContrast.js
@@ -2818,6 +3198,17 @@
     speak: {
       html: `<button type="button" class="ms-btn-ouvir ms-tile" data-action="speak" aria-label="${STRINGS.panelVoiceLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>')}</span><span class="ms-tile-label" data-speak-text>${STRINGS.panelVoiceButton}</span></button>`
     },
+    readFocus: {
+      html: switchTile({
+        option: "readFocus",
+        title: STRINGS.panelReadFocusTitle,
+        label: STRINGS.panelReadFocusTitle,
+        desc: STRINGS.panelReadFocusDesc,
+        icon: svgIcon(
+          '<path d="M5 4v14l4-3.5 2.5 5 2.5-1-2.5-5H16z"/><path d="M17.5 5.5a4 4 0 0 1 0 5"/>'
+        )
+      })
+    },
     highlightLinks: {
       html: switchTile({
         option: "highlightLinks",
@@ -2893,6 +3284,7 @@
         "textSpacing",
         "readingRuler",
         "speak",
+        "readFocus",
         "typography"
       ]
     },
@@ -3239,7 +3631,8 @@
         "highlightLinks",
         "textSpacing",
         "reducedMotion",
-        "hideImages"
+        "hideImages",
+        "readFocus"
       ].forEach((key) => {
         var _a2;
         const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
@@ -3249,6 +3642,13 @@
         btn.classList.toggle("ms-switch--on", on);
         const st = btn.querySelector("[data-state]");
         if (st) st.textContent = on ? STRINGS.stateOn : STRINGS.stateOff;
+        if (key === "readFocus" && !isFocusReaderSupported()) {
+          btn.disabled = true;
+          btn.setAttribute("title", STRINGS.panelReadFocusUnsupported);
+          if (st) st.textContent = STRINGS.panelReadFocusUnsupportedState;
+          const d = panel.querySelector("#ms-desc-readFocus");
+          if (d) d.textContent = STRINGS.panelReadFocusUnsupported;
+        }
       });
       const setState = (key, text) => {
         const el = panel.querySelector(`[data-state-for="${key}"]`);
@@ -3669,242 +4069,6 @@
     });
   }
 
-  // src/features/tts.js
-  var _utterance = null;
-  var _speaking = false;
-  var _blocks = [];
-  var _blockIndex = 0;
-  var _activeEl = null;
-  var _runId = 0;
-  var _listeners = /* @__PURE__ */ new Set();
-  var _notified = false;
-  function notify() {
-    if (_speaking === _notified) return;
-    _notified = _speaking;
-    for (const cb of Array.from(_listeners)) {
-      try {
-        cb(_speaking);
-      } catch (_) {
-      }
-    }
-  }
-  function onSpeakingChange(cb) {
-    _listeners.add(cb);
-    return () => {
-      _listeners.delete(cb);
-    };
-  }
-  var BLOCK_TAGS = [
-    "h1",
-    "h2",
-    "h3",
-    "h4",
-    "p",
-    "li",
-    "dt",
-    "dd",
-    "figcaption",
-    "blockquote"
-  ];
-  function closestSafe(el, selector) {
-    var _a, _b, _c;
-    if (!el) return null;
-    if (typeof el.closest === "function") return el.closest(selector);
-    let node = el;
-    while (node) {
-      if (node.matches && node.matches(selector)) return node;
-      const parts = selector.split(",").map((s) => s.trim());
-      for (const part of parts) {
-        if (part.startsWith(".") && ((_a = node.classList) == null ? void 0 : _a.contains(part.slice(1))))
-          return node;
-        if (part.startsWith("#") && node.id === part.slice(1)) return node;
-        if (part.startsWith("[") && part.endsWith("]")) {
-          const attr = part.slice(1, -1).split("=")[0];
-          if ((_b = node.hasAttribute) == null ? void 0 : _b.call(node, attr)) return node;
-        }
-        if (/^[a-z][a-z0-9]*$/i.test(part) && ((_c = node.tagName) == null ? void 0 : _c.toLowerCase()) === part.toLowerCase()) {
-          return node;
-        }
-      }
-      node = node.parentElement;
-    }
-    return null;
-  }
-  function getRoot() {
-    return document.querySelector("[data-ms-principal]") || document.querySelector("main") || document.querySelector('[role="main"]') || document.body;
-  }
-  function isVisiblyReadable(el) {
-    if (!el || closestSafe(el, "#ms-container") || closestSafe(el, "#ms-simples-chrome") || closestSafe(el, "#ms-session-bar")) {
-      return false;
-    }
-    if (closestSafe(el, "[data-ms-hidden]")) return false;
-    const html = document.documentElement;
-    const msOn = html.classList.contains("ms-ativo");
-    const simpleLang = html.classList.contains("ms-simple-language");
-    if (msOn && closestSafe(el, ".ms-simple-hide")) return false;
-    if (!msOn && closestSafe(el, ".ms-simple-only")) return false;
-    if (simpleLang && closestSafe(el, "[data-ms-plain]")) return false;
-    if (!simpleLang && closestSafe(el, "[data-ms-simple]")) return false;
-    return (el.textContent || "").trim().length > 0;
-  }
-  function collectBlocks() {
-    const root = getRoot();
-    if (!root) return [];
-    const nodes = Array.from(root.querySelectorAll(BLOCK_TAGS.join(",")));
-    const readable = new Set(nodes.filter(isVisiblyReadable));
-    return nodes.filter((el) => {
-      if (!readable.has(el)) return false;
-      let parent = el.parentElement;
-      while (parent && parent !== root) {
-        if (readable.has(parent)) return false;
-        parent = parent.parentElement;
-      }
-      return true;
-    });
-  }
-  var MAX_UTTERANCE = 200;
-  function splitForSpeech(text, max = MAX_UTTERANCE) {
-    if (text.length <= max) return [text];
-    const chunks = [];
-    let cur = "";
-    const flush = () => {
-      const t = cur.trim();
-      if (t) chunks.push(t);
-      cur = "";
-    };
-    const sentences = text.match(/[\s\S]+?(?:[.!?…]+(?=\s|$)|$)\s*/g) || [text];
-    for (const s of sentences) {
-      if (s.length > max) {
-        flush();
-        const words = s.match(/\S+\s*/g) || [s];
-        for (const w of words) {
-          if (w.length > max) {
-            flush();
-            for (let i = 0; i < w.length; i += max)
-              chunks.push(w.slice(i, i + max));
-          } else if ((cur + w).trim().length > max) {
-            flush();
-            cur = w;
-          } else {
-            cur += w;
-          }
-        }
-        continue;
-      }
-      if ((cur + s).trim().length > max) {
-        flush();
-        cur = s;
-      } else {
-        cur += s;
-      }
-    }
-    flush();
-    return chunks;
-  }
-  function clearHighlight() {
-    document.querySelectorAll("[data-ms-tts-active]").forEach((node) => {
-      node.removeAttribute("data-ms-tts-active");
-    });
-    _activeEl = null;
-  }
-  function highlightAndScroll(el) {
-    clearHighlight();
-    el.setAttribute("data-ms-tts-active", "");
-    _activeEl = el;
-    const reduceMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (typeof el.scrollIntoView === "function") {
-      try {
-        el.scrollIntoView({
-          block: "center",
-          behavior: reduceMotion ? "auto" : "smooth"
-        });
-      } catch (_) {
-        el.scrollIntoView(true);
-      }
-    }
-  }
-  function speakBlockAt(index, run) {
-    if (!_speaking || run !== _runId) return;
-    if (index >= _blocks.length) {
-      stopSpeaking();
-      return;
-    }
-    const el = _blocks[index];
-    _blockIndex = index;
-    highlightAndScroll(el);
-    const text = (el.innerText || el.textContent || "").replace(/\s+/g, " ").trim();
-    if (!text) {
-      speakBlockAt(index + 1, run);
-      return;
-    }
-    const chunks = splitForSpeech(text);
-    const speakChunk = (i) => {
-      if (!_speaking || run !== _runId) return;
-      const utterance = new SpeechSynthesisUtterance(chunks[i]);
-      _utterance = utterance;
-      utterance.lang = "pt-BR";
-      utterance.rate = 1;
-      const next = () => {
-        if (run !== _runId) return;
-        _utterance = null;
-        if (!_speaking) return;
-        if (i + 1 < chunks.length) speakChunk(i + 1);
-        else speakBlockAt(index + 1, run);
-      };
-      utterance.onend = next;
-      utterance.onerror = next;
-      speechSynthesis.speak(utterance);
-    };
-    speakChunk(0);
-  }
-  function speakMainContent() {
-    if (typeof speechSynthesis === "undefined") return;
-    stopSpeaking();
-    const run = _runId;
-    _blocks = collectBlocks();
-    if (!_blocks.length) {
-      const root = getRoot();
-      const text = root ? (root.innerText || root.textContent || "").replace(/\s+/g, " ").trim() : "";
-      if (!text) return;
-      const utterance = new SpeechSynthesisUtterance(text);
-      _utterance = utterance;
-      utterance.lang = "pt-BR";
-      utterance.rate = 1;
-      const done = () => {
-        if (run !== _runId) return;
-        _speaking = false;
-        _utterance = null;
-        notify();
-      };
-      utterance.onend = done;
-      utterance.onerror = done;
-      _speaking = true;
-      notify();
-      speechSynthesis.speak(utterance);
-      return;
-    }
-    _speaking = true;
-    notify();
-    speakBlockAt(0, run);
-  }
-  function stopSpeaking() {
-    _runId += 1;
-    _speaking = false;
-    _blocks = [];
-    _blockIndex = 0;
-    clearHighlight();
-    notify();
-    if (typeof speechSynthesis === "undefined") return;
-    speechSynthesis.cancel();
-    _utterance = null;
-  }
-  function isSpeaking() {
-    if (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking) {
-      return true;
-    }
-    return _speaking;
-  }
-
   // src/features/manualSelect.js
   var BANNER_ID = "ms-manual-select-banner";
   var HIGHLIGHT_ID = "ms-manual-select-highlight";
@@ -4312,7 +4476,8 @@
     cursorStyle: "default",
     reducedMotion: false,
     hideImages: false,
-    simpleLanguage: false
+    simpleLanguage: false,
+    readFocus: false
   };
   var FONT_KEYS = [
     "textScale",
@@ -5026,6 +5191,7 @@
       if (currentState.options.readingRuler) {
         startReadingRuler();
       }
+      if (currentState.options.readFocus) startFocusReader();
       if (currentState.modoSimples) {
         this._activateModoSimples(currentState, { announce: false });
         this._announceRestoredOnce();
@@ -5052,6 +5218,7 @@
         this._removeSpeakListener = null;
       }
       stopReadingRuler();
+      stopFocusReader();
       stopSpeaking();
       stopManualSelect();
       this._setPageInert(false);
@@ -5310,7 +5477,8 @@
         "cursorStyle",
         "reducedMotion",
         "hideImages",
-        "simpleLanguage"
+        "simpleLanguage",
+        "readFocus"
       ];
       const optionChanged = optionKeys.some(
         (k) => prev.options[k] !== next.options[k]
@@ -5321,6 +5489,10 @@
       if (prev.options.readingRuler !== next.options.readingRuler) {
         if (next.options.readingRuler) startReadingRuler();
         else stopReadingRuler();
+      }
+      if (prev.options.readFocus !== next.options.readFocus) {
+        if (next.options.readFocus) startFocusReader();
+        else stopFocusReader();
       }
       diffStateAnnouncements(prev, next).forEach((msg) => announce(msg));
       this._persistState(next);

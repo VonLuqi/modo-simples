@@ -70,6 +70,11 @@ test('seleção manual iniciada pelo painel: a página não fica inert e o inert
   expect(await inertCount(page)).toBeGreaterThan(0);
 
   await page.locator('[data-action="modo-simples"]').click();
+  // UX-21: confiança baixa mostra o aviso; a seleção só abre ao pedir (o aviso não fica inert)
+  await page
+    .locator('#ms-low-confidence-notice')
+    .getByText('Escolher o conteúdo')
+    .dispatchEvent('click');
   await expect(page.locator('#ms-manual-select-banner')).toBeVisible();
   expect(await inertCount(page)).toBe(0);
 
