@@ -65,6 +65,7 @@ export const RESET_OPTIONS = {
   voiceRate: 1,
   voicePitch: 1,
   voiceVolume: 1,
+  language: 'auto',
 };
 
 /** "Redefinir fonte": só as opções de tipografia (F8b). */
@@ -432,7 +433,8 @@ export function applyProfile(ms, id) {
       voiceVolume,
       voiceCommands,
       voiceCloudConsent,
-    } = state.get().options; // voz não faz parte de perfil: troca de perfil a mantém (F10)
+      language,
+    } = state.get().options; // voz e idioma não fazem parte de perfil: troca de perfil os mantém
     state.set({
       activeProfile: prof ? prof.id : null,
       profileCustom: false,
@@ -444,6 +446,7 @@ export function applyProfile(ms, id) {
         voiceVolume,
         voiceCommands,
         voiceCloudConsent,
+        language,
         ...(prof ? prof.options : {}),
       },
     });

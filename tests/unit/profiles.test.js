@@ -53,6 +53,7 @@ const DEFAULTS = {
   voiceRate: 1,
   voicePitch: 1,
   voiceVolume: 1,
+  language: 'auto',
 };
 /** o Modo Simples deriva estas duas ao ligar (imagens e linguagem simples) */
 const DERIVED_BY_MS = ['hideImages', 'simpleLanguage'];

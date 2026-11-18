@@ -87,6 +87,9 @@ export function hydratePersistedState(saved) {
       voiceRate: clampVoice('rate', opts.voiceRate),
       voicePitch: clampVoice('pitch', opts.voicePitch),
       voiceVolume: clampVoice('volume', opts.voiceVolume),
+      language: ['auto', 'pt', 'en', 'es'].includes(opts.language)
+        ? opts.language
+        : 'auto',
       // Linguagem simples é acoplada ao MS; sem MS não reativa “órfã”
       simpleLanguage: modoSimples ? Boolean(opts.simpleLanguage) : false,
     },

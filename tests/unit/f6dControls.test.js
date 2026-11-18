@@ -95,6 +95,7 @@ describe('Desligar tudo', () => {
       voiceRate: 1,
       voicePitch: 1,
       voiceVolume: 1,
+      language: 'auto',
     });
     const saved = JSON.parse(stored('state'));
     assert.equal(saved.modoSimples, false);

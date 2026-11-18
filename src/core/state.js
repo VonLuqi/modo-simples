@@ -36,6 +36,7 @@ import eventBus from './eventBus.js';
  *       voiceCloudConsent: boolean, // F10d: aceitou mandar a voz ao servidor do navegador
  *       voiceName: string,       // F10: nome da voz instalada ('' = automática pt-BR)
  *       voiceRate / voicePitch / voiceVolume: number, // F10: ver VOICE_LIMITS (features/voice.js)
+ *       language: 'auto'|'pt'|'en'|'es', // Idioma da UI ('auto' = lang do site → navegador → pt)
  *     }
  *   }
  */
@@ -98,6 +99,7 @@ const initialState = {
     voiceRate: 1,
     voicePitch: 1,
     voiceVolume: 1,
+    language: 'auto',
   },
 };
 

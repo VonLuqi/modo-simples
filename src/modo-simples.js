@@ -669,6 +669,7 @@ class ModoSimples {
       'voiceRate',
       'voicePitch',
       'voiceVolume',
+      'language',
     ];
     const optionChanged = optionKeys.some(
       (k) => prev.options[k] !== next.options[k],
