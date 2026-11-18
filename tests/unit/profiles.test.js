@@ -285,6 +285,43 @@ describe('Desligar tudo e painel', () => {
     assert.deepEqual(changed(false), {});
   });
 
+  it('Desligar tudo com perfil ativo anuncia UMA vez só (QA T152 L1)', async () => {
+    boot();
+    inst._applyProfile('epilepsy'); // reducedMotion, muteMedia, blockFlashing
+    await env.wait(120);
+    document.querySelectorAll('[data-ms-live]').forEach((n) => n.remove());
+    inst._resetAll();
+    await env.wait(120);
+    const falas = [...document.querySelectorAll('[data-ms-live]')].map(
+      (n) => n.textContent,
+    );
+    assert.deepEqual(falas, [STRINGS.announceResetAll]);
+  });
+
+  it('desligar o Modo Simples pelo cartão após o perfil Modo Simples: nenhum perfil marcado (QA T152 L2)', () => {
+    boot();
+    profileBtn('simple').click();
+    assert.equal(profileBtn('simple').getAttribute('aria-pressed'), 'true');
+    panel().querySelector('[data-action="modo-simples"]').click(); // cartão: desliga
+    const s = state.get();
+    assert.equal(s.modoSimples, false);
+    assert.equal(s.activeProfile, null);
+    assert.equal(s.profileCustom, false);
+    assert.equal(profileBtn('simple').getAttribute('aria-pressed'), 'false');
+    assert.equal(
+      profileBtn('simple').querySelector('.ms-profile-custom').hidden,
+      true,
+    );
+  });
+
+  it('desfazer só parte do perfil continua "personalizado" (só volta a nenhum perfil se tudo é padrão)', () => {
+    boot();
+    inst._applyProfile('dyslexia');
+    state.set({ options: { readingRuler: false } });
+    assert.equal(state.get().activeProfile, 'dyslexia');
+    assert.equal(state.get().profileCustom, true);
+  });
+
   it('o painel tem 6 botões aria-pressed no topo; só o ativo fica pressionado', () => {
     boot();
     const botoes = panel().querySelectorAll('[data-profile]');

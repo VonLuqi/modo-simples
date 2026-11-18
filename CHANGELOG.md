@@ -4,6 +4,11 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 
 ## [Unreleased]
 
+### Corrigido (F7f, revisão do QA T152)
+
+- **Desligar tudo** com perfil ativo agora faz **um anúncio só** ("Tudo desligado"), sem as mensagens por opção (movimento, vídeos e sons, bloqueio de animações) nem "Modo Simples desativado".
+- Se, depois de um perfil, o usuário **desfaz tudo à mão** (ex.: desliga o Modo Simples pelo cartão), o perfil sai da marcação em vez de ficar "Personalizado" sem nada ligado. Desfazer só parte dele continua "Personalizado".
+
 ### Adicionado (F7f — perfis de acessibilidade)
 
 - **6 perfis prontos** no topo do painel (botões `aria-pressed`, ≥ 44 px, nome e descrição em português simples; um por vez), como pacotes sobre as opções que já existem. Tabela única em `src/core/profiles.js`; textos em `src/ui/strings.js`:

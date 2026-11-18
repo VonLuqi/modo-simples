@@ -50,6 +50,7 @@ import {
   syncSpeaking,
   resetAll,
   applyProfile,
+  RESET_OPTIONS,
   movePanelSide,
   hideWidget,
   showWidget,
@@ -561,7 +562,18 @@ class ModoSimples {
         this._reducedMotionUser !== null,
       )
     ) {
-      state.set({ profileCustom: true });
+      // tudo de volta ao padrão à mão (ex.: Modo Simples desligado pelo cartão): sem perfil,
+      // em vez de um perfil "personalizado" sem nada ligado (QA T152 L2)
+      const vazio = !profileDiffers(
+        { modoSimples: false, options: RESET_OPTIONS },
+        next,
+        this._reducedMotionUser !== null,
+      );
+      state.set(
+        vazio
+          ? { activeProfile: null, profileCustom: false }
+          : { profileCustom: true },
+      );
     }
   }
 

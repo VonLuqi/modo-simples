@@ -5161,13 +5161,18 @@
   }
   function resetAll(ms) {
     ms._reducedMotionUser = null;
-    if (state_default.get().modoSimples) ms._setModoSimples(false);
-    state_default.set({
-      activeProfile: null,
-      profileCustom: false,
-      options: { ...RESET_OPTIONS }
-    });
-    ms._syncReducedMotion();
+    ms._applyingProfile = true;
+    try {
+      if (state_default.get().modoSimples) ms._setModoSimples(false);
+      state_default.set({
+        activeProfile: null,
+        profileCustom: false,
+        options: { ...RESET_OPTIONS }
+      });
+      ms._syncReducedMotion();
+    } finally {
+      ms._applyingProfile = false;
+    }
     if (ms._config.persistence) {
       if (ms._config.hostnamePersistence) {
         persistence_default.removeForHost("preferShowImagesInMs");
@@ -6429,7 +6434,14 @@
         next,
         this._reducedMotionUser !== null
       )) {
-        state_default.set({ profileCustom: true });
+        const vazio = !profileDiffers(
+          { modoSimples: false, options: RESET_OPTIONS },
+          next,
+          this._reducedMotionUser !== null
+        );
+        state_default.set(
+          vazio ? { activeProfile: null, profileCustom: false } : { profileCustom: true }
+        );
       }
     }
     // ── Persistence ────────────────────────────────────────────────────────────

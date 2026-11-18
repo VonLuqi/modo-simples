@@ -26,7 +26,7 @@ import { STRINGS as S } from './strings.js';
 import { getProfile } from '../core/profiles.js';
 
 /** Valores iniciais das opções (espelha core/state.js) — alvo do "Desligar tudo". */
-const RESET_OPTIONS = {
+export const RESET_OPTIONS = {
   textScale: '100',
   colorTheme: 'senac',
   colorSaturation: 'normal',
@@ -339,13 +339,19 @@ export function syncSpeaking(ms, speaking) {
 /** Desliga o Modo Simples e volta todas as opções ao padrão; o estado resultante é persistido. */
 export function resetAll(ms) {
   ms._reducedMotionUser = null; // volta a seguir o SO (padrão)
-  if (state.get().modoSimples) ms._setModoSimples(false);
-  state.set({
-    activeProfile: null,
-    profileCustom: false,
-    options: { ...RESET_OPTIONS },
-  });
-  ms._syncReducedMotion();
+  // um anúncio só ("Tudo desligado"): sem os por opção nem o "Modo Simples desativado" (QA T152 L1)
+  ms._applyingProfile = true;
+  try {
+    if (state.get().modoSimples) ms._setModoSimples(false);
+    state.set({
+      activeProfile: null,
+      profileCustom: false,
+      options: { ...RESET_OPTIONS },
+    });
+    ms._syncReducedMotion();
+  } finally {
+    ms._applyingProfile = false;
+  }
   // página como sem o widget: também esquece a preferência "mostrar imagens no Modo Simples"
   if (ms._config.persistence) {
     if (ms._config.hostnamePersistence) {
