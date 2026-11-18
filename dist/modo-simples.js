@@ -250,7 +250,13 @@
       blockFlashing: false,
       strongFocus: false,
       showShortcuts: false,
-      muteMedia: false
+      muteMedia: false,
+      voiceName: "",
+      voiceCommands: false,
+      voiceCloudConsent: false,
+      voiceRate: 1,
+      voicePitch: 1,
+      voiceVolume: 1
     }
   };
   function cloneState(s) {
@@ -537,8 +543,62 @@
   function profileDiffers(base, now, reducedMotionIsUserChoice) {
     if (base.modoSimples !== now.modoSimples) return true;
     return Object.keys(base.options).some(
-      (k) => (k !== "reducedMotion" || reducedMotionIsUserChoice) && base.options[k] !== now.options[k]
+      (k) => !k.startsWith("voice") && // voz é preferência do aparelho, não do perfil (F10)
+      (k !== "reducedMotion" || reducedMotionIsUserChoice) && base.options[k] !== now.options[k]
     );
+  }
+
+  // src/features/voice.js
+  var VOICE_LIMITS = {
+    rate: { min: 0.5, max: 2, step: 0.1 },
+    pitch: { min: 0, max: 2, step: 0.1 },
+    volume: { min: 0.1, max: 1, step: 0.1 }
+    // 0 = leitura muda: não oferecer
+  };
+  var LANG = "pt-BR";
+  var SAMPLE = "Esta \xE9 a voz que vai ler para voc\xEA.";
+  function clampVoice(key, value) {
+    const lim = VOICE_LIMITS[key];
+    const n = Number(value);
+    if (value === "" || value === null || !Number.isFinite(n)) return 1;
+    return Math.round(Math.min(lim.max, Math.max(lim.min, n)) * 100) / 100;
+  }
+  function isVoiceSupported() {
+    return typeof speechSynthesis !== "undefined" && typeof SpeechSynthesisUtterance !== "undefined";
+  }
+  var isPt = (v) => /^pt([-_]|$)/i.test(v.lang || "");
+  var isPtBR = (v) => /^pt[-_]br$/i.test(v.lang || "");
+  function listVoices() {
+    var _a;
+    if (!isVoiceSupported()) return [];
+    const rank = (v) => isPtBR(v) ? 0 : isPt(v) ? 1 : 2;
+    return [...((_a = speechSynthesis.getVoices) == null ? void 0 : _a.call(speechSynthesis)) || []].sort(
+      (a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name)
+    );
+  }
+  function onVoicesChanged(cb) {
+    if (!isVoiceSupported() || !speechSynthesis.addEventListener) {
+      return () => {
+      };
+    }
+    speechSynthesis.addEventListener("voiceschanged", cb);
+    return () => speechSynthesis.removeEventListener("voiceschanged", cb);
+  }
+  function applyVoice(utt, prefs = {}) {
+    utt.lang = LANG;
+    const voices = listVoices();
+    const chosen = prefs.voiceName && voices.find((v) => v.name === prefs.voiceName) || voices.find(isPtBR) || voices.find(isPt);
+    if (chosen) utt.voice = chosen;
+    utt.rate = clampVoice("rate", prefs.voiceRate);
+    utt.pitch = clampVoice("pitch", prefs.voicePitch);
+    utt.volume = clampVoice("volume", prefs.voiceVolume);
+  }
+  function previewVoice(prefs, text = SAMPLE) {
+    if (!isVoiceSupported()) return;
+    speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    applyVoice(utt, prefs);
+    speechSynthesis.speak(utt);
   }
 
   // src/core/persistedState.js
@@ -593,6 +653,12 @@
         blockFlashing: Boolean(opts.blockFlashing),
         strongFocus: Boolean(opts.strongFocus),
         showShortcuts: Boolean(opts.showShortcuts),
+        voiceCommands: Boolean(opts.voiceCommands),
+        voiceCloudConsent: Boolean(opts.voiceCloudConsent),
+        voiceName: typeof opts.voiceName === "string" ? opts.voiceName : "",
+        voiceRate: clampVoice("rate", opts.voiceRate),
+        voicePitch: clampVoice("pitch", opts.voicePitch),
+        voiceVolume: clampVoice("volume", opts.voiceVolume),
         // Linguagem simples é acoplada ao MS; sem MS não reativa “órfã”
         simpleLanguage: modoSimples ? Boolean(opts.simpleLanguage) : false
       }
@@ -2641,6 +2707,47 @@
     panelVoiceButton: "Ouvir",
     panelVoiceStopButton: "Parar",
     panelVoiceStopLabel: "Parar leitura",
+    panelVoiceStudioTitle: "Est\xFAdio de Voz",
+    panelVoiceSelectLabel: "Voz",
+    panelVoiceAuto: "Autom\xE1tica (portugu\xEAs)",
+    panelVoiceRateLabel: "Velocidade",
+    panelVoicePitchLabel: "Tom",
+    panelVoiceVolumeLabel: "Volume",
+    panelVoiceTest: "Testar voz",
+    panelVoiceTestLabel: "Testar voz com estas configura\xE7\xF5es",
+    panelVoiceReset: "Voltar ao padr\xE3o",
+    panelVoiceResetLabel: "Voltar ao padr\xE3o: voz, velocidade, tom e volume",
+    panelVoiceUnsupported: "Este navegador n\xE3o tem voz para ler. Tente outro navegador.",
+    // F10e — pausar/continuar e comandos de voz no painel
+    panelPause: "Pausar",
+    panelPauseLabel: "Pausar leitura",
+    panelResume: "Continuar",
+    panelResumeLabel: "Continuar leitura",
+    panelVcTitle: "Comandos de voz",
+    panelVcDesc: "Controle a leitura falando. Desligado at\xE9 voc\xEA ligar",
+    panelVcLabel: "Comandos de voz",
+    panelVcUnsupported: "Seu navegador n\xE3o entende comandos de voz. Use Chrome ou Edge.",
+    panelVcListening: "Ouvindo\u2026",
+    panelVcBlocked: "O microfone est\xE1 bloqueado. Libere nas configura\xE7\xF5es do navegador.",
+    panelVcNoMic: "N\xE3o achei um microfone.",
+    panelVcError: "Os comandos de voz pararam. Tente ligar de novo.",
+    panelVcRevoke: "Parar de enviar minha voz",
+    panelVcRevokeLabel: "Parar de enviar minha voz e desligar comandos de voz",
+    panelVcShow: "Ver comandos",
+    panelVcHide: "Esconder comandos",
+    // lista separada por | (todas as chaves deste arquivo são texto)
+    panelVcCommands: "ler p\xE1gina|parar|pausar|continuar|mais r\xE1pido|mais devagar|descer|subir|ligar modo simples|desligar modo simples|abrir painel|fechar painel|ajuda",
+    panelVcDownloadTitle: "Baixar o portugu\xEAs",
+    panelVcDownloadText: "Para entender sua voz sem enviar nada para a internet, o navegador precisa baixar o portugu\xEAs uma vez. Baixar agora?",
+    panelVcDownloadNow: "Baixar",
+    panelVcDownloading: "Baixando\u2026",
+    panelVcDownloadFail: "N\xE3o deu para baixar.",
+    panelVcUseInternet: "Usar pela internet",
+    panelVcNotNow: "Agora n\xE3o",
+    panelVcCloudTitle: "Enviar minha voz?",
+    panelVcCloudText: "Neste navegador, o que voc\xEA fala \xE9 enviado para a empresa do navegador (Google no Chrome, Microsoft no Edge) para ser entendido. O Modo Simples n\xE3o guarda nada. Quer ligar mesmo assim?",
+    panelVcCloudYes: "Ligar e enviar minha voz",
+    panelVcCloudNo: "N\xE3o ligar",
     mediaOtherSiteNotice: "Este v\xEDdeo \xE9 de outro site. N\xE3o consigo tirar o som dele.",
     panelStrongFocusTitle: "Foco bem vis\xEDvel",
     panelStrongFocusDesc: "Contorno grosso e de duas cores no item em que voc\xEA est\xE1, em qualquer fundo",
@@ -2852,6 +2959,17 @@
     { keys: "Enter", text: "Ativar o bot\xE3o ou link" },
     { keys: "Espa\xE7o", text: "Ligar ou desligar um interruptor" }
   ]);
+  var VOICE_CMD_STRINGS = Object.freeze({
+    status_listening: "Comandos de voz ligados. Pode falar.",
+    status_stopped: "Comandos de voz desligados.",
+    status_blocked: "O navegador n\xE3o deixou usar o microfone. Libere o microfone para o site e ligue de novo.",
+    "status_needs-consent": "Para usar comandos de voz, \xE9 preciso aceitar que sua voz v\xE1 para o servidor do navegador, por exemplo o Google.",
+    "status_needs-model": "Falta baixar o reconhecimento de voz no seu aparelho para usar comandos de voz.",
+    status_unsupported: "Este navegador ou esta p\xE1gina n\xE3o aceita comandos de voz.",
+    status_error: "Os comandos de voz pararam. Ligue de novo para tentar.",
+    "status_no-mic": "N\xE3o encontrei um microfone. Conecte um microfone e ligue os comandos de voz de novo.",
+    helpSpoken: "Voc\xEA pode dizer: ler p\xE1gina, parar, pausar, continuar, mais r\xE1pido, mais devagar, descer, subir, ligar modo simples, desligar modo simples, abrir painel, fechar painel e ajuda."
+  });
 
   // src/ui/fab.js
   var TIP_SEEN_KEY = "fabTipSeen";
@@ -2995,12 +3113,16 @@
   var _runId = 0;
   var _listeners = /* @__PURE__ */ new Set();
   var _notified = false;
+  var _notifiedPaused = false;
+  var _paused = false;
+  var _resume = null;
   function notify() {
-    if (_speaking === _notified) return;
+    if (_speaking === _notified && _paused === _notifiedPaused) return;
     _notified = _speaking;
+    _notifiedPaused = _paused;
     for (const cb of Array.from(_listeners)) {
       try {
-        cb(_speaking);
+        cb(_speaking, _paused);
       } catch (_) {
       }
     }
@@ -3154,25 +3276,40 @@
       speakBlockAt(index + 1, run);
       return;
     }
-    const chunks = splitForSpeech(text);
-    const speakChunk = (i) => {
-      if (!_speaking || run !== _runId) return;
-      const utterance = new SpeechSynthesisUtterance(chunks[i]);
-      _utterance = utterance;
-      utterance.lang = "pt-BR";
-      utterance.rate = 1;
-      const next = () => {
-        if (run !== _runId) return;
-        _utterance = null;
-        if (!_speaking) return;
-        if (i + 1 < chunks.length) speakChunk(i + 1);
-        else speakBlockAt(index + 1, run);
-      };
-      utterance.onend = next;
-      utterance.onerror = next;
-      speechSynthesis.speak(utterance);
+    speakChunk(index, splitForSpeech(text), 0, run);
+  }
+  function speakChunk(index, chunks, i, run) {
+    if (!_speaking || run !== _runId) return;
+    _resume = { index, chunks, i };
+    const utterance = new SpeechSynthesisUtterance(chunks[i]);
+    _utterance = utterance;
+    applyVoice(utterance, state_default.get().options);
+    const next = () => {
+      if (run !== _runId) return;
+      _utterance = null;
+      if (!_speaking) return;
+      if (i + 1 < chunks.length) speakChunk(index, chunks, i + 1, run);
+      else speakBlockAt(index + 1, run);
     };
-    speakChunk(0);
+    utterance.onend = next;
+    utterance.onerror = next;
+    speechSynthesis.speak(utterance);
+  }
+  function speakFallback(text, run) {
+    _resume = { text };
+    const utterance = new SpeechSynthesisUtterance(text);
+    _utterance = utterance;
+    applyVoice(utterance, state_default.get().options);
+    const done = () => {
+      if (run !== _runId) return;
+      _speaking = false;
+      _resume = null;
+      _utterance = null;
+      notify();
+    };
+    utterance.onend = done;
+    utterance.onerror = done;
+    speechSynthesis.speak(utterance);
   }
   function speakMainContent() {
     if (typeof speechSynthesis === "undefined") return;
@@ -3183,21 +3320,9 @@
       const root = getRoot();
       const text = root ? (root.innerText || root.textContent || "").replace(/\s+/g, " ").trim() : "";
       if (!text) return;
-      const utterance = new SpeechSynthesisUtterance(text);
-      _utterance = utterance;
-      utterance.lang = "pt-BR";
-      utterance.rate = 1;
-      const done = () => {
-        if (run !== _runId) return;
-        _speaking = false;
-        _utterance = null;
-        notify();
-      };
-      utterance.onend = done;
-      utterance.onerror = done;
       _speaking = true;
       notify();
-      speechSynthesis.speak(utterance);
+      speakFallback(text, run);
       return;
     }
     _speaking = true;
@@ -3207,6 +3332,8 @@
   function stopSpeaking() {
     _runId += 1;
     _speaking = false;
+    _paused = false;
+    _resume = null;
     _blocks = [];
     _blockIndex = 0;
     clearHighlight();
@@ -3214,6 +3341,28 @@
     if (typeof speechSynthesis === "undefined") return;
     speechSynthesis.cancel();
     _utterance = null;
+  }
+  function pauseSpeaking() {
+    if (!_speaking || _paused || !_resume) return false;
+    _runId += 1;
+    _paused = true;
+    _utterance = null;
+    if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
+    notify();
+    return true;
+  }
+  function resumeSpeaking() {
+    if (!_speaking || !_paused || !_resume) return false;
+    _paused = false;
+    const run = _runId;
+    const r = _resume;
+    notify();
+    if (r.chunks) speakChunk(r.index, r.chunks, r.i, run);
+    else speakFallback(r.text, run);
+    return true;
+  }
+  function isPaused() {
+    return _paused;
   }
   function isReadingMain() {
     return _speaking;
@@ -3331,8 +3480,7 @@
     if (!text) return;
     speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "pt-BR";
-    utterance.rate = 1;
+    applyVoice(utterance, state_default.get().options);
     _spoke = true;
     speechSynthesis.speak(utterance);
   }
@@ -3360,6 +3508,164 @@
     _timer = null;
     if (_spoke && !isReadingMain()) speechSynthesis.cancel();
     _spoke = false;
+  }
+
+  // src/features/voiceCommands.js
+  var LANG2 = "pt-BR";
+  var MAX_WORDS = 5;
+  var MAX_RESTARTS = 5;
+  var RESTART_WINDOW_MS = 1e4;
+  function getCtor() {
+    const g = globalThis;
+    return g.SpeechRecognition || g.webkitSpeechRecognition || null;
+  }
+  var secure = () => globalThis.isSecureContext !== false;
+  async function getRecognitionMode() {
+    const Ctor = getCtor();
+    if (!Ctor || !secure()) return "none";
+    if (typeof Ctor.available === "function") {
+      try {
+        const r = await Ctor.available({ langs: [LANG2], processLocally: true });
+        if (r === "available") return "local";
+        if (r === "downloadable" || r === "downloading") return "download";
+      } catch (_) {
+      }
+    }
+    return "cloud";
+  }
+  async function installLocalModel() {
+    const Ctor = getCtor();
+    if (!Ctor || typeof Ctor.install !== "function") return false;
+    try {
+      return Boolean(await Ctor.install({ langs: [LANG2], processLocally: true }));
+    } catch (_) {
+      return false;
+    }
+  }
+  var norm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+  var TABLE = [
+    ["msOff", /\bdesligar\b.*\bmodo simples\b/],
+    ["msOn", /\bligar\b.*\bmodo simples\b/],
+    ["panelOpen", /\babrir\b.*\bpainel\b/],
+    ["panelClose", /\bfechar\b.*\bpainel\b/],
+    ["faster", /\bmais rapido\b/],
+    ["slower", /\bmais devagar\b/],
+    ["scrollDown", /\bdescer\b/],
+    ["scrollUp", /\bsubir\b/],
+    ["pause", /\bpausar\b|\bpausa\b/],
+    ["resume", /\bcontinuar\b|\bcontinue\b/],
+    ["stop", /^(parar|pare|para)$/],
+    ["help", /\bajuda\b|\bcomandos\b/],
+    ["read", /\bler\b|\bleia\b/]
+  ];
+  function parseCommand(text) {
+    const t = norm(text);
+    if (!t || t.split(" ").length > MAX_WORDS) return null;
+    for (const [action, re] of TABLE) if (re.test(t)) return { action };
+    return null;
+  }
+  var _rec = null;
+  var _enabled = false;
+  var _onStatus = () => {
+  };
+  var _restarts = [];
+  var status = (s) => {
+    try {
+      _onStatus(s);
+    } catch (_) {
+    }
+  };
+  function teardown() {
+    _enabled = false;
+    const r = _rec;
+    _rec = null;
+    if (!r) return;
+    r.onresult = r.onerror = r.onend = null;
+    try {
+      r.abort ? r.abort() : r.stop();
+    } catch (_) {
+    }
+  }
+  function startVoiceCommands({ mode, onCommand, onStatus } = {}) {
+    _onStatus = onStatus || (() => {
+    });
+    if (mode === "cloud" && state_default.get().options.voiceCloudConsent !== true) {
+      status("needs-consent");
+      return false;
+    }
+    if (mode === "download") {
+      status("needs-model");
+      return false;
+    }
+    const Ctor = getCtor();
+    if (mode !== "local" && mode !== "cloud" || !Ctor || !secure()) {
+      status("unsupported");
+      return false;
+    }
+    teardown();
+    _restarts = [];
+    const rec = new Ctor();
+    rec.lang = LANG2;
+    rec.continuous = true;
+    rec.interimResults = false;
+    if (mode === "local") rec.processLocally = true;
+    rec.onresult = (e) => {
+      for (let i = e.resultIndex || 0; i < e.results.length; i++) {
+        const res = e.results[i];
+        if (!res.isFinal) continue;
+        const cmd = parseCommand(res[0] && res[0].transcript);
+        if (cmd && onCommand) onCommand(cmd);
+      }
+    };
+    rec.onerror = (e) => {
+      const err = e && e.error;
+      if (err === "not-allowed" || err === "service-not-allowed") {
+        teardown();
+        status("blocked");
+      } else if (err === "language-not-supported") {
+        teardown();
+        status("unsupported");
+      } else if (err === "audio-capture") {
+        teardown();
+        status("no-mic");
+      } else if (err && err !== "no-speech" && err !== "aborted") {
+        teardown();
+        status("error");
+      }
+    };
+    rec.onend = () => {
+      if (!_enabled || _rec !== rec) return;
+      const now = Date.now();
+      _restarts = _restarts.filter((t) => now - t < RESTART_WINDOW_MS);
+      _restarts.push(now);
+      if (_restarts.length > MAX_RESTARTS) {
+        teardown();
+        status("error");
+        return;
+      }
+      try {
+        rec.start();
+      } catch (_) {
+        teardown();
+        status("error");
+      }
+    };
+    _rec = rec;
+    _enabled = true;
+    try {
+      rec.start();
+    } catch (_) {
+      teardown();
+      status("error");
+      return false;
+    }
+    status("listening");
+    return true;
+  }
+  function stopVoiceCommands() {
+    const was = _enabled;
+    teardown();
+    if (was) status("stopped");
   }
 
   // src/features/pageOutline.js
@@ -3623,6 +3929,23 @@
     (v - TYPO_LIMITS.lineHeight.min) / TYPO_LIMITS.lineHeight.step
   ) + 1 : Math.round(v / TYPO_LIMITS[key].step);
   var typoText = (key, v) => v > 0 ? `${String(v).replace(".", ",")}${key === "lineHeight" ? "" : " em"}` : STRINGS.panelTypoDefault;
+  var VOICE_SLIDERS = [
+    ["voiceRate", STRINGS.panelVoiceRateLabel],
+    ["voicePitch", STRINGS.panelVoicePitchLabel],
+    ["voiceVolume", STRINGS.panelVoiceVolumeLabel]
+  ];
+  var VOICE_LIMIT_OF = {
+    voiceRate: "rate",
+    voicePitch: "pitch",
+    voiceVolume: "volume"
+  };
+  var VOICE_DEFAULTS = {
+    voiceName: "",
+    voiceRate: 1,
+    voicePitch: 1,
+    voiceVolume: 1
+  };
+  var voiceText = (key, v) => key === "voiceVolume" ? `${Math.round(v * 100)}%` : `${v.toFixed(1).replace(".", ",")}${key === "voiceRate" ? "\xD7" : ""}`;
   var TEXT_SCALES = [
     { value: "100", label: "100%", title: STRINGS.scaleDefault },
     { value: "125", label: "125%", title: STRINGS.scaleLarge },
@@ -3799,6 +4122,10 @@
     speak: {
       html: `<button type="button" class="ms-btn-ouvir ms-tile" data-action="speak" aria-label="${STRINGS.panelVoiceLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>')}</span><span class="ms-tile-label" data-speak-text>${STRINGS.panelVoiceButton}</span></button>`
     },
+    // F10e: aparece só enquanto o "Ouvir" lê; alterna Pausar/Continuar (display:none via JS: .ms-tile é flex)
+    pause: {
+      html: `<button type="button" class="ms-tile" data-action="pause" hidden style="display:none" aria-label="${STRINGS.panelPauseLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M8 5v14"/><path d="M16 5v14"/>')}</span><span class="ms-tile-label" data-pause-text>${STRINGS.panelPause}</span></button>`
+    },
     readFocus: {
       html: switchTile({
         option: "readFocus",
@@ -3892,6 +4219,53 @@
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="reset-font" aria-label="${STRINGS.panelResetFontLabel}">${STRINGS.panelResetFont}</button>
         </div>`
     },
+    // F10b: Estúdio de Voz (ocupa a linha inteira; prefs em options.voice*)
+    voiceStudio: {
+      html: `
+        <div class="ms-a11y-block--span" role="group" aria-labelledby="ms-label-voice">
+          <p id="ms-label-voice" class="ms-a11y-control-label">${STRINGS.panelVoiceStudioTitle}</p>
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-name">${STRINGS.panelVoiceSelectLabel}</label></div>
+            <select class="ms-range-input" id="ms-voice-name" data-voice="voiceName"></select>
+          </div>
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-voiceRate">${STRINGS.panelVoiceRateLabel}</label><span class="ms-a11y-control-state" data-state-for="voiceRate" aria-hidden="true"></span></div>
+            <input type="range" class="ms-range-input" id="ms-voice-voiceRate" data-voice="voiceRate">
+          </div>
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-voicePitch">${STRINGS.panelVoicePitchLabel}</label><span class="ms-a11y-control-state" data-state-for="voicePitch" aria-hidden="true"></span></div>
+            <input type="range" class="ms-range-input" id="ms-voice-voicePitch" data-voice="voicePitch">
+          </div>
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-voiceVolume">${STRINGS.panelVoiceVolumeLabel}</label><span class="ms-a11y-control-state" data-state-for="voiceVolume" aria-hidden="true"></span></div>
+            <input type="range" class="ms-range-input" id="ms-voice-voiceVolume" data-voice="voiceVolume">
+          </div>
+          <p class="ms-a11y-control-state" data-voice-note hidden>${STRINGS.panelVoiceUnsupported}</p>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-test" aria-label="${STRINGS.panelVoiceTestLabel}">${STRINGS.panelVoiceTest}</button>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-reset" aria-label="${STRINGS.panelVoiceResetLabel}">${STRINGS.panelVoiceReset}</button>
+        </div>`
+    },
+    // F10e: interruptor próprio (fluxo com avisos no JS) + linha de status/revogar/lista de comandos
+    voiceCommands: {
+      html: switchTile({
+        option: "voiceCommands",
+        title: STRINGS.panelVcTitle,
+        label: STRINGS.panelVcLabel,
+        desc: STRINGS.panelVcDesc,
+        icon: svgIcon(
+          '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/>'
+        )
+      })
+    },
+    voiceCommandsMore: {
+      html: `
+        <div class="ms-a11y-block--span">
+          <p class="ms-a11y-control-state" data-vc-status role="status" aria-live="polite"></p>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="vc-revoke" hidden style="display:none" aria-label="${STRINGS.panelVcRevokeLabel}">${STRINGS.panelVcRevoke}</button>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="vc-commands" aria-expanded="false" aria-controls="ms-vc-commands">${STRINGS.panelVcShow}</button>
+          <ul class="ms-a11y-control-state" id="ms-vc-commands" data-vc-list hidden></ul>
+        </div>`
+    },
     textSpacing: {
       html: switchTile({
         option: "textSpacing",
@@ -3979,7 +4353,11 @@
         "textSpacing",
         "readingRuler",
         "speak",
+        "pause",
         "readFocus",
+        "voiceStudio",
+        "voiceCommands",
+        "voiceCommandsMore",
         "typography"
       ]
     },
@@ -4254,6 +4632,278 @@
         () => onSetOption(key, typoValue(key, Number(input.value)))
       );
     });
+    const voiceSel = panel.querySelector('[data-voice="voiceName"]');
+    const voiceSupported = isVoiceSupported();
+    const voiceInput = (key) => panel.querySelector(`[data-voice="${key}"]`);
+    const voiceFromDom = () => ({
+      voiceName: voiceSel.value,
+      voiceRate: Number(voiceInput("voiceRate").value),
+      voicePitch: Number(voiceInput("voicePitch").value),
+      voiceVolume: Number(voiceInput("voiceVolume").value)
+    });
+    voiceSel.style.minHeight = "44px";
+    VOICE_SLIDERS.forEach(([key]) => {
+      const input = voiceInput(key);
+      const lim = VOICE_LIMITS[VOICE_LIMIT_OF[key]];
+      input.min = String(lim.min);
+      input.max = String(lim.max);
+      input.step = String(lim.step);
+      input.value = String(VOICE_DEFAULTS[key]);
+      input.setAttribute("aria-valuetext", voiceText(key, VOICE_DEFAULTS[key]));
+      input.addEventListener(
+        "input",
+        () => onSetOption(key, Number(input.value))
+      );
+    });
+    voiceSel.addEventListener(
+      "change",
+      () => onSetOption("voiceName", voiceSel.value)
+    );
+    let voiceName = "";
+    let voicesSig = null;
+    const isVoiceSelFocused = () => {
+      var _a;
+      return ((_a = panel.getRootNode) == null ? void 0 : _a.call(panel).activeElement) === voiceSel;
+    };
+    const fillVoices = (selected) => {
+      let voices = [];
+      try {
+        voices = voiceSupported ? listVoices() : [];
+      } catch (e) {
+      }
+      const sig = voices.map((v) => `${v.name}|${v.lang}`).join("\n");
+      if (sig === voicesSig) {
+        if (!isVoiceSelFocused() && voiceSel.value !== (selected || "")) {
+          voiceSel.value = selected || "";
+        }
+        return;
+      }
+      if (isVoiceSelFocused()) return;
+      voicesSig = sig;
+      voiceSel.textContent = "";
+      const auto = document.createElement("option");
+      auto.value = "";
+      auto.textContent = STRINGS.panelVoiceAuto;
+      voiceSel.appendChild(auto);
+      voices.forEach((v) => {
+        const o = document.createElement("option");
+        o.value = v.name;
+        o.textContent = `${v.name} (${v.lang})`;
+        voiceSel.appendChild(o);
+      });
+      voiceSel.value = selected || "";
+    };
+    fillVoices("");
+    if (voiceSupported) onVoicesChanged(() => fillVoices(voiceName));
+    panel.querySelector('[data-action="voice-test"]').addEventListener("click", () => previewVoice(voiceFromDom()));
+    panel.querySelector('[data-action="voice-reset"]').addEventListener(
+      "click",
+      () => Object.entries(VOICE_DEFAULTS).forEach(([k, v]) => onSetOption(k, v))
+    );
+    const setShown = (el2, on3) => {
+      el2.hidden = !on3;
+      el2.style.display = on3 ? "" : "none";
+    };
+    const pauseBtn = panel.querySelector('[data-action="pause"]');
+    pauseBtn.addEventListener("click", () => {
+      if (isPaused()) resumeSpeaking();
+      else pauseSpeaking();
+    });
+    const vcSwitch = panel.querySelector('[data-option="voiceCommands"]');
+    const vcStatus = panel.querySelector("[data-vc-status]");
+    const vcRevoke = panel.querySelector('[data-action="vc-revoke"]');
+    const vcToggleBtn = panel.querySelector('[data-action="vc-commands"]');
+    const vcList = panel.querySelector("[data-vc-list]");
+    STRINGS.panelVcCommands.split("|").forEach((c) => {
+      const li = document.createElement("li");
+      li.textContent = `\u201C${c}\u201D`;
+      vcList.appendChild(li);
+    });
+    vcToggleBtn.addEventListener("click", () => {
+      const open2 = vcToggleBtn.getAttribute("aria-expanded") !== "true";
+      vcToggleBtn.setAttribute("aria-expanded", String(open2));
+      vcToggleBtn.textContent = open2 ? STRINGS.panelVcHide : STRINGS.panelVcShow;
+      vcList.hidden = !open2;
+    });
+    let recMode = null;
+    let vcOn = false;
+    let vcConsent = false;
+    let vcCore = "";
+    let vcUnsub = null;
+    let lastSync = null;
+    const subscribeVoiceStatus = () => {
+      const ms = globalThis.ModoSimples;
+      if (vcUnsub || typeof (ms == null ? void 0 : ms.onVoiceStatus) !== "function") return;
+      vcCore = ms.voiceStatus || "";
+      vcUnsub = ms.onVoiceStatus((st) => {
+        vcCore = st;
+        renderVcStatus();
+      });
+    };
+    if (!(globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition) || globalThis.isSecureContext === false) {
+      recMode = "none";
+    }
+    const VC_TEXT = {
+      listening: STRINGS.panelVcListening,
+      blocked: STRINGS.panelVcBlocked,
+      "no-mic": STRINGS.panelVcNoMic,
+      error: STRINGS.panelVcError,
+      "needs-consent": VOICE_CMD_STRINGS["status_needs-consent"],
+      "needs-model": VOICE_CMD_STRINGS["status_needs-model"],
+      unsupported: STRINGS.panelVcUnsupported
+    };
+    const renderVcStatus = () => {
+      if (recMode === "none") return;
+      vcStatus.textContent = vcUnsub ? VC_TEXT[vcCore] || "" : vcOn ? STRINGS.panelVcListening : "";
+    };
+    let dialogEl = null;
+    const closeDialog = () => {
+      if (!dialogEl) return;
+      dialogEl.remove();
+      dialogEl = null;
+      [...panel.children].forEach((c) => c.removeAttribute("inert"));
+      vcSwitch.focus();
+    };
+    const openDialog = ({ title, text, buttons }) => {
+      if (dialogEl) {
+        dialogEl.remove();
+        dialogEl = null;
+      }
+      const el2 = document.createElement("div");
+      el2.className = "ms-a11y-dialog";
+      el2.setAttribute("role", "dialog");
+      el2.setAttribute("aria-modal", "true");
+      el2.setAttribute("aria-labelledby", "ms-vc-dlg-title");
+      el2.setAttribute("aria-describedby", "ms-vc-dlg-text");
+      Object.assign(el2.style, {
+        position: "absolute",
+        inset: "0",
+        zIndex: "5",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "12px",
+        boxSizing: "border-box",
+        overflow: "auto",
+        background: "rgba(11, 44, 95, 0.6)"
+      });
+      const card = document.createElement("div");
+      Object.assign(card.style, {
+        background: "#fff",
+        color: "#1e293b",
+        borderRadius: "12px",
+        padding: "16px",
+        width: "100%",
+        maxHeight: "100%",
+        overflow: "auto",
+        boxSizing: "border-box",
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px"
+      });
+      const h = document.createElement("h3");
+      h.id = "ms-vc-dlg-title";
+      h.textContent = title;
+      Object.assign(h.style, { margin: "0", fontSize: "1.05em" });
+      const p = document.createElement("p");
+      p.id = "ms-vc-dlg-text";
+      p.textContent = text;
+      p.style.margin = "0";
+      const live = document.createElement("p");
+      live.setAttribute("role", "status");
+      live.style.margin = "0";
+      card.append(h, p, live);
+      const btns = buttons.map((b) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "ms-a11y-action";
+        btn.textContent = b.label;
+        btn.style.minHeight = "44px";
+        btn.style.width = "100%";
+        btn.addEventListener("click", () => {
+          if (b.run) b.run({ live, btns });
+          else closeDialog();
+        });
+        card.appendChild(btn);
+        return btn;
+      });
+      el2.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape") return;
+        e.preventDefault();
+        e.stopPropagation();
+        closeDialog();
+      });
+      el2.appendChild(card);
+      [...panel.children].forEach((c) => c.setAttribute("inert", ""));
+      panel.appendChild(el2);
+      dialogEl = el2;
+      btns[0].focus();
+      return el2;
+    };
+    const turnOn = () => {
+      vcCore = "";
+      renderVcStatus();
+      onSetOption("voiceCommands", true);
+    };
+    const askCloud = (prefix = "") => {
+      const me = openDialog({
+        title: STRINGS.panelVcCloudTitle,
+        text: `${prefix}${STRINGS.panelVcCloudText}`.trim(),
+        buttons: [
+          {
+            label: STRINGS.panelVcCloudYes,
+            run: () => {
+              closeDialog();
+              onSetOption("voiceCloudConsent", true);
+              turnOn();
+            }
+          },
+          { label: STRINGS.panelVcCloudNo }
+        ]
+      });
+      return me;
+    };
+    const askDownload = () => {
+      const me = openDialog({
+        title: STRINGS.panelVcDownloadTitle,
+        text: STRINGS.panelVcDownloadText,
+        buttons: [
+          {
+            label: STRINGS.panelVcDownloadNow,
+            run: ({ live, btns }) => {
+              const p = installLocalModel();
+              btns.forEach((b) => b.disabled = true);
+              live.textContent = STRINGS.panelVcDownloading;
+              p.then((ok) => {
+                if (dialogEl !== me) return;
+                if (ok) {
+                  closeDialog();
+                  turnOn();
+                } else askCloud(`${STRINGS.panelVcDownloadFail} `);
+              });
+            }
+          },
+          { label: STRINGS.panelVcUseInternet, run: () => askCloud() },
+          { label: STRINGS.panelVcNotNow }
+        ]
+      });
+    };
+    vcSwitch.addEventListener("click", async () => {
+      if (vcOn) {
+        onSetOption("voiceCommands", false);
+        return;
+      }
+      const mode = await getRecognitionMode();
+      recMode = mode;
+      if (mode === "local" || mode === "cloud" && vcConsent) turnOn();
+      else if (mode === "download") askDownload();
+      else if (mode === "cloud") askCloud();
+      else sync(...lastSync);
+    });
+    vcRevoke.addEventListener("click", () => {
+      onSetOption("voiceCommands", false);
+      onSetOption("voiceCloudConsent", false);
+    });
     panel.querySelector('[data-action="move-side"]').addEventListener("click", () => onMoveSide == null ? void 0 : onMoveSide());
     function setSide(side) {
       panel.setAttribute("data-ms-side", side);
@@ -4309,6 +4959,7 @@
       });
     });
     panel.querySelectorAll(".ms-switch[data-option]").forEach((btn) => {
+      if (btn.getAttribute("data-option") === "voiceCommands") return;
       btn.addEventListener("click", () => {
         const key = btn.getAttribute("data-option");
         const next = btn.getAttribute("aria-checked") !== "true";
@@ -4317,7 +4968,8 @@
     });
     panel.querySelector('[data-action="speak"]').addEventListener("click", () => onSpeak());
     function sync(s, ui = {}) {
-      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o;
+      lastSync = [s, ui];
       const modoBtn = panel.querySelector('[data-action="modo-simples"]');
       if (modoBtn) {
         modoBtn.setAttribute("aria-checked", String(!!s.modoSimples));
@@ -4411,7 +5063,8 @@
         "muteMedia",
         "blockFlashing",
         "strongFocus",
-        "showShortcuts"
+        "showShortcuts",
+        "voiceCommands"
       ].forEach((key) => {
         var _a2;
         const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
@@ -4429,6 +5082,54 @@
           if (d) d.textContent = STRINGS.panelReadFocusUnsupported;
         }
       });
+      voiceName = ((_f = s.options) == null ? void 0 : _f.voiceName) || "";
+      fillVoices(voiceName);
+      VOICE_SLIDERS.forEach(([key]) => {
+        var _a2;
+        const lim = VOICE_LIMITS[VOICE_LIMIT_OF[key]];
+        const raw = Number((_a2 = s.options) == null ? void 0 : _a2[key]);
+        const v = Number.isFinite(raw) ? Math.min(lim.max, Math.max(lim.min, raw)) : VOICE_DEFAULTS[key];
+        const input = voiceInput(key);
+        input.value = String(v);
+        input.setAttribute("aria-valuetext", voiceText(key, v));
+        panel.querySelector(`[data-state-for="${key}"]`).textContent = voiceText(
+          key,
+          v
+        );
+      });
+      if (!voiceSupported) {
+        panel.querySelectorAll('[data-voice], [data-action^="voice-"]').forEach((el2) => {
+          el2.disabled = true;
+          el2.setAttribute("title", STRINGS.panelVoiceUnsupported);
+        });
+        panel.querySelector("[data-voice-note]").hidden = false;
+      }
+      vcOn = !!((_g = s.options) == null ? void 0 : _g.voiceCommands);
+      vcConsent = !!((_h = s.options) == null ? void 0 : _h.voiceCloudConsent);
+      subscribeVoiceStatus();
+      renderVcStatus();
+      setShown(vcRevoke, vcConsent);
+      if (recMode === "none") {
+        vcSwitch.disabled = true;
+        vcSwitch.setAttribute("title", STRINGS.panelVcUnsupported);
+        const st = vcSwitch.querySelector("[data-state]");
+        if (st) st.textContent = STRINGS.panelReadFocusUnsupportedState;
+        const d = panel.querySelector("#ms-desc-voiceCommands");
+        if (d) d.textContent = STRINGS.panelVcUnsupported;
+        vcStatus.textContent = STRINGS.panelVcUnsupported;
+      }
+      const reading = isReadingMain();
+      setShown(pauseBtn, reading);
+      if (reading) {
+        const paused = isPaused();
+        pauseBtn.querySelector("[data-pause-text]").textContent = paused ? STRINGS.panelResume : STRINGS.panelPause;
+        pauseBtn.setAttribute(
+          "aria-label",
+          paused ? STRINGS.panelResumeLabel : STRINGS.panelPauseLabel
+        );
+      } else if (((_i = panel.getRootNode) == null ? void 0 : _i.call(panel).activeElement) === pauseBtn) {
+        panel.querySelector('[data-action="speak"]').focus();
+      }
       const setState = (key, text) => {
         const el2 = panel.querySelector(`[data-state-for="${key}"]`);
         if (el2) el2.textContent = text;
@@ -4440,15 +5141,15 @@
       );
       setState(
         "colorTheme",
-        (_g = (_f = COLOR_THEMES.find((x) => x.value === theme2)) == null ? void 0 : _f.label) != null ? _g : theme2
+        (_k = (_j = COLOR_THEMES.find((x) => x.value === theme2)) == null ? void 0 : _j.label) != null ? _k : theme2
       );
       setState(
         "colorSaturation",
-        (_i = (_h = SATURATIONS.find((x) => x.value === sat)) == null ? void 0 : _h.label) != null ? _i : sat
+        (_m = (_l = SATURATIONS.find((x) => x.value === sat)) == null ? void 0 : _l.label) != null ? _m : sat
       );
       setState(
         "cursorStyle",
-        (_k = (_j = CURSORS.find((x) => x.value === cursor)) == null ? void 0 : _j.label) != null ? _k : cursor
+        (_o = (_n = CURSORS.find((x) => x.value === cursor)) == null ? void 0 : _n.label) != null ? _o : cursor
       );
       panel.querySelectorAll("[data-profile]").forEach((btn) => {
         const active = s.activeProfile === btn.getAttribute("data-profile");
@@ -4467,6 +5168,7 @@
     }
     function open() {
       panel.hidden = false;
+      subscribeVoiceStatus();
       _releaseFocus = trapFocus(panel);
       const closeBtn = panel.querySelector(".ms-a11y-close");
       if (closeBtn) closeBtn.focus();
@@ -6746,7 +7448,13 @@
     blockFlashing: false,
     strongFocus: false,
     showShortcuts: false,
-    muteMedia: false
+    muteMedia: false,
+    voiceName: "",
+    voiceCommands: false,
+    voiceCloudConsent: false,
+    voiceRate: 1,
+    voicePitch: 1,
+    voiceVolume: 1
   };
   var FONT_KEYS = [
     "textScale",
@@ -6945,7 +7653,8 @@
     ms._inertObserver.observe(document.body, { childList: true });
   }
   function inertSibling(ms, el2) {
-    if (el2 === ms._host || el2.hasAttribute("inert") || el2.hasAttribute("aria-live") || el2.hasAttribute("data-ms-live") || el2.id === "ms-manual-select-banner" || el2.id === "ms-manual-select-highlight") {
+    if (el2 === ms._host || el2.hasAttribute("inert") || el2.hasAttribute("aria-live") || el2.hasAttribute("data-ms-live") || el2.id === "ms-shortcuts-card" || // cartão de atalhos: "Fechar" precisa responder com o painel aberto
+    el2.id === "ms-manual-select-banner" || el2.id === "ms-manual-select-highlight") {
       return;
     }
     el2.setAttribute("inert", "");
@@ -7012,10 +7721,27 @@
     try {
       ms._reducedMotionUser = (prof == null ? void 0 : prof.options.reducedMotion) ? true : null;
       if (state_default.get().modoSimples) ms._setModoSimples(false);
+      const {
+        voiceName,
+        voiceRate,
+        voicePitch,
+        voiceVolume,
+        voiceCommands,
+        voiceCloudConsent
+      } = state_default.get().options;
       state_default.set({
         activeProfile: prof ? prof.id : null,
         profileCustom: false,
-        options: { ...RESET_OPTIONS, ...prof ? prof.options : {} }
+        options: {
+          ...RESET_OPTIONS,
+          voiceName,
+          voiceRate,
+          voicePitch,
+          voiceVolume,
+          voiceCommands,
+          voiceCloudConsent,
+          ...prof ? prof.options : {}
+        }
       });
       ms._syncReducedMotion();
       if (prof == null ? void 0 : prof.modoSimples) ms._setModoSimples(true);
@@ -7918,6 +8644,7 @@
         startReadingRuler();
       }
       if (currentState.options.readFocus) startFocusReader();
+      if (currentState.options.voiceCommands) this._startVoiceCommands();
       if (currentState.options.muteMedia) startMediaMute();
       if (currentState.options.blockFlashing) startFlashBlock();
       if (currentState.options.textMagnifier) startTextMagnifier();
@@ -7944,6 +8671,116 @@
      * Modo restaurado em outra página: silêncio a cada navegação, mas uma única vez por sessão
      * avisa que continua ligado (UX-19). Sem sessionStorage, fica em silêncio.
      */
+    /** F10d: escolhe o modo de reconhecimento e começa a escutar (a nuvem exige consentimento). */
+    async _startVoiceCommands() {
+      const run = this._voiceRun = (this._voiceRun || 0) + 1;
+      let mode = await getRecognitionMode();
+      if (run !== this._voiceRun || !state_default.get().options.voiceCommands) return;
+      if (mode === "download" && state_default.get().options.voiceCloudConsent === true) {
+        mode = "cloud";
+      }
+      this._voiceMode = mode;
+      startVoiceCommands({
+        mode,
+        onCommand: (c) => this._runVoiceCommand(c),
+        onStatus: (s) => this._voiceStatus(s)
+      });
+    }
+    /** Último status dos comandos de voz (começa 'stopped'). */
+    get voiceStatus() {
+      return this._voiceStatusLast || "stopped";
+    }
+    /**
+     * Avisa a UI de toda mudança de status dos comandos de voz:
+     * 'listening'|'stopped'|'blocked'|'no-mic'|'needs-consent'|'needs-model'|'unsupported'|'error'.
+     * @param {(status: string) => void} cb
+     * @returns {() => void} cancela o registro
+     */
+    onVoiceStatus(cb) {
+      (this._voiceListeners || (this._voiceListeners = /* @__PURE__ */ new Set())).add(cb);
+      return () => this._voiceListeners.delete(cb);
+    }
+    _voiceStatus(s) {
+      this._voiceStatusLast = s;
+      for (const cb of Array.from(this._voiceListeners || [])) {
+        try {
+          cb(s);
+        } catch (_) {
+        }
+      }
+      if (VOICE_CMD_STRINGS[`status_${s}`]) announce(VOICE_CMD_STRINGS[`status_${s}`]);
+      if ([
+        "blocked",
+        "needs-consent",
+        "needs-model",
+        "unsupported",
+        "error",
+        "no-mic"
+      ].includes(s)) {
+        state_default.set({ options: { voiceCommands: false } });
+      }
+    }
+    _runVoiceCommand({ action }) {
+      const o = state_default.get().options;
+      const bump = (d) => state_default.set({
+        options: {
+          voiceRate: clampVoice(
+            "rate",
+            Math.round((o.voiceRate + d) * 10) / 10
+          )
+        }
+      });
+      const scroll = (dir) => window.scrollBy({
+        top: dir * Math.round(window.innerHeight * 0.8),
+        behavior: o.reducedMotion ? "auto" : "smooth"
+      });
+      switch (action) {
+        case "read":
+          speakMainContent();
+          break;
+        case "stop":
+          stopSpeaking();
+          break;
+        case "pause":
+          pauseSpeaking();
+          break;
+        case "resume":
+          resumeSpeaking();
+          break;
+        case "faster":
+          bump(0.1);
+          break;
+        case "slower":
+          bump(-0.1);
+          break;
+        case "scrollDown":
+          scroll(1);
+          break;
+        case "scrollUp":
+          scroll(-1);
+          break;
+        case "msOn":
+          this._setModoSimples(true);
+          break;
+        case "msOff":
+          this._setModoSimples(false);
+          break;
+        case "panelOpen":
+          if (!state_default.get().panelOpen) this._openPanel();
+          break;
+        case "panelClose":
+          if (state_default.get().panelOpen) this._closePanel();
+          break;
+        case "help": {
+          if (typeof speechSynthesis === "undefined") break;
+          stopSpeaking();
+          const u = new SpeechSynthesisUtterance(VOICE_CMD_STRINGS.helpSpoken);
+          applyVoice(u, o);
+          speechSynthesis.speak(u);
+          break;
+        }
+      }
+    }
     _announceRestoredOnce() {
       try {
         if (sessionStorage.getItem("ms_restoreAnnounced")) return;
@@ -7954,7 +8791,7 @@
       announce(STRINGS.announceStillOn);
     }
     destroy() {
-      var _a, _b, _c;
+      var _a, _b, _c, _d;
       if (!this._initialized) return;
       if (this._removeSpeakListener) {
         this._removeSpeakListener();
@@ -7966,9 +8803,13 @@
       stopFlashBlock();
       stopTextMagnifier();
       hideShortcutsCard();
+      this._voiceRun = (this._voiceRun || 0) + 1;
+      stopVoiceCommands();
+      (_a = this._voiceListeners) == null ? void 0 : _a.clear();
+      this._voiceStatusLast = "stopped";
       stopSpeaking();
       stopManualSelect();
-      (_b = (_a = this._panel) == null ? void 0 : _a.closeOutline) == null ? void 0 : _b.call(_a);
+      (_c = (_b = this._panel) == null ? void 0 : _b.closeOutline) == null ? void 0 : _c.call(_b);
       closeMouseGrid({ restoreFocus: false, silent: true });
       closeVirtualKeyboard({ silent: true });
       this._setPageInert(false);
@@ -7998,7 +8839,7 @@
         this._chrome.destroy();
         this._chrome = null;
       }
-      if ((_c = this._host) == null ? void 0 : _c.parentNode) this._host.parentNode.removeChild(this._host);
+      if ((_d = this._host) == null ? void 0 : _d.parentNode) this._host.parentNode.removeChild(this._host);
       const pageStyle = document.getElementById("ms-page-styles");
       if (pageStyle == null ? void 0 : pageStyle.parentNode) pageStyle.parentNode.removeChild(pageStyle);
       const lexend = document.getElementById("ms-lexend-font");
@@ -8236,7 +9077,13 @@
         "muteMedia",
         "blockFlashing",
         "strongFocus",
-        "showShortcuts"
+        "showShortcuts",
+        "voiceName",
+        "voiceCommands",
+        "voiceCloudConsent",
+        "voiceRate",
+        "voicePitch",
+        "voiceVolume"
       ];
       const optionChanged = optionKeys.some(
         (k) => prev.options[k] !== next.options[k]
@@ -8268,6 +9115,18 @@
       if (prev.options.readFocus !== next.options.readFocus) {
         if (next.options.readFocus) startFocusReader();
         else stopFocusReader();
+      }
+      if (prev.options.voiceCloudConsent && !next.options.voiceCloudConsent && this._voiceMode === "cloud" && next.options.voiceCommands) {
+        this._voiceRun = (this._voiceRun || 0) + 1;
+        stopVoiceCommands();
+        state_default.set({ options: { voiceCommands: false } });
+      }
+      if (prev.options.voiceCommands !== next.options.voiceCommands) {
+        if (next.options.voiceCommands) this._startVoiceCommands();
+        else {
+          this._voiceRun = (this._voiceRun || 0) + 1;
+          stopVoiceCommands();
+        }
       }
       if (!this._applyingProfile) {
         diffStateAnnouncements(prev, next).forEach((msg) => announce(msg));
