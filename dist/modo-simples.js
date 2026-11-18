@@ -8002,14 +8002,15 @@
 
   // src/heuristics/distractionDetector.js
   function detectDistractions(mainElement, config = defaults_default) {
+    var _a;
     const distractions = [];
     const isMsChrome = (el2) => {
-      var _a, _b;
+      var _a2, _b;
       if (!el2 || !el2.id && !el2.getAttribute) return false;
       if (el2.id === "ms-container" || el2.id === "ms-session-bar" || el2.id === "ms-simples-chrome") {
         return true;
       }
-      if ((_a = el2.hasAttribute) == null ? void 0 : _a.call(el2, "data-ms-pills")) return true;
+      if ((_a2 = el2.hasAttribute) == null ? void 0 : _a2.call(el2, "data-ms-pills")) return true;
       if ((_b = el2.closest) == null ? void 0 : _b.call(
         el2,
         "#ms-container, #ms-session-bar, #ms-simples-chrome, [data-ms-pills]"
@@ -8021,6 +8022,9 @@
     const seen = /* @__PURE__ */ new Set();
     for (const el2 of queryAll(config.distractionSelectors)) {
       if (isMsChrome(el2)) continue;
+      if ((_a = el2.closest) == null ? void 0 : _a.call(el2, '[role="dialog"],[role="alertdialog"],[aria-modal="true"]')) {
+        continue;
+      }
       if (mainElement && el2.contains(mainElement)) continue;
       if (mainElement && mainElement.contains(el2)) continue;
       if (!seen.has(el2)) {
