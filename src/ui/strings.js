@@ -279,3 +279,20 @@ export const SHORTCUTS = Object.freeze([
   { keys: 'Enter', text: 'Ativar o botão ou link' },
   { keys: 'Espaço', text: 'Ligar ou desligar um interruptor' },
 ]);
+
+// F10d — comandos de voz (bloco isolado: textos falados e anunciados; sem painel aqui)
+export const VOICE_CMD_STRINGS = Object.freeze({
+  status_listening: 'Comandos de voz ligados. Pode falar.',
+  status_stopped: 'Comandos de voz desligados.',
+  status_blocked:
+    'O navegador não deixou usar o microfone. Libere o microfone para o site e ligue de novo.',
+  'status_needs-consent':
+    'Para usar comandos de voz, é preciso aceitar que sua voz vá para o servidor do navegador, por exemplo o Google.',
+  'status_needs-model':
+    'Falta baixar o reconhecimento de voz no seu aparelho para usar comandos de voz.',
+  status_unsupported:
+    'Este navegador ou esta página não aceita comandos de voz.',
+  status_error: 'Os comandos de voz pararam. Ligue de novo para tentar.',
+  helpSpoken:
+    'Você pode dizer: ler página, parar, pausar, continuar, mais rápido, mais devagar, descer, subir, ligar modo simples, desligar modo simples, abrir painel, fechar painel e ajuda.',
+});

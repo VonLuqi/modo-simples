@@ -25,13 +25,19 @@ let _runId = 0;
 /** Quem quer saber quando a leitura começa/termina (a UI não precisa fazer polling). */
 const _listeners = new Set();
 let _notified = false;
+let _notifiedPaused = false;
+/** F10c: leitura pausada (cancel + lembrar onde parou; speechSynthesis.pause é instável). */
+let _paused = false;
+/** Onde retomar: bloco/pedaço atual (ou o texto único do fallback). */
+let _resume = null;
 
 function notify() {
-  if (_speaking === _notified) return;
+  if (_speaking === _notified && _paused === _notifiedPaused) return;
   _notified = _speaking;
+  _notifiedPaused = _paused;
   for (const cb of Array.from(_listeners)) {
     try {
-      cb(_speaking);
+      cb(_speaking, _paused);
     } catch (_) {
       // um ouvinte com erro não pode travar a leitura
     }
@@ -40,8 +46,8 @@ function notify() {
 
 /**
  * Registra um ouvinte do estado da leitura: recebe true ao começar e false ao terminar,
- * ser parada ou falhar.
- * @param {(speaking: boolean) => void} cb
+ * ser parada ou falhar. O 2º argumento diz se a leitura está pausada (F10c).
+ * @param {(speaking: boolean, paused?: boolean) => void} cb
  * @returns {() => void} cancela o registro
  */
 export function onSpeakingChange(cb) {
@@ -274,24 +280,42 @@ function speakBlockAt(index, run) {
   }
 
   // Blocos longos viram várias falas curtas (limite prático do Chrome, IMP-38)
-  const chunks = splitForSpeech(text);
-  const speakChunk = (i) => {
-    if (!_speaking || run !== _runId) return;
-    const utterance = new SpeechSynthesisUtterance(chunks[i]);
-    _utterance = utterance;
-    applyVoice(utterance, state.get().options);
-    const next = () => {
-      if (run !== _runId) return; // evento de uma leitura antiga: ignora (IMP-13)
-      _utterance = null;
-      if (!_speaking) return;
-      if (i + 1 < chunks.length) speakChunk(i + 1);
-      else speakBlockAt(index + 1, run);
-    };
-    utterance.onend = next;
-    utterance.onerror = next;
-    speechSynthesis.speak(utterance);
+  speakChunk(index, splitForSpeech(text), 0, run);
+}
+
+function speakChunk(index, chunks, i, run) {
+  if (!_speaking || run !== _runId) return;
+  _resume = { index, chunks, i };
+  const utterance = new SpeechSynthesisUtterance(chunks[i]);
+  _utterance = utterance;
+  applyVoice(utterance, state.get().options);
+  const next = () => {
+    if (run !== _runId) return; // evento de uma leitura antiga: ignora (IMP-13)
+    _utterance = null;
+    if (!_speaking) return;
+    if (i + 1 < chunks.length) speakChunk(index, chunks, i + 1, run);
+    else speakBlockAt(index + 1, run);
   };
-  speakChunk(0);
+  utterance.onend = next;
+  utterance.onerror = next;
+  speechSynthesis.speak(utterance);
+}
+
+function speakFallback(text, run) {
+  _resume = { text };
+  const utterance = new SpeechSynthesisUtterance(text);
+  _utterance = utterance;
+  applyVoice(utterance, state.get().options);
+  const done = () => {
+    if (run !== _runId) return; // evento de uma leitura antiga (IMP-13)
+    _speaking = false;
+    _resume = null;
+    _utterance = null;
+    notify();
+  };
+  utterance.onend = done;
+  utterance.onerror = done;
+  speechSynthesis.speak(utterance);
 }
 
 /**
@@ -313,20 +337,9 @@ export function speakMainContent() {
       : '';
     if (!text) return;
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    _utterance = utterance;
-    applyVoice(utterance, state.get().options);
-    const done = () => {
-      if (run !== _runId) return; // evento de uma leitura antiga (IMP-13)
-      _speaking = false;
-      _utterance = null;
-      notify();
-    };
-    utterance.onend = done;
-    utterance.onerror = done;
     _speaking = true;
     notify();
-    speechSynthesis.speak(utterance);
+    speakFallback(text, run);
     return;
   }
 
@@ -341,6 +354,8 @@ export function speakMainContent() {
 export function stopSpeaking() {
   _runId += 1; // invalida qualquer evento pendente da leitura que está sendo parada
   _speaking = false;
+  _paused = false;
+  _resume = null;
   _blocks = [];
   _blockIndex = 0;
   clearHighlight();
@@ -348,6 +363,38 @@ export function stopSpeaking() {
   if (typeof speechSynthesis === 'undefined') return;
   speechSynthesis.cancel();
   _utterance = null;
+}
+
+/**
+ * F10c: pausa a leitura do conteúdo principal. Cancela a fala e guarda o pedaço atual;
+ * `resumeSpeaking` volta a falar desse pedaço (a pausa nativa falha no Android e em falas longas).
+ * @returns {boolean} true se pausou
+ */
+export function pauseSpeaking() {
+  if (!_speaking || _paused || !_resume) return false;
+  _runId += 1; // eventos da fala cancelada não avançam a fila
+  _paused = true;
+  _utterance = null;
+  if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
+  notify();
+  return true;
+}
+
+/** F10c: retoma do pedaço onde pausou. @returns {boolean} true se retomou */
+export function resumeSpeaking() {
+  if (!_speaking || !_paused || !_resume) return false;
+  _paused = false;
+  const run = _runId;
+  const r = _resume;
+  notify();
+  if (r.chunks) speakChunk(r.index, r.chunks, r.i, run);
+  else speakFallback(r.text, run);
+  return true;
+}
+
+/** @returns {boolean} true enquanto a leitura está pausada */
+export function isPaused() {
+  return _paused;
 }
 
 /** @returns {boolean} true enquanto a leitura "Ouvir" do conteúdo principal está ativa */

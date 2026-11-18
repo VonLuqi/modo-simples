@@ -60,6 +60,8 @@ export const RESET_OPTIONS = {
   showShortcuts: false,
   muteMedia: false,
   voiceName: '',
+  voiceCommands: false,
+  voiceCloudConsent: false,
   voiceRate: 1,
   voicePitch: 1,
   voiceVolume: 1,
@@ -423,8 +425,14 @@ export function applyProfile(ms, id) {
   try {
     ms._reducedMotionUser = prof?.options.reducedMotion ? true : null;
     if (state.get().modoSimples) ms._setModoSimples(false);
-    const { voiceName, voiceRate, voicePitch, voiceVolume } =
-      state.get().options; // voz não faz parte de perfil: troca de perfil a mantém (F10)
+    const {
+      voiceName,
+      voiceRate,
+      voicePitch,
+      voiceVolume,
+      voiceCommands,
+      voiceCloudConsent,
+    } = state.get().options; // voz não faz parte de perfil: troca de perfil a mantém (F10)
     state.set({
       activeProfile: prof ? prof.id : null,
       profileCustom: false,
@@ -434,6 +442,8 @@ export function applyProfile(ms, id) {
         voiceRate,
         voicePitch,
         voiceVolume,
+        voiceCommands,
+        voiceCloudConsent,
         ...(prof ? prof.options : {}),
       },
     });

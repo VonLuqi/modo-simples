@@ -48,6 +48,8 @@ const DEFAULTS = {
   strongFocus: false,
   showShortcuts: false,
   voiceName: '',
+  voiceCommands: false,
+  voiceCloudConsent: false,
   voiceRate: 1,
   voicePitch: 1,
   voiceVolume: 1,

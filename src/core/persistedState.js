@@ -81,6 +81,8 @@ export function hydratePersistedState(saved) {
       blockFlashing: Boolean(opts.blockFlashing),
       strongFocus: Boolean(opts.strongFocus),
       showShortcuts: Boolean(opts.showShortcuts),
+      voiceCommands: Boolean(opts.voiceCommands),
+      voiceCloudConsent: Boolean(opts.voiceCloudConsent),
       voiceName: typeof opts.voiceName === 'string' ? opts.voiceName : '',
       voiceRate: clampVoice('rate', opts.voiceRate),
       voicePitch: clampVoice('pitch', opts.voicePitch),

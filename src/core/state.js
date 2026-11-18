@@ -32,6 +32,8 @@ import eventBus from './eventBus.js';
  *       strongFocus:   boolean,  // F7e: anel de foco reforçado na página
  *       showShortcuts: boolean,  // F7e: cartão com os atalhos do teclado
  *       blockFlashing: boolean,  // F7d: sem animação/GIF/autoplay (epilepsia)
+ *       voiceCommands: boolean,  // F10d: comandos de voz (desligado por padrão)
+ *       voiceCloudConsent: boolean, // F10d: aceitou mandar a voz ao servidor do navegador
  *       voiceName: string,       // F10: nome da voz instalada ('' = automática pt-BR)
  *       voiceRate / voicePitch / voiceVolume: number, // F10: ver VOICE_LIMITS (features/voice.js)
  *     }
@@ -91,6 +93,8 @@ const initialState = {
     showShortcuts: false,
     muteMedia: false,
     voiceName: '',
+    voiceCommands: false,
+    voiceCloudConsent: false,
     voiceRate: 1,
     voicePitch: 1,
     voiceVolume: 1,

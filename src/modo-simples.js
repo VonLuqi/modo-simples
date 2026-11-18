@@ -34,7 +34,7 @@ import {
 import { announce } from './utils/aria.js';
 import { hasSimpleLanguagePairs } from './utils/simpleLanguage.js';
 import { getPageStyles, getUIStyles } from './ui/styles.js';
-import { STRINGS } from './ui/strings.js';
+import { STRINGS, VOICE_CMD_STRINGS as VC } from './ui/strings.js';
 import { profileDiffers } from './core/profiles.js';
 import {
   buildUI,
@@ -71,7 +71,19 @@ import {
   startReadingRuler,
   stopReadingRuler,
 } from './features/readingRuler.js';
-import { stopSpeaking, isSpeaking } from './features/tts.js';
+import {
+  stopSpeaking,
+  isSpeaking,
+  speakMainContent,
+  pauseSpeaking,
+  resumeSpeaking,
+} from './features/tts.js';
+import {
+  getRecognitionMode,
+  startVoiceCommands,
+  stopVoiceCommands,
+} from './features/voiceCommands.js';
+import { applyVoice, clampVoice } from './features/voice.js';
 import { startFocusReader, stopFocusReader } from './features/focusReader.js';
 import { startMediaMute, stopMediaMute } from './features/mediaMute.js';
 import { startFlashBlock, stopFlashBlock } from './features/flashBlock.js';
@@ -144,6 +156,7 @@ class ModoSimples {
       startReadingRuler();
     }
     if (currentState.options.readFocus) startFocusReader();
+    if (currentState.options.voiceCommands) this._startVoiceCommands();
     if (currentState.options.muteMedia) startMediaMute();
     if (currentState.options.blockFlashing) startFlashBlock();
     if (currentState.options.textMagnifier) startTextMagnifier();
@@ -175,6 +188,98 @@ class ModoSimples {
    * Modo restaurado em outra página: silêncio a cada navegação, mas uma única vez por sessão
    * avisa que continua ligado (UX-19). Sem sessionStorage, fica em silêncio.
    */
+  /** F10d: escolhe o modo de reconhecimento e começa a escutar (a nuvem exige consentimento). */
+  async _startVoiceCommands() {
+    const run = (this._voiceRun = (this._voiceRun || 0) + 1);
+    const mode = await getRecognitionMode();
+    if (run !== this._voiceRun || !state.get().options.voiceCommands) return;
+    startVoiceCommands({
+      mode,
+      onCommand: (c) => this._runVoiceCommand(c),
+      onStatus: (s) => this._voiceStatus(s),
+    });
+  }
+
+  _voiceStatus(s) {
+    if (VC[`status_${s}`]) announce(VC[`status_${s}`]);
+    // sem escutar de fato: o interruptor não pode ficar ligado mentindo
+    if (
+      [
+        'blocked',
+        'needs-consent',
+        'needs-model',
+        'unsupported',
+        'error',
+      ].includes(s)
+    ) {
+      state.set({ options: { voiceCommands: false } });
+    }
+  }
+
+  _runVoiceCommand({ action }) {
+    const o = state.get().options;
+    const bump = (d) =>
+      state.set({
+        options: {
+          voiceRate: clampVoice(
+            'rate',
+            Math.round((o.voiceRate + d) * 10) / 10,
+          ),
+        },
+      });
+    const scroll = (dir) =>
+      window.scrollBy({
+        top: dir * Math.round(window.innerHeight * 0.8),
+        behavior: o.reducedMotion ? 'auto' : 'smooth',
+      });
+    switch (action) {
+      case 'read':
+        speakMainContent();
+        break;
+      case 'stop':
+        stopSpeaking();
+        break;
+      case 'pause':
+        pauseSpeaking();
+        break;
+      case 'resume':
+        resumeSpeaking();
+        break;
+      case 'faster':
+        bump(0.1);
+        break;
+      case 'slower':
+        bump(-0.1);
+        break;
+      case 'scrollDown':
+        scroll(1);
+        break;
+      case 'scrollUp':
+        scroll(-1);
+        break;
+      case 'msOn':
+        this._setModoSimples(true);
+        break;
+      case 'msOff':
+        this._setModoSimples(false);
+        break;
+      case 'panelOpen':
+        if (!state.get().panelOpen) this._openPanel();
+        break;
+      case 'panelClose':
+        if (state.get().panelOpen) this._closePanel();
+        break;
+      case 'help': {
+        if (typeof speechSynthesis === 'undefined') break;
+        stopSpeaking();
+        const u = new SpeechSynthesisUtterance(VC.helpSpoken);
+        applyVoice(u, o);
+        speechSynthesis.speak(u);
+        break;
+      }
+    }
+  }
+
   _announceRestoredOnce() {
     try {
       if (sessionStorage.getItem('ms_restoreAnnounced')) return;
@@ -198,6 +303,8 @@ class ModoSimples {
     stopFlashBlock();
     stopTextMagnifier();
     hideShortcutsCard();
+    this._voiceRun = (this._voiceRun || 0) + 1;
+    stopVoiceCommands();
     stopSpeaking();
     stopManualSelect();
     this._panel?.closeOutline?.();
@@ -525,6 +632,8 @@ class ModoSimples {
       'strongFocus',
       'showShortcuts',
       'voiceName',
+      'voiceCommands',
+      'voiceCloudConsent',
       'voiceRate',
       'voicePitch',
       'voiceVolume',
@@ -565,6 +674,14 @@ class ModoSimples {
     if (prev.options.readFocus !== next.options.readFocus) {
       if (next.options.readFocus) startFocusReader();
       else stopFocusReader();
+    }
+
+    if (prev.options.voiceCommands !== next.options.voiceCommands) {
+      if (next.options.voiceCommands) this._startVoiceCommands();
+      else {
+        this._voiceRun = (this._voiceRun || 0) + 1;
+        stopVoiceCommands();
+      }
     }
 
     if (!this._applyingProfile) {
