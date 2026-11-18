@@ -23,6 +23,7 @@ import {
 import { isManualSelectActive } from '../features/manualSelect.js';
 import { placeShortcutsCard } from '../features/shortcutsCard.js';
 import { STRINGS as S } from './strings.js';
+import { getProfile } from '../core/profiles.js';
 
 /** Valores iniciais das opções (espelha core/state.js) — alvo do "Desligar tudo". */
 const RESET_OPTIONS = {
@@ -101,6 +102,7 @@ export function buildUI(ms) {
     },
     onSpeak: () => ms._toggleSpeak(),
     onResetAll: () => ms._resetAll(),
+    onSelectProfile: (id) => ms._applyProfile(id),
     onResetFont: () => {
       state.set({
         options: Object.fromEntries(
@@ -338,7 +340,11 @@ export function syncSpeaking(ms, speaking) {
 export function resetAll(ms) {
   ms._reducedMotionUser = null; // volta a seguir o SO (padrão)
   if (state.get().modoSimples) ms._setModoSimples(false);
-  state.set({ options: { ...RESET_OPTIONS } });
+  state.set({
+    activeProfile: null,
+    profileCustom: false,
+    options: { ...RESET_OPTIONS },
+  });
   ms._syncReducedMotion();
   // página como sem o widget: também esquece a preferência "mostrar imagens no Modo Simples"
   if (ms._config.persistence) {
@@ -349,6 +355,36 @@ export function resetAll(ms) {
     }
   }
   announce(S.announceResetAll);
+}
+
+/**
+ * F7f: aplica um perfil (ou desliga o ativo ao clicar nele de novo). Troca de perfil = volta ao
+ * padrão (inclui Modo Simples desligado) e aplica o novo; um único anúncio no fim.
+ */
+export function applyProfile(ms, id) {
+  const turnOff = state.get().activeProfile === id;
+  const prof = turnOff ? null : getProfile(id);
+  if (!turnOff && !prof) return;
+  ms._applyingProfile = true; // sem anúncio por opção nem marca de "personalizado" no meio
+  try {
+    ms._reducedMotionUser = prof?.options.reducedMotion ? true : null;
+    if (state.get().modoSimples) ms._setModoSimples(false);
+    state.set({
+      activeProfile: prof ? prof.id : null,
+      profileCustom: false,
+      options: { ...RESET_OPTIONS, ...(prof ? prof.options : {}) },
+    });
+    ms._syncReducedMotion();
+    if (prof?.modoSimples) ms._setModoSimples(true);
+  } finally {
+    ms._applyingProfile = false;
+  }
+  ms._profileBaseline = state.get();
+  announce(
+    prof
+      ? `${S.profileOnPre}${S[`profile${prof.key}Name`]}${S.profileOnPost}`
+      : S.profileOff,
+  );
 }
 
 /** Alterna esquerda/direita; FAB e painel vão juntos e o lado fica salvo. */

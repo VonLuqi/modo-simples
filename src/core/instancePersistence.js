@@ -94,6 +94,8 @@ export function persistState(ms, next) {
   const payload = {
     v: SCHEMA_VERSION,
     modoSimples: next.modoSimples,
+    activeProfile: next.activeProfile,
+    profileCustom: next.profileCustom,
     // reducedMotion só é gravado quando o usuário escolheu (null = derivado do SO)
     options: { ...next.options, reducedMotion: ms._reducedMotionUser },
   };

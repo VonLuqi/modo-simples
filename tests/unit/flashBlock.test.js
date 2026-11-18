@@ -247,6 +247,29 @@ describe('marquee e autoplay', () => {
     assert.equal($('#v').hasAttribute('autoplay'), true, 'atributo volta');
   });
 
+  it('L-a: <audio> não é mexido (epilepsia é visual): autoplay e play() de script seguem', () => {
+    html('<audio id="a" autoplay></audio>');
+    const a = $('#a');
+    let pauses = 0;
+    for (const [k, val] of [
+      ['paused', false],
+      ['muted', false],
+    ])
+      Object.defineProperty(a, k, {
+        value: val,
+        writable: true,
+        configurable: true,
+      });
+    a.pause = () => {
+      pauses += 1;
+    };
+    startFlashBlock();
+    assert.equal(a.hasAttribute('autoplay'), true, 'autoplay do áudio fica');
+    a.dispatchEvent(new env.win.Event('play')); // próxima faixa da playlist, sem gesto
+    assert.equal(pauses, 0, 'áudio nunca é pausado');
+    stopFlashBlock();
+  });
+
   it('marquee sem stop() (navegador sem suporte) é ignorado', () => {
     html('<marquee id="m">x</marquee>');
     $('#m').stop = undefined;

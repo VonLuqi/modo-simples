@@ -1,3 +1,4 @@
+import { getProfile } from './profiles.js';
 import { clampTypo } from './state.js';
 
 /**
@@ -29,9 +30,13 @@ export function hydratePersistedState(saved) {
   if (!opts.colorTheme && opts.highContrast) colorTheme = 'yellowBlack';
 
   const modoSimples = Boolean(saved.modoSimples);
+  // estado antigo (sem perfil) → nenhum perfil
+  const activeProfile = getProfile(saved.activeProfile)?.id ?? null;
 
   return {
     modoSimples,
+    activeProfile,
+    profileCustom: activeProfile ? Boolean(saved.profileCustom) : false,
     options: {
       textScale: ['100', '125', '150', '175'].includes(textScale)
         ? textScale

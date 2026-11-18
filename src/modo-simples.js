@@ -35,6 +35,7 @@ import { announce } from './utils/aria.js';
 import { hasSimpleLanguagePairs } from './utils/simpleLanguage.js';
 import { getPageStyles, getUIStyles } from './ui/styles.js';
 import { STRINGS } from './ui/strings.js';
+import { profileDiffers } from './core/profiles.js';
 import {
   buildUI,
   syncSessionChrome,
@@ -48,6 +49,7 @@ import {
   toggleSpeak,
   syncSpeaking,
   resetAll,
+  applyProfile,
   movePanelSide,
   hideWidget,
   showWidget,
@@ -145,6 +147,12 @@ class ModoSimples {
       this._activateModoSimples(currentState, { announce: false });
       this._announceRestoredOnce();
     }
+    this._profileBaseline = state.get(); // referência para marcar "personalizado" (F7f)
+  }
+
+  /** Delegate: ver applyProfile() em src/ui/binding.js. */
+  _applyProfile(id) {
+    applyProfile(this, id);
   }
 
   /** Cartão de atalhos fica do lado oposto ao botão flutuante. */
@@ -468,12 +476,12 @@ class ModoSimples {
 
     if (prev.modoSimples !== next.modoSimples) {
       if (next.modoSimples) {
-        this._activateModoSimples(next);
+        this._activateModoSimples(next, { announce: !this._applyingProfile });
       } else {
         stopManualSelect();
         revertModoSimples();
         applyOptions(next);
-        announce('Modo Simples desativado');
+        if (!this._applyingProfile) announce('Modo Simples desativado');
       }
     }
 
@@ -534,9 +542,27 @@ class ModoSimples {
       else stopFocusReader();
     }
 
-    diffStateAnnouncements(prev, next).forEach((msg) => announce(msg));
+    if (!this._applyingProfile) {
+      diffStateAnnouncements(prev, next).forEach((msg) => announce(msg));
+    }
 
     this._persistState(next);
+
+    // F7f: ajuste manual com perfil ativo → "personalizado" (depois de gravar, para o regravar
+    // com a marca; o perfil continua marcado)
+    if (
+      !this._applyingProfile &&
+      next.activeProfile &&
+      !next.profileCustom &&
+      this._profileBaseline &&
+      profileDiffers(
+        this._profileBaseline,
+        next,
+        this._reducedMotionUser !== null,
+      )
+    ) {
+      state.set({ profileCustom: true });
+    }
   }
 
   // ── Persistence ────────────────────────────────────────────────────────────

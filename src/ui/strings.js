@@ -154,6 +154,29 @@ export const STRINGS = Object.freeze({
   sessionExit: 'Voltar',
   sessionExitPost: ' ao site normal',
 
+  // F7f — perfis (ui/a11yPanel.js; dados em core/profiles.js)
+  profilesTitle: 'Perfis prontos',
+  profilesHint: 'Escolha um e a página se ajusta. Um de cada vez.',
+  profileSimpleName: 'Modo Simples',
+  profileSimpleDesc: 'Página mais limpa e fácil de ler',
+  profileLowVisionName: 'Baixa visão',
+  profileLowVisionDesc: 'Texto maior, cores fortes e cursor grande',
+  profileDyslexiaName: 'Dislexia',
+  profileDyslexiaDesc:
+    'Fonte própria, mais espaço entre letras e régua de leitura',
+  profileAdhdName: 'TDAH',
+  profileAdhdDesc:
+    'Menos distração: sem som, sem movimento e a voz lê o que você seleciona',
+  profileEpilepsyName: 'Epilepsia',
+  profileEpilepsyDesc: 'Sem animações, sem vídeo tocando sozinho e sem som',
+  profileKeyboardName: 'Teclado',
+  profileKeyboardDesc:
+    'Foco bem visível, atalhos na tela e a voz lê o que você seleciona',
+  profileCustom: 'Personalizado',
+  profileOnPre: 'Perfil ',
+  profileOnPost: ' ativado',
+  profileOff: 'Perfil desligado. Página sem ajustes.',
+
   // features/focusReader.js (papéis e estados falados)
   roleButton: 'botão',
   roleLink: 'link',

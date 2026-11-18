@@ -17,7 +17,8 @@ import { STRINGS as S } from '../ui/strings.js';
 
 const OWN_HOST = '#ms-container';
 const STILL_ATTR = 'data-ms-gif-still';
-const MEDIA_SELECTOR = 'video, audio';
+// só vídeo: a epilepsia é visual; áudio (playlist que avança sozinha) não é tocado
+const MEDIA_SELECTOR = 'video';
 /** O que, do <img>, precisa ir para o substituto para o layout não mudar. */
 const COPY_STYLE = [
   'margin',

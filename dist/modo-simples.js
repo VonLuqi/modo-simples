@@ -221,6 +221,9 @@
   var initialState = {
     modoSimples: false,
     panelOpen: false,
+    /** F7f: id do perfil ativo (core/profiles.js) ou null; `profileCustom` = ajustado à mão depois */
+    activeProfile: null,
+    profileCustom: false,
     options: {
       textScale: "100",
       colorTheme: "senac",
@@ -468,10 +471,67 @@
   };
   var persistence_default = persistence;
 
+  // src/core/profiles.js
+  var freeze = (p) => Object.freeze({ ...p, options: Object.freeze({ ...p.options }) });
+  var PROFILES = Object.freeze([
+    freeze({ id: "simple", key: "Simple", modoSimples: true, options: {} }),
+    freeze({
+      id: "lowVision",
+      key: "LowVision",
+      modoSimples: false,
+      options: {
+        textScale: "150",
+        colorTheme: "yellowBlack",
+        cursorStyle: "bigWhite",
+        lineHeight: 1.5
+      }
+    }),
+    freeze({
+      id: "dyslexia",
+      key: "Dyslexia",
+      modoSimples: false,
+      options: {
+        dyslexiaFont: true,
+        letterSpacing: 0.12,
+        wordSpacing: 0.16,
+        lineHeight: 1.5,
+        readingRuler: true
+      }
+    }),
+    freeze({
+      id: "adhd",
+      key: "Adhd",
+      modoSimples: true,
+      options: { readFocus: true, muteMedia: true, reducedMotion: true }
+    }),
+    freeze({
+      id: "epilepsy",
+      key: "Epilepsy",
+      modoSimples: false,
+      options: { blockFlashing: true, reducedMotion: true, muteMedia: true }
+    }),
+    freeze({
+      id: "keyboard",
+      key: "Keyboard",
+      modoSimples: false,
+      options: { strongFocus: true, readFocus: true, showShortcuts: true }
+    })
+  ]);
+  function getProfile(id) {
+    return PROFILES.find((p) => p.id === id) || null;
+  }
+  function profileDiffers(base, now, reducedMotionIsUserChoice) {
+    if (base.modoSimples !== now.modoSimples) return true;
+    return Object.keys(base.options).some(
+      (k) => (k !== "reducedMotion" || reducedMotionIsUserChoice) && base.options[k] !== now.options[k]
+    );
+  }
+
   // src/core/persistedState.js
   var SCHEMA_VERSION = 1;
   var hexOrEmpty = (v) => typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : "";
   function hydratePersistedState(saved) {
+    var _a, _b;
     if (!saved || typeof saved !== "object") return null;
     const opts = saved.options || {};
     let textScale = opts.textScale || "100";
@@ -479,8 +539,11 @@
     let colorTheme = opts.colorTheme || "senac";
     if (!opts.colorTheme && opts.highContrast) colorTheme = "yellowBlack";
     const modoSimples = Boolean(saved.modoSimples);
+    const activeProfile = (_b = (_a = getProfile(saved.activeProfile)) == null ? void 0 : _a.id) != null ? _b : null;
     return {
       modoSimples,
+      activeProfile,
+      profileCustom: activeProfile ? Boolean(saved.profileCustom) : false,
       options: {
         textScale: ["100", "125", "150", "175"].includes(textScale) ? textScale : "100",
         colorTheme: [
@@ -656,6 +719,8 @@
     const payload = {
       v: SCHEMA_VERSION,
       modoSimples: next.modoSimples,
+      activeProfile: next.activeProfile,
+      profileCustom: next.profileCustom,
       // reducedMotion só é gravado quando o usuário escolheu (null = derivado do SO)
       options: { ...next.options, reducedMotion: ms._reducedMotionUser }
     };
@@ -1563,6 +1628,63 @@
         transform: none;
       }
     }
+    /* \u2500\u2500 F7f: perfis prontos (bot\xF5es com aria-pressed) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    .ms-a11y-profiles {
+      margin-bottom: calc(1 * var(--ms-u));
+    }
+    .ms-profiles-title { margin: 0 0 calc(0.25 * var(--ms-u)); }
+    .ms-profiles-hint {
+      margin: 0 0 calc(0.6 * var(--ms-u));
+      font-size: calc(0.8125 * var(--ms-u));
+      color: #475569;
+      line-height: 1.35;
+    }
+    .ms-profile-list {
+      display: flex;
+      flex-direction: column;
+      gap: calc(0.5 * var(--ms-u));
+    }
+    .ms-profile {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0 calc(0.5 * var(--ms-u));
+      width: 100%;
+      min-height: 44px;
+      padding: calc(0.55 * var(--ms-u)) calc(0.75 * var(--ms-u));
+      border: 2px solid var(--ms-blue);
+      border-radius: 10px;
+      background: #fff;
+      color: #1e293b;
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+    }
+    .ms-profile:hover { background: #eef3fb; }
+    .ms-profile:focus-visible { outline: 3px solid var(--ms-blue); outline-offset: 2px; }
+    .ms-profile--on {
+      background: var(--ms-blue);
+      color: #fff;
+    }
+    .ms-profile--on:hover { background: var(--ms-blue); }
+    .ms-profile-name {
+      font-weight: 700;
+      font-size: calc(0.9 * var(--ms-u));
+    }
+    .ms-profile-desc {
+      flex: 1 1 100%;
+      font-size: calc(0.8125 * var(--ms-u));
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .ms-profile-custom {
+      padding: 0 calc(0.45 * var(--ms-u));
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-size: calc(0.75 * var(--ms-u));
+      font-weight: 700;
+    }
+    .ms-profile-custom[hidden] { display: none; }
     /* \u2500\u2500 F8c: cursor grande tamb\xE9m dentro do widget \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
        O host recebe data-ms-cursor (domMutator.applyOptions) e herda --ms-cur-arrow/--ms-cur-hand
        do <html> (definidas em page/85-cursor.css): as imagens n\xE3o s\xE3o duplicadas aqui. */
@@ -2517,6 +2639,25 @@
     sessionImagesVisible: "VIS\xCDVEIS",
     sessionExit: "Voltar",
     sessionExitPost: " ao site normal",
+    // F7f — perfis (ui/a11yPanel.js; dados em core/profiles.js)
+    profilesTitle: "Perfis prontos",
+    profilesHint: "Escolha um e a p\xE1gina se ajusta. Um de cada vez.",
+    profileSimpleName: "Modo Simples",
+    profileSimpleDesc: "P\xE1gina mais limpa e f\xE1cil de ler",
+    profileLowVisionName: "Baixa vis\xE3o",
+    profileLowVisionDesc: "Texto maior, cores fortes e cursor grande",
+    profileDyslexiaName: "Dislexia",
+    profileDyslexiaDesc: "Fonte pr\xF3pria, mais espa\xE7o entre letras e r\xE9gua de leitura",
+    profileAdhdName: "TDAH",
+    profileAdhdDesc: "Menos distra\xE7\xE3o: sem som, sem movimento e a voz l\xEA o que voc\xEA seleciona",
+    profileEpilepsyName: "Epilepsia",
+    profileEpilepsyDesc: "Sem anima\xE7\xF5es, sem v\xEDdeo tocando sozinho e sem som",
+    profileKeyboardName: "Teclado",
+    profileKeyboardDesc: "Foco bem vis\xEDvel, atalhos na tela e a voz l\xEA o que voc\xEA seleciona",
+    profileCustom: "Personalizado",
+    profileOnPre: "Perfil ",
+    profileOnPost: " ativado",
+    profileOff: "Perfil desligado. P\xE1gina sem ajustes.",
     // features/focusReader.js (papéis e estados falados)
     roleButton: "bot\xE3o",
     roleLink: "link",
@@ -3449,6 +3590,39 @@
       controls: ["strongFocus", "showShortcuts"]
     }
   ];
+  function buildProfiles() {
+    const el2 = (tag, cls, text) => {
+      const n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text) n.textContent = text;
+      return n;
+    };
+    const sec = el2("section", "ms-a11y-profiles");
+    sec.setAttribute("aria-labelledby", "ms-profiles-title");
+    const h = el2(
+      "h3",
+      "ms-a11y-section-title ms-profiles-title",
+      STRINGS.profilesTitle
+    );
+    h.id = "ms-profiles-title";
+    const list = el2("div", "ms-profile-list");
+    for (const p of PROFILES) {
+      const b = el2("button", "ms-profile");
+      b.type = "button";
+      b.setAttribute("data-profile", p.id);
+      b.setAttribute("aria-pressed", "false");
+      b.appendChild(el2("span", "ms-profile-name", STRINGS["profile" + p.key + "Name"]));
+      b.appendChild(el2("span", "ms-profile-desc", STRINGS["profile" + p.key + "Desc"]));
+      const custom = el2("span", "ms-profile-custom", STRINGS.profileCustom);
+      custom.hidden = true;
+      b.appendChild(custom);
+      list.appendChild(b);
+    }
+    sec.appendChild(h);
+    sec.appendChild(el2("p", "ms-profiles-hint", STRINGS.profilesHint));
+    sec.appendChild(list);
+    return sec;
+  }
   function renderSection(sec, index) {
     const open = index === 0;
     const blocks = sec.controls.map(
@@ -3479,6 +3653,7 @@
     onSpeak,
     onResetAll,
     onResetFont,
+    onSelectProfile,
     onMoveSide,
     brand
   }) {
@@ -3509,6 +3684,7 @@
     </header>
 
     <div class="ms-a11y-body">
+      <div data-slot="profiles"></div>
       <div class="ms-a11y-card ms-a11y-card--simple" data-section="modo-simples">
         <div class="ms-a11y-card-row">
           <div class="ms-a11y-card-text">
@@ -3608,6 +3784,13 @@
       });
     });
     panel.querySelector(".ms-a11y-close").addEventListener("click", () => onClose());
+    panel.querySelector('[data-slot="profiles"]').appendChild(buildProfiles());
+    panel.querySelectorAll("[data-profile]").forEach(
+      (btn) => btn.addEventListener(
+        "click",
+        () => onSelectProfile == null ? void 0 : onSelectProfile(btn.getAttribute("data-profile"))
+      )
+    );
     panel.querySelector('[data-action="reset-all"]').addEventListener("click", () => onResetAll == null ? void 0 : onResetAll());
     panel.querySelector('[data-action="reset-font"]').addEventListener("click", () => onResetFont == null ? void 0 : onResetFont());
     TYPO_KEYS.forEach((key) => {
@@ -3811,6 +3994,12 @@
         "cursorStyle",
         (_k = (_j = CURSORS.find((x) => x.value === cursor)) == null ? void 0 : _j.label) != null ? _k : cursor
       );
+      panel.querySelectorAll("[data-profile]").forEach((btn) => {
+        const active = s.activeProfile === btn.getAttribute("data-profile");
+        btn.setAttribute("aria-pressed", String(active));
+        btn.classList.toggle("ms-profile--on", active);
+        btn.querySelector(".ms-profile-custom").hidden = !(active && s.profileCustom);
+      });
       const speakBtn = panel.querySelector('[data-action="speak"]');
       if (speakBtn && ui.speaking !== void 0) {
         speakBtn.querySelector("[data-speak-text]").textContent = ui.speaking ? STRINGS.panelVoiceStopButton : STRINGS.panelVoiceButton;
@@ -4799,6 +4988,7 @@
       },
       onSpeak: () => ms._toggleSpeak(),
       onResetAll: () => ms._resetAll(),
+      onSelectProfile: (id) => ms._applyProfile(id),
       onResetFont: () => {
         state_default.set({
           options: Object.fromEntries(
@@ -4972,7 +5162,11 @@
   function resetAll(ms) {
     ms._reducedMotionUser = null;
     if (state_default.get().modoSimples) ms._setModoSimples(false);
-    state_default.set({ options: { ...RESET_OPTIONS } });
+    state_default.set({
+      activeProfile: null,
+      profileCustom: false,
+      options: { ...RESET_OPTIONS }
+    });
     ms._syncReducedMotion();
     if (ms._config.persistence) {
       if (ms._config.hostnamePersistence) {
@@ -4982,6 +5176,29 @@
       }
     }
     announce(STRINGS.announceResetAll);
+  }
+  function applyProfile(ms, id) {
+    const turnOff = state_default.get().activeProfile === id;
+    const prof = turnOff ? null : getProfile(id);
+    if (!turnOff && !prof) return;
+    ms._applyingProfile = true;
+    try {
+      ms._reducedMotionUser = (prof == null ? void 0 : prof.options.reducedMotion) ? true : null;
+      if (state_default.get().modoSimples) ms._setModoSimples(false);
+      state_default.set({
+        activeProfile: prof ? prof.id : null,
+        profileCustom: false,
+        options: { ...RESET_OPTIONS, ...prof ? prof.options : {} }
+      });
+      ms._syncReducedMotion();
+      if (prof == null ? void 0 : prof.modoSimples) ms._setModoSimples(true);
+    } finally {
+      ms._applyingProfile = false;
+    }
+    ms._profileBaseline = state_default.get();
+    announce(
+      prof ? `${STRINGS.profileOnPre}${STRINGS[`profile${prof.key}Name`]}${STRINGS.profileOnPost}` : STRINGS.profileOff
+    );
   }
   function movePanelSide(ms) {
     ms._side = ms._side === "left" ? "right" : "left";
@@ -5621,7 +5838,7 @@
   // src/features/flashBlock.js
   var OWN_HOST2 = "#ms-container";
   var STILL_ATTR = "data-ms-gif-still";
-  var MEDIA_SELECTOR2 = "video, audio";
+  var MEDIA_SELECTOR2 = "video";
   var COPY_STYLE = [
     "margin",
     "float",
@@ -5672,7 +5889,7 @@
     }
     (_a = img.focus) == null ? void 0 : _a.call(img, { preventScroll: true });
   }
-  function freeze(img) {
+  function freeze2(img) {
     if (!_on3 || _revealed.has(img) || !img.isConnected || isOwn2(img)) return;
     if (!img.complete || !img.naturalWidth) return;
     const rect = img.getBoundingClientRect();
@@ -5752,8 +5969,8 @@
   }
   function handleImg(img) {
     if (!isGif(img) || _revealed.has(img)) return;
-    if (img.complete && img.naturalWidth) freeze(img);
-    else img.addEventListener("load", () => freeze(img), { once: true });
+    if (img.complete && img.naturalWidth) freeze2(img);
+    else img.addEventListener("load", () => freeze2(img), { once: true });
   }
   function handleMarquee(m) {
     if (typeof m.stop !== "function" || _marquees.has(m)) return;
@@ -5874,6 +6091,11 @@
         this._activateModoSimples(currentState, { announce: false });
         this._announceRestoredOnce();
       }
+      this._profileBaseline = state_default.get();
+    }
+    /** Delegate: ver applyProfile() em src/ui/binding.js. */
+    _applyProfile(id) {
+      applyProfile(this, id);
     }
     /** Cartão de atalhos fica do lado oposto ao botão flutuante. */
     _shortcutsSide() {
@@ -6139,12 +6361,12 @@
       if (this._chrome) this._chrome.sync(next, { speaking: isSpeaking() });
       if (prev.modoSimples !== next.modoSimples) {
         if (next.modoSimples) {
-          this._activateModoSimples(next);
+          this._activateModoSimples(next, { announce: !this._applyingProfile });
         } else {
           stopManualSelect();
           revertModoSimples();
           applyOptions(next);
-          announce("Modo Simples desativado");
+          if (!this._applyingProfile) announce("Modo Simples desativado");
         }
       }
       const optionKeys = [
@@ -6198,8 +6420,17 @@
         if (next.options.readFocus) startFocusReader();
         else stopFocusReader();
       }
-      diffStateAnnouncements(prev, next).forEach((msg) => announce(msg));
+      if (!this._applyingProfile) {
+        diffStateAnnouncements(prev, next).forEach((msg) => announce(msg));
+      }
       this._persistState(next);
+      if (!this._applyingProfile && next.activeProfile && !next.profileCustom && this._profileBaseline && profileDiffers(
+        this._profileBaseline,
+        next,
+        this._reducedMotionUser !== null
+      )) {
+        state_default.set({ profileCustom: true });
+      }
     }
     // ── Persistence ────────────────────────────────────────────────────────────
     /** Delegate: ver persistState() em src/core/instancePersistence.js. */

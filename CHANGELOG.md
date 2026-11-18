@@ -4,6 +4,23 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 
 ## [Unreleased]
 
+### Adicionado (F7f — perfis de acessibilidade)
+
+- **6 perfis prontos** no topo do painel (botões `aria-pressed`, ≥ 44 px, nome e descrição em português simples; um por vez), como pacotes sobre as opções que já existem. Tabela única em `src/core/profiles.js`; textos em `src/ui/strings.js`:
+  - **Modo Simples** — Modo Simples ligado (+ linguagem simples quando a página tem);
+  - **Baixa visão** — texto 150%, alto contraste (Amarelo e Preto), cursor grande branco, linha 1,5;
+  - **Dislexia** — fonte Lexend, espaço entre letras (0,12 em) e palavras (0,16 em), linha 1,5, régua de leitura;
+  - **TDAH** — Modo Simples, leia o foco, pausar e mutar tudo, reduzir movimento;
+  - **Epilepsia** — bloquear animações/GIFs, reduzir movimento, pausar e mutar tudo;
+  - **Teclado** — foco bem visível, leia o foco, atalhos na tela.
+- **Trocar de perfil volta ao padrão** (inclui Modo Simples desligado) **e aplica o novo**, com **um único anúncio** ("Perfil X ativado"); clicar no perfil ativo de novo desliga ("Perfil desligado").
+- **Ajuste manual** depois do perfil mantém o perfil marcado e mostra **"Personalizado"** (comparação com a foto do estado logo após aplicar; `reducedMotion` só conta quando o usuário escolheu, pois segue o SO). **Desligar tudo** limpa o perfil.
+- Estado novo `activeProfile` (id ou `null`) e `profileCustom`, persistidos; estado salvo antigo (sem perfil) vira "nenhum perfil" e id desconhecido é descartado.
+
+### Alterado (F7d, achado L-a do QA)
+
+- **Bloquear animações e GIFs** agora trata só **`<video>`** (autoplay e `play()` sem gesto). `<audio>` não é mais pausado: a epilepsia é um risco visual, e a playlist que avança sozinha seguia sendo interrompida. Silenciar áudio continua sendo a opção "Pausar e mutar tudo".
+
 ### Adicionado (F7e — perfil Teclado: "Foco bem visível" e "Mostrar atalhos do teclado")
 
 - **Nova seção do painel "Teclado e foco"** com duas opções independentes (booleanos, padrão desligado, persistidos, zerados pelo "Desligar tudo", anunciados ao alternar): `strongFocus` e `showShortcuts`. Pensadas para o perfil Teclado (F7f) ligar junto com "Ler o que eu seleciono".

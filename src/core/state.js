@@ -54,6 +54,9 @@ export function clampTypo(key, value) {
 const initialState = {
   modoSimples: false,
   panelOpen: false,
+  /** F7f: id do perfil ativo (core/profiles.js) ou null; `profileCustom` = ajustado à mão depois */
+  activeProfile: null,
+  profileCustom: false,
   options: {
     textScale: '100',
     colorTheme: 'senac',

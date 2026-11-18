@@ -9,6 +9,7 @@ import { trapFocus } from '../utils/focus.js';
 import { STRINGS as S } from './strings.js';
 import { TYPO_LIMITS } from '../core/state.js';
 import { isFocusReaderSupported } from '../features/focusReader.js';
+import { PROFILES } from '../core/profiles.js';
 import { contrastRatio, effectiveColors } from '../utils/colorContrast.js';
 
 /** Sliders de tipografia (F8b): posição 0 = padrão do site; o resto mapeia para o valor real. */
@@ -402,6 +403,41 @@ const SECTIONS = [
   },
 ];
 
+/** F7f: escolha de perfil, montada por DOM (textos só de strings.js; botões com aria-pressed). */
+function buildProfiles() {
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text) n.textContent = text;
+    return n;
+  };
+  const sec = el('section', 'ms-a11y-profiles');
+  sec.setAttribute('aria-labelledby', 'ms-profiles-title');
+  const h = el(
+    'h3',
+    'ms-a11y-section-title ms-profiles-title',
+    S.profilesTitle,
+  );
+  h.id = 'ms-profiles-title';
+  const list = el('div', 'ms-profile-list');
+  for (const p of PROFILES) {
+    const b = el('button', 'ms-profile');
+    b.type = 'button';
+    b.setAttribute('data-profile', p.id);
+    b.setAttribute('aria-pressed', 'false');
+    b.appendChild(el('span', 'ms-profile-name', S['profile' + p.key + 'Name']));
+    b.appendChild(el('span', 'ms-profile-desc', S['profile' + p.key + 'Desc']));
+    const custom = el('span', 'ms-profile-custom', S.profileCustom);
+    custom.hidden = true;
+    b.appendChild(custom);
+    list.appendChild(b);
+  }
+  sec.appendChild(h);
+  sec.appendChild(el('p', 'ms-profiles-hint', S.profilesHint));
+  sec.appendChild(list);
+  return sec;
+}
+
 function renderSection(sec, index) {
   const open = index === 0;
   const blocks = sec.controls.map((k) =>
@@ -447,6 +483,7 @@ export function createA11yPanel({
   onSpeak,
   onResetAll,
   onResetFont,
+  onSelectProfile,
   onMoveSide,
   brand,
 }) {
@@ -478,6 +515,7 @@ export function createA11yPanel({
     </header>
 
     <div class="ms-a11y-body">
+      <div data-slot="profiles"></div>
       <div class="ms-a11y-card ms-a11y-card--simple" data-section="modo-simples">
         <div class="ms-a11y-card-row">
           <div class="ms-a11y-card-text">
@@ -593,6 +631,14 @@ export function createA11yPanel({
   panel
     .querySelector('.ms-a11y-close')
     .addEventListener('click', () => onClose());
+  panel.querySelector('[data-slot="profiles"]').appendChild(buildProfiles());
+  panel
+    .querySelectorAll('[data-profile]')
+    .forEach((btn) =>
+      btn.addEventListener('click', () =>
+        onSelectProfile?.(btn.getAttribute('data-profile')),
+      ),
+    );
   panel
     .querySelector('[data-action="reset-all"]')
     .addEventListener('click', () => onResetAll?.());
@@ -852,6 +898,15 @@ export function createA11yPanel({
       'cursorStyle',
       CURSORS.find((x) => x.value === cursor)?.label ?? cursor,
     );
+
+    panel.querySelectorAll('[data-profile]').forEach((btn) => {
+      const active = s.activeProfile === btn.getAttribute('data-profile');
+      btn.setAttribute('aria-pressed', String(active));
+      btn.classList.toggle('ms-profile--on', active);
+      btn.querySelector('.ms-profile-custom').hidden = !(
+        active && s.profileCustom
+      );
+    });
 
     const speakBtn = panel.querySelector('[data-action="speak"]');
     if (speakBtn && ui.speaking !== undefined) {

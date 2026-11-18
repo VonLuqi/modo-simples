@@ -1,0 +1,57 @@
+    /* ── F7f: perfis prontos (botões com aria-pressed) ───────────────────── */
+    .ms-a11y-profiles {
+      margin-bottom: calc(1 * var(--ms-u));
+    }
+    .ms-profiles-title { margin: 0 0 calc(0.25 * var(--ms-u)); }
+    .ms-profiles-hint {
+      margin: 0 0 calc(0.6 * var(--ms-u));
+      font-size: calc(0.8125 * var(--ms-u));
+      color: #475569;
+      line-height: 1.35;
+    }
+    .ms-profile-list {
+      display: flex;
+      flex-direction: column;
+      gap: calc(0.5 * var(--ms-u));
+    }
+    .ms-profile {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0 calc(0.5 * var(--ms-u));
+      width: 100%;
+      min-height: 44px;
+      padding: calc(0.55 * var(--ms-u)) calc(0.75 * var(--ms-u));
+      border: 2px solid var(--ms-blue);
+      border-radius: 10px;
+      background: #fff;
+      color: #1e293b;
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+    }
+    .ms-profile:hover { background: #eef3fb; }
+    .ms-profile:focus-visible { outline: 3px solid var(--ms-blue); outline-offset: 2px; }
+    .ms-profile--on {
+      background: var(--ms-blue);
+      color: #fff;
+    }
+    .ms-profile--on:hover { background: var(--ms-blue); }
+    .ms-profile-name {
+      font-weight: 700;
+      font-size: calc(0.9 * var(--ms-u));
+    }
+    .ms-profile-desc {
+      flex: 1 1 100%;
+      font-size: calc(0.8125 * var(--ms-u));
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .ms-profile-custom {
+      padding: 0 calc(0.45 * var(--ms-u));
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-size: calc(0.75 * var(--ms-u));
+      font-weight: 700;
+    }
+    .ms-profile-custom[hidden] { display: none; }
