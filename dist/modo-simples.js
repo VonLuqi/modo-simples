@@ -3521,9 +3521,11 @@
   }
   var secure = () => globalThis.isSecureContext !== false;
   async function getRecognitionMode() {
+    var _a;
     const Ctor = getCtor();
     if (!Ctor || !secure()) return "none";
-    if (typeof Ctor.available === "function") {
+    const headless = /HeadlessChrome/.test(((_a = globalThis.navigator) == null ? void 0 : _a.userAgent) || "");
+    if (!headless && typeof Ctor.available === "function") {
       try {
         const r = await Ctor.available({ langs: [LANG2], processLocally: true });
         if (r === "available") return "local";
@@ -4730,6 +4732,7 @@
     let vcConsent = false;
     let vcCore = "";
     let vcUnsub = null;
+    let vcBusy = false;
     let lastSync = null;
     const subscribeVoiceStatus = () => {
       const ms = globalThis.ModoSimples;
@@ -4757,12 +4760,12 @@
       vcStatus.textContent = vcUnsub ? VC_TEXT[vcCore] || "" : vcOn ? STRINGS.panelVcListening : "";
     };
     let dialogEl = null;
-    const closeDialog = () => {
+    const closeDialog = (refocus = true) => {
       if (!dialogEl) return;
       dialogEl.remove();
       dialogEl = null;
       [...panel.children].forEach((c) => c.removeAttribute("inert"));
-      vcSwitch.focus();
+      if (refocus) vcSwitch.focus();
     };
     const openDialog = ({ title, text, buttons }) => {
       if (dialogEl) {
@@ -4893,7 +4896,14 @@
         onSetOption("voiceCommands", false);
         return;
       }
-      const mode = await getRecognitionMode();
+      if (vcBusy) return;
+      vcBusy = true;
+      let mode;
+      try {
+        mode = await getRecognitionMode();
+      } finally {
+        vcBusy = false;
+      }
       recMode = mode;
       if (mode === "local" || mode === "cloud" && vcConsent) turnOn();
       else if (mode === "download") askDownload();
@@ -5175,6 +5185,7 @@
     }
     function close() {
       outline.close({ restoreFocus: false });
+      closeDialog(false);
       panel.hidden = true;
       if (_releaseFocus) {
         _releaseFocus();
