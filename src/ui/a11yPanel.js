@@ -58,6 +58,57 @@ const typoText = (key, v) =>
     ? `${String(v).replace('.', ',')}${key === 'lineHeight' ? '' : ' em'}`
     : S.panelTypoDefault;
 
+/** Vozes parecidas (ex.: dezenas de variantes do espeak) viram poucas por idioma na lista curta. */
+const VOICES_PER_LANG = 6;
+function collapseVoices(list, max = VOICES_PER_LANG) {
+  const byLang = new Map();
+  list.forEach((v) => {
+    const k = (v.lang || '').toLowerCase();
+    if (!byLang.has(k)) byLang.set(k, []);
+    byLang.get(k).push(v);
+  });
+  const out = [];
+  byLang.forEach((g) => {
+    if (g.length <= max) return out.push(...g);
+    // variante "Nome+Variante" fica de fora; sobrando menos de 2 nomes-base, vale os primeiros
+    const base = g.filter((v) => !v.name.includes('+'));
+    out.push(...(base.length >= 2 ? base : g).slice(0, max));
+  });
+  return out;
+}
+
+/** Todas as vozes por idioma: pt-BR, outras pt, depois o resto por código; cada grupo por nome. */
+function groupVoicesByLang(list) {
+  const byLang = new Map();
+  list.forEach((v) => {
+    const k = v.lang || '?';
+    if (!byLang.has(k)) byLang.set(k, []);
+    byLang.get(k).push(v);
+  });
+  const rank = (k) =>
+    /^pt[-_]br$/i.test(k) ? 0 : /^pt([-_]|$)/i.test(k) ? 1 : 2;
+  let names = null;
+  try {
+    names = new Intl.DisplayNames(['pt-BR'], { type: 'language' });
+  } catch {
+    /* sem Intl.DisplayNames: só o código */
+  }
+  return [...byLang.keys()]
+    .sort((a, b) => rank(a) - rank(b) || a.localeCompare(b))
+    .map((k) => {
+      let nome = '';
+      try {
+        nome = names?.of(k.replace('_', '-')) || '';
+      } catch {
+        /* código fora do padrão */
+      }
+      return {
+        label: nome && nome !== k ? `${nome} (${k})` : k,
+        voices: byLang.get(k).sort((a, b) => a.name.localeCompare(b.name)),
+      };
+    });
+}
+
 /** Estúdio de Voz (F10b): sliders [chave em options, rótulo]. */
 const VOICE_SLIDERS = [
   ['voiceRate', S.panelVoiceRateLabel],
@@ -399,6 +450,7 @@ const CONTROLS = {
             <input type="range" class="ms-range-input" id="ms-voice-voiceVolume" data-voice="voiceVolume">
           </div>
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-all" aria-pressed="false" hidden style="display:none">${S.panelVoiceAll}</button>
+          <p class="ms-a11y-control-state" data-voice-hint hidden>${S.panelVoiceMoreHint}</p>
           <p class="ms-a11y-control-state" data-speech-notice-studio hidden>${S.panelSpeechFailed}</p>
           <p class="ms-a11y-control-state" data-voice-note hidden>${S.panelVoiceUnsupported}</p>
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-test" aria-label="${S.panelVoiceTestLabel}">${S.panelVoiceTest}</button>
@@ -873,6 +925,7 @@ export function createA11yPanel({
   );
   let voiceName = ''; // última voz salva (sync); reaplicada quando a lista de vozes muda
   const voiceAllBtn = panel.querySelector('[data-action="voice-all"]');
+  const voiceHint = panel.querySelector('[data-voice-hint]');
   let showAllVoices = false;
   voiceAllBtn.addEventListener('click', () => {
     showAllVoices = !showAllVoices;
@@ -888,18 +941,29 @@ export function createA11yPanel({
     } catch {
       /* speechSynthesis parcial (sem getVoices): só a opção Automática */
     }
-    // P4: só português por padrão; as outras ficam atrás de "Mostrar todas as vozes" (por nome)
+    // Padrão: só português, com as variantes parecidas recolhidas (Linux/espeak tem centenas);
+    // "Mostrar todas as vozes" abre tudo, agrupado por idioma. A voz salva sempre aparece.
     const isPt = (v) => /^pt([-_]|$)/i.test(v.lang || '');
     const pt = voices.filter(isPt);
-    const rest = voices
-      .filter((v) => !isPt(v))
-      .sort((a, b) => a.name.localeCompare(b.name));
-    if (selected && rest.some((v) => v.name === selected)) showAllVoices = true; // voz salva não-pt precisa aparecer
-    voiceAllBtn.hidden = rest.length === 0;
-    voiceAllBtn.style.display = rest.length === 0 ? 'none' : '';
+    const hasOthers = voices.length > pt.length;
+    voiceAllBtn.hidden = !hasOthers && pt.length === collapseVoices(pt).length;
+    voiceAllBtn.style.display = voiceAllBtn.hidden ? 'none' : '';
     voiceAllBtn.setAttribute('aria-pressed', String(showAllVoices));
-    voices = showAllVoices ? [...pt, ...rest] : pt;
-    const sig = `${showAllVoices}|${voices.map((v) => `${v.name}|${v.lang}`).join('\n')}`;
+    let items;
+    let groups = null;
+    let hidden = 0;
+    if (showAllVoices) {
+      groups = groupVoicesByLang(voices);
+      items = groups.flatMap((g) => g.voices);
+    } else {
+      items = collapseVoices(pt);
+      hidden = pt.length - items.length;
+      const saved = selected && voices.find((v) => v.name === selected);
+      if (saved && !items.includes(saved)) items = [...items, saved]; // voz salva fora da lista curta
+    }
+    voiceHint.hidden = hidden <= 0;
+    voices = items;
+    const sig = `${showAllVoices}|${hidden}|${voices.map((v) => `${v.name}|${v.lang}`).join('\n')}`;
     if (sig === voicesSig) {
       // mesma lista: só ajusta a seleção, e nunca com o seletor em uso (L2: não fecha o menu aberto)
       if (!isVoiceSelFocused() && voiceSel.value !== (selected || '')) {
@@ -914,12 +978,22 @@ export function createA11yPanel({
     auto.value = '';
     auto.textContent = S.panelVoiceAuto;
     voiceSel.appendChild(auto);
-    voices.forEach((v) => {
+    const optionOf = (v) => {
       const o = document.createElement('option');
       o.value = v.name;
       o.textContent = `${v.name} (${v.lang})`;
-      voiceSel.appendChild(o);
-    });
+      return o;
+    };
+    if (groups) {
+      groups.forEach((g) => {
+        const og = document.createElement('optgroup');
+        og.label = g.label;
+        g.voices.forEach((v) => og.appendChild(optionOf(v)));
+        voiceSel.appendChild(og);
+      });
+    } else {
+      voices.forEach((v) => voiceSel.appendChild(optionOf(v)));
+    }
     voiceSel.value = selected || '';
   };
   fillVoices('');

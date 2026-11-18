@@ -222,23 +222,97 @@ test.describe('F10f — lista de vozes', () => {
     ]);
     const all = page.locator('[data-action="voice-all"]');
     await realClick(page, all);
+    // agrupado por idioma: pt-BR primeiro, depois os códigos em ordem (de, en, fr)
     expect(await nomes()).toEqual([
       'Automática (português)',
       'Maria Brasil (pt-BR)',
+      'Zed (de-DE)',
       'Alfa (en-US)',
       'Mike (fr-FR)',
-      'Zed (de-DE)',
     ]);
     await sel.selectOption('Alfa');
     await expect
       .poll(async () => (await persisted(page)).voiceName)
       .toBe('Alfa');
-    // com uma voz não-pt salva, a lista completa já abre mostrando a escolha
+    // L3: com uma voz não-pt salva a lista curta só ganha essa voz; o botão recolhe e abre à vontade
     await page.reload();
     await waitForLib(page);
     await openPanel(page);
     await expect(sel).toHaveValue('Alfa');
+    await expect(all).toHaveAttribute('aria-pressed', 'false');
+    expect(await nomes()).toEqual([
+      'Automática (português)',
+      'Maria Brasil (pt-BR)',
+      'Alfa (en-US)',
+    ]);
+    await realClick(page, all);
     await expect(all).toHaveAttribute('aria-pressed', 'true');
+    expect((await nomes()).length).toBe(5);
+    await realClick(page, all);
+    await expect(all).toHaveAttribute('aria-pressed', 'false');
+    expect((await nomes()).length).toBe(3);
+    await expect(sel).toHaveValue('Alfa');
+  });
+
+  test('L1: 204 variantes parecidas viram poucas na lista curta, com dica; "todas" agrupa por idioma', async ({
+    site,
+  }) => {
+    const { page } = site;
+    const variantes = Array.from({ length: 204 }, (_, i) => ({
+      name: `Voz${String(i).padStart(3, '0')}`,
+      lang: 'pt-BR',
+    }));
+    const outras = [
+      { name: 'Zed', lang: 'de-DE' },
+      { name: 'Alfa', lang: 'en-US' },
+    ];
+    await boot(page, { voices: [...variantes, ...outras] });
+    const sel = page.locator('[data-voice="voiceName"]');
+    await expect(sel.locator('option')).toHaveCount(7); // Automática + 6
+    await expect(page.locator('[data-voice-hint]')).toBeVisible();
+    await expect(page.locator('[data-voice-hint]')).toContainText(
+      'Mostrar todas as vozes',
+    );
+    const all = page.locator('[data-action="voice-all"]');
+    await realClick(page, all);
+    await expect(page.locator('[data-voice-hint]')).toBeHidden();
+    const grupos = await sel
+      .locator('optgroup')
+      .evaluateAll((gs) =>
+        gs.map((g) => [g.label, g.querySelectorAll('option').length]),
+      );
+    expect(grupos.map(([l]) => l.match(/\(([\w-]+)\)$/)?.[1])).toEqual([
+      'pt-BR',
+      'de-DE',
+      'en-US',
+    ]);
+    expect(grupos.map(([, n]) => n)).toEqual([204, 1, 1]);
+    await expect(sel.locator('option')).toHaveCount(1 + 206);
+    await realClick(page, all); // volta a recolher
+    await expect(sel.locator('option')).toHaveCount(7);
+  });
+
+  test('L1: variante "Nome+Variante" fica fora; ficam os nomes-base', async ({
+    site,
+  }) => {
+    const { page } = site;
+    const vs = [
+      { name: 'Maria', lang: 'pt-BR' },
+      { name: 'Joao', lang: 'pt-BR' },
+      ...Array.from({ length: 40 }, (_, i) => ({
+        name: `Maria+m${i}`,
+        lang: 'pt-BR',
+      })),
+    ];
+    await boot(page, { voices: vs });
+    const nomes = await page
+      .locator('[data-voice="voiceName"] option')
+      .evaluateAll((os) => os.map((o) => o.textContent));
+    expect(nomes).toEqual([
+      'Automática (português)',
+      'Joao (pt-BR)',
+      'Maria (pt-BR)',
+    ]);
   });
 
   test('sem voz fora do português, não há botão "Mostrar todas as vozes"', async ({
