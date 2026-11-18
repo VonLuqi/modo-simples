@@ -576,6 +576,28 @@
       (a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name)
     );
   }
+  function waitForVoices(timeoutMs = 1500) {
+    if (!isVoiceSupported()) return Promise.resolve([]);
+    const now = listVoices();
+    if (now.length || !speechSynthesis.addEventListener)
+      return Promise.resolve(now);
+    return new Promise((resolve) => {
+      let timer;
+      const done = () => {
+        clearTimeout(timer);
+        speechSynthesis.removeEventListener("voiceschanged", onChange);
+        resolve(listVoices());
+      };
+      const onChange = () => {
+        if (listVoices().length) done();
+      };
+      speechSynthesis.addEventListener("voiceschanged", onChange);
+      timer = setTimeout(done, timeoutMs);
+    });
+  }
+  async function hasNoVoices() {
+    return isVoiceSupported() && (await waitForVoices()).length === 0;
+  }
   function onVoicesChanged(cb) {
     if (!isVoiceSupported() || !speechSynthesis.addEventListener) {
       return () => {
@@ -1574,7 +1596,7 @@
 
     .ms-switch.ms-tile,
     .ms-btn-ouvir.ms-tile,
-    .ms-tile[data-action="page-outline"], .ms-tile[data-action="mouse-grid"], .ms-tile[data-action="virtual-keyboard"] {
+    .ms-tile[data-action="page-outline"], .ms-tile[data-action="mouse-grid"], .ms-tile[data-action="virtual-keyboard"], .ms-tile[data-action="pause"] {
       position: relative;
       display: flex;
       flex-direction: column;
@@ -1773,10 +1795,12 @@
     /* \u2500\u2500 F9c: Estrutura da p\xE1gina (di\xE1logo dentro do painel) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     .ms-tile[data-action="page-outline"]:hover,
     .ms-tile[data-action="mouse-grid"]:hover,
-    .ms-tile[data-action="virtual-keyboard"]:hover { background: #eef3fb; }
+    .ms-tile[data-action="virtual-keyboard"]:hover,
+    .ms-tile[data-action="pause"]:hover { background: #eef3fb; }
     .ms-tile[data-action="page-outline"]:focus-visible,
     .ms-tile[data-action="mouse-grid"]:focus-visible,
     .ms-tile[data-action="virtual-keyboard"]:focus-visible,
+    .ms-tile[data-action="pause"]:focus-visible,
     .ms-outline-link:focus-visible { outline: 3px solid var(--ms-blue); outline-offset: 2px; }
     .ms-outline {
       position: absolute;
@@ -2729,6 +2753,9 @@
     panelVcUnsupported: "Seu navegador n\xE3o entende comandos de voz. Use Chrome ou Edge.",
     panelVcListening: "Ouvindo\u2026",
     panelVcBlocked: "O microfone est\xE1 bloqueado. Libere nas configura\xE7\xF5es do navegador.",
+    panelSpeechFailed: "Seu navegador n\xE3o conseguiu ler em voz alta: n\xE3o h\xE1 voz instalada. No Brave, abra-o com a op\xE7\xE3o --enable-speech-dispatcher, ou use Chrome ou Edge.",
+    panelVoiceAll: "Mostrar todas as vozes",
+    panelVcBrave: "O Brave n\xE3o permite comandos de voz. Use Chrome ou Edge.",
     panelVcNoMic: "N\xE3o achei um microfone.",
     panelVcError: "Os comandos de voz pararam. Tente ligar de novo.",
     panelVcRevoke: "Parar de enviar minha voz",
@@ -3116,13 +3143,37 @@
   var _notifiedPaused = false;
   var _paused = false;
   var _resume = null;
-  function notify() {
+  var _errListeners = /* @__PURE__ */ new Set();
+  function isSpeechFailure(e) {
+    return Boolean(
+      e && e.error && e.error !== "interrupted" && e.error !== "canceled"
+    );
+  }
+  function notifySpeechError() {
+    for (const cb of Array.from(_errListeners)) {
+      try {
+        cb("speech-failed");
+      } catch (_) {
+      }
+    }
+  }
+  function onSpeechError(cb) {
+    _errListeners.add(cb);
+    return () => {
+      _errListeners.delete(cb);
+    };
+  }
+  function failSpeech() {
+    stopSpeaking("speech-failed");
+    notifySpeechError();
+  }
+  function notify(reason) {
     if (_speaking === _notified && _paused === _notifiedPaused) return;
     _notified = _speaking;
     _notifiedPaused = _paused;
     for (const cb of Array.from(_listeners)) {
       try {
-        cb(_speaking, _paused);
+        cb(_speaking, _paused, reason);
       } catch (_) {
       }
     }
@@ -3292,7 +3343,11 @@
       else speakBlockAt(index + 1, run);
     };
     utterance.onend = next;
-    utterance.onerror = next;
+    utterance.onerror = (e) => {
+      if (run !== _runId) return;
+      if (isSpeechFailure(e)) failSpeech();
+      else next();
+    };
     speechSynthesis.speak(utterance);
   }
   function speakFallback(text, run) {
@@ -3308,7 +3363,11 @@
       notify();
     };
     utterance.onend = done;
-    utterance.onerror = done;
+    utterance.onerror = (e) => {
+      if (run !== _runId) return;
+      if (isSpeechFailure(e)) failSpeech();
+      else done();
+    };
     speechSynthesis.speak(utterance);
   }
   function speakMainContent() {
@@ -3329,7 +3388,7 @@
     notify();
     speakBlockAt(0, run);
   }
-  function stopSpeaking() {
+  function stopSpeaking(reason) {
     _runId += 1;
     _speaking = false;
     _paused = false;
@@ -3337,7 +3396,7 @@
     _blocks = [];
     _blockIndex = 0;
     clearHighlight();
-    notify();
+    notify(typeof reason === "string" ? reason : void 0);
     if (typeof speechSynthesis === "undefined") return;
     speechSynthesis.cancel();
     _utterance = null;
@@ -3482,6 +3541,9 @@
     const utterance = new SpeechSynthesisUtterance(text);
     applyVoice(utterance, state_default.get().options);
     _spoke = true;
+    utterance.onerror = (e) => {
+      if (isSpeechFailure(e)) notifySpeechError();
+    };
     speechSynthesis.speak(utterance);
   }
   function onFocusIn(e) {
@@ -3520,10 +3582,17 @@
     return g.SpeechRecognition || g.webkitSpeechRecognition || null;
   }
   var secure = () => globalThis.isSecureContext !== false;
+  function getUnsupportedReason() {
+    var _a;
+    if ((_a = globalThis.navigator) == null ? void 0 : _a.brave) return "brave";
+    if (!getCtor()) return "no-api";
+    if (!secure()) return "insecure";
+    return null;
+  }
   async function getRecognitionMode() {
     var _a;
     const Ctor = getCtor();
-    if (!Ctor || !secure()) return "none";
+    if (getUnsupportedReason()) return "none";
     const headless = /HeadlessChrome/.test(((_a = globalThis.navigator) == null ? void 0 : _a.userAgent) || "");
     if (!headless && typeof Ctor.available === "function") {
       try {
@@ -3624,7 +3693,7 @@
       if (err === "not-allowed" || err === "service-not-allowed") {
         teardown();
         status("blocked");
-      } else if (err === "language-not-supported") {
+      } else if (err === "language-not-supported" || err === "network") {
         teardown();
         status("unsupported");
       } else if (err === "audio-capture") {
@@ -4128,6 +4197,10 @@
     pause: {
       html: `<button type="button" class="ms-tile" data-action="pause" hidden style="display:none" aria-label="${STRINGS.panelPauseLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M8 5v14"/><path d="M16 5v14"/>')}</span><span class="ms-tile-label" data-pause-text>${STRINGS.panelPause}</span></button>`
     },
+    // T211: aviso quando a leitura falha / não há voz (região viva sempre presente; o texto entra e sai)
+    speechNotice: {
+      html: `<p class="ms-a11y-block--span ms-a11y-control-state" data-speech-notice role="status" aria-live="polite" style="margin:0"></p>`
+    },
     readFocus: {
       html: switchTile({
         option: "readFocus",
@@ -4242,6 +4315,8 @@
             <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-voiceVolume">${STRINGS.panelVoiceVolumeLabel}</label><span class="ms-a11y-control-state" data-state-for="voiceVolume" aria-hidden="true"></span></div>
             <input type="range" class="ms-range-input" id="ms-voice-voiceVolume" data-voice="voiceVolume">
           </div>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-all" aria-pressed="false" hidden style="display:none">${STRINGS.panelVoiceAll}</button>
+          <p class="ms-a11y-control-state" data-speech-notice-studio hidden>${STRINGS.panelSpeechFailed}</p>
           <p class="ms-a11y-control-state" data-voice-note hidden>${STRINGS.panelVoiceUnsupported}</p>
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-test" aria-label="${STRINGS.panelVoiceTestLabel}">${STRINGS.panelVoiceTest}</button>
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-reset" aria-label="${STRINGS.panelVoiceResetLabel}">${STRINGS.panelVoiceReset}</button>
@@ -4356,6 +4431,7 @@
         "readingRuler",
         "speak",
         "pause",
+        "speechNotice",
         "readFocus",
         "voiceStudio",
         "voiceCommands",
@@ -4662,6 +4738,12 @@
       () => onSetOption("voiceName", voiceSel.value)
     );
     let voiceName = "";
+    const voiceAllBtn = panel.querySelector('[data-action="voice-all"]');
+    let showAllVoices = false;
+    voiceAllBtn.addEventListener("click", () => {
+      showAllVoices = !showAllVoices;
+      fillVoices(voiceName);
+    });
     let voicesSig = null;
     const isVoiceSelFocused = () => {
       var _a;
@@ -4673,7 +4755,15 @@
         voices = voiceSupported ? listVoices() : [];
       } catch (e) {
       }
-      const sig = voices.map((v) => `${v.name}|${v.lang}`).join("\n");
+      const isPt2 = (v) => /^pt([-_]|$)/i.test(v.lang || "");
+      const pt = voices.filter(isPt2);
+      const rest = voices.filter((v) => !isPt2(v)).sort((a, b) => a.name.localeCompare(b.name));
+      if (selected && rest.some((v) => v.name === selected)) showAllVoices = true;
+      voiceAllBtn.hidden = rest.length === 0;
+      voiceAllBtn.style.display = rest.length === 0 ? "none" : "";
+      voiceAllBtn.setAttribute("aria-pressed", String(showAllVoices));
+      voices = showAllVoices ? [...pt, ...rest] : pt;
+      const sig = `${showAllVoices}|${voices.map((v) => `${v.name}|${v.lang}`).join("\n")}`;
       if (sig === voicesSig) {
         if (!isVoiceSelFocused() && voiceSel.value !== (selected || "")) {
           voiceSel.value = selected || "";
@@ -4697,7 +4787,43 @@
     };
     fillVoices("");
     if (voiceSupported) onVoicesChanged(() => fillVoices(voiceName));
-    panel.querySelector('[data-action="voice-test"]').addEventListener("click", () => previewVoice(voiceFromDom()));
+    panel.querySelector('[data-action="voice-test"]').addEventListener("click", () => {
+      previewVoice(voiceFromDom());
+      checkNoVoices();
+    });
+    const speechNotice = panel.querySelector("[data-speech-notice]");
+    const studioNotice = panel.querySelector("[data-speech-notice-studio]");
+    let speechFailed = false;
+    let noVoices = false;
+    let noticeOn = false;
+    const renderSpeechNotice = () => {
+      const on3 = speechFailed || noVoices;
+      if (on3 === noticeOn) return;
+      noticeOn = on3;
+      speechNotice.textContent = on3 ? STRINGS.panelSpeechFailed : "";
+      studioNotice.hidden = !on3;
+    };
+    function checkNoVoices() {
+      if (!voiceSupported) return;
+      hasNoVoices().then((n) => {
+        noVoices = !!n;
+        renderSpeechNotice();
+      }).catch(() => {
+      });
+    }
+    const speechFailedNow = () => {
+      speechFailed = true;
+      renderSpeechNotice();
+    };
+    onSpeakingChange((speaking, _paused2, reason) => {
+      if (reason === "speech-failed") speechFailedNow();
+      else if (speaking && speechFailed) {
+        speechFailed = false;
+        renderSpeechNotice();
+      }
+    });
+    onSpeechError(speechFailedNow);
+    checkNoVoices();
     panel.querySelector('[data-action="voice-reset"]').addEventListener(
       "click",
       () => Object.entries(VOICE_DEFAULTS).forEach(([k, v]) => onSetOption(k, v))
@@ -4746,18 +4872,19 @@
     if (!(globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition) || globalThis.isSecureContext === false) {
       recMode = "none";
     }
+    const vcNoneText = () => getUnsupportedReason() === "brave" ? STRINGS.panelVcBrave : STRINGS.panelVcUnsupported;
+    if (getUnsupportedReason()) recMode = "none";
     const VC_TEXT = {
       listening: STRINGS.panelVcListening,
       blocked: STRINGS.panelVcBlocked,
       "no-mic": STRINGS.panelVcNoMic,
       error: STRINGS.panelVcError,
       "needs-consent": VOICE_CMD_STRINGS["status_needs-consent"],
-      "needs-model": VOICE_CMD_STRINGS["status_needs-model"],
-      unsupported: STRINGS.panelVcUnsupported
+      "needs-model": VOICE_CMD_STRINGS["status_needs-model"]
     };
     const renderVcStatus = () => {
       if (recMode === "none") return;
-      vcStatus.textContent = vcUnsub ? VC_TEXT[vcCore] || "" : vcOn ? STRINGS.panelVcListening : "";
+      vcStatus.textContent = vcUnsub ? vcCore === "unsupported" ? vcNoneText() : VC_TEXT[vcCore] || "" : vcOn ? STRINGS.panelVcListening : "";
     };
     let dialogEl = null;
     const closeDialog = (refocus = true) => {
@@ -5121,12 +5248,12 @@
       setShown(vcRevoke, vcConsent);
       if (recMode === "none") {
         vcSwitch.disabled = true;
-        vcSwitch.setAttribute("title", STRINGS.panelVcUnsupported);
+        vcSwitch.setAttribute("title", vcNoneText());
         const st = vcSwitch.querySelector("[data-state]");
         if (st) st.textContent = STRINGS.panelReadFocusUnsupportedState;
         const d = panel.querySelector("#ms-desc-voiceCommands");
-        if (d) d.textContent = STRINGS.panelVcUnsupported;
-        vcStatus.textContent = STRINGS.panelVcUnsupported;
+        if (d) d.textContent = vcNoneText();
+        vcStatus.textContent = vcNoneText();
       }
       const reading = isReadingMain();
       setShown(pauseBtn, reading);
@@ -5179,6 +5306,7 @@
     function open() {
       panel.hidden = false;
       subscribeVoiceStatus();
+      checkNoVoices();
       _releaseFocus = trapFocus(panel);
       const closeBtn = panel.querySelector(".ms-a11y-close");
       if (closeBtn) closeBtn.focus();
