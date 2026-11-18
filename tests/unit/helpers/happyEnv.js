@@ -16,6 +16,7 @@ const GLOBAL_KEYS = [
   'document',
   'location',
   'localStorage',
+  'sessionStorage', // Node 22 não tem sessionStorage global (só a partir do 25): vem do happy-dom
   'MutationObserver',
   'ShadowRoot',
   'Node',
