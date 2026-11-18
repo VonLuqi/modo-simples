@@ -9,13 +9,11 @@ const HEADER = '.site-header';
 const TOGGLE = '.main-nav .nav-toggle';
 const LIST = '#main-nav-list';
 
-test.describe('nav em uma linha (largo)', () => {
-  // com fonte de fallback larga (E2E_FONT) o nav recolhe por falta de espaço: é o comportamento certo
-  test.skip(!!process.env.E2E_FONT, 'só vale com a fonte normal');
+test.describe('nav em telas largas: uma linha OU menu recolhido, nunca sobreposto', () => {
   test.use({ viewport: { width: 1200, height: 800 } });
 
   for (const largura of [1200, 1181]) {
-    test(`${largura}px: itens do nav na mesma linha, sem botão Menu`, async ({
+    test(`${largura}px: itens em uma linha sem botão Menu, ou recolhido com Menu; nunca encosta em Pesquisar`, async ({
       site,
     }) => {
       const { page } = site;
@@ -23,18 +21,24 @@ test.describe('nav em uma linha (largo)', () => {
       await page.goto(INDEX);
       await waitForLib(page);
 
-      await expect(page.locator(TOGGLE)).toBeHidden();
-      const tops = await page
-        .locator('.main-nav li a')
-        .evaluateAll((as) =>
-          as.map((a) => Math.round(a.getBoundingClientRect().top)),
+      const menuVisivel = await page.locator(TOGGLE).isVisible();
+      const busca = await page.locator('.header-search').boundingBox();
+      expect(busca.height).toBeLessThan(60); // o botão não quebra
+      if (menuVisivel) {
+        // fonte larga: recolhido; a lista só aparece com o Menu aberto
+        await expect(page.locator(LIST)).toBeHidden();
+      } else {
+        const rects = await page.locator('.main-nav li a').evaluateAll((as) =>
+          as.map((a) => {
+            const r = a.getBoundingClientRect();
+            return { top: Math.round(r.top), right: r.right };
+          }),
         );
-      expect(tops).toHaveLength(7);
-      expect(Math.max(...tops) - Math.min(...tops)).toBeLessThan(10);
-
-      const pesquisar = page.locator('.header-search');
-      const box = await pesquisar.boundingBox();
-      expect(box.height).toBeLessThan(40); // uma linha só
+        expect(rects).toHaveLength(7);
+        const tops = rects.map((r) => r.top);
+        expect(Math.max(...tops) - Math.min(...tops)).toBeLessThan(10);
+        expect(Math.max(...rects.map((r) => r.right))).toBeLessThan(busca.x);
+      }
     });
   }
 });

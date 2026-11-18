@@ -1354,6 +1354,11 @@ export const PAGE_CSS = `
       align-items: center;
       gap: calc(0.55 * var(--ms-u));
     }
+    /* no cabeçalho (não na barra de pílulas) o conteúdo encolhe com o chrome em vez de empurrar
+       a página: fonte larga + texto 150% */
+    #ms-simples-chrome:not(.ms-simples-chrome--ms-nav) .ms-simples-chrome-inner {
+      min-width: 0;
+    }
     .ms-chrome-icon {
       width: 44px;
       height: 44px;
