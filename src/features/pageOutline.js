@@ -12,7 +12,7 @@ import { STRINGS as S } from '../ui/strings.js';
 
 export const OUTLINE_ID = 'ms-page-outline';
 const OWN =
-  '#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #ms-text-magnifier, [data-ms-live]';
+  '#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #ms-text-magnifier, #ms-virtual-keyboard, [data-ms-live]';
 const FOCUSABLE =
   'a[href], button, input, select, textarea, summary, [contenteditable=""], [contenteditable="true"]';
 const CANDIDATES =

@@ -15,7 +15,7 @@ const MIN_FONT_PX = 32;
 const GAP = 12;
 const MAX_CHARS = 280;
 const OWN =
-  '#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #ms-mouse-grid, #' +
+  '#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #ms-mouse-grid, #ms-virtual-keyboard, #' +
   MAGNIFIER_ID;
 const BLOCK =
   'p, li, h1, h2, h3, h4, h5, h6, td, th, dt, dd, blockquote, figcaption, label, legend, caption, summary, button, a, pre';
@@ -123,7 +123,7 @@ function rgb(c) {
 const lum = ({ r, g, b }) => (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 
 /** Cores do tema ativo: texto e fundo do <body>; fundo transparente vira o oposto do texto. */
-function themeColors() {
+export function themeColors() {
   const cs = getComputedStyle(document.body);
   const fg = rgb(cs.color) || { r: 0, g: 0, b: 0, a: 1 };
   let bg = rgb(cs.backgroundColor);

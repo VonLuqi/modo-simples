@@ -28,6 +28,7 @@ const OWN_SELECTOR = [
   '[data-ms-media-badge]',
   '#ms-shortcuts-card',
   '#ms-mouse-grid',
+  '#ms-virtual-keyboard',
   '[data-ms-pills][data-ms-injected]',
   '[data-ms-live]',
 ].join(',');

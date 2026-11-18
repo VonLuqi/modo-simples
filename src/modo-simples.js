@@ -80,6 +80,7 @@ import {
   stopTextMagnifier,
 } from './features/textMagnifier.js';
 import { closeMouseGrid } from './features/mouseGrid.js';
+import { closeVirtualKeyboard } from './features/virtualKeyboard.js';
 import {
   startShortcutsCard,
   stopShortcutsCard,
@@ -201,6 +202,7 @@ class ModoSimples {
     stopManualSelect();
     this._panel?.closeOutline?.();
     closeMouseGrid({ restoreFocus: false, silent: true });
+    closeVirtualKeyboard({ silent: true });
     this._setPageInert(false);
     revert();
     stopObserving();

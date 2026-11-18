@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Teclado virtual — fixture do Modo Simples</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        font: 16px/1.4 sans-serif;
+      }
+      input,
+      textarea,
+      #ce {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        margin: 8px 0;
+        padding: 8px;
+        font: inherit;
+        border: 1px solid #555;
+      }
+      #ce {
+        min-height: 48px;
+      }
+      #spacer {
+        height: 1200px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Teclado virtual</h1>
+      <form id="f">
+        <label for="q">Pesquisar</label>
+        <input id="q" type="search" />
+        <button type="submit">Ir</button>
+      </form>
+      <label for="t">Texto</label>
+      <input id="t" type="text" />
+      <label for="ta">Mensagem</label>
+      <textarea id="ta" rows="3"></textarea>
+      <div
+        id="ce"
+        contenteditable="true"
+        role="textbox"
+        aria-label="Editor"
+      ></div>
+      <input
+        id="ro"
+        type="text"
+        readonly
+        value="somente leitura"
+        aria-label="Somente leitura"
+      />
+      <div id="spacer"></div>
+      <label for="last">Último campo</label>
+      <input id="last" type="text" />
+    </main>
+    <script>
+      // simula um framework (React): escuta "input" e guarda o que viu
+      window.__log = [];
+      window.__submits = 0;
+      for (const id of ['q', 't', 'ta', 'ce', 'last']) {
+        document.getElementById(id).addEventListener('input', (e) => {
+          window.__log.push({
+            id,
+            type: e.inputType,
+            value: e.target.value ?? e.target.textContent,
+          });
+        });
+      }
+      document.getElementById('f').addEventListener('submit', (e) => {
+        e.preventDefault();
+        window.__submits++;
+      });
+    </script>
+    <script src="../../../dist/modo-simples.min.js"></script>
+  </body>
+</html>

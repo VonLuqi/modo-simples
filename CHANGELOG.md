@@ -4,6 +4,13 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 
 ## [Unreleased]
 
+### Adicionado (F9e — Teclado virtual)
+
+- Botão **Teclado virtual** em "Ferramentas de página" (ação da sessão, não persistida; "Desligar tudo" e `destroy()` fecham). Liga um teclado **ABNT2 pt-BR** fixo no rodapé, com `ç` e acentos (teclas mortas `´` `` ` `` `~` `^` `¨` compõem com a letra seguinte; morta + espaço escreve o símbolo), Shift (uma tecla), Caps, Apagar, Espaço e Enter. Com o modo ligado, o teclado mostra as teclas sempre que um campo de texto recebe foco; sem campo focado mostra "Toque num campo de texto". **Fechar** desliga o modo.
+- Escreve **só** em campos de texto (`input` text/search/email/url/tel/number/password, `textarea`, `contenteditable`; nunca `readonly`/`disabled`), no cursor ou trocando a seleção, com `beforeinput`/`input` reais (`insertText`, `deleteContentBackward`) para campos ligados a frameworks. Enter em `input` dispara Enter e envia o formulário (`requestSubmit`); em `textarea`/`contenteditable` quebra a linha. Não envia Tab nem setas.
+- As teclas não tiram o foco do campo (mouse e toque), têm ≥ 44 px e usam as cores do tema ativo. O teclado reserva espaço no fim da página e rola o campo para cima dele. No celular o `inputmode` do campo vira `none` enquanto o modo está ligado (o original volta ao trocar de campo e ao fechar).
+- **Limite conhecido:** não alcança campos dentro de **iframes de outros sites** (origem diferente): o foco não chega ao documento da página.
+
 ### Corrigido (F9a–F9b, revisão do QA T159)
 
 - **Lupa de texto** no celular: a caixa não some mais logo depois do toque (tirar o foco de outro campo, barra de endereço mudando a altura da tela e rolagem atrasada não a escondem). Rolar a página (ou tocar e arrastar) agora esconde a caixa, que não fica mais parada no lugar antigo.

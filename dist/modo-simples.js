@@ -352,9 +352,9 @@
         next.options.readingRuler ? "R\xE9gua de leitura ativada" : "R\xE9gua de leitura desativada"
       );
     }
-    Object.entries(TOGGLE_ANNOUNCEMENTS).forEach(([k, [on2, off]]) => {
+    Object.entries(TOGGLE_ANNOUNCEMENTS).forEach(([k, [on3, off]]) => {
       if (prev.options[k] !== next.options[k])
-        out.push(next.options[k] ? on2 : off);
+        out.push(next.options[k] ? on3 : off);
     });
     if (prev.options.textScale !== next.options.textScale) {
       out.push(`Tamanho do texto ${next.options.textScale}%`);
@@ -1508,7 +1508,7 @@
 
     .ms-switch.ms-tile,
     .ms-btn-ouvir.ms-tile,
-    .ms-tile[data-action="page-outline"], .ms-tile[data-action="mouse-grid"] {
+    .ms-tile[data-action="page-outline"], .ms-tile[data-action="mouse-grid"], .ms-tile[data-action="virtual-keyboard"] {
       position: relative;
       display: flex;
       flex-direction: column;
@@ -1706,9 +1706,11 @@
     .ms-profile-custom[hidden] { display: none; }
     /* \u2500\u2500 F9c: Estrutura da p\xE1gina (di\xE1logo dentro do painel) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     .ms-tile[data-action="page-outline"]:hover,
-    .ms-tile[data-action="mouse-grid"]:hover { background: #eef3fb; }
+    .ms-tile[data-action="mouse-grid"]:hover,
+    .ms-tile[data-action="virtual-keyboard"]:hover { background: #eef3fb; }
     .ms-tile[data-action="page-outline"]:focus-visible,
     .ms-tile[data-action="mouse-grid"]:focus-visible,
+    .ms-tile[data-action="virtual-keyboard"]:focus-visible,
     .ms-outline-link:focus-visible { outline: 3px solid var(--ms-blue); outline-offset: 2px; }
     .ms-outline {
       position: absolute;
@@ -2033,29 +2035,29 @@
     }
 
     /* \u2500\u2500 Ferramentas de p\xE1gina (F9a) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
-    html.ms-highlight-headings :is(h1, h2, h3, h4, h5, h6, [role="heading"]):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, [data-ms-hidden]) {
+    html.ms-highlight-headings :is(h1, h2, h3, h4, h5, h6, [role="heading"]):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, #ms-virtual-keyboard *, [data-ms-hidden]) {
       outline: 3px solid #6a1b9a !important;
       outline-offset: 2px !important;
       background-color: #f3e5f5 !important;
       color: #000 !important;
     }
-    html.ms-highlight-controls :is(button, [role="button"], input, select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, [data-ms-hidden]) {
+    html.ms-highlight-controls :is(button, [role="button"], input, select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, #ms-virtual-keyboard *, [data-ms-hidden]) {
       /* sombra, n\xE3o outline: o anel de foco nativo (outline) continua vis\xEDvel por cima do destaque */
       box-shadow: 0 0 0 3px #0b57d0 !important;
     }
-    html.ms-enlarge-targets :is(button, [role="button"], input:not([type="hidden"], [type="checkbox"], [type="radio"]), select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, [data-ms-hidden]) {
+    html.ms-enlarge-targets :is(button, [role="button"], input:not([type="hidden"], [type="checkbox"], [type="radio"]), select, textarea, summary):not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, #ms-virtual-keyboard *, [data-ms-hidden]) {
       min-width: 44px !important;
       min-height: 44px !important;
       box-sizing: border-box !important;
     }
     /* Links soltos (menu, bot\xE3o-link, lista de links) ganham 44px. Links no meio de texto corrido
        (WCAG 2.5.8, exce\xE7\xE3o "em linha") ficam em linha, sem tamanho m\xEDnimo, para a frase quebrar normal. */
-    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, [data-ms-hidden]):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
+    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, #ms-virtual-keyboard *, [data-ms-hidden]):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
       min-width: 44px !important;
       min-height: 44px !important;
       box-sizing: border-box !important;
     }
-    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, [data-ms-hidden]):not(:has(img)):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
+    html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, #ms-virtual-keyboard *, [data-ms-hidden]):not(:has(img)):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
       display: inline-block !important;
     }
     /* \u2500\u2500 Foco bem vis\xEDvel (F7e): anel duplo (preto + amarelo), leg\xEDvel em qualquer fundo \u2500\u2500 */
@@ -2658,6 +2660,22 @@
     panelTextMagnifier: "Lupa de texto",
     panelPageOutline: "Estrutura da p\xE1gina",
     panelMouseGrid: "Grade de mouse",
+    panelVirtualKeyboard: "Teclado virtual",
+    vkLabel: "Teclado virtual",
+    vkHint: "Toque num campo de texto",
+    vkOpened: "Teclado virtual aberto. Toque num campo de texto.",
+    vkClosed: "Teclado virtual fechado.",
+    vkClose: "Fechar",
+    vkBackspace: "Apagar",
+    vkEnter: "Enter",
+    vkShift: "Shift",
+    vkCaps: "Caps",
+    vkSpace: "Espa\xE7o",
+    vkDeadAcute: "Acento agudo",
+    vkDeadGrave: "Acento grave",
+    vkDeadTilde: "Til",
+    vkDeadCircumflex: "Acento circunflexo",
+    vkDeadDiaeresis: "Trema",
     gridDialogLabel: "Grade de mouse",
     gridOpen: "Grade aberta. Escolha de 1 a 9.",
     gridLevelPre: "N\xEDvel",
@@ -3276,9 +3294,9 @@
     const type = (el2.getAttribute("type") || "").toLowerCase();
     const nativo = el2.tagName === "INPUT" && ["checkbox", "radio"].includes(type);
     if (checked === null && !nativo) return "";
-    const on2 = checked !== null ? checked === "true" : el2.checked;
-    if (isSwitch) return on2 ? STRINGS.focusSwitchOn : STRINGS.focusSwitchOff;
-    return on2 ? STRINGS.focusChecked : STRINGS.focusUnchecked;
+    const on3 = checked !== null ? checked === "true" : el2.checked;
+    if (isSwitch) return on3 ? STRINGS.focusSwitchOn : STRINGS.focusSwitchOff;
+    return on3 ? STRINGS.focusChecked : STRINGS.focusUnchecked;
   }
   function describeFocus(el2) {
     if (!el2 || el2.nodeType !== 1) return "";
@@ -3329,7 +3347,7 @@
 
   // src/features/pageOutline.js
   var OUTLINE_ID = "ms-page-outline";
-  var OWN = "#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #ms-text-magnifier, [data-ms-live]";
+  var OWN = "#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #ms-text-magnifier, #ms-virtual-keyboard, [data-ms-live]";
   var FOCUSABLE = 'a[href], button, input, select, textarea, summary, [contenteditable=""], [contenteditable="true"]';
   var CANDIDATES = "h1, h2, h3, h4, h5, h6, [role], main, nav, header, footer, aside, form, section, search";
   var clean2 = (s) => (s || "").replace(/\s+/g, " ").trim();
@@ -3824,6 +3842,10 @@
     mouseGrid: {
       html: `<button type="button" class="ms-tile" data-action="mouse-grid"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/>')}</span><span class="ms-tile-label">${STRINGS.panelMouseGrid}</span></button>`
     },
+    // F9e: ação de sessão (fecha o painel e abre o teclado), não é opção persistida
+    virtualKeyboard: {
+      html: `<button type="button" class="ms-tile" data-action="virtual-keyboard"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>')}</span><span class="ms-tile-label">${STRINGS.panelVirtualKeyboard}</span></button>`
+    },
     // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
     typography: {
       html: `
@@ -3963,7 +3985,8 @@
         "enlargeTargets",
         "textMagnifier",
         "pageOutline",
-        "mouseGrid"
+        "mouseGrid",
+        "virtualKeyboard"
       ]
     },
     {
@@ -4050,6 +4073,7 @@
     onMoveSide,
     onOutlineJump,
     onOpenMouseGrid,
+    onOpenVirtualKeyboard,
     brand
   }) {
     const texts = { ...DEFAULT_BRAND, ...brand };
@@ -4193,6 +4217,7 @@
       onJump: (el2) => onOutlineJump == null ? void 0 : onOutlineJump(el2)
     });
     panel.querySelector('[data-action="mouse-grid"]').addEventListener("click", () => onOpenMouseGrid == null ? void 0 : onOpenMouseGrid());
+    panel.querySelector('[data-action="virtual-keyboard"]').addEventListener("click", () => onOpenVirtualKeyboard == null ? void 0 : onOpenVirtualKeyboard());
     panel.querySelector('[data-action="page-outline"]').addEventListener("click", (e) => outline.open(e.currentTarget));
     TYPO_KEYS.forEach((key) => {
       const input = panel.querySelector(`[data-range="${key}"]`);
@@ -4274,17 +4299,17 @@
       }
       const scale = ((_a = s.options) == null ? void 0 : _a.textScale) || "100";
       panel.querySelectorAll('[data-option="textScale"] .ms-segment').forEach((btn) => {
-        const on2 = btn.getAttribute("data-value") === scale;
-        btn.setAttribute("aria-checked", String(on2));
-        btn.setAttribute("tabindex", on2 ? "0" : "-1");
-        btn.classList.toggle("ms-segment--on", on2);
+        const on3 = btn.getAttribute("data-value") === scale;
+        btn.setAttribute("aria-checked", String(on3));
+        btn.setAttribute("tabindex", on3 ? "0" : "-1");
+        btn.classList.toggle("ms-segment--on", on3);
       });
       const theme2 = ((_b = s.options) == null ? void 0 : _b.colorTheme) || "senac";
       panel.querySelectorAll('[data-option="colorTheme"] .ms-theme-btn').forEach((btn) => {
-        const on2 = btn.getAttribute("data-value") === theme2;
-        btn.setAttribute("aria-checked", String(on2));
-        btn.setAttribute("tabindex", on2 ? "0" : "-1");
-        btn.classList.toggle("ms-theme-btn--on", on2);
+        const on3 = btn.getAttribute("data-value") === theme2;
+        btn.setAttribute("aria-checked", String(on3));
+        btn.setAttribute("tabindex", on3 ? "0" : "-1");
+        btn.classList.toggle("ms-theme-btn--on", on3);
       });
       TYPO_KEYS.forEach((key) => {
         var _a2;
@@ -4301,12 +4326,12 @@
         const radios = [...panel.querySelectorAll(selector)];
         const hit = radios.some((b) => b.getAttribute("data-value") === value);
         radios.forEach((btn, i) => {
-          const on2 = btn.getAttribute("data-value") === value;
-          btn.setAttribute("aria-checked", String(on2));
-          btn.setAttribute("tabindex", on2 || !hit && i === 0 ? "0" : "-1");
+          const on3 = btn.getAttribute("data-value") === value;
+          btn.setAttribute("aria-checked", String(on3));
+          btn.setAttribute("tabindex", on3 || !hit && i === 0 ? "0" : "-1");
           btn.classList.toggle(
             btn.classList.contains("ms-swatch") ? "ms-swatch--on" : "ms-segment--on",
-            on2
+            on3
           );
         });
       };
@@ -4365,11 +4390,11 @@
         var _a2;
         const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
         if (!btn) return;
-        const on2 = !!((_a2 = s.options) == null ? void 0 : _a2[key]);
-        btn.setAttribute("aria-checked", String(on2));
-        btn.classList.toggle("ms-switch--on", on2);
+        const on3 = !!((_a2 = s.options) == null ? void 0 : _a2[key]);
+        btn.setAttribute("aria-checked", String(on3));
+        btn.classList.toggle("ms-switch--on", on3);
         const st = btn.querySelector("[data-state]");
-        if (st) st.textContent = on2 ? STRINGS.stateOn : STRINGS.stateOff;
+        if (st) st.textContent = on3 ? STRINGS.stateOn : STRINGS.stateOff;
         if (key === "readFocus" && !isFocusReaderSupported()) {
           btn.disabled = true;
           btn.setAttribute("title", STRINGS.panelReadFocusUnsupported);
@@ -4519,8 +4544,8 @@
     _mountChrome(chrome, mount);
     _mountBar(bar, mount);
     chrome.querySelector('[data-action="toggle-simples"]').addEventListener("click", (e) => {
-      const on2 = e.currentTarget.getAttribute("aria-checked") !== "true";
-      onToggleModoSimples(on2);
+      const on3 = e.currentTarget.getAttribute("aria-checked") !== "true";
+      onToggleModoSimples(on3);
     });
     chrome.querySelector('[data-action="open-panel"]').addEventListener("click", () => onOpenPanel());
     const focusIn = (selector) => {
@@ -4550,23 +4575,23 @@
     });
     function sync(s, ui = {}) {
       var _a, _b;
-      const on2 = !!s.modoSimples;
+      const on3 = !!s.modoSimples;
       const sw = chrome.querySelector('[data-action="toggle-simples"]');
       const wrap = chrome.querySelector(".ms-simples-toggle-wrap");
       const sub = chrome.querySelector("[data-sub]");
       if (sw) {
-        sw.setAttribute("aria-checked", String(on2));
-        sw.classList.toggle("ms-switch--on", on2);
+        sw.setAttribute("aria-checked", String(on3));
+        sw.classList.toggle("ms-switch--on", on3);
       }
-      if (wrap) wrap.setAttribute("data-active", String(on2));
-      if (sub) sub.textContent = on2 ? STRINGS.sessionSubOn : STRINGS.sessionSubOff;
-      _placeChrome(chrome, on2, mount);
+      if (wrap) wrap.setAttribute("data-active", String(on3));
+      if (sub) sub.textContent = on3 ? STRINGS.sessionSubOn : STRINGS.sessionSubOff;
+      _placeChrome(chrome, on3, mount);
       const inner = bar.querySelector(".ms-session-bar-inner");
       const off = bar.querySelector(".ms-session-off");
       const onBlock = bar.querySelector(".ms-session-on");
-      if (inner) inner.setAttribute("data-state", on2 ? "on" : "off");
-      if (off) off.hidden = on2;
-      if (onBlock) onBlock.hidden = !on2;
+      if (inner) inner.setAttribute("data-state", on3 ? "on" : "off");
+      if (off) off.hidden = on3;
+      if (onBlock) onBlock.hidden = !on3;
       const langAvailable = hasSimpleLanguagePairs();
       const langOn = langAvailable && !!((_a = s.options) == null ? void 0 : _a.simpleLanguage);
       const langBtn = bar.querySelector('[data-action="lang"]');
@@ -5215,9 +5240,9 @@
       return false;
     }
   }
-  function setDismissed(on2) {
+  function setDismissed(on3) {
     try {
-      if (on2) sessionStorage.setItem(DISMISS_KEY, "1");
+      if (on3) sessionStorage.setItem(DISMISS_KEY, "1");
       else sessionStorage.removeItem(DISMISS_KEY);
     } catch (_) {
     }
@@ -5623,6 +5648,813 @@
     return target;
   }
 
+  // src/features/textMagnifier.js
+  var MAGNIFIER_ID = "ms-text-magnifier";
+  var MIN_FONT_PX = 32;
+  var GAP = 12;
+  var MAX_CHARS = 280;
+  var OWN2 = "#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #ms-mouse-grid, #ms-virtual-keyboard, #" + MAGNIFIER_ID;
+  var BLOCK = "p, li, h1, h2, h3, h4, h5, h6, td, th, dt, dd, blockquote, figcaption, label, legend, caption, summary, button, a, pre";
+  var _box = null;
+  var _raf = null;
+  var _pending = null;
+  var _escaped = false;
+  var _last = "";
+  var _source = null;
+  var _scroll0 = { x: 0, y: 0 };
+  var _listeners2 = [];
+  var SENSITIVE_AC = /^(cc-|one-time-code$|new-password$|current-password$)/;
+  function isSensitive(el2) {
+    const tokens = (el2.getAttribute("autocomplete") || "").toLowerCase().split(/\s+/);
+    return tokens.some((t) => SENSITIVE_AC.test(t));
+  }
+  var clean3 = (s) => (s || "").replace(/\s+/g, " ").trim();
+  function fieldText(el2) {
+    var _a;
+    const tag = el2.tagName;
+    if (tag === "INPUT") {
+      const type = (el2.getAttribute("type") || "text").toLowerCase();
+      if (type === "password" || type === "hidden") return "";
+      if (["checkbox", "radio", "file", "range", "color"].includes(type)) {
+        return clean3(labelOf(el2));
+      }
+      if (["button", "submit", "reset"].includes(type)) return clean3(el2.value);
+      if (isSensitive(el2)) return clean3(labelOf(el2));
+      return clean3(`${labelOf(el2)} ${el2.value || ""}`);
+    }
+    if (tag === "TEXTAREA") {
+      if (isSensitive(el2)) return clean3(labelOf(el2));
+      return clean3(`${labelOf(el2)} ${el2.value || ""}`);
+    }
+    if (tag === "SELECT") {
+      const opt = (_a = el2.selectedOptions) == null ? void 0 : _a[0];
+      return clean3(`${labelOf(el2)} ${opt ? opt.textContent : ""}`);
+    }
+    return "";
+  }
+  function labelOf(el2) {
+    const aria = el2.getAttribute("aria-label");
+    if (aria) return aria;
+    const labels = el2.labels ? [...el2.labels].map((l) => l.textContent).join(" ") : "";
+    return labels || el2.getAttribute("placeholder") || "";
+  }
+  function magnifierTextFor(el2) {
+    var _a, _b, _c, _d;
+    if (!el2 || el2.nodeType !== 1) return "";
+    if ((_a = el2.closest) == null ? void 0 : _a.call(el2, OWN2)) return "";
+    const ce = (_b = el2.closest) == null ? void 0 : _b.call(el2, "[contenteditable]");
+    if (ce && ce.getAttribute("contenteditable") !== "false") {
+      return clean3(ce.getAttribute("aria-label")).slice(0, MAX_CHARS);
+    }
+    const tag = el2.tagName;
+    if (["INPUT", "TEXTAREA", "SELECT"].includes(tag))
+      return fieldText(el2).slice(0, MAX_CHARS);
+    if (tag === "IMG") return clean3(el2.getAttribute("alt")).slice(0, MAX_CHARS);
+    for (let n = el2; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+      if ((_c = n.closest) == null ? void 0 : _c.call(n, OWN2)) return "";
+      if ((_d = n.matches) == null ? void 0 : _d.call(n, BLOCK)) {
+        const t = clean3(n.textContent);
+        if (t) return t.slice(0, MAX_CHARS);
+      }
+    }
+    const own = [...el2.childNodes].filter((c) => c.nodeType === 3).map((c) => c.textContent).join(" ");
+    return clean3(own).slice(0, MAX_CHARS);
+  }
+  function rgb(c) {
+    const m = /rgba?\(([^)]+)\)/.exec(c || "");
+    if (!m) return null;
+    const [r, g, b, a = 1] = m[1].split(/[ ,/]+/).filter(Boolean).map(Number);
+    return { r, g, b, a };
+  }
+  var lum = ({ r, g, b }) => (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  function themeColors() {
+    const cs = getComputedStyle(document.body);
+    const fg = rgb(cs.color) || { r: 0, g: 0, b: 0, a: 1 };
+    let bg = rgb(cs.backgroundColor);
+    if (!bg || bg.a < 0.5) {
+      const html = rgb(
+        getComputedStyle(document.documentElement).backgroundColor
+      );
+      bg = html && html.a >= 0.5 ? html : lum(fg) > 0.5 ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
+    }
+    const css = ({ r, g, b }) => `rgb(${r}, ${g}, ${b})`;
+    return { color: css(fg), background: css(bg) };
+  }
+  function ensureBox() {
+    if (_box) return _box;
+    _box = document.createElement("div");
+    _box.id = MAGNIFIER_ID;
+    _box.setAttribute("aria-hidden", "true");
+    const set = (k, v) => _box.style.setProperty(k, v, "important");
+    set("position", "fixed");
+    set("left", "0");
+    set("top", "0");
+    set("display", "none");
+    set("box-sizing", "border-box");
+    set("width", "min(720px, calc(100vw - 32px))");
+    set("max-height", "40vh");
+    set("overflow", "hidden");
+    set("padding", "14px 18px");
+    set("font", `600 ${MIN_FONT_PX}px/1.35 system-ui, sans-serif`);
+    set("border-radius", "12px");
+    set("border", "3px solid");
+    set("box-shadow", "0 6px 24px rgba(0,0,0,0.4)");
+    set("pointer-events", "none");
+    set("z-index", "2147483645");
+    set("word-break", "break-word");
+    document.documentElement.appendChild(_box);
+    return _box;
+  }
+  function hide2() {
+    _last = "";
+    if (_box) _box.style.setProperty("display", "none", "important");
+  }
+  function place(rect) {
+    const vw = window.innerWidth || document.documentElement.clientWidth;
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    const w = _box.offsetWidth;
+    const h = _box.offsetHeight;
+    let top;
+    if (rect.bottom + GAP + h <= vh) top = rect.bottom + GAP;
+    else if (rect.top - GAP - h >= 0) top = rect.top - GAP - h;
+    else top = rect.top > vh - rect.bottom ? 8 : vh - h - 8;
+    const left = Math.min(Math.max(8, rect.left), Math.max(8, vw - w - 8));
+    _box.style.setProperty("left", `${Math.round(left)}px`, "important");
+    _box.style.setProperty(
+      "top",
+      `${Math.round(Math.max(0, top))}px`,
+      "important"
+    );
+  }
+  function show(el2, pointer) {
+    const text = magnifierTextFor(el2);
+    if (!text) return hide2();
+    const box2 = ensureBox();
+    if (text !== _last || box2.style.display === "none") {
+      const { color, background } = themeColors();
+      box2.style.setProperty("color", color, "important");
+      box2.style.setProperty("background", background, "important");
+      box2.style.setProperty("border-color", color, "important");
+      box2.textContent = text;
+      _last = text;
+    }
+    box2.style.setProperty("display", "block", "important");
+    _source = pointer ? "pointer" : "focus";
+    _scroll0 = { x: window.scrollX || 0, y: window.scrollY || 0 };
+    let rect = el2.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    if (pointer && rect.height > vh / 2) {
+      rect = {
+        top: pointer.y - 12,
+        bottom: pointer.y + 12,
+        left: rect.left,
+        right: rect.right
+      };
+    }
+    place(rect);
+  }
+  function schedule(el2, pointer) {
+    _pending = { el: el2, pointer };
+    if (_raf !== null) return;
+    _raf = requestAnimationFrame(() => {
+      _raf = null;
+      const p = _pending;
+      _pending = null;
+      if (p && !_escaped && _listeners2.length) show(p.el, p.pointer);
+    });
+  }
+  function on(target, type, fn, opts) {
+    target.addEventListener(type, fn, opts);
+    _listeners2.push([target, type, fn, opts]);
+  }
+  function startTextMagnifier() {
+    if (_listeners2.length) return;
+    const move = (e) => {
+      var _a, _b;
+      if (e.pointerType === "touch") return;
+      _escaped = false;
+      if ((_b = (_a = e.target) == null ? void 0 : _a.closest) == null ? void 0 : _b.call(_a, "#ms-container")) return hide2();
+      schedule(e.target, { x: e.clientX, y: e.clientY });
+    };
+    const tap = (e) => {
+      var _a, _b;
+      if (e.pointerType !== "touch") return;
+      _escaped = false;
+      if ((_b = (_a = e.target) == null ? void 0 : _a.closest) == null ? void 0 : _b.call(_a, "#ms-container")) return hide2();
+      schedule(e.target, { x: e.clientX, y: e.clientY });
+    };
+    const focus = (e) => {
+      var _a, _b;
+      _escaped = false;
+      if (!e.target || e.target === document.body || ((_b = (_a = e.target).closest) == null ? void 0 : _b.call(_a, "#ms-container")))
+        return hide2();
+      schedule(e.target, null);
+    };
+    on(document, "pointermove", move, { passive: true });
+    on(document, "pointerdown", tap, { passive: true });
+    on(
+      document,
+      "pointerout",
+      (e) => {
+        if (!e.relatedTarget && e.pointerType !== "touch") hide2();
+      },
+      { passive: true }
+    );
+    on(document, "focusin", focus);
+    on(document, "focusout", () => {
+      if (_source === "focus") hide2();
+    });
+    on(document, "pointercancel", () => hide2(), { passive: true });
+    on(
+      document,
+      "scroll",
+      (e) => {
+        if (_source !== "pointer") return;
+        if (e.target === document && Math.abs((window.scrollX || 0) - _scroll0.x) < 1 && Math.abs((window.scrollY || 0) - _scroll0.y) < 1)
+          return;
+        hide2();
+      },
+      { capture: true, passive: true }
+    );
+    on(document, "keydown", (e) => {
+      if (e.key === "Escape") {
+        _escaped = true;
+        hide2();
+      }
+    });
+    on(document, "wheel", () => hide2(), { passive: true });
+    let width = window.innerWidth;
+    on(window, "resize", () => {
+      if (window.innerWidth !== width) hide2();
+      width = window.innerWidth;
+    });
+  }
+  function stopTextMagnifier() {
+    for (const [t, type, fn, opts] of _listeners2)
+      t.removeEventListener(type, fn, opts);
+    _listeners2 = [];
+    if (_raf !== null) {
+      cancelAnimationFrame(_raf);
+      _raf = null;
+    }
+    _pending = null;
+    _escaped = false;
+    _last = "";
+    _source = null;
+    _box == null ? void 0 : _box.remove();
+    _box = null;
+  }
+
+  // src/features/virtualKeyboard.js
+  var KEYBOARD_ID = "ms-virtual-keyboard";
+  var OWN3 = `#ms-container, #${KEYBOARD_ID}`;
+  var TEXT_TYPES = [
+    "text",
+    "search",
+    "email",
+    "url",
+    "tel",
+    "number",
+    "password"
+  ];
+  var DEAD_KEYS = ["\xB4", "`", "~", "^", "\xA8"];
+  var COMPOSE = {
+    "\xB4": {
+      a: "\xE1",
+      e: "\xE9",
+      i: "\xED",
+      o: "\xF3",
+      u: "\xFA",
+      y: "\xFD",
+      A: "\xC1",
+      E: "\xC9",
+      I: "\xCD",
+      O: "\xD3",
+      U: "\xDA",
+      Y: "\xDD"
+    },
+    "`": {
+      a: "\xE0",
+      e: "\xE8",
+      i: "\xEC",
+      o: "\xF2",
+      u: "\xF9",
+      A: "\xC0",
+      E: "\xC8",
+      I: "\xCC",
+      O: "\xD2",
+      U: "\xD9"
+    },
+    "~": { a: "\xE3", o: "\xF5", n: "\xF1", A: "\xC3", O: "\xD5", N: "\xD1" },
+    "^": {
+      a: "\xE2",
+      e: "\xEA",
+      i: "\xEE",
+      o: "\xF4",
+      u: "\xFB",
+      A: "\xC2",
+      E: "\xCA",
+      I: "\xCE",
+      O: "\xD4",
+      U: "\xDB"
+    },
+    "\xA8": {
+      a: "\xE4",
+      e: "\xEB",
+      i: "\xEF",
+      o: "\xF6",
+      u: "\xFC",
+      y: "\xFF",
+      A: "\xC4",
+      E: "\xCB",
+      I: "\xCF",
+      O: "\xD6",
+      U: "\xDC"
+    }
+  };
+  function composeDead(dead, ch) {
+    var _a, _b;
+    return (_b = (_a = COMPOSE[dead]) == null ? void 0 : _a[ch]) != null ? _b : null;
+  }
+  var ROWS = [
+    [
+      `'"`,
+      "1!",
+      "2@",
+      "3#",
+      "4$",
+      "5%",
+      "6\xA8",
+      "7&",
+      "8*",
+      "9(",
+      "0)",
+      "-_",
+      "=+",
+      "Backspace"
+    ],
+    ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "\xB4`", "[{"],
+    [
+      "Caps",
+      "a",
+      "s",
+      "d",
+      "f",
+      "g",
+      "h",
+      "j",
+      "k",
+      "l",
+      "\xE7",
+      "~^",
+      "]}",
+      "Enter"
+    ],
+    [
+      "Shift",
+      "\\|",
+      "z",
+      "x",
+      "c",
+      "v",
+      "b",
+      "n",
+      "m",
+      ",<",
+      ".>",
+      ";:",
+      "/?",
+      "Shift"
+    ],
+    ["Fechar", "Space"]
+  ];
+  var DEAD_NAMES = {
+    "\xB4": STRINGS.vkDeadAcute,
+    "`": STRINGS.vkDeadGrave,
+    "~": STRINGS.vkDeadTilde,
+    "^": STRINGS.vkDeadCircumflex,
+    "\xA8": STRINGS.vkDeadDiaeresis
+  };
+  var SPECIAL = ["Backspace", "Caps", "Enter", "Shift", "Fechar", "Space"];
+  var isCE = (el2) => el2.isContentEditable === true || ["", "true", "plaintext-only"].includes(el2.getAttribute("contenteditable"));
+  function isEditableField(el2) {
+    var _a;
+    if (!el2 || el2.nodeType !== 1 || ((_a = el2.closest) == null ? void 0 : _a.call(el2, OWN3))) return false;
+    if (el2.tagName === "TEXTAREA") return !el2.readOnly && !el2.disabled;
+    if (el2.tagName === "INPUT") {
+      const type = (el2.getAttribute("type") || "text").toLowerCase();
+      return TEXT_TYPES.includes(type) && !el2.readOnly && !el2.disabled;
+    }
+    return el2.getAttribute("contenteditable") !== null && isCE(el2);
+  }
+  var win = () => document.defaultView || window;
+  function fire(el2, type, init = {}) {
+    const W = win();
+    const C = W.InputEvent || W.Event;
+    return el2.dispatchEvent(
+      new C(type, { bubbles: true, cancelable: type === "beforeinput", ...init })
+    );
+  }
+  function setValue(el2, v) {
+    var _a, _b, _c;
+    const W = win();
+    const proto = el2.tagName === "TEXTAREA" ? (_a = W.HTMLTextAreaElement) == null ? void 0 : _a.prototype : (_b = W.HTMLInputElement) == null ? void 0 : _b.prototype;
+    const set = proto && ((_c = Object.getOwnPropertyDescriptor(proto, "value")) == null ? void 0 : _c.set);
+    if (set) set.call(el2, v);
+    else el2.value = v;
+  }
+  function setCaret(el2, pos) {
+    try {
+      el2.setSelectionRange(pos, pos);
+    } catch (_) {
+    }
+  }
+  function selection(el2) {
+    const val = el2.value;
+    let s = null;
+    let e = null;
+    try {
+      s = el2.selectionStart;
+      e = el2.selectionEnd;
+    } catch (_) {
+    }
+    if (s == null || e == null) {
+      s = val.length;
+      e = val.length;
+    }
+    return [s, e, val];
+  }
+  function ceSelection(el2) {
+    var _a, _b;
+    const sel = (_b = (_a = win()).getSelection) == null ? void 0 : _b.call(_a);
+    if (!sel || !sel.rangeCount) return null;
+    const r = sel.getRangeAt(0);
+    return el2.contains(r.commonAncestorContainer) ? { sel, r } : null;
+  }
+  function insertText(el2, text, inputType = "insertText") {
+    var _a, _b;
+    if (!el2 || !text) return false;
+    if (el2.tagName !== "INPUT" && el2.tagName !== "TEXTAREA") {
+      (_a = el2.focus) == null ? void 0 : _a.call(el2, { preventScroll: true });
+      const cmd = text === "\n" ? "insertLineBreak" : "insertText";
+      if ((_b = document.execCommand) == null ? void 0 : _b.call(document, cmd, false, text)) return true;
+      const cs = ceSelection(el2);
+      if (!cs || !fire(el2, "beforeinput", { inputType, data: text }))
+        return false;
+      cs.r.deleteContents();
+      const node = document.createTextNode(text);
+      cs.r.insertNode(node);
+      cs.r.setStartAfter(node);
+      cs.r.collapse(true);
+      cs.sel.removeAllRanges();
+      cs.sel.addRange(cs.r);
+      fire(el2, "input", { inputType, data: text });
+      return true;
+    }
+    const [s, e, val] = selection(el2);
+    const max = el2.maxLength;
+    if (max >= 0 && val.length - (e - s) + text.length > max) return false;
+    if (!fire(el2, "beforeinput", { inputType, data: text })) return false;
+    setValue(el2, val.slice(0, s) + text + val.slice(e));
+    setCaret(el2, s + text.length);
+    fire(el2, "input", { inputType, data: text });
+    return true;
+  }
+  function deleteBack(el2) {
+    var _a, _b, _c, _d;
+    if (!el2) return false;
+    if (el2.tagName !== "INPUT" && el2.tagName !== "TEXTAREA") {
+      (_a = el2.focus) == null ? void 0 : _a.call(el2, { preventScroll: true });
+      if ((_b = document.execCommand) == null ? void 0 : _b.call(document, "delete")) return true;
+      const cs = ceSelection(el2);
+      if (!cs) return false;
+      if (cs.r.collapsed) (_d = (_c = cs.sel).modify) == null ? void 0 : _d.call(_c, "extend", "backward", "character");
+      const r = cs.sel.getRangeAt(0);
+      if (r.collapsed) return false;
+      if (!fire(el2, "beforeinput", { inputType: "deleteContentBackward" }))
+        return false;
+      r.deleteContents();
+      fire(el2, "input", { inputType: "deleteContentBackward" });
+      return true;
+    }
+    let [s, e, val] = selection(el2);
+    if (s === e) {
+      if (s === 0) return false;
+      const low = val.charCodeAt(s - 1);
+      s -= low >= 56320 && low <= 57343 && s >= 2 ? 2 : 1;
+    }
+    if (!fire(el2, "beforeinput", { inputType: "deleteContentBackward" }))
+      return false;
+    setValue(el2, val.slice(0, s) + val.slice(e));
+    setCaret(el2, s);
+    fire(el2, "input", { inputType: "deleteContentBackward" });
+    return true;
+  }
+  function pressEnter(el2) {
+    var _a, _b;
+    if (!el2) return false;
+    if (el2.tagName !== "INPUT") return insertText(el2, "\n", "insertLineBreak");
+    const W = win();
+    const K = W.KeyboardEvent || W.Event;
+    const init = {
+      key: "Enter",
+      code: "Enter",
+      keyCode: 13,
+      which: 13,
+      bubbles: true,
+      cancelable: true
+    };
+    const go = el2.dispatchEvent(new K("keydown", init));
+    if (go) (_b = (_a = el2.form) == null ? void 0 : _a.requestSubmit) == null ? void 0 : _b.call(_a);
+    el2.dispatchEvent(new K("keyup", init));
+    return true;
+  }
+  var _root3 = null;
+  var _target = null;
+  var _dead = null;
+  var _shift = false;
+  var _caps = false;
+  var _touch = false;
+  var _listeners3 = [];
+  var _inputmodes = /* @__PURE__ */ new Map();
+  var _bodyPad = null;
+  var _basePad = 0;
+  var _keys = [];
+  var isTouchDevice = () => {
+    var _a, _b, _c;
+    return typeof navigator !== "undefined" && navigator.maxTouchPoints > 0 || !!((_c = (_b = (_a = win()).matchMedia) == null ? void 0 : _b.call(_a, "(pointer: coarse)")) == null ? void 0 : _c.matches);
+  };
+  function on2(target, type, fn, opts) {
+    target.addEventListener(type, fn, opts);
+    _listeners3.push([target, type, fn, opts]);
+  }
+  function charOf(def) {
+    if (def.length === 1) return _shift !== _caps ? def.toUpperCase() : def;
+    return _shift ? def[1] : def[0];
+  }
+  function labelOf2(def) {
+    switch (def) {
+      case "Backspace":
+        return STRINGS.vkBackspace;
+      case "Caps":
+        return STRINGS.vkCaps;
+      case "Enter":
+        return STRINGS.vkEnter;
+      case "Shift":
+        return STRINGS.vkShift;
+      case "Fechar":
+        return STRINGS.vkClose;
+      case "Space":
+        return STRINGS.vkSpace;
+      default:
+        return charOf(def);
+    }
+  }
+  function setStyle(el2, styles) {
+    for (const [k, v] of Object.entries(styles))
+      el2.style.setProperty(k, v, "important");
+  }
+  function paint() {
+    if (!_root3) return;
+    const { color, background } = themeColors();
+    setStyle(_root3, { background, color, "border-top": `3px solid ${color}` });
+    for (const { btn, def } of _keys) {
+      const pressed = def === "Shift" && _shift || def === "Caps" && _caps || _dead && def.length === 2 && DEAD_KEYS.includes(charOf(def)) && charOf(def) === _dead;
+      btn.setAttribute("aria-pressed", String(!!pressed));
+      setStyle(
+        btn,
+        pressed ? { background: color, color: background, border: `2px solid ${color}` } : { background, color, border: `2px solid ${color}` }
+      );
+      if (!SPECIAL.includes(def)) {
+        const ch = charOf(def);
+        btn.textContent = ch;
+        const dead = DEAD_KEYS.includes(ch);
+        btn.setAttribute("aria-label", dead ? DEAD_NAMES[ch] : ch);
+        btn.dataset.char = ch;
+      }
+    }
+  }
+  function reserve() {
+    var _a, _b, _c, _d;
+    if (!_root3 || !document.body) return;
+    const h = _root3.offsetHeight || 0;
+    if (_bodyPad === null) {
+      const st = document.body.style;
+      _bodyPad = [
+        st.getPropertyValue("padding-bottom"),
+        st.getPropertyPriority("padding-bottom")
+      ];
+      _basePad = parseFloat(win().getComputedStyle(document.body).paddingBottom) || 0;
+    }
+    document.body.style.setProperty(
+      "padding-bottom",
+      `${_basePad + h}px`,
+      "important"
+    );
+    if (_target == null ? void 0 : _target.getBoundingClientRect) {
+      const vh = win().innerHeight || document.documentElement.clientHeight;
+      const r = _target.getBoundingClientRect();
+      const limit = vh - h - 16;
+      if (r.bottom > limit) (_b = (_a = win()).scrollBy) == null ? void 0 : _b.call(_a, 0, r.bottom - limit);
+      else if (r.top < 0) (_d = (_c = win()).scrollBy) == null ? void 0 : _d.call(_c, 0, r.top - 16);
+    }
+  }
+  function render2() {
+    if (!_root3) return;
+    const has = !!_target;
+    _root3.querySelector("[data-vk-hint]").style.setProperty("display", has ? "none" : "block", "important");
+    _root3.querySelector("[data-vk-keys]").style.setProperty("display", has ? "block" : "none", "important");
+    paint();
+    reserve();
+  }
+  function restoreInputmode(el2) {
+    if (!_inputmodes.has(el2)) return;
+    const orig = _inputmodes.get(el2);
+    _inputmodes.delete(el2);
+    if (orig === null) el2.removeAttribute("inputmode");
+    else el2.setAttribute("inputmode", orig);
+  }
+  function setTarget(el2) {
+    if (el2 === _target) return;
+    if (_target) restoreInputmode(_target);
+    _target = el2;
+    _dead = null;
+    _shift = false;
+    if (el2 && _touch) {
+      _inputmodes.set(el2, el2.getAttribute("inputmode"));
+      el2.setAttribute("inputmode", "none");
+    }
+    render2();
+  }
+  function typeChar(ch) {
+    var _a;
+    if (_dead) {
+      const d = _dead;
+      _dead = null;
+      insertText(_target, ch === " " ? d : (_a = composeDead(d, ch)) != null ? _a : d + ch);
+    } else {
+      insertText(_target, ch);
+    }
+  }
+  function press(def) {
+    var _a;
+    if (def === "Fechar") return closeVirtualKeyboard();
+    if (def === "Shift") {
+      _shift = !_shift;
+      return paint();
+    }
+    if (def === "Caps") {
+      _caps = !_caps;
+      return paint();
+    }
+    if (!_target) return;
+    (_a = _target.focus) == null ? void 0 : _a.call(_target, { preventScroll: true });
+    if (def === "Backspace") {
+      _dead = null;
+      deleteBack(_target);
+    } else if (def === "Enter") {
+      _dead = null;
+      pressEnter(_target);
+    } else if (def === "Space") {
+      typeChar(" ");
+    } else {
+      const ch = charOf(def);
+      if (DEAD_KEYS.includes(ch)) {
+        if (_dead) typeChar(" ");
+        _dead = ch;
+      } else {
+        typeChar(ch);
+      }
+      _shift = false;
+    }
+    paint();
+  }
+  function build2() {
+    const root = document.createElement("div");
+    root.id = KEYBOARD_ID;
+    root.setAttribute("role", "group");
+    root.setAttribute("aria-label", STRINGS.vkLabel);
+    setStyle(root, {
+      position: "fixed",
+      left: "0",
+      right: "0",
+      bottom: "0",
+      "box-sizing": "border-box",
+      padding: "8px",
+      "z-index": "2147483644",
+      font: "600 20px/1 system-ui, sans-serif",
+      "max-height": "70vh",
+      "overflow-y": "auto"
+    });
+    const hint = document.createElement("p");
+    hint.dataset.vkHint = "";
+    hint.textContent = STRINGS.vkHint;
+    setStyle(hint, {
+      margin: "4px 8px",
+      font: "600 18px/1.4 system-ui, sans-serif",
+      color: "inherit"
+    });
+    const keys = document.createElement("div");
+    keys.dataset.vkKeys = "";
+    keys.style.setProperty("max-width", "960px", "important");
+    keys.style.setProperty("margin", "0 auto", "important");
+    const wide = {
+      Backspace: 2,
+      Caps: 2,
+      Enter: 2,
+      Shift: 2,
+      Fechar: 2,
+      Space: 8
+    };
+    for (const row of ROWS) {
+      const line = document.createElement("div");
+      setStyle(line, {
+        display: "flex",
+        "flex-wrap": "wrap",
+        gap: "4px",
+        margin: "0 0 4px"
+      });
+      for (const def of row) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.vk = def;
+        if (def !== "Fechar") btn.tabIndex = -1;
+        btn.textContent = SPECIAL.includes(def) ? labelOf2(def) : "";
+        setStyle(btn, {
+          flex: `${wide[def] || 1} 0 ${(wide[def] || 1) * 44}px`,
+          "min-width": "44px",
+          "min-height": "48px",
+          margin: "0",
+          padding: "0 4px",
+          font: "inherit",
+          "border-radius": "8px",
+          cursor: "pointer"
+        });
+        if (def === "Shift" || def === "Caps")
+          btn.setAttribute("aria-pressed", "false");
+        btn.addEventListener("pointerdown", (e) => e.preventDefault());
+        btn.addEventListener("mousedown", (e) => e.preventDefault());
+        btn.addEventListener("click", () => press(def));
+        line.append(btn);
+        _keys.push({ btn, def });
+      }
+      keys.append(line);
+    }
+    root.append(hint, keys);
+    return root;
+  }
+  function openVirtualKeyboard({ touch } = {}) {
+    if (_root3) return;
+    _touch = touch != null ? touch : isTouchDevice();
+    _shift = false;
+    _caps = false;
+    _dead = null;
+    _keys = [];
+    _root3 = build2();
+    document.documentElement.appendChild(_root3);
+    const focus = (e) => {
+      var _a;
+      const t = e.target;
+      if ((_a = t == null ? void 0 : t.closest) == null ? void 0 : _a.call(t, `#${KEYBOARD_ID}`)) return;
+      setTarget(isEditableField(t) ? t : null);
+    };
+    on2(document, "focusin", focus);
+    on2(document, "focusout", (e) => {
+      if (!e.relatedTarget && e.target === _target) setTarget(null);
+    });
+    on2(window, "resize", () => render2());
+    const ae = document.activeElement;
+    setTarget(isEditableField(ae) ? ae : null);
+    render2();
+    announce(STRINGS.vkOpened);
+  }
+  function closeVirtualKeyboard({ silent = false } = {}) {
+    if (!_root3) return;
+    for (const [t, type, fn, opts] of _listeners3)
+      t.removeEventListener(type, fn, opts);
+    _listeners3 = [];
+    for (const el2 of [..._inputmodes.keys()]) restoreInputmode(el2);
+    _inputmodes = /* @__PURE__ */ new Map();
+    if (_bodyPad !== null && document.body) {
+      if (_bodyPad[0])
+        document.body.style.setProperty(
+          "padding-bottom",
+          _bodyPad[0],
+          _bodyPad[1]
+        );
+      else document.body.style.removeProperty("padding-bottom");
+    }
+    _bodyPad = null;
+    _root3.remove();
+    _root3 = null;
+    _target = null;
+    _dead = null;
+    _shift = false;
+    _caps = false;
+    _keys = [];
+    if (!silent) announce(STRINGS.vkClosed);
+  }
+
   // src/ui/binding.js
   var RESET_OPTIONS = {
     textScale: "100",
@@ -5708,6 +6540,11 @@
       onOpenMouseGrid: () => {
         ms._closePanel();
         openMouseGrid();
+      },
+      // F9e: fecha o painel e liga o teclado virtual (sessão; dock no rodapé)
+      onOpenVirtualKeyboard: () => {
+        ms._closePanel();
+        openVirtualKeyboard();
       },
       brand: ms._config.brand
     });
@@ -5826,13 +6663,13 @@
     ms._fab.sync({ panelOpen: true });
     announce("Painel de acessibilidade aberto");
   }
-  function setPageInert(ms, on2) {
+  function setPageInert(ms, on3) {
     var _a;
     (_a = ms._inertObserver) == null ? void 0 : _a.disconnect();
     ms._inertObserver = null;
     for (const el2 of ms._inerted || []) el2.removeAttribute("inert");
     ms._inerted = [];
-    if (!on2) return;
+    if (!on3) return;
     for (const el2 of document.body.children) ms._inertSibling(el2);
     ms._inertObserver = new MutationObserver((records) => {
       for (const r of records) {
@@ -5880,6 +6717,7 @@
     var _a, _b;
     (_b = (_a = ms._panel) == null ? void 0 : _a.closeOutline) == null ? void 0 : _b.call(_a);
     closeMouseGrid({ restoreFocus: false });
+    closeVirtualKeyboard();
     ms._reducedMotionUser = null;
     ms._applyingProfile = true;
     try {
@@ -6043,8 +6881,8 @@
   var _manualPrincipal = null;
   var _manualPath = "";
   var _holdPrincipal = false;
-  function holdPrincipal(on2) {
-    _holdPrincipal = !!on2;
+  function holdPrincipal(on3) {
+    _holdPrincipal = !!on3;
   }
   function injectPageStyles(css = "") {
     if (!css || document.getElementById(PAGE_STYLE_ID)) return;
@@ -6076,18 +6914,18 @@
     _distractionElements = detectDistractions(_mainElement, config);
     return { mainElement: _mainElement, confidence: result.confidence };
   }
-  function setHostCursor(on2) {
+  function setHostCursor(on3) {
     var _a;
     const host = (_a = document.querySelector) == null ? void 0 : _a.call(document, "#ms-container");
     if (!host) return;
-    if (on2) host.setAttribute("data-ms-cursor", "");
+    if (on3) host.setAttribute("data-ms-cursor", "");
     else host.removeAttribute("data-ms-cursor");
   }
-  function setHostFlag(name, on2) {
+  function setHostFlag(name, on3) {
     var _a;
     const host = (_a = document.querySelector) == null ? void 0 : _a.call(document, "#ms-container");
     if (!host) return;
-    if (on2) host.setAttribute(name, "");
+    if (on3) host.setAttribute(name, "");
     else host.removeAttribute(name);
   }
   function applyOptions(state2) {
@@ -6109,9 +6947,9 @@
     );
     const eff = effectiveColors(opts);
     for (const [key, [cls, prop]] of Object.entries(CUSTOM_COLORS2)) {
-      const on2 = !!eff[key];
-      html.classList.toggle(cls, on2);
-      if (on2) (_b = (_a = html.style) == null ? void 0 : _a.setProperty) == null ? void 0 : _b.call(_a, prop, eff[key]);
+      const on3 = !!eff[key];
+      html.classList.toggle(cls, on3);
+      if (on3) (_b = (_a = html.style) == null ? void 0 : _a.setProperty) == null ? void 0 : _b.call(_a, prop, eff[key]);
       else (_d = (_c = html.style) == null ? void 0 : _c.removeProperty) == null ? void 0 : _d.call(_c, prop);
     }
     html.classList.toggle("ms-dyslexia-font", !!opts.dyslexiaFont);
@@ -6234,6 +7072,7 @@
     "[data-ms-media-badge]",
     "#ms-shortcuts-card",
     "#ms-mouse-grid",
+    "#ms-virtual-keyboard",
     "[data-ms-pills][data-ms-injected]",
     "[data-ms-live]"
   ].join(",");
@@ -6254,7 +7093,7 @@
   var _idleHandle = null;
   var DEFAULT_DEBOUNCE = 300;
   var DEFAULT_MAX_WAIT = 1500;
-  function schedule(run, debounce, maxWait) {
+  function schedule2(run, debounce, maxWait) {
     const now = Date.now();
     if (_debounceTimer === null) _pendingSince = now;
     clearTimeout(_debounceTimer);
@@ -6289,7 +7128,7 @@
       const state2 = getState();
       if (!state2.modoSimples) return;
       const cfg = getConfig();
-      schedule(
+      schedule2(
         () => {
           if (_observer) reprocess(getState(), getConfig());
         },
@@ -6316,16 +7155,16 @@
   var RULER_ID = "ms-reading-ruler";
   var RULER_HEIGHT = 48;
   var _ruler = null;
-  var _raf = null;
+  var _raf2 = null;
   var _pendingY = 0;
   var _onPointer2 = null;
   var _onTouch2 = null;
   var _onFocus = null;
   function moveTo(clientY) {
     _pendingY = clientY;
-    if (_raf !== null) return;
-    _raf = requestAnimationFrame(() => {
-      _raf = null;
+    if (_raf2 !== null) return;
+    _raf2 = requestAnimationFrame(() => {
+      _raf2 = null;
       if (!_ruler) return;
       const y = _pendingY - RULER_HEIGHT / 2;
       _ruler.style.transform = `translateY(${Math.max(0, y)}px)`;
@@ -6386,9 +7225,9 @@
       document.removeEventListener("focusin", _onFocus);
       _onFocus = null;
     }
-    if (_raf !== null) {
-      cancelAnimationFrame(_raf);
-      _raf = null;
+    if (_raf2 !== null) {
+      cancelAnimationFrame(_raf2);
+      _raf2 = null;
     }
     if (_ruler == null ? void 0 : _ruler.parentNode) {
       _ruler.parentNode.removeChild(_ruler);
@@ -6770,263 +7609,6 @@
     _autoplayed.clear();
   }
 
-  // src/features/textMagnifier.js
-  var MAGNIFIER_ID = "ms-text-magnifier";
-  var MIN_FONT_PX = 32;
-  var GAP = 12;
-  var MAX_CHARS = 280;
-  var OWN2 = "#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #ms-mouse-grid, #" + MAGNIFIER_ID;
-  var BLOCK = "p, li, h1, h2, h3, h4, h5, h6, td, th, dt, dd, blockquote, figcaption, label, legend, caption, summary, button, a, pre";
-  var _box = null;
-  var _raf2 = null;
-  var _pending = null;
-  var _escaped = false;
-  var _last = "";
-  var _source = null;
-  var _scroll0 = { x: 0, y: 0 };
-  var _listeners2 = [];
-  var SENSITIVE_AC = /^(cc-|one-time-code$|new-password$|current-password$)/;
-  function isSensitive(el2) {
-    const tokens = (el2.getAttribute("autocomplete") || "").toLowerCase().split(/\s+/);
-    return tokens.some((t) => SENSITIVE_AC.test(t));
-  }
-  var clean3 = (s) => (s || "").replace(/\s+/g, " ").trim();
-  function fieldText(el2) {
-    var _a;
-    const tag = el2.tagName;
-    if (tag === "INPUT") {
-      const type = (el2.getAttribute("type") || "text").toLowerCase();
-      if (type === "password" || type === "hidden") return "";
-      if (["checkbox", "radio", "file", "range", "color"].includes(type)) {
-        return clean3(labelOf(el2));
-      }
-      if (["button", "submit", "reset"].includes(type)) return clean3(el2.value);
-      if (isSensitive(el2)) return clean3(labelOf(el2));
-      return clean3(`${labelOf(el2)} ${el2.value || ""}`);
-    }
-    if (tag === "TEXTAREA") {
-      if (isSensitive(el2)) return clean3(labelOf(el2));
-      return clean3(`${labelOf(el2)} ${el2.value || ""}`);
-    }
-    if (tag === "SELECT") {
-      const opt = (_a = el2.selectedOptions) == null ? void 0 : _a[0];
-      return clean3(`${labelOf(el2)} ${opt ? opt.textContent : ""}`);
-    }
-    return "";
-  }
-  function labelOf(el2) {
-    const aria = el2.getAttribute("aria-label");
-    if (aria) return aria;
-    const labels = el2.labels ? [...el2.labels].map((l) => l.textContent).join(" ") : "";
-    return labels || el2.getAttribute("placeholder") || "";
-  }
-  function magnifierTextFor(el2) {
-    var _a, _b, _c, _d;
-    if (!el2 || el2.nodeType !== 1) return "";
-    if ((_a = el2.closest) == null ? void 0 : _a.call(el2, OWN2)) return "";
-    const ce = (_b = el2.closest) == null ? void 0 : _b.call(el2, "[contenteditable]");
-    if (ce && ce.getAttribute("contenteditable") !== "false") {
-      return clean3(ce.getAttribute("aria-label")).slice(0, MAX_CHARS);
-    }
-    const tag = el2.tagName;
-    if (["INPUT", "TEXTAREA", "SELECT"].includes(tag))
-      return fieldText(el2).slice(0, MAX_CHARS);
-    if (tag === "IMG") return clean3(el2.getAttribute("alt")).slice(0, MAX_CHARS);
-    for (let n = el2; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
-      if ((_c = n.closest) == null ? void 0 : _c.call(n, OWN2)) return "";
-      if ((_d = n.matches) == null ? void 0 : _d.call(n, BLOCK)) {
-        const t = clean3(n.textContent);
-        if (t) return t.slice(0, MAX_CHARS);
-      }
-    }
-    const own = [...el2.childNodes].filter((c) => c.nodeType === 3).map((c) => c.textContent).join(" ");
-    return clean3(own).slice(0, MAX_CHARS);
-  }
-  function rgb(c) {
-    const m = /rgba?\(([^)]+)\)/.exec(c || "");
-    if (!m) return null;
-    const [r, g, b, a = 1] = m[1].split(/[ ,/]+/).filter(Boolean).map(Number);
-    return { r, g, b, a };
-  }
-  var lum = ({ r, g, b }) => (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-  function themeColors() {
-    const cs = getComputedStyle(document.body);
-    const fg = rgb(cs.color) || { r: 0, g: 0, b: 0, a: 1 };
-    let bg = rgb(cs.backgroundColor);
-    if (!bg || bg.a < 0.5) {
-      const html = rgb(
-        getComputedStyle(document.documentElement).backgroundColor
-      );
-      bg = html && html.a >= 0.5 ? html : lum(fg) > 0.5 ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
-    }
-    const css = ({ r, g, b }) => `rgb(${r}, ${g}, ${b})`;
-    return { color: css(fg), background: css(bg) };
-  }
-  function ensureBox() {
-    if (_box) return _box;
-    _box = document.createElement("div");
-    _box.id = MAGNIFIER_ID;
-    _box.setAttribute("aria-hidden", "true");
-    const set = (k, v) => _box.style.setProperty(k, v, "important");
-    set("position", "fixed");
-    set("left", "0");
-    set("top", "0");
-    set("display", "none");
-    set("box-sizing", "border-box");
-    set("width", "min(720px, calc(100vw - 32px))");
-    set("max-height", "40vh");
-    set("overflow", "hidden");
-    set("padding", "14px 18px");
-    set("font", `600 ${MIN_FONT_PX}px/1.35 system-ui, sans-serif`);
-    set("border-radius", "12px");
-    set("border", "3px solid");
-    set("box-shadow", "0 6px 24px rgba(0,0,0,0.4)");
-    set("pointer-events", "none");
-    set("z-index", "2147483645");
-    set("word-break", "break-word");
-    document.documentElement.appendChild(_box);
-    return _box;
-  }
-  function hide2() {
-    _last = "";
-    if (_box) _box.style.setProperty("display", "none", "important");
-  }
-  function place(rect) {
-    const vw = window.innerWidth || document.documentElement.clientWidth;
-    const vh = window.innerHeight || document.documentElement.clientHeight;
-    const w = _box.offsetWidth;
-    const h = _box.offsetHeight;
-    let top;
-    if (rect.bottom + GAP + h <= vh) top = rect.bottom + GAP;
-    else if (rect.top - GAP - h >= 0) top = rect.top - GAP - h;
-    else top = rect.top > vh - rect.bottom ? 8 : vh - h - 8;
-    const left = Math.min(Math.max(8, rect.left), Math.max(8, vw - w - 8));
-    _box.style.setProperty("left", `${Math.round(left)}px`, "important");
-    _box.style.setProperty(
-      "top",
-      `${Math.round(Math.max(0, top))}px`,
-      "important"
-    );
-  }
-  function show(el2, pointer) {
-    const text = magnifierTextFor(el2);
-    if (!text) return hide2();
-    const box2 = ensureBox();
-    if (text !== _last || box2.style.display === "none") {
-      const { color, background } = themeColors();
-      box2.style.setProperty("color", color, "important");
-      box2.style.setProperty("background", background, "important");
-      box2.style.setProperty("border-color", color, "important");
-      box2.textContent = text;
-      _last = text;
-    }
-    box2.style.setProperty("display", "block", "important");
-    _source = pointer ? "pointer" : "focus";
-    _scroll0 = { x: window.scrollX || 0, y: window.scrollY || 0 };
-    let rect = el2.getBoundingClientRect();
-    const vh = window.innerHeight || document.documentElement.clientHeight;
-    if (pointer && rect.height > vh / 2) {
-      rect = {
-        top: pointer.y - 12,
-        bottom: pointer.y + 12,
-        left: rect.left,
-        right: rect.right
-      };
-    }
-    place(rect);
-  }
-  function schedule2(el2, pointer) {
-    _pending = { el: el2, pointer };
-    if (_raf2 !== null) return;
-    _raf2 = requestAnimationFrame(() => {
-      _raf2 = null;
-      const p = _pending;
-      _pending = null;
-      if (p && !_escaped && _listeners2.length) show(p.el, p.pointer);
-    });
-  }
-  function on(target, type, fn, opts) {
-    target.addEventListener(type, fn, opts);
-    _listeners2.push([target, type, fn, opts]);
-  }
-  function startTextMagnifier() {
-    if (_listeners2.length) return;
-    const move = (e) => {
-      var _a, _b;
-      if (e.pointerType === "touch") return;
-      _escaped = false;
-      if ((_b = (_a = e.target) == null ? void 0 : _a.closest) == null ? void 0 : _b.call(_a, "#ms-container")) return hide2();
-      schedule2(e.target, { x: e.clientX, y: e.clientY });
-    };
-    const tap = (e) => {
-      var _a, _b;
-      if (e.pointerType !== "touch") return;
-      _escaped = false;
-      if ((_b = (_a = e.target) == null ? void 0 : _a.closest) == null ? void 0 : _b.call(_a, "#ms-container")) return hide2();
-      schedule2(e.target, { x: e.clientX, y: e.clientY });
-    };
-    const focus = (e) => {
-      var _a, _b;
-      _escaped = false;
-      if (!e.target || e.target === document.body || ((_b = (_a = e.target).closest) == null ? void 0 : _b.call(_a, "#ms-container")))
-        return hide2();
-      schedule2(e.target, null);
-    };
-    on(document, "pointermove", move, { passive: true });
-    on(document, "pointerdown", tap, { passive: true });
-    on(
-      document,
-      "pointerout",
-      (e) => {
-        if (!e.relatedTarget && e.pointerType !== "touch") hide2();
-      },
-      { passive: true }
-    );
-    on(document, "focusin", focus);
-    on(document, "focusout", () => {
-      if (_source === "focus") hide2();
-    });
-    on(document, "pointercancel", () => hide2(), { passive: true });
-    on(
-      document,
-      "scroll",
-      (e) => {
-        if (_source !== "pointer") return;
-        if (e.target === document && Math.abs((window.scrollX || 0) - _scroll0.x) < 1 && Math.abs((window.scrollY || 0) - _scroll0.y) < 1)
-          return;
-        hide2();
-      },
-      { capture: true, passive: true }
-    );
-    on(document, "keydown", (e) => {
-      if (e.key === "Escape") {
-        _escaped = true;
-        hide2();
-      }
-    });
-    on(document, "wheel", () => hide2(), { passive: true });
-    let width = window.innerWidth;
-    on(window, "resize", () => {
-      if (window.innerWidth !== width) hide2();
-      width = window.innerWidth;
-    });
-  }
-  function stopTextMagnifier() {
-    for (const [t, type, fn, opts] of _listeners2)
-      t.removeEventListener(type, fn, opts);
-    _listeners2 = [];
-    if (_raf2 !== null) {
-      cancelAnimationFrame(_raf2);
-      _raf2 = null;
-    }
-    _pending = null;
-    _escaped = false;
-    _last = "";
-    _source = null;
-    _box == null ? void 0 : _box.remove();
-    _box = null;
-  }
-
   // src/modo-simples.js
   var ModoSimples = class {
     constructor(userConfig = {}) {
@@ -7124,6 +7706,7 @@
       stopManualSelect();
       (_b = (_a = this._panel) == null ? void 0 : _a.closeOutline) == null ? void 0 : _b.call(_a);
       closeMouseGrid({ restoreFocus: false, silent: true });
+      closeVirtualKeyboard({ silent: true });
       this._setPageInert(false);
       revert();
       stopObserving();
@@ -7176,8 +7759,8 @@
      * Preferências do painel (tema, escala, Lexend, etc.) permanecem.
      * @param {boolean} on
      */
-    _setModoSimples(on2) {
-      if (on2) {
+    _setModoSimples(on3) {
+      if (on3) {
         const preferShow = this._loadPreferShowImages();
         if (!state_default.get().modoSimples) {
           this._saveHideImagesBeforeMs(state_default.get().options.hideImages);
@@ -7259,8 +7842,8 @@
       openPanel(this);
     }
     /** Delegate: ver setPageInert() em src/ui/binding.js. */
-    _setPageInert(on2) {
-      setPageInert(this, on2);
+    _setPageInert(on3) {
+      setPageInert(this, on3);
     }
     /** Delegate: ver inertSibling() em src/ui/binding.js. */
     _inertSibling(el2) {
@@ -7495,22 +8078,22 @@
       state_default.set({ options: { reducedMotion: prefersReducedMotion() } });
     }
   };
-  function readPreBootConfig(win) {
-    const cfg = win && win.ModoSimplesConfig;
+  function readPreBootConfig(win2) {
+    const cfg = win2 && win2.ModoSimplesConfig;
     return cfg && typeof cfg === "object" ? cfg : {};
   }
-  function bootModoSimples(win) {
-    if (win.ModoSimples && win.ModoSimples._initialized) return win.ModoSimples;
-    const instance = new ModoSimples(readPreBootConfig(win));
+  function bootModoSimples(win2) {
+    if (win2.ModoSimples && win2.ModoSimples._initialized) return win2.ModoSimples;
+    const instance = new ModoSimples(readPreBootConfig(win2));
     instance.init();
-    win.ModoSimples = instance;
+    win2.ModoSimples = instance;
     return instance;
   }
-  function shouldAutoBoot(win, script) {
+  function shouldAutoBoot(win2, script) {
     if (script && script.getAttribute("data-ms-autoboot") === "false") {
       return false;
     }
-    return readPreBootConfig(win).autoboot !== false;
+    return readPreBootConfig(win2).autoboot !== false;
   }
   if (typeof window !== "undefined") {
     const script = document.currentScript;

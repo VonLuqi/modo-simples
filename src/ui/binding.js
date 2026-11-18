@@ -24,6 +24,10 @@ import { isManualSelectActive } from '../features/manualSelect.js';
 import { placeShortcutsCard } from '../features/shortcutsCard.js';
 import { jumpToElement } from '../features/pageOutline.js';
 import { openMouseGrid, closeMouseGrid } from '../features/mouseGrid.js';
+import {
+  openVirtualKeyboard,
+  closeVirtualKeyboard,
+} from '../features/virtualKeyboard.js';
 import { STRINGS as S } from './strings.js';
 import { getProfile } from '../core/profiles.js';
 
@@ -127,6 +131,11 @@ export function buildUI(ms) {
     onOpenMouseGrid: () => {
       ms._closePanel();
       openMouseGrid();
+    },
+    // F9e: fecha o painel e liga o teclado virtual (sessão; dock no rodapé)
+    onOpenVirtualKeyboard: () => {
+      ms._closePanel();
+      openVirtualKeyboard();
     },
     brand: ms._config.brand,
   });
@@ -371,6 +380,7 @@ export function syncSpeaking(ms, speaking) {
 export function resetAll(ms) {
   ms._panel?.closeOutline?.();
   closeMouseGrid({ restoreFocus: false });
+  closeVirtualKeyboard();
   ms._reducedMotionUser = null; // volta a seguir o SO (padrão)
   // um anúncio só ("Tudo desligado"): sem os por opção nem o "Modo Simples desativado" (QA T152 L1)
   ms._applyingProfile = true;

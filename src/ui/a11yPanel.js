@@ -302,6 +302,10 @@ const CONTROLS = {
   mouseGrid: {
     html: `<button type="button" class="ms-tile" data-action="mouse-grid"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/>')}</span><span class="ms-tile-label">${S.panelMouseGrid}</span></button>`,
   },
+  // F9e: ação de sessão (fecha o painel e abre o teclado), não é opção persistida
+  virtualKeyboard: {
+    html: `<button type="button" class="ms-tile" data-action="virtual-keyboard"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>')}</span><span class="ms-tile-label">${S.panelVirtualKeyboard}</span></button>`,
+  },
   // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
   typography: {
     html: `
@@ -447,6 +451,7 @@ const SECTIONS = [
       'textMagnifier',
       'pageOutline',
       'mouseGrid',
+      'virtualKeyboard',
     ],
   },
   {
@@ -551,6 +556,7 @@ export function createA11yPanel({
   onMoveSide,
   onOutlineJump,
   onOpenMouseGrid,
+  onOpenVirtualKeyboard,
   brand,
 }) {
   const texts = { ...DEFAULT_BRAND, ...brand };
@@ -718,6 +724,9 @@ export function createA11yPanel({
   panel
     .querySelector('[data-action="mouse-grid"]')
     .addEventListener('click', () => onOpenMouseGrid?.());
+  panel
+    .querySelector('[data-action="virtual-keyboard"]')
+    .addEventListener('click', () => onOpenVirtualKeyboard?.());
   panel
     .querySelector('[data-action="page-outline"]')
     .addEventListener('click', (e) => outline.open(e.currentTarget));
