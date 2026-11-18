@@ -34,9 +34,22 @@ const THEME_CLASSES = [
   'ms-theme-yellowBlack',
   'ms-theme-darkHigh',
   'ms-theme-soft',
+  'ms-theme-mono',
+  'ms-theme-lightHigh',
 ];
 
+/** Cor personalizada: opção → [classe, variável CSS]. Só #rrggbb entra no style. */
+const CUSTOM_COLORS = {
+  customText: ['ms-custom-text', '--ms-custom-text'],
+  customHeading: ['ms-custom-heading', '--ms-custom-heading'],
+  customBg: ['ms-custom-bg', '--ms-custom-bg'],
+};
+const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+
 const OPTION_FLAG_CLASSES = [
+  'ms-sat-low',
+  'ms-sat-high',
+  ...Object.values(CUSTOM_COLORS).map(([cls]) => cls),
   'ms-dyslexia-font',
   'ms-highlight-links',
   'ms-text-spacing',
@@ -147,6 +160,16 @@ export function applyOptions(state) {
   const theme = opts.colorTheme || 'senac';
   html.classList.add(`ms-theme-${theme}`);
 
+  // 'normal' = sem classe (não mexe no filtro do host)
+  html.classList.toggle('ms-sat-low', opts.colorSaturation === 'low');
+  html.classList.toggle('ms-sat-high', opts.colorSaturation === 'high');
+  for (const [key, [cls, prop]] of Object.entries(CUSTOM_COLORS)) {
+    const on = HEX_COLOR.test(opts[key] || '');
+    html.classList.toggle(cls, on);
+    if (on) html.style?.setProperty?.(prop, opts[key]);
+    else html.style?.removeProperty?.(prop);
+  }
+
   html.classList.toggle('ms-dyslexia-font', !!opts.dyslexiaFont);
   if (opts.dyslexiaFont) ensureLexendFont();
   html.classList.toggle('ms-highlight-links', !!opts.highlightLinks);
@@ -218,6 +241,9 @@ export function revert() {
     ...THEME_CLASSES,
     ...OPTION_FLAG_CLASSES,
   );
+  for (const [, prop] of Object.values(CUSTOM_COLORS)) {
+    document.documentElement.style?.removeProperty?.(prop);
+  }
 }
 
 /**

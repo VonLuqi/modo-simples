@@ -27,6 +27,10 @@ import { STRINGS as S } from './strings.js';
 const RESET_OPTIONS = {
   textScale: '100',
   colorTheme: 'senac',
+  colorSaturation: 'normal',
+  customText: '',
+  customHeading: '',
+  customBg: '',
   dyslexiaFont: false,
   readingRuler: false,
   highlightLinks: false,

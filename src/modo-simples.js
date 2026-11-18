@@ -448,6 +448,10 @@ class ModoSimples {
     const optionKeys = [
       'textScale',
       'colorTheme',
+      'colorSaturation',
+      'customText',
+      'customHeading',
+      'customBg',
       'dyslexiaFont',
       'readingRuler',
       'highlightLinks',

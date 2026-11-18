@@ -13,6 +13,10 @@
  */
 export const SCHEMA_VERSION = 1;
 
+/** Cor personalizada: só #rrggbb (vem de storage; nunca confiar). */
+const hexOrEmpty = (v) =>
+  typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : '';
+
 export function hydratePersistedState(saved) {
   if (!saved || typeof saved !== 'object') return null;
 
@@ -30,11 +34,22 @@ export function hydratePersistedState(saved) {
       textScale: ['100', '125', '150', '175'].includes(textScale)
         ? textScale
         : '100',
-      colorTheme: ['senac', 'yellowBlack', 'darkHigh', 'soft'].includes(
-        colorTheme,
-      )
+      colorTheme: [
+        'senac',
+        'yellowBlack',
+        'darkHigh',
+        'soft',
+        'mono',
+        'lightHigh',
+      ].includes(colorTheme)
         ? colorTheme
         : 'senac',
+      colorSaturation: ['low', 'normal', 'high'].includes(opts.colorSaturation)
+        ? opts.colorSaturation
+        : 'normal',
+      customText: hexOrEmpty(opts.customText),
+      customHeading: hexOrEmpty(opts.customHeading),
+      customBg: hexOrEmpty(opts.customBg),
       dyslexiaFont: Boolean(opts.dyslexiaFont),
       readingRuler: Boolean(opts.readingRuler),
       highlightLinks: Boolean(opts.highlightLinks),

@@ -463,6 +463,55 @@ export const UI_CSS = `
     .ms-theme-btn--soft .ms-theme-swatch {
       background: linear-gradient(90deg, #f5efe0 50%, #5c4a32 50%);
     }
+    .ms-theme-btn--mono .ms-theme-swatch {
+      background: linear-gradient(90deg, #111 33%, #888 33% 66%, #eee 66%);
+    }
+    .ms-theme-btn--lightHigh .ms-theme-swatch {
+      background: linear-gradient(90deg, #fff 50%, #000 50%);
+      border-color: #000;
+    }
+    .ms-segmented[data-option="colorSaturation"] {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .ms-swatches {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+      gap: calc(0.35 * var(--ms-u));
+    }
+    .ms-swatch {
+      min-height: 36px;
+      min-width: 36px;
+      border: 2px solid #64748b;
+      border-radius: 8px;
+      cursor: pointer;
+      font: inherit;
+      /* "Padrão do site": risca diagonal sobre fundo branco */
+      background-image: none;
+    }
+    .ms-swatch--none {
+      background: linear-gradient(135deg, #fff 45%, #dc2626 45% 55%, #fff 55%);
+    }
+    .ms-swatch--on,
+    .ms-swatch[aria-checked="true"] {
+      border-color: var(--ms-blue);
+      box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ms-blue);
+    }
+    .ms-swatch:focus-visible,
+    .ms-color-input:focus-visible {
+      outline: 2px solid var(--ms-orange);
+      outline-offset: 2px;
+    }
+    .ms-color-input {
+      display: block;
+      width: 100%;
+      min-height: 36px;
+      margin-top: calc(0.4 * var(--ms-u));
+      padding: 2px;
+      border: 2px solid #64748b;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+    }
     .ms-theme-label {
       font-size: calc(0.8125 * var(--ms-u));
       font-weight: 700;
@@ -852,9 +901,53 @@ export const PAGE_CSS = `
       text-decoration: none !important;
     }
 
+    html.ms-theme-lightHigh,
+    html.ms-theme-lightHigh body {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+    }
+    html.ms-theme-lightHigh body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      background-color: transparent !important;
+      color: #000000 !important;
+      border-color: #000000 !important;
+    }
+    html.ms-theme-lightHigh a,
+    html.ms-theme-lightHigh a:visited {
+      color: #0000cc !important;
+      text-decoration: underline !important;
+    }
+    html.ms-theme-lightHigh .site-header,
+    html.ms-theme-lightHigh .ms-pills-nav {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      border-bottom-color: #000000 !important;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 25%) !important;
+    }
+    html.ms-theme-lightHigh .site-header a,
+    html.ms-theme-lightHigh .ms-pills-nav a {
+      color: #000000 !important;
+    }
+    html.ms-theme-lightHigh .ms-pills-nav .ms-pill:not([aria-current='page']) {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      border-color: #000000 !important;
+    }
+    html.ms-theme-lightHigh .ms-pills-nav .ms-pill:not([aria-current='page']):hover,
+    html.ms-theme-lightHigh .ms-pills-nav .ms-pill:not([aria-current='page']):focus-visible {
+      background-color: #e5e5e5 !important;
+    }
+    html.ms-theme-lightHigh .main-nav a[aria-current='page'],
+    html.ms-theme-lightHigh .ms-pill[aria-current='page'] {
+      background-color: #000000 !important;
+      color: #ffffff !important;
+      border-color: #000000 !important;
+      text-decoration: none !important;
+    }
+
     /* Session bar: opaque amber over page content under any theme */
     html.ms-theme-yellowBlack #ms-session-bar,
     html.ms-theme-darkHigh #ms-session-bar,
+    html.ms-theme-lightHigh #ms-session-bar,
     html.ms-theme-soft #ms-session-bar {
       position: relative;
       z-index: 40;
@@ -864,6 +957,32 @@ export const PAGE_CSS = `
     }
 
     /* ms-theme-senac is a noop (default site look) */
+
+    /* F8a: saturação e monocromático via filter no <html> (elemento raiz: não cria bloco
+       contenedor, então o widget position:fixed continua ancorado à viewport). Nunca em body/filhos. */
+    html.ms-sat-low { filter: saturate(0.5); }
+    html.ms-sat-high { filter: saturate(1.8); }
+    html.ms-theme-mono { filter: grayscale(1); }
+
+    /* F8a: cor personalizada (texto/títulos/fundo); vence os temas por vir depois, mesma especificidade */
+    html.ms-custom-bg,
+    html.ms-custom-bg body {
+      background-color: var(--ms-custom-bg) !important;
+    }
+    html.ms-custom-bg body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      background-color: transparent !important;
+    }
+    html.ms-custom-text,
+    html.ms-custom-text body {
+      color: var(--ms-custom-text) !important;
+    }
+    html.ms-custom-text body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      color: var(--ms-custom-text) !important;
+    }
+    html.ms-custom-heading body :is(h1, h2, h3, h4, h5, h6):not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *),
+    html.ms-custom-heading body :is(h1, h2, h3, h4, h5, h6):not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) * {
+      color: var(--ms-custom-heading) !important;
+    }
 
     /* ── Reduced motion ──────────────────────────────────────────────────── */
     html.ms-reduced-motion *,

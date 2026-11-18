@@ -65,6 +65,10 @@ describe('Desligar tudo', () => {
     assert.deepEqual(s.options, {
       textScale: '100',
       colorTheme: 'senac',
+      colorSaturation: 'normal',
+      customText: '',
+      customHeading: '',
+      customBg: '',
       dyslexiaFont: false,
       readingRuler: false,
       highlightLinks: false,

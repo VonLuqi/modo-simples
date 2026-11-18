@@ -213,6 +213,10 @@
     options: {
       textScale: "100",
       colorTheme: "senac",
+      colorSaturation: "normal",
+      customText: "",
+      customHeading: "",
+      customBg: "",
       dyslexiaFont: false,
       readingRuler: false,
       highlightLinks: false,
@@ -281,7 +285,15 @@
     senac: "Cores do site",
     yellowBlack: "Amarelo e Preto",
     darkHigh: "Modo Escuro Alto",
-    soft: "Descanso Suave"
+    soft: "Descanso Suave",
+    mono: "Monocrom\xE1tico",
+    lightHigh: "Claro Alto Contraste"
+  };
+  var SATURATION_LABELS = { low: "baixa", normal: "normal", high: "alta" };
+  var CUSTOM_LABELS = {
+    customText: "texto",
+    customHeading: "t\xEDtulos",
+    customBg: "fundo"
   };
   function diffStateAnnouncements(prev, next) {
     const out = [];
@@ -302,6 +314,17 @@
         `Tema ${THEME_LABELS[next.options.colorTheme] || next.options.colorTheme}`
       );
     }
+    if (prev.options.colorSaturation !== next.options.colorSaturation) {
+      out.push(
+        `Satura\xE7\xE3o ${SATURATION_LABELS[next.options.colorSaturation] || next.options.colorSaturation}`
+      );
+    }
+    Object.entries(CUSTOM_LABELS).forEach(([k, label]) => {
+      if (prev.options[k] !== next.options[k])
+        out.push(
+          next.options[k] ? `Cor personalizada de ${label} ${next.options[k]}` : `Cor personalizada de ${label} removida`
+        );
+    });
     return out;
   }
 
@@ -409,6 +432,7 @@
 
   // src/core/persistedState.js
   var SCHEMA_VERSION = 1;
+  var hexOrEmpty = (v) => typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : "";
   function hydratePersistedState(saved) {
     if (!saved || typeof saved !== "object") return null;
     const opts = saved.options || {};
@@ -421,9 +445,18 @@
       modoSimples,
       options: {
         textScale: ["100", "125", "150", "175"].includes(textScale) ? textScale : "100",
-        colorTheme: ["senac", "yellowBlack", "darkHigh", "soft"].includes(
-          colorTheme
-        ) ? colorTheme : "senac",
+        colorTheme: [
+          "senac",
+          "yellowBlack",
+          "darkHigh",
+          "soft",
+          "mono",
+          "lightHigh"
+        ].includes(colorTheme) ? colorTheme : "senac",
+        colorSaturation: ["low", "normal", "high"].includes(opts.colorSaturation) ? opts.colorSaturation : "normal",
+        customText: hexOrEmpty(opts.customText),
+        customHeading: hexOrEmpty(opts.customHeading),
+        customBg: hexOrEmpty(opts.customBg),
         dyslexiaFont: Boolean(opts.dyslexiaFont),
         readingRuler: Boolean(opts.readingRuler),
         highlightLinks: Boolean(opts.highlightLinks),
@@ -1152,6 +1185,55 @@
     .ms-theme-btn--soft .ms-theme-swatch {
       background: linear-gradient(90deg, #f5efe0 50%, #5c4a32 50%);
     }
+    .ms-theme-btn--mono .ms-theme-swatch {
+      background: linear-gradient(90deg, #111 33%, #888 33% 66%, #eee 66%);
+    }
+    .ms-theme-btn--lightHigh .ms-theme-swatch {
+      background: linear-gradient(90deg, #fff 50%, #000 50%);
+      border-color: #000;
+    }
+    .ms-segmented[data-option="colorSaturation"] {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .ms-swatches {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+      gap: calc(0.35 * var(--ms-u));
+    }
+    .ms-swatch {
+      min-height: 36px;
+      min-width: 36px;
+      border: 2px solid #64748b;
+      border-radius: 8px;
+      cursor: pointer;
+      font: inherit;
+      /* "Padr\xE3o do site": risca diagonal sobre fundo branco */
+      background-image: none;
+    }
+    .ms-swatch--none {
+      background: linear-gradient(135deg, #fff 45%, #dc2626 45% 55%, #fff 55%);
+    }
+    .ms-swatch--on,
+    .ms-swatch[aria-checked="true"] {
+      border-color: var(--ms-blue);
+      box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ms-blue);
+    }
+    .ms-swatch:focus-visible,
+    .ms-color-input:focus-visible {
+      outline: 2px solid var(--ms-orange);
+      outline-offset: 2px;
+    }
+    .ms-color-input {
+      display: block;
+      width: 100%;
+      min-height: 36px;
+      margin-top: calc(0.4 * var(--ms-u));
+      padding: 2px;
+      border: 2px solid #64748b;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+    }
     .ms-theme-label {
       font-size: calc(0.8125 * var(--ms-u));
       font-weight: 700;
@@ -1540,9 +1622,53 @@
       text-decoration: none !important;
     }
 
+    html.ms-theme-lightHigh,
+    html.ms-theme-lightHigh body {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+    }
+    html.ms-theme-lightHigh body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      background-color: transparent !important;
+      color: #000000 !important;
+      border-color: #000000 !important;
+    }
+    html.ms-theme-lightHigh a,
+    html.ms-theme-lightHigh a:visited {
+      color: #0000cc !important;
+      text-decoration: underline !important;
+    }
+    html.ms-theme-lightHigh .site-header,
+    html.ms-theme-lightHigh .ms-pills-nav {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      border-bottom-color: #000000 !important;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 25%) !important;
+    }
+    html.ms-theme-lightHigh .site-header a,
+    html.ms-theme-lightHigh .ms-pills-nav a {
+      color: #000000 !important;
+    }
+    html.ms-theme-lightHigh .ms-pills-nav .ms-pill:not([aria-current='page']) {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      border-color: #000000 !important;
+    }
+    html.ms-theme-lightHigh .ms-pills-nav .ms-pill:not([aria-current='page']):hover,
+    html.ms-theme-lightHigh .ms-pills-nav .ms-pill:not([aria-current='page']):focus-visible {
+      background-color: #e5e5e5 !important;
+    }
+    html.ms-theme-lightHigh .main-nav a[aria-current='page'],
+    html.ms-theme-lightHigh .ms-pill[aria-current='page'] {
+      background-color: #000000 !important;
+      color: #ffffff !important;
+      border-color: #000000 !important;
+      text-decoration: none !important;
+    }
+
     /* Session bar: opaque amber over page content under any theme */
     html.ms-theme-yellowBlack #ms-session-bar,
     html.ms-theme-darkHigh #ms-session-bar,
+    html.ms-theme-lightHigh #ms-session-bar,
     html.ms-theme-soft #ms-session-bar {
       position: relative;
       z-index: 40;
@@ -1552,6 +1678,32 @@
     }
 
     /* ms-theme-senac is a noop (default site look) */
+
+    /* F8a: satura\xE7\xE3o e monocrom\xE1tico via filter no <html> (elemento raiz: n\xE3o cria bloco
+       contenedor, ent\xE3o o widget position:fixed continua ancorado \xE0 viewport). Nunca em body/filhos. */
+    html.ms-sat-low { filter: saturate(0.5); }
+    html.ms-sat-high { filter: saturate(1.8); }
+    html.ms-theme-mono { filter: grayscale(1); }
+
+    /* F8a: cor personalizada (texto/t\xEDtulos/fundo); vence os temas por vir depois, mesma especificidade */
+    html.ms-custom-bg,
+    html.ms-custom-bg body {
+      background-color: var(--ms-custom-bg) !important;
+    }
+    html.ms-custom-bg body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      background-color: transparent !important;
+    }
+    html.ms-custom-text,
+    html.ms-custom-text body {
+      color: var(--ms-custom-text) !important;
+    }
+    html.ms-custom-text body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+      color: var(--ms-custom-text) !important;
+    }
+    html.ms-custom-heading body :is(h1, h2, h3, h4, h5, h6):not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *),
+    html.ms-custom-heading body :is(h1, h2, h3, h4, h5, h6):not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) * {
+      color: var(--ms-custom-heading) !important;
+    }
 
     /* \u2500\u2500 Reduced motion \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     html.ms-reduced-motion *,
@@ -2115,6 +2267,20 @@
     themeDarkHighSub: "Fundo escuro",
     themeSoft: "Descanso / Suave",
     themeSoftSub: "Baixa intensidade",
+    themeMono: "Monocrom\xE1tico",
+    themeMonoSub: "Tons de cinza",
+    themeLightHigh: "Claro Alto Contraste",
+    themeLightHighSub: "Fundo branco",
+    panelSaturationTitle: "Satura\xE7\xE3o das cores",
+    panelSaturationLow: "Baixa",
+    panelSaturationNormal: "Normal",
+    panelSaturationHigh: "Alta",
+    panelCustomTextTitle: "Cor do texto",
+    panelCustomHeadingTitle: "Cor dos t\xEDtulos",
+    panelCustomBgTitle: "Cor do fundo",
+    panelCustomNone: "Padr\xE3o do site",
+    panelCustomSwatchLabel: "Usar cor",
+    panelCustomPickerLabel: "Escolher outra cor para",
     // sessionChrome.js
     sessionOpenPanelLabel: "Abrir painel de acessibilidade",
     sessionOpenPanelTitle: "Acessibilidade",
@@ -2299,8 +2465,59 @@
       sub: STRINGS.themeYellowBlackSub
     },
     { value: "darkHigh", label: STRINGS.themeDarkHigh, sub: STRINGS.themeDarkHighSub },
-    { value: "soft", label: STRINGS.themeSoft, sub: STRINGS.themeSoftSub }
+    { value: "soft", label: STRINGS.themeSoft, sub: STRINGS.themeSoftSub },
+    { value: "mono", label: STRINGS.themeMono, sub: STRINGS.themeMonoSub },
+    { value: "lightHigh", label: STRINGS.themeLightHigh, sub: STRINGS.themeLightHighSub }
   ];
+  var SATURATIONS = [
+    { value: "low", label: STRINGS.panelSaturationLow },
+    { value: "normal", label: STRINGS.panelSaturationNormal },
+    { value: "high", label: STRINGS.panelSaturationHigh }
+  ];
+  var CUSTOM_COLORS = {
+    customText: {
+      labelId: "ms-label-ctext",
+      title: STRINGS.panelCustomTextTitle,
+      presets: [
+        "#000000",
+        "#1a1a1a",
+        "#0b2c5f",
+        "#14532d",
+        "#7f1d1d",
+        "#ffffff",
+        "#fef08a",
+        "#bae6fd"
+      ]
+    },
+    customHeading: {
+      labelId: "ms-label-cheading",
+      title: STRINGS.panelCustomHeadingTitle,
+      presets: [
+        "#000000",
+        "#0b2c5f",
+        "#7f1d1d",
+        "#14532d",
+        "#4a148c",
+        "#ffffff",
+        "#fde047",
+        "#93c5fd"
+      ]
+    },
+    customBg: {
+      labelId: "ms-label-cbg",
+      title: STRINGS.panelCustomBgTitle,
+      presets: [
+        "#ffffff",
+        "#fffbe6",
+        "#f5efe0",
+        "#e6f0ff",
+        "#e8f5e9",
+        "#000000",
+        "#0f172a",
+        "#1a1a1a"
+      ]
+    }
+  };
   var svgIcon = (inner) => `<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${inner}</svg>`;
   var CHEVRON = svgIcon('<path d="m6 9 6 6 6-6"/>');
   var CHECK = svgIcon('<path d="m5 12.5 4.5 4.5L19 7.5"/>');
@@ -2338,6 +2555,34 @@
             </button>`
       ).join("")}
         </div>`
+    },
+    // Segmentos preenchidos em createA11yPanel (DOM, sem interpolação no template)
+    colorSaturation: {
+      wide: true,
+      html: `
+        ${radioHead("ms-label-sat", STRINGS.panelSaturationTitle, "colorSaturation")}
+        <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-sat" data-option="colorSaturation"></div>`
+    },
+    customText: {
+      wide: true,
+      html: `
+        ${radioHead("ms-label-ctext", STRINGS.panelCustomTextTitle, "customText")}
+        <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-ctext" data-option="customText"></div>
+        <input type="color" class="ms-color-input" data-picker="customText">`
+    },
+    customHeading: {
+      wide: true,
+      html: `
+        ${radioHead("ms-label-cheading", STRINGS.panelCustomHeadingTitle, "customHeading")}
+        <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-cheading" data-option="customHeading"></div>
+        <input type="color" class="ms-color-input" data-picker="customHeading">`
+    },
+    customBg: {
+      wide: true,
+      html: `
+        ${radioHead("ms-label-cbg", STRINGS.panelCustomBgTitle, "customBg")}
+        <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-cbg" data-option="customBg"></div>
+        <input type="color" class="ms-color-input" data-picker="customBg">`
     },
     dyslexiaFont: {
       html: switchTile({
@@ -2427,7 +2672,14 @@
       icon: svgIcon(
         '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/>'
       ),
-      controls: ["colorTheme", "highlightLinks"]
+      controls: [
+        "colorTheme",
+        "colorSaturation",
+        "customText",
+        "customHeading",
+        "customBg",
+        "highlightLinks"
+      ]
     },
     {
       id: "motion",
@@ -2529,6 +2781,47 @@
     setText("#ms-a11y-title", texts.title || DEFAULT_BRAND.title);
     setText(".ms-a11y-subtitle", texts.subtitle);
     setText(".ms-a11y-footer-note", texts.footer);
+    const radioBtn = (cls, value, label) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("role", "radio");
+      b.setAttribute("aria-checked", "false");
+      b.className = cls;
+      b.setAttribute("data-value", value);
+      b.setAttribute("aria-label", label);
+      return b;
+    };
+    const satGroup = panel.querySelector('[data-option="colorSaturation"]');
+    SATURATIONS.forEach((s) => {
+      const b = radioBtn(
+        "ms-segment",
+        s.value,
+        `${STRINGS.panelSaturationTitle} ${s.label}`
+      );
+      b.textContent = s.label;
+      satGroup.appendChild(b);
+    });
+    Object.entries(CUSTOM_COLORS).forEach(([key, cfg]) => {
+      const group = panel.querySelector(`[data-option="${key}"]`);
+      const none = radioBtn(
+        "ms-swatch ms-swatch--none",
+        "",
+        `${cfg.title}: ${STRINGS.panelCustomNone}`
+      );
+      none.title = STRINGS.panelCustomNone;
+      group.appendChild(none);
+      cfg.presets.forEach((hex) => {
+        const b = radioBtn(
+          "ms-swatch",
+          hex,
+          `${STRINGS.panelCustomSwatchLabel} ${hex} \u2014 ${cfg.title}`
+        );
+        b.style.backgroundColor = hex;
+        b.title = hex;
+        group.appendChild(b);
+      });
+      panel.querySelector(`[data-picker="${key}"]`).setAttribute("aria-label", `${STRINGS.panelCustomPickerLabel} ${cfg.title}`);
+    });
     let _releaseFocus = null;
     panel.querySelectorAll(".ms-a11y-section-toggle").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -2551,7 +2844,23 @@
     });
     panel.querySelectorAll(".ms-segmented .ms-segment").forEach((btn) => {
       btn.addEventListener("click", () => {
-        onSetOption("textScale", btn.getAttribute("data-value"));
+        onSetOption(
+          btn.closest("[data-option]").getAttribute("data-option"),
+          btn.getAttribute("data-value")
+        );
+      });
+    });
+    panel.querySelectorAll(".ms-swatches .ms-swatch").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        onSetOption(
+          btn.closest("[data-option]").getAttribute("data-option"),
+          btn.getAttribute("data-value")
+        );
+      });
+    });
+    panel.querySelectorAll(".ms-color-input").forEach((input) => {
+      input.addEventListener("input", () => {
+        onSetOption(input.getAttribute("data-picker"), input.value);
       });
     });
     panel.querySelectorAll(".ms-theme-grid .ms-theme-btn").forEach((btn) => {
@@ -2584,7 +2893,7 @@
     });
     panel.querySelector('[data-action="speak"]').addEventListener("click", () => onSpeak());
     function sync(s, ui = {}) {
-      var _a, _b, _c, _d;
+      var _a, _b, _c, _d, _e, _f, _g;
       const modoBtn = panel.querySelector('[data-action="modo-simples"]');
       if (modoBtn) {
         modoBtn.setAttribute("aria-checked", String(!!s.modoSimples));
@@ -2603,6 +2912,30 @@
         btn.setAttribute("aria-checked", String(on));
         btn.setAttribute("tabindex", on ? "0" : "-1");
         btn.classList.toggle("ms-theme-btn--on", on);
+      });
+      const syncRadios = (selector, value) => {
+        const radios = [...panel.querySelectorAll(selector)];
+        const hit = radios.some((b) => b.getAttribute("data-value") === value);
+        radios.forEach((btn, i) => {
+          const on = btn.getAttribute("data-value") === value;
+          btn.setAttribute("aria-checked", String(on));
+          btn.setAttribute("tabindex", on || !hit && i === 0 ? "0" : "-1");
+          btn.classList.toggle(
+            btn.classList.contains("ms-swatch") ? "ms-swatch--on" : "ms-segment--on",
+            on
+          );
+        });
+      };
+      const sat = ((_c = s.options) == null ? void 0 : _c.colorSaturation) || "normal";
+      syncRadios('[data-option="colorSaturation"] .ms-segment', sat);
+      Object.keys(CUSTOM_COLORS).forEach((key) => {
+        var _a2;
+        const val = ((_a2 = s.options) == null ? void 0 : _a2[key]) || "";
+        syncRadios(`[data-option="${key}"] .ms-swatch`, val);
+        const input = panel.querySelector(`[data-picker="${key}"]`);
+        if (input) input.value = val || "#000000";
+        const st = panel.querySelector(`[data-state-for="${key}"]`);
+        if (st) st.textContent = val || STRINGS.panelCustomNone;
       });
       [
         "dyslexiaFont",
@@ -2632,7 +2965,11 @@
       );
       setState(
         "colorTheme",
-        (_d = (_c = COLOR_THEMES.find((x) => x.value === theme)) == null ? void 0 : _c.label) != null ? _d : theme
+        (_e = (_d = COLOR_THEMES.find((x) => x.value === theme)) == null ? void 0 : _d.label) != null ? _e : theme
+      );
+      setState(
+        "colorSaturation",
+        (_g = (_f = SATURATIONS.find((x) => x.value === sat)) == null ? void 0 : _f.label) != null ? _g : sat
       );
       const speakBtn = panel.querySelector('[data-action="speak"]');
       if (speakBtn && ui.speaking !== void 0) {
@@ -3588,6 +3925,10 @@
   var RESET_OPTIONS = {
     textScale: "100",
     colorTheme: "senac",
+    colorSaturation: "normal",
+    customText: "",
+    customHeading: "",
+    customBg: "",
     dyslexiaFont: false,
     readingRuler: false,
     highlightLinks: false,
@@ -3877,9 +4218,20 @@
     "ms-theme-senac",
     "ms-theme-yellowBlack",
     "ms-theme-darkHigh",
-    "ms-theme-soft"
+    "ms-theme-soft",
+    "ms-theme-mono",
+    "ms-theme-lightHigh"
   ];
+  var CUSTOM_COLORS2 = {
+    customText: ["ms-custom-text", "--ms-custom-text"],
+    customHeading: ["ms-custom-heading", "--ms-custom-heading"],
+    customBg: ["ms-custom-bg", "--ms-custom-bg"]
+  };
+  var HEX_COLOR = /^#[0-9a-f]{6}$/i;
   var OPTION_FLAG_CLASSES = [
+    "ms-sat-low",
+    "ms-sat-high",
+    ...Object.values(CUSTOM_COLORS2).map(([cls]) => cls),
     "ms-dyslexia-font",
     "ms-highlight-links",
     "ms-text-spacing",
@@ -3927,6 +4279,7 @@
     return { mainElement: _mainElement, confidence: result.confidence };
   }
   function applyOptions(state2) {
+    var _a, _b, _c, _d;
     const html = document.documentElement;
     const opts = state2.options || {};
     html.classList.remove(...TEXT_SCALE_CLASSES);
@@ -3935,6 +4288,14 @@
     html.classList.remove(...THEME_CLASSES);
     const theme = opts.colorTheme || "senac";
     html.classList.add(`ms-theme-${theme}`);
+    html.classList.toggle("ms-sat-low", opts.colorSaturation === "low");
+    html.classList.toggle("ms-sat-high", opts.colorSaturation === "high");
+    for (const [key, [cls, prop]] of Object.entries(CUSTOM_COLORS2)) {
+      const on = HEX_COLOR.test(opts[key] || "");
+      html.classList.toggle(cls, on);
+      if (on) (_b = (_a = html.style) == null ? void 0 : _a.setProperty) == null ? void 0 : _b.call(_a, prop, opts[key]);
+      else (_d = (_c = html.style) == null ? void 0 : _c.removeProperty) == null ? void 0 : _d.call(_c, prop);
+    }
     html.classList.toggle("ms-dyslexia-font", !!opts.dyslexiaFont);
     if (opts.dyslexiaFont) ensureLexendFont();
     html.classList.toggle("ms-highlight-links", !!opts.highlightLinks);
@@ -3968,12 +4329,16 @@
     _holdPrincipal = false;
   }
   function revert() {
+    var _a, _b;
     revertModoSimples();
     document.documentElement.classList.remove(
       ...TEXT_SCALE_CLASSES,
       ...THEME_CLASSES,
       ...OPTION_FLAG_CLASSES
     );
+    for (const [, prop] of Object.values(CUSTOM_COLORS2)) {
+      (_b = (_a = document.documentElement.style) == null ? void 0 : _a.removeProperty) == null ? void 0 : _b.call(_a, prop);
+    }
   }
   function setPrincipal(el, config) {
     document.querySelectorAll("[data-ms-principal]").forEach((node) => {
@@ -4502,6 +4867,10 @@
       const optionKeys = [
         "textScale",
         "colorTheme",
+        "colorSaturation",
+        "customText",
+        "customHeading",
+        "customBg",
         "dyslexiaFont",
         "readingRuler",
         "highlightLinks",

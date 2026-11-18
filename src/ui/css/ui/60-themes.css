@@ -46,6 +46,55 @@
     .ms-theme-btn--soft .ms-theme-swatch {
       background: linear-gradient(90deg, #f5efe0 50%, #5c4a32 50%);
     }
+    .ms-theme-btn--mono .ms-theme-swatch {
+      background: linear-gradient(90deg, #111 33%, #888 33% 66%, #eee 66%);
+    }
+    .ms-theme-btn--lightHigh .ms-theme-swatch {
+      background: linear-gradient(90deg, #fff 50%, #000 50%);
+      border-color: #000;
+    }
+    .ms-segmented[data-option="colorSaturation"] {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .ms-swatches {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+      gap: calc(0.35 * var(--ms-u));
+    }
+    .ms-swatch {
+      min-height: 36px;
+      min-width: 36px;
+      border: 2px solid #64748b;
+      border-radius: 8px;
+      cursor: pointer;
+      font: inherit;
+      /* "Padrão do site": risca diagonal sobre fundo branco */
+      background-image: none;
+    }
+    .ms-swatch--none {
+      background: linear-gradient(135deg, #fff 45%, #dc2626 45% 55%, #fff 55%);
+    }
+    .ms-swatch--on,
+    .ms-swatch[aria-checked="true"] {
+      border-color: var(--ms-blue);
+      box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ms-blue);
+    }
+    .ms-swatch:focus-visible,
+    .ms-color-input:focus-visible {
+      outline: 2px solid var(--ms-orange);
+      outline-offset: 2px;
+    }
+    .ms-color-input {
+      display: block;
+      width: 100%;
+      min-height: 36px;
+      margin-top: calc(0.4 * var(--ms-u));
+      padding: 2px;
+      border: 2px solid #64748b;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+    }
     .ms-theme-label {
       font-size: calc(0.8125 * var(--ms-u));
       font-weight: 700;

@@ -24,6 +24,16 @@ const THEME_LABELS = {
   yellowBlack: 'Amarelo e Preto',
   darkHigh: 'Modo Escuro Alto',
   soft: 'Descanso Suave',
+  mono: 'Monocromático',
+  lightHigh: 'Claro Alto Contraste',
+};
+
+const SATURATION_LABELS = { low: 'baixa', normal: 'normal', high: 'alta' };
+
+const CUSTOM_LABELS = {
+  customText: 'texto',
+  customHeading: 'títulos',
+  customBg: 'fundo',
 };
 
 /**
@@ -57,6 +67,19 @@ export function diffStateAnnouncements(prev, next) {
       `Tema ${THEME_LABELS[next.options.colorTheme] || next.options.colorTheme}`,
     );
   }
+  if (prev.options.colorSaturation !== next.options.colorSaturation) {
+    out.push(
+      `Saturação ${SATURATION_LABELS[next.options.colorSaturation] || next.options.colorSaturation}`,
+    );
+  }
+  Object.entries(CUSTOM_LABELS).forEach(([k, label]) => {
+    if (prev.options[k] !== next.options[k])
+      out.push(
+        next.options[k]
+          ? `Cor personalizada de ${label} ${next.options[k]}`
+          : `Cor personalizada de ${label} removida`,
+      );
+  });
 
   return out;
 }

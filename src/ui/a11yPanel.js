@@ -30,7 +30,61 @@ const COLOR_THEMES = [
   },
   { value: 'darkHigh', label: S.themeDarkHigh, sub: S.themeDarkHighSub },
   { value: 'soft', label: S.themeSoft, sub: S.themeSoftSub },
+  { value: 'mono', label: S.themeMono, sub: S.themeMonoSub },
+  { value: 'lightHigh', label: S.themeLightHigh, sub: S.themeLightHighSub },
 ];
+
+const SATURATIONS = [
+  { value: 'low', label: S.panelSaturationLow },
+  { value: 'normal', label: S.panelSaturationNormal },
+  { value: 'high', label: S.panelSaturationHigh },
+];
+
+/** Cor personalizada: título + 8 presets com contraste ≥ 7:1 contra branco ou preto. */
+const CUSTOM_COLORS = {
+  customText: {
+    labelId: 'ms-label-ctext',
+    title: S.panelCustomTextTitle,
+    presets: [
+      '#000000',
+      '#1a1a1a',
+      '#0b2c5f',
+      '#14532d',
+      '#7f1d1d',
+      '#ffffff',
+      '#fef08a',
+      '#bae6fd',
+    ],
+  },
+  customHeading: {
+    labelId: 'ms-label-cheading',
+    title: S.panelCustomHeadingTitle,
+    presets: [
+      '#000000',
+      '#0b2c5f',
+      '#7f1d1d',
+      '#14532d',
+      '#4a148c',
+      '#ffffff',
+      '#fde047',
+      '#93c5fd',
+    ],
+  },
+  customBg: {
+    labelId: 'ms-label-cbg',
+    title: S.panelCustomBgTitle,
+    presets: [
+      '#ffffff',
+      '#fffbe6',
+      '#f5efe0',
+      '#e6f0ff',
+      '#e8f5e9',
+      '#000000',
+      '#0f172a',
+      '#1a1a1a',
+    ],
+  },
+};
 
 const svgIcon = (inner) =>
   `<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${inner}</svg>`;
@@ -82,6 +136,34 @@ const CONTROLS = {
             </button>`,
           ).join('')}
         </div>`,
+  },
+  // Segmentos preenchidos em createA11yPanel (DOM, sem interpolação no template)
+  colorSaturation: {
+    wide: true,
+    html: `
+        ${radioHead('ms-label-sat', S.panelSaturationTitle, 'colorSaturation')}
+        <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-sat" data-option="colorSaturation"></div>`,
+  },
+  customText: {
+    wide: true,
+    html: `
+        ${radioHead('ms-label-ctext', S.panelCustomTextTitle, 'customText')}
+        <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-ctext" data-option="customText"></div>
+        <input type="color" class="ms-color-input" data-picker="customText">`,
+  },
+  customHeading: {
+    wide: true,
+    html: `
+        ${radioHead('ms-label-cheading', S.panelCustomHeadingTitle, 'customHeading')}
+        <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-cheading" data-option="customHeading"></div>
+        <input type="color" class="ms-color-input" data-picker="customHeading">`,
+  },
+  customBg: {
+    wide: true,
+    html: `
+        ${radioHead('ms-label-cbg', S.panelCustomBgTitle, 'customBg')}
+        <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-cbg" data-option="customBg"></div>
+        <input type="color" class="ms-color-input" data-picker="customBg">`,
   },
   dyslexiaFont: {
     html: switchTile({
@@ -176,7 +258,14 @@ const SECTIONS = [
     icon: svgIcon(
       '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/>',
     ),
-    controls: ['colorTheme', 'highlightLinks'],
+    controls: [
+      'colorTheme',
+      'colorSaturation',
+      'customText',
+      'customHeading',
+      'customBg',
+      'highlightLinks',
+    ],
   },
   {
     id: 'motion',
@@ -298,6 +387,51 @@ export function createA11yPanel({
   setText('.ms-a11y-subtitle', texts.subtitle);
   setText('.ms-a11y-footer-note', texts.footer);
 
+  // Saturação e cores personalizadas: botões criados por DOM (valores são constantes internas)
+  const radioBtn = (cls, value, label) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', 'false');
+    b.className = cls;
+    b.setAttribute('data-value', value);
+    b.setAttribute('aria-label', label);
+    return b;
+  };
+  const satGroup = panel.querySelector('[data-option="colorSaturation"]');
+  SATURATIONS.forEach((s) => {
+    const b = radioBtn(
+      'ms-segment',
+      s.value,
+      `${S.panelSaturationTitle} ${s.label}`,
+    );
+    b.textContent = s.label;
+    satGroup.appendChild(b);
+  });
+  Object.entries(CUSTOM_COLORS).forEach(([key, cfg]) => {
+    const group = panel.querySelector(`[data-option="${key}"]`);
+    const none = radioBtn(
+      'ms-swatch ms-swatch--none',
+      '',
+      `${cfg.title}: ${S.panelCustomNone}`,
+    );
+    none.title = S.panelCustomNone;
+    group.appendChild(none);
+    cfg.presets.forEach((hex) => {
+      const b = radioBtn(
+        'ms-swatch',
+        hex,
+        `${S.panelCustomSwatchLabel} ${hex} — ${cfg.title}`,
+      );
+      b.style.backgroundColor = hex;
+      b.title = hex;
+      group.appendChild(b);
+    });
+    panel
+      .querySelector(`[data-picker="${key}"]`)
+      .setAttribute('aria-label', `${S.panelCustomPickerLabel} ${cfg.title}`);
+  });
+
   /** @type {Function|null} */
   let _releaseFocus = null;
 
@@ -338,7 +472,24 @@ export function createA11yPanel({
 
   panel.querySelectorAll('.ms-segmented .ms-segment').forEach((btn) => {
     btn.addEventListener('click', () => {
-      onSetOption('textScale', btn.getAttribute('data-value'));
+      onSetOption(
+        btn.closest('[data-option]').getAttribute('data-option'),
+        btn.getAttribute('data-value'),
+      );
+    });
+  });
+
+  panel.querySelectorAll('.ms-swatches .ms-swatch').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      onSetOption(
+        btn.closest('[data-option]').getAttribute('data-option'),
+        btn.getAttribute('data-value'),
+      );
+    });
+  });
+  panel.querySelectorAll('.ms-color-input').forEach((input) => {
+    input.addEventListener('input', () => {
+      onSetOption(input.getAttribute('data-picker'), input.value);
     });
   });
 
@@ -412,6 +563,33 @@ export function createA11yPanel({
         btn.classList.toggle('ms-theme-btn--on', on);
       });
 
+    // Radiogroups extras: saturação e cores personalizadas (roving tabindex; sem match → 1º tabulável)
+    const syncRadios = (selector, value) => {
+      const radios = [...panel.querySelectorAll(selector)];
+      const hit = radios.some((b) => b.getAttribute('data-value') === value);
+      radios.forEach((btn, i) => {
+        const on = btn.getAttribute('data-value') === value;
+        btn.setAttribute('aria-checked', String(on));
+        btn.setAttribute('tabindex', on || (!hit && i === 0) ? '0' : '-1');
+        btn.classList.toggle(
+          btn.classList.contains('ms-swatch')
+            ? 'ms-swatch--on'
+            : 'ms-segment--on',
+          on,
+        );
+      });
+    };
+    const sat = s.options?.colorSaturation || 'normal';
+    syncRadios('[data-option="colorSaturation"] .ms-segment', sat);
+    Object.keys(CUSTOM_COLORS).forEach((key) => {
+      const val = s.options?.[key] || '';
+      syncRadios(`[data-option="${key}"] .ms-swatch`, val);
+      const input = panel.querySelector(`[data-picker="${key}"]`);
+      if (input) input.value = val || '#000000';
+      const st = panel.querySelector(`[data-state-for="${key}"]`);
+      if (st) st.textContent = val || S.panelCustomNone;
+    });
+
     [
       'dyslexiaFont',
       'readingRuler',
@@ -442,6 +620,10 @@ export function createA11yPanel({
     setState(
       'colorTheme',
       COLOR_THEMES.find((x) => x.value === theme)?.label ?? theme,
+    );
+    setState(
+      'colorSaturation',
+      SATURATIONS.find((x) => x.value === sat)?.label ?? sat,
     );
 
     const speakBtn = panel.querySelector('[data-action="speak"]');

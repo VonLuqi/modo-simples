@@ -139,7 +139,7 @@ describe('UX-10 — radiogroup com roving tabindex e setas', () => {
   it('só o rádio marcado fica na ordem de Tab (tabindex 0), os outros -1', () => {
     const { panel } = painel();
     const groups = panel.element.querySelectorAll('[role="radiogroup"]');
-    assert.equal(groups.length, 2);
+    assert.equal(groups.length, 6); // F8a: + saturação e 3 cores personalizadas
     for (const group of groups) {
       const radios = [...group.querySelectorAll('[role="radio"]')];
       const tabbable = radios.filter((r) => r.getAttribute('tabindex') === '0');
