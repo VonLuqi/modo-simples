@@ -854,19 +854,23 @@ test.describe('um só "Pesquisar" por modo', () => {
         .map((a) => a.className || 'nav-link');
     });
 
-  test('pesquisa.html: só o link do nav (aria-current), sem o botão repetido', async ({
+  test('pesquisa.html: só o botão do cabeçalho (aria-current), sem item repetido no nav', async ({
     site,
   }, testInfo) => {
     const { page } = site;
     await page.goto(PESQUISA);
     await waitForLib(page);
-    // no mobile o nav é recolhido: abre o Menu para o link existir na tela
+    // no mobile o nav é recolhido: abre o Menu para conferir que ele não repete a busca
     const toggle = page.locator('.nav-toggle');
     if (await toggle.isVisible()) await toggle.click();
-    expect(await visiveis(page)).toEqual(['nav-link']);
-    await expect(
-      page.locator('.main-nav a[href="pesquisa.html"]'),
-    ).toHaveAttribute('aria-current', 'page');
+    expect(await visiveis(page)).toEqual(['btn btn-primary header-search']);
+    await expect(page.locator('.header-search')).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    await expect(page.locator('.main-nav a[href="pesquisa.html"]')).toHaveCount(
+      0,
+    );
     if (process.env.F11_SHOTS) {
       await page.screenshot({
         path: `${process.env.F11_SHOTS}/${testInfo.project.name}-pesquisa.png`,

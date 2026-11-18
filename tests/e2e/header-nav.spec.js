@@ -12,7 +12,7 @@ const LIST = '#main-nav-list';
 test.describe('nav em uma linha (largo)', () => {
   test.use({ viewport: { width: 1200, height: 800 } });
 
-  for (const largura of [1200, 1101]) {
+  for (const largura of [1200, 1181]) {
     test(`${largura}px: itens do nav na mesma linha, sem botão Menu`, async ({
       site,
     }) => {
@@ -27,10 +27,10 @@ test.describe('nav em uma linha (largo)', () => {
         .evaluateAll((as) =>
           as.map((a) => Math.round(a.getBoundingClientRect().top)),
         );
-      expect(tops).toHaveLength(8);
+      expect(tops).toHaveLength(7);
       expect(Math.max(...tops) - Math.min(...tops)).toBeLessThan(10);
 
-      const pesquisar = page.locator('.main-nav a', { hasText: 'Pesquisar' });
+      const pesquisar = page.locator('.header-search');
       const box = await pesquisar.boundingBox();
       expect(box.height).toBeLessThan(40); // uma linha só
     });

@@ -149,7 +149,7 @@ a:hover {
   overflow-x: visible;
 }
 
-/* Uma linha só em telas largas; abaixo de 1100px vira o menu recolhível (UX-25) */
+/* Uma linha só em telas largas; abaixo de 1180px vira o menu recolhível (UX-25; com o botão Pesquisar ao lado, 1101-1179 estourava) */
 .main-nav ul {
   display: flex;
   flex-wrap: nowrap;
@@ -289,7 +289,7 @@ body > main,
   text-underline-offset: 3px;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1180px) {
   .header-inner {
     position: relative;
     flex-wrap: wrap;

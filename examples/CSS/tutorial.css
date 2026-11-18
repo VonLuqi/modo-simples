@@ -1,9 +1,9 @@
 /* Tutorial guiado do demo (ADR-016 / F11b) — só do demo. Tokens de CSS/tokens.css. */
 
-/* Busca: um "Pesquisar" por modo. Na página de busca o nav já marca a página atual;
-   o botão do cabeçalho (também aria-current) duplicava a pílula. */
+/* Busca: um só "Pesquisar" visível (botão do cabeçalho, em qualquer largura). No Modo Simples
+   o botão some (pages.css) e a pílula do nav assume. */
 .header-search[aria-current='page'] {
-  display: none;
+  box-shadow: 0 0 0 2px var(--senac-blue);
 }
 
 .header-tutorial {
