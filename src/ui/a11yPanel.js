@@ -8,7 +8,7 @@
 import { trapFocus } from '../utils/focus.js';
 import { STRINGS as S } from './strings.js';
 import { TYPO_LIMITS } from '../core/state.js';
-import { contrastRatio } from '../utils/colorContrast.js';
+import { contrastRatio, effectiveColors } from '../utils/colorContrast.js';
 
 /** Sliders de tipografia (F8b): posição 0 = padrão do site; o resto mapeia para o valor real. */
 const TYPO_KEYS = ['lineHeight', 'wordSpacing', 'letterSpacing'];
@@ -203,7 +203,7 @@ const CONTROLS = {
         ${radioHead('ms-label-cbg', S.panelCustomBgTitle, 'customBg')}
         <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-cbg" data-option="customBg"></div>
         <input type="color" class="ms-color-input" data-picker="customBg">
-        <p class="ms-a11y-warn" role="status" data-contrast-warn></p>`,
+        <p class="ms-a11y-warn" role="status" aria-atomic="true" data-contrast-warn></p>`,
   },
   dyslexiaFont: {
     html: switchTile({
@@ -714,13 +714,14 @@ export function createA11yPanel({
     // completado automaticamente em domMutator (utils/colorContrast)
     const warn = panel.querySelector('[data-contrast-warn]');
     if (warn) {
-      const bg = s.options?.customBg;
+      // pares efetivos (inclui fundo/texto automáticos): texto/fundo e título/fundo
+      const eff = effectiveColors(s.options || {});
       const low = [
-        ['customText', S.panelCustomTextTitle],
-        ['customHeading', S.panelCustomHeadingTitle],
+        [S.panelCustomTextTitle, eff.text],
+        [S.panelCustomHeadingTitle, eff.heading],
       ]
-        .filter(([k]) => bg && s.options?.[k])
-        .map(([k, title]) => [title, contrastRatio(s.options[k], bg)])
+        .filter(([, c]) => c && eff.bg)
+        .map(([title, c]) => [title, contrastRatio(c, eff.bg)])
         .filter(([, r]) => r < 4.5);
       warn.textContent = low
         .map(

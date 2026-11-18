@@ -73,7 +73,8 @@
       font-size: calc(0.8125 * var(--ms-u));
       font-weight: 600;
     }
-    .ms-a11y-warn:empty { display: none; }
+    /* região viva persistente: vazia fica sem tamanho mas na árvore de acessibilidade (display:none faria o leitor perder o anúncio) */
+    .ms-a11y-warn:empty { height: 0; margin: 0; padding: 0; border: 0; overflow: hidden; }
     .ms-swatch {
       min-height: 36px;
       min-width: 36px;

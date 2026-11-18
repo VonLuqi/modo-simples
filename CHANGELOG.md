@@ -4,6 +4,23 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 
 ## [Unreleased]
 
+### Adicionado (F8 — cor, tipografia e cursor)
+
+- **Cor (F8a)** — temas **Monocromático** e **Claro Alto Contraste**; **saturação** baixa/normal/alta (`filter` só no `<html>`, o widget `fixed` não é afetado); **cor personalizada** de texto, títulos e fundo (8 presets com contraste ≥ 7:1 + seletor livre `input type="color"`). Opções novas: `colorSaturation`, `customText`, `customHeading`, `customBg`.
+- **Tipografia (F8b)** — sliders de **altura da linha** (1º passo 1,5 até 3,0), **espaço entre palavras** (até 0,8 em) e **entre letras** (até 0,3 em) e botão **Redefinir fonte** (zera tamanho, fonte acessível, espaçamento e sliders; anuncia em PT-BR). Posição 0 = padrão do site; o botão "Espaçamento de texto" segue como preset e o slider movido vence só a propriedade que mexeu. Opções novas: `lineHeight`, `wordSpacing`, `letterSpacing` (valores salvos abaixo de 1,5 sobem para 1,5).
+- **Cursor (F8c)** — **cursor grande branco ou preto** (seta SVG 48 px com contorno contrastante e mão grande em links/botões), também sobre o widget. Vence o `crosshair` da régua de leitura; campos de texto mantêm o cursor `text`. Em tela de toque o controle não tem efeito. Opção nova: `cursorStyle`.
+- Todas as opções novas entram no "Desligar tudo" (ADR-015) e são validadas ao ler o estado salvo (valor inválido volta ao padrão).
+
+### Alterado / mudança de comportamento (F8)
+
+- **Cor personalizada completa o outro lado.** Escolher **qualquer** cor (texto, título ou fundo) passa a definir também a contraparte legível: só o fundo → texto preto/branco automático; só texto/título → fundo preto/branco automático (o que serve aos dois quando possível). Antes o lado não escolhido mantinha a cor do tema/site, o que podia deixar texto ilegível. A cor escolhida **nunca** é trocada; se o par efetivo (texto/fundo ou título/fundo) ficar abaixo de 4,5:1, o painel mostra um aviso (`role="status"`) sem bloquear.
+- **Links sob cor personalizada** ganham cor própria (≥ 4,5:1 sobre o fundo efetivo) e sublinhado, em vez de herdar a cor do texto; isso vence a cor de link dos temas (ex.: o `#0000cc` do Claro Alto Contraste).
+- Integradores com CSS próprio sobre `html` devem considerar as novas classes de raiz: `ms-theme-mono`, `ms-theme-lightHigh`, `ms-sat-low|high`, `ms-custom-text|heading|bg|link`, `ms-lh|ws|ls`, `ms-cursor-white|black` (e as variáveis `--ms-custom-*`, `--ms-lh|ws|ls`, `--ms-cur-arrow|hand`).
+
+### Corrigido (F8)
+
+- No mobile, texto a 150% + espaçamento alargava a página (a barra SIMPLES não encolhia) e empurrava o botão flutuante para fora da tela; a barra agora encolhe.
+
 ### Qualidade / ferramentas (F1)
 
 - CI no GitHub Actions (`.github/workflows/ci.yml`): format, lint, testes, cobertura com piso (linhas 90 · ramos 80 · funções 80), build sem drift de `dist/`, audit, smokes e e2e Playwright + axe.

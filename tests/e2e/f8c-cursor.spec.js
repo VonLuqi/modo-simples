@@ -103,6 +103,55 @@ test.describe('F8c — cursor grande', () => {
   });
 });
 
+test.describe('F8c — cursor grande dentro do widget', () => {
+  const cursorIn = (page, sel) =>
+    page.locator(sel).evaluate((el) => getComputedStyle(el).cursor);
+  const MAO = /\) 19 4, pointer$/;
+
+  test('FAB, painel e controles do widget também usam seta/mão grande; padrão restaura', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page);
+    // padrão: o widget mantém o pointer nativo
+    expect(await cursorIn(page, '#ms-fab')).toBe('pointer');
+    expect(await cursorIn(page, '#ms-a11y-title')).not.toContain('url(');
+
+    await page.locator('#ms-sec-colors-btn').click();
+    await page.locator(`${group} [data-value="bigWhite"]`).click();
+    // área sem ação dentro do painel: seta branca
+    const seta = await cursorIn(page, '#ms-a11y-title');
+    expect(seta).toContain('data:image/svg+xml');
+    expect(seta).toContain("fill='%23fff'");
+    expect(seta).toMatch(/\) 6 3, auto$/);
+    // botões do painel e FAB: mão grande
+    for (const sel of [
+      '#ms-fab',
+      `${group} [data-value="bigBlack"]`,
+      '.ms-switch[data-option="textSpacing"]',
+    ]) {
+      expect(await cursorIn(page, sel)).toMatch(MAO);
+    }
+
+    await page.locator(`${group} [data-value="bigBlack"]`).click();
+    expect(await cursorIn(page, '#ms-a11y-title')).toContain("fill='%23000'");
+
+    await page.locator(`${group} [data-value="default"]`).click();
+    expect(await cursorIn(page, '#ms-fab')).toBe('pointer');
+    expect(await cursorIn(page, '#ms-a11y-title')).not.toContain('url(');
+  });
+
+  test('sobrevive ao recarregar (host liga no boot)', async ({ site }) => {
+    const { page } = site;
+    await boot(page);
+    await page.locator('#ms-sec-colors-btn').click();
+    await page.locator(`${group} [data-value="bigBlack"]`).click();
+    await page.reload();
+    await waitForLib(page);
+    expect(await cursorIn(page, '#ms-fab')).toMatch(MAO);
+  });
+});
+
 test.describe('F8b QA — altura da linha e Redefinir fonte', () => {
   test('1.º passo do slider de altura de linha é 1,5 (não mais apertado que o site)', async ({
     site,

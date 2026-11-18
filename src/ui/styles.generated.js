@@ -490,7 +490,8 @@ export const UI_CSS = `
       font-size: calc(0.8125 * var(--ms-u));
       font-weight: 600;
     }
-    .ms-a11y-warn:empty { display: none; }
+    /* região viva persistente: vazia fica sem tamanho mas na árvore de acessibilidade (display:none faria o leitor perder o anúncio) */
+    .ms-a11y-warn:empty { height: 0; margin: 0; padding: 0; border: 0; overflow: hidden; }
     .ms-swatch {
       min-height: 36px;
       min-width: 36px;
@@ -790,6 +791,16 @@ export const UI_CSS = `
       #ms-fab:active {
         transform: none;
       }
+    }
+    /* ── F8c: cursor grande também dentro do widget ──────────────────────────────────────────────
+       O host recebe data-ms-cursor (domMutator.applyOptions) e herda --ms-cur-arrow/--ms-cur-hand
+       do <html> (definidas em page/85-cursor.css): as imagens não são duplicadas aqui. */
+    :host([data-ms-cursor]) * {
+      cursor: var(--ms-cur-arrow) !important;
+    }
+    :host([data-ms-cursor]) :is(button, a[href], summary, select, label, [role="button"], [role="switch"], [role="radio"], [role="tab"], input[type="range"], input[type="color"], input[type="checkbox"]),
+    :host([data-ms-cursor]) :is(button, a[href], summary, select, label, [role="button"], [role="switch"], [role="radio"], [role="tab"]) * {
+      cursor: var(--ms-cur-hand) !important;
     }
   `;
 
@@ -1100,28 +1111,28 @@ export const PAGE_CSS = `
 
     /* ── F8c: cursor grande branco/preto (setas SVG 48px com contorno contrastante) ──────────────
        Seta: ponta em (6,3). Mão (links/botões): ponta do dedo em (19,4). Fallback: auto / pointer.
+       As imagens vivem só aqui, em variáveis do <html> (--ms-cur-arrow/--ms-cur-hand): o widget (shadow
+       DOM, ui/80-cursor.css) as herda — variáveis atravessam o shadow — sem duplicar os data-URIs.
        Precedência: o cursor grande vence o crosshair da régua (80-ruler.css) e o pointer do modo de
        seleção manual vira a mão grande. Campos de texto mantêm o cursor "text" nativo.
        Telas de toque não têm cursor: a classe não faz nada, sem erro. */
-    html.ms-cursor-white,
-    html.ms-cursor-white * {
-      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M6 3v36l9-8 6 14 7-3-6-13h12z' fill='%23fff' stroke='%23000' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 6 3, auto !important;
+    html.ms-cursor-white {
+      --ms-cur-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M6 3v36l9-8 6 14 7-3-6-13h12z' fill='%23fff' stroke='%23000' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 6 3, auto;
+      --ms-cur-hand: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M16 6a3.5 3.5 0 0 1 7 0v15.5l2-.4a3 3 0 0 1 3.5 2.3 3 3 0 0 1 3.2-.2 3 3 0 0 1 3.1 2 3 3 0 0 1 3.2 3.1V35c0 6-4 10-10 10h-4c-4 0-6-2-8-5l-7-10a3 3 0 0 1 4.6-3.8L16 30z' fill='%23fff' stroke='%23000' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 19 4, pointer;
     }
-    html.ms-cursor-black,
-    html.ms-cursor-black * {
-      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M6 3v36l9-8 6 14 7-3-6-13h12z' fill='%23000' stroke='%23fff' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 6 3, auto !important;
+    html.ms-cursor-black {
+      --ms-cur-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M6 3v36l9-8 6 14 7-3-6-13h12z' fill='%23000' stroke='%23fff' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 6 3, auto;
+      --ms-cur-hand: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M16 6a3.5 3.5 0 0 1 7 0v15.5l2-.4a3 3 0 0 1 3.5 2.3 3 3 0 0 1 3.2-.2 3 3 0 0 1 3.1 2 3 3 0 0 1 3.2 3.1V35c0 6-4 10-10 10h-4c-4 0-6-2-8-5l-7-10a3 3 0 0 1 4.6-3.8L16 30z' fill='%23000' stroke='%23fff' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 19 4, pointer;
     }
-    html.ms-cursor-white :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"], input:is([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"])),
-    html.ms-cursor-white :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"]) *,
-    html.ms-cursor-white.ms-manual-select-active,
-    html.ms-cursor-white.ms-manual-select-active * {
-      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M16 6a3.5 3.5 0 0 1 7 0v15.5l2-.4a3 3 0 0 1 3.5 2.3 3 3 0 0 1 3.2-.2 3 3 0 0 1 3.1 2 3 3 0 0 1 3.2 3.1V35c0 6-4 10-10 10h-4c-4 0-6-2-8-5l-7-10a3 3 0 0 1 4.6-3.8L16 30z' fill='%23fff' stroke='%23000' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 19 4, pointer !important;
+    html:is(.ms-cursor-white, .ms-cursor-black),
+    html:is(.ms-cursor-white, .ms-cursor-black) * {
+      cursor: var(--ms-cur-arrow) !important;
     }
-    html.ms-cursor-black :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"], input:is([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"])),
-    html.ms-cursor-black :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"]) *,
-    html.ms-cursor-black.ms-manual-select-active,
-    html.ms-cursor-black.ms-manual-select-active * {
-      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M16 6a3.5 3.5 0 0 1 7 0v15.5l2-.4a3 3 0 0 1 3.5 2.3 3 3 0 0 1 3.2-.2 3 3 0 0 1 3.1 2 3 3 0 0 1 3.2 3.1V35c0 6-4 10-10 10h-4c-4 0-6-2-8-5l-7-10a3 3 0 0 1 4.6-3.8L16 30z' fill='%23000' stroke='%23fff' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 19 4, pointer !important;
+    html:is(.ms-cursor-white, .ms-cursor-black) :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"], input:is([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"])),
+    html:is(.ms-cursor-white, .ms-cursor-black) :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"]) *,
+    html:is(.ms-cursor-white, .ms-cursor-black).ms-manual-select-active,
+    html:is(.ms-cursor-white, .ms-cursor-black).ms-manual-select-active * {
+      cursor: var(--ms-cur-hand) !important;
     }
     html:is(.ms-cursor-white, .ms-cursor-black) :is(textarea, [contenteditable="true"], input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"], [type="range"], [type="color"], [type="file"])) {
       cursor: text !important;

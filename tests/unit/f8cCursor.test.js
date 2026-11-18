@@ -9,7 +9,7 @@ import ModoSimples from '../../src/modo-simples.js';
 import state, { TYPO_LIMITS, clampTypo } from '../../src/core/state.js';
 import { hydratePersistedState } from '../../src/core/persistedState.js';
 import { diffStateAnnouncements } from '../../src/core/announcements.js';
-import { PAGE_CSS } from '../../src/ui/styles.generated.js';
+import { PAGE_CSS, UI_CSS } from '../../src/ui/styles.generated.js';
 import { installHappy, SAMPLE_PAGE } from './helpers/happyEnv.js';
 
 let env;
@@ -101,38 +101,44 @@ describe('F8c — controle do cursor', () => {
 });
 
 describe('F8c — CSS do cursor', () => {
-  const regra = (cls) =>
-    PAGE_CSS.slice(
-      PAGE_CSS.indexOf(`html.ms-cursor-${cls},`),
-      PAGE_CSS.indexOf('}', PAGE_CSS.indexOf(`html.ms-cursor-${cls},`)),
-    );
+  const vars = (cls) => {
+    const i = PAGE_CSS.indexOf(`html.ms-cursor-${cls} {`);
+    assert.ok(i > 0, cls);
+    return PAGE_CSS.slice(i, PAGE_CSS.indexOf('}', i));
+  };
 
   it('seta SVG 48px com contorno contrastante, hotspot na ponta e fallback auto', () => {
-    const w = regra('white');
+    const w = vars('white');
+    assert.match(w, /--ms-cur-arrow: url\("data:image\/svg\+xml/);
     assert.match(w, /width='48' height='48'/);
-    assert.match(w, /fill='%23fff' stroke='%23000'/);
-    assert.match(w, /\) 6 3, auto !important/);
-    const b = regra('black');
-    assert.match(b, /fill='%23000' stroke='%23fff'/);
-    assert.match(b, /\) 6 3, auto !important/);
+    assert.match(w, /fill='%23fff' stroke='%23000'[^;]*\) 6 3, auto;/);
+    assert.match(
+      vars('black'),
+      /fill='%23000' stroke='%23fff'[^;]*\) 6 3, auto;/,
+    );
   });
 
-  it('mão grande para links/botões/[role=button] com hotspot no dedo e fallback pointer', () => {
-    for (const cls of ['white', 'black']) {
-      const i = PAGE_CSS.indexOf(`html.ms-cursor-${cls} :is(a[href], button`);
-      assert.ok(i > 0, cls);
-      const bloco = PAGE_CSS.slice(i, PAGE_CSS.indexOf('}', i));
-      assert.match(bloco, /\[role="button"\]/);
-      assert.match(bloco, /\) 19 4, pointer !important/);
-    }
+  it('mão grande (links/botões/[role=button]) com hotspot no dedo e fallback pointer', () => {
+    for (const cls of ['white', 'black'])
+      assert.match(vars(cls), /--ms-cur-hand: url\([^;]*\) 19 4, pointer;/);
+    const i = PAGE_CSS.indexOf(
+      'html:is(.ms-cursor-white, .ms-cursor-black) :is(a[href], button',
+    );
+    assert.ok(i > 0);
+    const bloco = PAGE_CSS.slice(i, PAGE_CSS.indexOf('}', i));
+    assert.match(bloco, /\[role="button"\]/);
+    assert.match(bloco, /cursor: var\(--ms-cur-hand\) !important/);
   });
 
-  it('precedência: cursor grande vem depois e vence o crosshair da régua; só o <html> da régua tem crosshair', () => {
+  it('precedência: cursor grande vem depois e vence o crosshair da régua', () => {
     assert.ok(
-      PAGE_CSS.indexOf('html.ms-cursor-white,') >
+      PAGE_CSS.indexOf('--ms-cur-arrow') >
         PAGE_CSS.indexOf('html.ms-reading-ruler { cursor: crosshair; }'),
     );
-    assert.match(PAGE_CSS, /html\.ms-cursor-white,\s*html\.ms-cursor-white \*/);
+    assert.match(
+      PAGE_CSS,
+      /html:is\(\.ms-cursor-white, \.ms-cursor-black\),\s*html:is\(\.ms-cursor-white, \.ms-cursor-black\) \* \{\s*cursor: var\(--ms-cur-arrow\) !important/,
+    );
   });
 
   it('campos de texto mantêm o cursor nativo "text"', () => {
@@ -142,6 +148,53 @@ describe('F8c — CSS do cursor', () => {
   it('o tamanho de cada imagem fica abaixo do limite de cursor do navegador (128px)', () => {
     for (const m of PAGE_CSS.matchAll(/width='(\d+)' height='(\d+)'/g))
       assert.ok(Number(m[1]) <= 128 && Number(m[2]) <= 128);
+  });
+});
+
+describe('F8c — cursor grande dentro do widget (shadow DOM)', () => {
+  const host = () => document.querySelector('#ms-container');
+
+  it('UI CSS usa as variáveis do <html> (herdam pelo shadow) e não duplica os data-URIs', () => {
+    assert.match(
+      UI_CSS,
+      /:host\(\[data-ms-cursor\]\) \* \{\s*cursor: var\(--ms-cur-arrow\) !important/,
+    );
+    assert.match(
+      UI_CSS,
+      /:host\(\[data-ms-cursor\]\) :is\(button[^{]*\{\s*cursor: var\(--ms-cur-hand\) !important/,
+    );
+    assert.equal(UI_CSS.includes('data:image'), false);
+    assert.equal(PAGE_CSS.split('data:image/svg+xml').length - 1, 4); // 2 setas + 2 mãos, uma vez só
+  });
+
+  it('o host ganha/perde data-ms-cursor conforme a opção; padrão e destroy limpam', () => {
+    assert.equal(host().hasAttribute('data-ms-cursor'), false);
+    state.set({ options: { cursorStyle: 'bigWhite' } });
+    assert.equal(host().hasAttribute('data-ms-cursor'), true);
+    state.set({ options: { cursorStyle: 'bigBlack' } });
+    assert.equal(host().hasAttribute('data-ms-cursor'), true);
+    state.set({ options: { cursorStyle: 'default' } });
+    assert.equal(host().hasAttribute('data-ms-cursor'), false);
+    state.set({ options: { cursorStyle: 'bigBlack' } });
+    const h = host();
+    inst.destroy();
+    assert.equal(h.hasAttribute('data-ms-cursor'), false);
+    inst = null;
+  });
+
+  it('opção persistida já liga o host no boot', () => {
+    inst.destroy();
+    localStorage.setItem(
+      'ms_state:exemplo.test',
+      JSON.stringify({
+        v: 1,
+        modoSimples: false,
+        options: { cursorStyle: 'bigWhite' },
+      }),
+    );
+    inst = new ModoSimples();
+    inst.init();
+    assert.equal(host().hasAttribute('data-ms-cursor'), true);
   });
 });
 

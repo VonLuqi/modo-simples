@@ -94,6 +94,46 @@ test.describe('M1 — par de cores sempre legível', () => {
   });
 });
 
+test.describe('T126 — aviso do par efetivo e região viva persistente', () => {
+  test('texto branco + título preto sem fundo: avisa o título; par compatível não avisa', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page);
+    await page.locator('#ms-sec-colors-btn').click();
+    const warn = page.locator('[data-contrast-warn]');
+    await page
+      .locator(`${group('customText')} .ms-swatch[data-value="#ffffff"]`)
+      .click();
+    await page
+      .locator(`${group('customHeading')} .ms-swatch[data-value="#000000"]`)
+      .click();
+    await expect(warn).toBeVisible();
+    await expect(warn).toContainText('Cor dos títulos');
+    // não bloqueou: o título foi aplicado
+    expect(await css(page, 'h1', 'color')).toBe('rgb(0, 0, 0)');
+
+    await page
+      .locator(`${group('customHeading')} .ms-swatch[data-value="#fde047"]`)
+      .click();
+    await expect(warn).toBeHidden();
+  });
+
+  test('a região role=status existe e não é display:none quando vazia', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page);
+    await page.locator('#ms-sec-colors-btn').click();
+    const warn = page.locator('[data-contrast-warn]');
+    await expect(warn).toHaveAttribute('role', 'status');
+    await expect(warn).toBeEmpty();
+    expect(await warn.evaluate((el) => getComputedStyle(el).display)).not.toBe(
+      'none',
+    );
+  });
+});
+
 test.describe('M2 — links distintos sob cor personalizada', () => {
   test('link ganha cor própria (≥ 4,5:1) e sublinhado, diferente do texto', async ({
     site,

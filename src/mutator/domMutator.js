@@ -157,6 +157,14 @@ export function scan(config) {
   return { mainElement: _mainElement, confidence: result.confidence };
 }
 
+/** F8c: o host do widget (shadow DOM) liga o cursor grande por atributo; as imagens vêm do <html>. */
+function setHostCursor(on) {
+  const host = document.querySelector?.('#ms-container');
+  if (!host) return;
+  if (on) host.setAttribute('data-ms-cursor', '');
+  else host.removeAttribute('data-ms-cursor');
+}
+
 /**
  * Apply option classes (text/theme/aids) independently of Modo Simples.
  * @param {Object} state
@@ -181,6 +189,9 @@ export function applyOptions(state) {
   // F8c: 'default' = sem classe (cursor do site). Em tela de toque a classe é inofensiva.
   html.classList.toggle('ms-cursor-white', opts.cursorStyle === 'bigWhite');
   html.classList.toggle('ms-cursor-black', opts.cursorStyle === 'bigBlack');
+  setHostCursor(
+    opts.cursorStyle === 'bigWhite' || opts.cursorStyle === 'bigBlack',
+  );
   const eff = effectiveColors(opts);
   for (const [key, [cls, prop]] of Object.entries(CUSTOM_COLORS)) {
     const on = !!eff[key];
@@ -260,6 +271,7 @@ export function revertModoSimples() {
  */
 export function revert() {
   revertModoSimples();
+  setHostCursor(false);
 
   document.documentElement.classList.remove(
     ...TEXT_SCALE_CLASSES,

@@ -1243,7 +1243,8 @@
       font-size: calc(0.8125 * var(--ms-u));
       font-weight: 600;
     }
-    .ms-a11y-warn:empty { display: none; }
+    /* regi\xE3o viva persistente: vazia fica sem tamanho mas na \xE1rvore de acessibilidade (display:none faria o leitor perder o an\xFAncio) */
+    .ms-a11y-warn:empty { height: 0; margin: 0; padding: 0; border: 0; overflow: hidden; }
     .ms-swatch {
       min-height: 36px;
       min-width: 36px;
@@ -1543,6 +1544,16 @@
       #ms-fab:active {
         transform: none;
       }
+    }
+    /* \u2500\u2500 F8c: cursor grande tamb\xE9m dentro do widget \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+       O host recebe data-ms-cursor (domMutator.applyOptions) e herda --ms-cur-arrow/--ms-cur-hand
+       do <html> (definidas em page/85-cursor.css): as imagens n\xE3o s\xE3o duplicadas aqui. */
+    :host([data-ms-cursor]) * {
+      cursor: var(--ms-cur-arrow) !important;
+    }
+    :host([data-ms-cursor]) :is(button, a[href], summary, select, label, [role="button"], [role="switch"], [role="radio"], [role="tab"], input[type="range"], input[type="color"], input[type="checkbox"]),
+    :host([data-ms-cursor]) :is(button, a[href], summary, select, label, [role="button"], [role="switch"], [role="radio"], [role="tab"]) * {
+      cursor: var(--ms-cur-hand) !important;
     }
   `;
   var PAGE_CSS = `
@@ -1852,28 +1863,28 @@
 
     /* \u2500\u2500 F8c: cursor grande branco/preto (setas SVG 48px com contorno contrastante) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
        Seta: ponta em (6,3). M\xE3o (links/bot\xF5es): ponta do dedo em (19,4). Fallback: auto / pointer.
+       As imagens vivem s\xF3 aqui, em vari\xE1veis do <html> (--ms-cur-arrow/--ms-cur-hand): o widget (shadow
+       DOM, ui/80-cursor.css) as herda \u2014 vari\xE1veis atravessam o shadow \u2014 sem duplicar os data-URIs.
        Preced\xEAncia: o cursor grande vence o crosshair da r\xE9gua (80-ruler.css) e o pointer do modo de
        sele\xE7\xE3o manual vira a m\xE3o grande. Campos de texto mant\xEAm o cursor "text" nativo.
        Telas de toque n\xE3o t\xEAm cursor: a classe n\xE3o faz nada, sem erro. */
-    html.ms-cursor-white,
-    html.ms-cursor-white * {
-      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M6 3v36l9-8 6 14 7-3-6-13h12z' fill='%23fff' stroke='%23000' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 6 3, auto !important;
+    html.ms-cursor-white {
+      --ms-cur-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M6 3v36l9-8 6 14 7-3-6-13h12z' fill='%23fff' stroke='%23000' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 6 3, auto;
+      --ms-cur-hand: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M16 6a3.5 3.5 0 0 1 7 0v15.5l2-.4a3 3 0 0 1 3.5 2.3 3 3 0 0 1 3.2-.2 3 3 0 0 1 3.1 2 3 3 0 0 1 3.2 3.1V35c0 6-4 10-10 10h-4c-4 0-6-2-8-5l-7-10a3 3 0 0 1 4.6-3.8L16 30z' fill='%23fff' stroke='%23000' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 19 4, pointer;
     }
-    html.ms-cursor-black,
-    html.ms-cursor-black * {
-      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M6 3v36l9-8 6 14 7-3-6-13h12z' fill='%23000' stroke='%23fff' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 6 3, auto !important;
+    html.ms-cursor-black {
+      --ms-cur-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M6 3v36l9-8 6 14 7-3-6-13h12z' fill='%23000' stroke='%23fff' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 6 3, auto;
+      --ms-cur-hand: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M16 6a3.5 3.5 0 0 1 7 0v15.5l2-.4a3 3 0 0 1 3.5 2.3 3 3 0 0 1 3.2-.2 3 3 0 0 1 3.1 2 3 3 0 0 1 3.2 3.1V35c0 6-4 10-10 10h-4c-4 0-6-2-8-5l-7-10a3 3 0 0 1 4.6-3.8L16 30z' fill='%23000' stroke='%23fff' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 19 4, pointer;
     }
-    html.ms-cursor-white :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"], input:is([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"])),
-    html.ms-cursor-white :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"]) *,
-    html.ms-cursor-white.ms-manual-select-active,
-    html.ms-cursor-white.ms-manual-select-active * {
-      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M16 6a3.5 3.5 0 0 1 7 0v15.5l2-.4a3 3 0 0 1 3.5 2.3 3 3 0 0 1 3.2-.2 3 3 0 0 1 3.1 2 3 3 0 0 1 3.2 3.1V35c0 6-4 10-10 10h-4c-4 0-6-2-8-5l-7-10a3 3 0 0 1 4.6-3.8L16 30z' fill='%23fff' stroke='%23000' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 19 4, pointer !important;
+    html:is(.ms-cursor-white, .ms-cursor-black),
+    html:is(.ms-cursor-white, .ms-cursor-black) * {
+      cursor: var(--ms-cur-arrow) !important;
     }
-    html.ms-cursor-black :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"], input:is([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"])),
-    html.ms-cursor-black :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"]) *,
-    html.ms-cursor-black.ms-manual-select-active,
-    html.ms-cursor-black.ms-manual-select-active * {
-      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M16 6a3.5 3.5 0 0 1 7 0v15.5l2-.4a3 3 0 0 1 3.5 2.3 3 3 0 0 1 3.2-.2 3 3 0 0 1 3.1 2 3 3 0 0 1 3.2 3.1V35c0 6-4 10-10 10h-4c-4 0-6-2-8-5l-7-10a3 3 0 0 1 4.6-3.8L16 30z' fill='%23000' stroke='%23fff' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") 19 4, pointer !important;
+    html:is(.ms-cursor-white, .ms-cursor-black) :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"], input:is([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"])),
+    html:is(.ms-cursor-white, .ms-cursor-black) :is(a[href], button, summary, select, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"]) *,
+    html:is(.ms-cursor-white, .ms-cursor-black).ms-manual-select-active,
+    html:is(.ms-cursor-white, .ms-cursor-black).ms-manual-select-active * {
+      cursor: var(--ms-cur-hand) !important;
     }
     html:is(.ms-cursor-white, .ms-cursor-black) :is(textarea, [contenteditable="true"], input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="image"], [type="range"], [type="color"], [type="file"])) {
       cursor: text !important;
@@ -2592,12 +2603,20 @@
     )[0];
     return contrastRatio(best, bg) >= 4.5 ? best : readableOn(bg);
   }
+  function autoBg(t, h) {
+    const refs = [t, h].filter(Boolean);
+    if (!refs.length) return "";
+    const score = (c) => Math.min(...refs.map((r) => contrastRatio(r, c)));
+    const [black, white] = [score("#000000"), score("#ffffff")];
+    if (Math.abs(black - white) < 0.01) return readableOn(t || h);
+    return black > white ? "#000000" : "#ffffff";
+  }
   function effectiveColors({ customText, customHeading, customBg }) {
     const ok = (v) => HEX.test(v || "") ? v : "";
     const t = ok(customText);
     const h = ok(customHeading);
     const b = ok(customBg);
-    const bg = b || (t || h ? readableOn(t || h) : "");
+    const bg = b || autoBg(t, h);
     const text = t || (bg ? readableOn(bg) : "");
     return { text, heading: h, bg, link: bg ? linkOn(bg) : "" };
   }
@@ -2761,7 +2780,7 @@
         ${radioHead("ms-label-cbg", STRINGS.panelCustomBgTitle, "customBg")}
         <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-cbg" data-option="customBg"></div>
         <input type="color" class="ms-color-input" data-picker="customBg">
-        <p class="ms-a11y-warn" role="status" data-contrast-warn></p>`
+        <p class="ms-a11y-warn" role="status" aria-atomic="true" data-contrast-warn></p>`
     },
     dyslexiaFont: {
       html: switchTile({
@@ -3124,7 +3143,7 @@
     });
     panel.querySelector('[data-action="speak"]').addEventListener("click", () => onSpeak());
     function sync(s, ui = {}) {
-      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
       const modoBtn = panel.querySelector('[data-action="modo-simples"]');
       if (modoBtn) {
         modoBtn.setAttribute("aria-checked", String(!!s.modoSimples));
@@ -3193,14 +3212,11 @@
       });
       const warn = panel.querySelector("[data-contrast-warn]");
       if (warn) {
-        const bg = (_e = s.options) == null ? void 0 : _e.customBg;
+        const eff = effectiveColors(s.options || {});
         const low = [
-          ["customText", STRINGS.panelCustomTextTitle],
-          ["customHeading", STRINGS.panelCustomHeadingTitle]
-        ].filter(([k]) => {
-          var _a2;
-          return bg && ((_a2 = s.options) == null ? void 0 : _a2[k]);
-        }).map(([k, title]) => [title, contrastRatio(s.options[k], bg)]).filter(([, r]) => r < 4.5);
+          [STRINGS.panelCustomTextTitle, eff.text],
+          [STRINGS.panelCustomHeadingTitle, eff.heading]
+        ].filter(([, c]) => c && eff.bg).map(([title, c]) => [title, contrastRatio(c, eff.bg)]).filter(([, r]) => r < 4.5);
         warn.textContent = low.map(
           ([title, r]) => `${STRINGS.panelContrastWarn} ${title} / ${STRINGS.panelCustomBgTitle}: ${r.toFixed(1).replace(".", ",")}:1.`
         ).join(" ");
@@ -3233,15 +3249,15 @@
       );
       setState(
         "colorTheme",
-        (_g = (_f = COLOR_THEMES.find((x) => x.value === theme)) == null ? void 0 : _f.label) != null ? _g : theme
+        (_f = (_e = COLOR_THEMES.find((x) => x.value === theme)) == null ? void 0 : _e.label) != null ? _f : theme
       );
       setState(
         "colorSaturation",
-        (_i = (_h = SATURATIONS.find((x) => x.value === sat)) == null ? void 0 : _h.label) != null ? _i : sat
+        (_h = (_g = SATURATIONS.find((x) => x.value === sat)) == null ? void 0 : _g.label) != null ? _h : sat
       );
       setState(
         "cursorStyle",
-        (_k = (_j = CURSORS.find((x) => x.value === cursor)) == null ? void 0 : _j.label) != null ? _k : cursor
+        (_j = (_i = CURSORS.find((x) => x.value === cursor)) == null ? void 0 : _i.label) != null ? _j : cursor
       );
       const speakBtn = panel.querySelector('[data-action="speak"]');
       if (speakBtn && ui.speaking !== void 0) {
@@ -4578,6 +4594,13 @@
     _distractionElements = detectDistractions(_mainElement, config);
     return { mainElement: _mainElement, confidence: result.confidence };
   }
+  function setHostCursor(on) {
+    var _a;
+    const host = (_a = document.querySelector) == null ? void 0 : _a.call(document, "#ms-container");
+    if (!host) return;
+    if (on) host.setAttribute("data-ms-cursor", "");
+    else host.removeAttribute("data-ms-cursor");
+  }
   function applyOptions(state2) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     const html = document.documentElement;
@@ -4592,6 +4615,9 @@
     html.classList.toggle("ms-sat-high", opts.colorSaturation === "high");
     html.classList.toggle("ms-cursor-white", opts.cursorStyle === "bigWhite");
     html.classList.toggle("ms-cursor-black", opts.cursorStyle === "bigBlack");
+    setHostCursor(
+      opts.cursorStyle === "bigWhite" || opts.cursorStyle === "bigBlack"
+    );
     const eff = effectiveColors(opts);
     for (const [key, [cls, prop]] of Object.entries(CUSTOM_COLORS2)) {
       const on = !!eff[key];
@@ -4640,6 +4666,7 @@
   function revert() {
     var _a, _b;
     revertModoSimples();
+    setHostCursor(false);
     document.documentElement.classList.remove(
       ...TEXT_SCALE_CLASSES,
       ...THEME_CLASSES,

@@ -14,7 +14,7 @@ import {
   linkOn,
   readableOn,
 } from '../../src/utils/colorContrast.js';
-import { PAGE_CSS } from '../../src/ui/styles.generated.js';
+import { PAGE_CSS, UI_CSS } from '../../src/ui/styles.generated.js';
 import { installHappy, SAMPLE_PAGE } from './helpers/happyEnv.js';
 
 let env;
@@ -113,9 +113,78 @@ describe('M1 — cor efetiva (lado não escolhido ganha contraparte legível)', 
     assert.match(warn.textContent, /Cor dos títulos/);
     state.set({ options: { customText: '#000000', customHeading: '#0b2c5f' } });
     assert.equal(warn.textContent, '');
-    // sem fundo escolhido não há par a avisar (o fundo é automático)
-    state.set({ options: { customBg: '', customText: '#ffffff' } });
+    // sem fundo escolhido o fundo é automático e o par automático é legível: sem aviso
+    state.set({
+      options: { customBg: '', customText: '#ffffff', customHeading: '' },
+    });
     assert.equal(warn.textContent, '');
+  });
+
+  it('sem fundo: texto e título em oposição geram aviso do par efetivo (T126 M-new)', () => {
+    const warn = q('[data-contrast-warn]');
+    // texto #fff + título #000 → fundo automático não serve aos dois: o título (ou texto) é avisado
+    state.set({
+      options: {
+        customText: '#ffffff',
+        customHeading: '#000000',
+        customBg: '',
+      },
+    });
+    assert.match(warn.textContent, /Cor dos títulos/);
+    assert.match(warn.textContent, /1,0:1/);
+    // inverso: texto #000 + título #fff
+    state.set({ options: { customText: '#000000', customHeading: '#ffffff' } });
+    assert.match(warn.textContent, /Cor dos títulos/);
+    // par compatível (ambos escuros → fundo branco; ambos claros → fundo preto): sem aviso
+    state.set({ options: { customText: '#000000', customHeading: '#0b2c5f' } });
+    assert.equal(warn.textContent, '');
+    state.set({ options: { customText: '#ffffff', customHeading: '#fde047' } });
+    assert.equal(warn.textContent, '');
+  });
+
+  it('autoBg considera texto E título: fundo que serve aos dois quando existe', () => {
+    const so = (o) =>
+      effectiveColors({
+        customText: '',
+        customHeading: '',
+        customBg: '',
+        ...o,
+      });
+    assert.equal(
+      so({ customText: '#000000', customHeading: '#0b2c5f' }).bg,
+      '#ffffff',
+    );
+    assert.equal(
+      so({ customText: '#ffffff', customHeading: '#93c5fd' }).bg,
+      '#000000',
+    );
+    // texto médio-escuro + título claro: escolhe o fundo de melhor pior-caso (preto serve ao título)
+    const e = so({ customText: '#7f1d1d', customHeading: '#ffffff' });
+    assert.ok(
+      Math.min(contrastRatio(e.text, e.bg), contrastRatio(e.heading, e.bg)) >=
+        Math.min(
+          contrastRatio(e.text, e.bg === '#000000' ? '#ffffff' : '#000000'),
+          contrastRatio(e.heading, e.bg === '#000000' ? '#ffffff' : '#000000'),
+        ),
+    );
+    // empate total (texto branco + título preto): vale o fundo que serve ao texto
+    assert.equal(
+      so({ customText: '#ffffff', customHeading: '#000000' }).bg,
+      '#000000',
+    );
+    assert.equal(
+      so({ customText: '#000000', customHeading: '#ffffff' }).bg,
+      '#ffffff',
+    );
+  });
+
+  it('a região de aviso é persistente: sem display:none quando vazia (leitor de tela)', () => {
+    const warn = q('[data-contrast-warn]');
+    assert.equal(warn.getAttribute('aria-atomic'), 'true');
+    const regra = UI_CSS.match(/\.ms-a11y-warn:empty\s*\{([^}]*)\}/)[1];
+    assert.equal(/display:\s*none/.test(regra), false);
+    assert.match(regra, /height:\s*0/);
+    assert.match(regra, /overflow:\s*hidden/);
   });
 });
 

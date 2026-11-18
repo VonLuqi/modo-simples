@@ -1,0 +1,10 @@
+    /* ── F8c: cursor grande também dentro do widget ──────────────────────────────────────────────
+       O host recebe data-ms-cursor (domMutator.applyOptions) e herda --ms-cur-arrow/--ms-cur-hand
+       do <html> (definidas em page/85-cursor.css): as imagens não são duplicadas aqui. */
+    :host([data-ms-cursor]) * {
+      cursor: var(--ms-cur-arrow) !important;
+    }
+    :host([data-ms-cursor]) :is(button, a[href], summary, select, label, [role="button"], [role="switch"], [role="radio"], [role="tab"], input[type="range"], input[type="color"], input[type="checkbox"]),
+    :host([data-ms-cursor]) :is(button, a[href], summary, select, label, [role="button"], [role="switch"], [role="radio"], [role="tab"]) * {
+      cursor: var(--ms-cur-hand) !important;
+    }

@@ -33,6 +33,19 @@ export function linkOn(bg) {
 }
 
 /**
+ * Fundo automático (preto ou branco) para texto e/ou título escolhidos: o que dá o maior pior-caso
+ * de contraste entre os dois; em empate (ex.: texto branco + título preto) vale o do texto.
+ */
+function autoBg(t, h) {
+  const refs = [t, h].filter(Boolean);
+  if (!refs.length) return '';
+  const score = (c) => Math.min(...refs.map((r) => contrastRatio(r, c)));
+  const [black, white] = [score('#000000'), score('#ffffff')];
+  if (Math.abs(black - white) < 0.01) return readableOn(t || h);
+  return black > white ? '#000000' : '#ffffff';
+}
+
+/**
  * Cores efetivas a partir do que o usuário definiu: o lado não definido ganha a contraparte
  * legível (preto/branco) do lado definido, para nunca sobrar texto do site sobre fundo escolhido
  * (ou vice-versa). Sem nenhuma escolha → tudo vazio (o site manda).
@@ -43,7 +56,7 @@ export function effectiveColors({ customText, customHeading, customBg }) {
   const t = ok(customText);
   const h = ok(customHeading);
   const b = ok(customBg);
-  const bg = b || (t || h ? readableOn(t || h) : '');
+  const bg = b || autoBg(t, h);
   const text = t || (bg ? readableOn(bg) : '');
   return { text, heading: h, bg, link: bg ? linkOn(bg) : '' };
 }
