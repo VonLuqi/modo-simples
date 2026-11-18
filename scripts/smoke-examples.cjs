@@ -32,7 +32,7 @@ const EXPECTED_NAV = [
   'unidades.html',
   'contato.html',
   'aluno.html',
-  'pesquisa.html',
+  // pesquisa.html saiu do menu (T238): a busca é o botão .header-search
 ];
 
 const SCRIPT_MS = path.join(root, 'src', 'modo-simples.js');

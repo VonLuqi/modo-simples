@@ -27,7 +27,6 @@ const ITEMS = [
   { href: 'unidades.html', label: 'Unidades' },
   { href: 'contato.html', label: 'Contato' },
   { href: 'aluno.html', label: 'Área do Aluno' },
-  { href: 'pesquisa.html', label: 'Pesquisar' },
 ];
 
 const NAV_SCRIPT = '<script src="js/nav-toggle.js" defer></script>';
