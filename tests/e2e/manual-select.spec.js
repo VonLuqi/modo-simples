@@ -6,6 +6,19 @@ import { test, expect, waitForLib, openPanel } from './helpers.js';
  */
 const PAGE = '/tests/e2e/fixtures/manual-select.html';
 const BANNER = '#ms-manual-select-banner';
+const NOTICE = '#ms-low-confidence-notice';
+
+/** teclado: o mouse parado sobre a página não vira "Escolha atual" por hover */
+async function escolherPeloTeclado(page) {
+  await page.locator(NOTICE).getByText('Escolher o conteúdo').focus();
+  await page.keyboard.press('Enter');
+}
+
+/** liga o Modo Simples (confiança baixa → aviso) e pede a seleção manual opcional */
+async function ligarEEscolher(page) {
+  await page.evaluate(() => window.ModoSimples.enable());
+  await escolherPeloTeclado(page);
+}
 
 const ocultos = (page) => page.locator('[data-ms-hidden="true"]');
 const principais = (page) => page.locator('[data-ms-principal]');
@@ -17,6 +30,17 @@ test.describe('seleção manual (IMP-22)', () => {
     await waitForLib(page);
     await page.evaluate(() => window.ModoSimples.enable());
 
+    // UX-21: aviso em linguagem simples; a seleção manual só abre se o usuário pedir
+    await expect(page.locator(NOTICE)).toBeVisible();
+    await expect(page.locator(NOTICE)).toContainText(
+      'Não achei o conteúdo principal, quer escolher?',
+    );
+    await expect(page.locator(BANNER)).toHaveCount(0);
+    await expect(page.locator('html')).toHaveClass(/ms-ativo/);
+    await expect(ocultos(page)).toHaveCount(0);
+    await expect(principais(page)).toHaveCount(0);
+
+    await escolherPeloTeclado(page);
     await expect(page.locator(BANNER)).toBeVisible();
     await expect(ocultos(page)).toHaveCount(0);
     await expect(principais(page)).toHaveCount(0);
@@ -30,7 +54,7 @@ test.describe('seleção manual (IMP-22)', () => {
     const { page } = site;
     await page.goto(PAGE);
     await waitForLib(page);
-    await page.evaluate(() => window.ModoSimples.enable());
+    await ligarEEscolher(page);
 
     // #alvo (não <main>): no mobile o banner fixo cobre o centro da página curta
     await page.locator('#alvo').click();
@@ -50,7 +74,7 @@ test.describe('seleção manual (IMP-22)', () => {
     const { page } = site;
     await page.goto(PAGE);
     await waitForLib(page);
-    await page.evaluate(() => window.ModoSimples.enable());
+    await ligarEEscolher(page);
 
     await page.locator(`${BANNER} button`).click();
 
@@ -70,7 +94,7 @@ test.describe('seleção manual (IMP-22)', () => {
     const { page } = site;
     await page.goto(PAGE);
     await waitForLib(page);
-    await page.evaluate(() => window.ModoSimples.enable());
+    await ligarEEscolher(page);
 
     await page.keyboard.press('Escape');
 
@@ -85,7 +109,7 @@ test.describe('seleção manual (IMP-22)', () => {
     const { page } = site;
     await page.goto(PAGE);
     await waitForLib(page);
-    await page.evaluate(() => window.ModoSimples.enable());
+    await ligarEEscolher(page);
     await page.locator(`${BANNER} button`).click();
 
     await page.evaluate(() => {
@@ -108,11 +132,11 @@ test.describe('seleção manual — teclado e toque (IMP-07)', () => {
     const { page } = site;
     await page.goto(PAGE);
     await waitForLib(page);
-    await page.evaluate(() => window.ModoSimples.enable());
+    await ligarEEscolher(page);
     await expect(page.locator(BANNER)).toBeFocused();
 
     await page.keyboard.press('Tab');
-    await expect(page.locator(BANNER)).toContainText('Escolha atual: main');
+    await expect(page.locator(BANNER)).toContainText('Você escolheu: main');
     await expect(page.locator('#ms-manual-select-highlight')).toBeVisible();
     await page.keyboard.press('Enter');
 
@@ -127,14 +151,14 @@ test.describe('seleção manual — teclado e toque (IMP-07)', () => {
     const { page } = site;
     await page.goto(PAGE);
     await waitForLib(page);
-    await page.evaluate(() => window.ModoSimples.enable());
+    await ligarEEscolher(page);
 
     await page.keyboard.press('Enter');
     await expect(page.locator(BANNER)).toBeVisible();
     await page.keyboard.press('Shift+Tab'); // do início volta ao Cancelar (LOW-1)
     await expect(page.locator(`${BANNER} button`)).toBeFocused();
     await page.keyboard.press('Shift+Tab');
-    await expect(page.locator(BANNER)).toContainText('Escolha atual:');
+    await expect(page.locator(BANNER)).toContainText('Você escolheu:');
     await page.keyboard.press('Escape');
     await expect(page.locator(BANNER)).toHaveCount(0);
     await expect(principais(page)).toHaveCount(0);
@@ -146,7 +170,7 @@ test.describe('seleção manual — teclado e toque (IMP-07)', () => {
     const { page } = site;
     await page.goto(PAGE);
     await waitForLib(page);
-    await page.evaluate(() => window.ModoSimples.enable());
+    await ligarEEscolher(page);
 
     const cancelar = page.locator(`${BANNER} button`);
     for (let i = 0; i < 8; i++) {
@@ -155,7 +179,7 @@ test.describe('seleção manual — teclado e toque (IMP-07)', () => {
     }
     await expect(cancelar).toBeFocused();
     await page.keyboard.press('Tab'); // o ciclo volta ao primeiro candidato
-    await expect(page.locator(BANNER)).toContainText('Escolha atual:');
+    await expect(page.locator(BANNER)).toContainText('Você escolheu:');
     await page.keyboard.press('Shift+Tab');
     await expect(cancelar).toBeFocused();
 
@@ -174,7 +198,8 @@ test.describe('seleção manual — teclado e toque (IMP-07)', () => {
 
     const interruptor = page.locator('[data-action="modo-simples"]');
     await interruptor.focus();
-    await page.keyboard.press('Enter'); // liga o MS → seleção manual
+    await page.keyboard.press('Enter'); // liga o MS → aviso de confiança baixa
+    await escolherPeloTeclado(page);
     await expect(page.locator(BANNER)).toBeVisible();
 
     await page.keyboard.press('Escape');
@@ -189,7 +214,7 @@ test.describe('seleção manual — teclado e toque (IMP-07)', () => {
     const { page } = site;
     await page.goto(PAGE);
     await waitForLib(page);
-    await page.evaluate(() => window.ModoSimples.enable());
+    await ligarEEscolher(page);
 
     await page.locator('#alvo').tap();
 

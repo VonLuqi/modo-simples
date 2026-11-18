@@ -130,4 +130,14 @@ export const STRINGS = Object.freeze({
   sessionImagesVisible: 'VISÍVEIS',
   sessionExit: 'Voltar',
   sessionExitPost: ' ao site normal',
+
+  // features/manualSelect.js (linguagem simples, U-02 / UX-21)
+  lowConfNotice: 'Não achei o conteúdo principal, quer escolher?',
+  lowConfChoose: 'Escolher o conteúdo',
+  lowConfClose: 'Fechar',
+  manualInstruction:
+    'Clique ou toque no que você quer ler. No teclado: Tab muda de bloco, setas aumentam ou diminuem a área, Enter confirma, Esc volta.',
+  manualCurrent: 'Você escolheu:',
+  manualCancel: 'Voltar',
+  manualCancelLabel: 'Voltar sem escolher',
 });

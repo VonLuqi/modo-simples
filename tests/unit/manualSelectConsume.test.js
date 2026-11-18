@@ -23,8 +23,18 @@ const $ = (s) => document.querySelector(s);
 function iniciarSelecaoComPainelAberto() {
   inst = new ModoSimples({ confidenceThreshold: 2, persistence: false });
   inst.init();
-  inst.enable(); // confiança baixa → seleção manual
+  inst.enable(); // confiança baixa → aviso
+  escolher(); // opcional: abre a seleção manual
   inst._openPanel();
+}
+
+/** confiança baixa: o aviso aparece; "Escolher o conteúdo" abre a seleção manual (UX-21) */
+function escolher() {
+  document
+    .querySelector('#ms-low-confidence-notice button')
+    .dispatchEvent(
+      new env.win.MouseEvent('click', { bubbles: true, cancelable: true }),
+    );
 }
 
 const mouse = (type) =>
@@ -46,6 +56,12 @@ describe('seleção manual consome o evento (IMP-29)', () => {
     inst.init();
     assert.equal(isManualSelectActive(), false);
     inst.enable();
+    assert.equal(
+      isManualSelectActive(),
+      false,
+      'confiança baixa não abre a seleção sozinha (UX-21)',
+    );
+    escolher();
     assert.equal(isManualSelectActive(), true);
     inst.disable();
     assert.equal(isManualSelectActive(), false);

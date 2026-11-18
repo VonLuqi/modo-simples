@@ -71,6 +71,7 @@ import { stopSpeaking, isSpeaking } from './features/tts.js';
 import {
   startManualSelect,
   stopManualSelect,
+  showLowConfidenceNotice,
 } from './features/manualSelect.js';
 
 class ModoSimples {
@@ -398,33 +399,37 @@ class ModoSimples {
 
     const { confidence } = scan(this._config);
     if (confidence < this._config.confidenceThreshold) {
-      // Confiança baixa: nada é ocultado em volta de um principal incerto até o usuário
-      // confirmar (IMP-22). Enquanto escolhe, só a marca de "modo ligado" e as opções.
+      // Confiança baixa (UX-21): simplifica a página inteira (sem principal, nada oculto) e avisa
+      // em linguagem simples; a seleção manual é opcional. Sem principal, o max-width do principal
+      // não estreita o body. O hold impede o observer de aplicar a heurística incerta (IMP-22).
       document.documentElement.classList.add('ms-ativo');
       applyOptions(currentState);
-      holdPrincipal(true); // o observer não aplica a heurística incerta enquanto isso
-      this._setPageInert(false); // a página precisa receber o clique/foco da escolha
-      startManualSelect({
-        onSelect: (el, path) => {
-          this._setPageInert(state.get().panelOpen);
-          setPrincipal(el, this._config);
-          this._savePrincipalPath(path, el);
-          applyModoSimples(state.get(), this._config);
-          announce('Conteúdo principal definido');
-        },
-        onCancel: () => {
-          // sem escolha: ms-ativo + opções, SEM principal (nada marcado nem oculto) e nada
-          // persistido. O hold continua: o observer não escolhe por conta própria; só uma nova
-          // seleção ou desligar/ligar o MS muda isso.
-          this._setPageInert(state.get().panelOpen);
-          announce('Seleção manual cancelada');
-        },
-      });
+      holdPrincipal(true);
+      showLowConfidenceNotice({ onChoose: () => this._startManualChoice() });
     } else {
       applyModoSimples(currentState, this._config);
     }
 
     if (doAnnounce) announce('Modo Simples ativado');
+  }
+
+  /** Seleção manual opcional (IMP-22 vale aqui: nada oculto antes de confirmar; cancelar mantém a página). */
+  _startManualChoice() {
+    this._setPageInert(false); // a página precisa receber o clique/foco da escolha
+    startManualSelect({
+      onSelect: (el, path) => {
+        this._setPageInert(state.get().panelOpen);
+        setPrincipal(el, this._config);
+        this._savePrincipalPath(path, el);
+        applyModoSimples(state.get(), this._config);
+        announce('Conteúdo principal definido');
+      },
+      onCancel: () => {
+        // sem escolha: ms-ativo + opções, SEM principal e nada persistido; o hold continua.
+        this._setPageInert(state.get().panelOpen);
+        announce('Seleção manual cancelada');
+      },
+    });
   }
 
   // ── State reactions ────────────────────────────────────────────────────────

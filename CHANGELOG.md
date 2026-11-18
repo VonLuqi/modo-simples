@@ -4,6 +4,12 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 
 ## [Unreleased]
 
+### Alterado / mudança de comportamento (F7a — UX-21, U-02)
+
+- **UX-21 (ADR-018)** — com confiança baixa o Modo Simples **não abre mais a seleção manual sozinho**: liga na página inteira (sem principal e sem ocultar nada em volta) e mostra o aviso "Não achei o conteúdo principal, quer escolher?" (`aria-live="polite"`, botões ≥ 44 px): **Escolher o conteúdo** abre a seleção manual, **Fechar** dispensa o aviso. Ao recarregar com confiança baixa vale o mesmo fallback (sem seleção automática).
+- **U-02** — textos da seleção manual em linguagem simples, sem "candidato"/"seletor" ("Clique ou toque no que você quer ler…", "Você escolheu: …", botão "Voltar"); todos em `src/ui/strings.js`.
+- **IMP-22 continua valendo dentro do fluxo manual**: nada é ocultado antes de confirmar, cancelar (botão ou Esc) mantém a página inteira e nada é persistido.
+
 ### Adicionado (F8 — cor, tipografia e cursor)
 
 - **Cor (F8a)** — temas **Monocromático** e **Claro Alto Contraste**; **saturação** baixa/normal/alta (`filter` só no `<html>`, o widget `fixed` não é afetado); **cor personalizada** de texto, títulos e fundo (8 presets com contraste ≥ 7:1 + seletor livre `input type="color"`). Opções novas: `colorSaturation`, `customText`, `customHeading`, `customBg`.

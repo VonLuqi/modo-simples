@@ -185,6 +185,7 @@ export function bindEvents(ms) {
   ms._onDocClick = (e) => {
     if (!state.get().panelOpen) return;
     if (isManualSelectActive()) return; // o clique é da seleção manual: consumido uma vez (IMP-29)
+    if (e.target?.closest?.('#ms-low-confidence-notice')) return; // aviso da lib (UX-21): não é clique fora
     const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
     if (
       path.includes(ms._host) ||

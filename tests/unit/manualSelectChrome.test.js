@@ -53,7 +53,7 @@ describe('manualSelect — chrome da lib não é candidato (MED-2)', () => {
       key('Tab');
       const status = document
         .getElementById('ms-manual-select-banner')
-        .textContent.match(/Escolha atual: (.*?)\./);
+        .textContent.match(/Você escolheu: (.*?)\./);
       if (status) visitados.push(status[1]);
     }
     assert.ok(visitados.length > 0);

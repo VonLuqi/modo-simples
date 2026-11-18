@@ -2450,7 +2450,15 @@
     sessionImagesHidden: "OCULTAS",
     sessionImagesVisible: "VIS\xCDVEIS",
     sessionExit: "Voltar",
-    sessionExitPost: " ao site normal"
+    sessionExitPost: " ao site normal",
+    // features/manualSelect.js (linguagem simples, U-02 / UX-21)
+    lowConfNotice: "N\xE3o achei o conte\xFAdo principal, quer escolher?",
+    lowConfChoose: "Escolher o conte\xFAdo",
+    lowConfClose: "Fechar",
+    manualInstruction: "Clique ou toque no que voc\xEA quer ler. No teclado: Tab muda de bloco, setas aumentam ou diminuem a \xE1rea, Enter confirma, Esc volta.",
+    manualCurrent: "Voc\xEA escolheu:",
+    manualCancel: "Voltar",
+    manualCancelLabel: "Voltar sem escolher"
   });
 
   // src/ui/fab.js
@@ -3901,10 +3909,11 @@
   var BANNER_ID = "ms-manual-select-banner";
   var HIGHLIGHT_ID = "ms-manual-select-highlight";
   var OVERLAY_CLASS = "ms-manual-select-active";
-  var INSTRUCTION = "Clique ou toque no conte\xFAdo principal. Teclado: Tab escolhe, \u2191 \u2193 ampliam ou reduzem, Enter confirma, Esc cancela.";
+  var NOTICE_ID = "ms-low-confidence-notice";
   var CANDIDATE_SELECTOR = 'main, [role="main"], article, section, aside, div';
   var MIN_W = 120;
   var MIN_H = 60;
+  var _noticePrev = null;
   var _banner = null;
   var _status = null;
   var _highlight = null;
@@ -3958,10 +3967,18 @@
     }
     return parts.join(" > ");
   }
+  function deepActiveElement() {
+    var _a;
+    let active = document.activeElement;
+    while ((_a = active == null ? void 0 : active.shadowRoot) == null ? void 0 : _a.activeElement) {
+      active = active.shadowRoot.activeElement;
+    }
+    return active;
+  }
   function isOwnUi(el) {
-    var _a, _b, _c, _d;
-    return !!(((_a = el == null ? void 0 : el.closest) == null ? void 0 : _a.call(el, "#ms-container")) || ((_b = el == null ? void 0 : el.closest) == null ? void 0 : _b.call(el, `#${BANNER_ID}`)) || ((_c = el == null ? void 0 : el.closest) == null ? void 0 : _c.call(el, `#${HIGHLIGHT_ID}`)) || // chrome da lib no light DOM: barra de sessão, switch SIMPLES e pills (QA R34 MED-2)
-    ((_d = el == null ? void 0 : el.closest) == null ? void 0 : _d.call(
+    var _a, _b, _c, _d, _e;
+    return !!(((_a = el == null ? void 0 : el.closest) == null ? void 0 : _a.call(el, "#ms-container")) || ((_b = el == null ? void 0 : el.closest) == null ? void 0 : _b.call(el, `#${BANNER_ID}`)) || ((_c = el == null ? void 0 : el.closest) == null ? void 0 : _c.call(el, `#${NOTICE_ID}`)) || ((_d = el == null ? void 0 : el.closest) == null ? void 0 : _d.call(el, `#${HIGHLIGHT_ID}`)) || // chrome da lib no light DOM: barra de sessão, switch SIMPLES e pills (QA R34 MED-2)
+    ((_e = el == null ? void 0 : el.closest) == null ? void 0 : _e.call(
       el,
       "#ms-session-bar, #ms-simples-chrome, .ms-pills-nav, [data-ms-pills]"
     )));
@@ -3995,7 +4012,7 @@
       width: `${r.width}px`,
       height: `${r.height}px`
     });
-    _status.textContent = ` Escolha atual: ${describe(el)}.`;
+    _status.textContent = ` ${STRINGS.manualCurrent} ${describe(el)}.`;
   }
   function cycleCandidate(step) {
     var _a;
@@ -4026,13 +4043,13 @@
     if (cb) cb(el, path);
   }
   function startManualSelect(opts = {}) {
-    var _a;
     stopManualSelect();
     _callbacks = opts;
-    let active = document.activeElement;
-    while ((_a = active == null ? void 0 : active.shadowRoot) == null ? void 0 : _a.activeElement) {
-      active = active.shadowRoot.activeElement;
+    let active = deepActiveElement();
+    if ((!active || active === document.body) && (_noticePrev == null ? void 0 : _noticePrev.isConnected)) {
+      active = _noticePrev;
     }
+    _noticePrev = null;
     _prevFocus = active;
     _banner = document.createElement("div");
     _banner.id = BANNER_ID;
@@ -4055,16 +4072,17 @@
       boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
       cursor: "default"
     });
-    _banner.append(INSTRUCTION);
+    _banner.append(STRINGS.manualInstruction);
     _status = document.createElement("span");
     _banner.appendChild(_status);
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.textContent = "Cancelar";
-    cancelBtn.setAttribute("aria-label", "Cancelar sele\xE7\xE3o manual");
+    cancelBtn.textContent = STRINGS.manualCancel;
+    cancelBtn.setAttribute("aria-label", STRINGS.manualCancelLabel);
     Object.assign(cancelBtn.style, {
       marginLeft: "1rem",
       padding: "0.3rem 0.75rem",
+      minHeight: "44px",
       border: "1px solid rgba(255,255,255,0.5)",
       borderRadius: "6px",
       background: "transparent",
@@ -4107,8 +4125,8 @@
       confirmSelect(el);
     };
     _onKey = (e) => {
-      var _a2, _b, _c, _d;
-      const inBanner = (_b = (_a2 = e.target) == null ? void 0 : _a2.closest) == null ? void 0 : _b.call(_a2, `#${BANNER_ID}`);
+      var _a, _b, _c, _d;
+      const inBanner = (_b = (_a = e.target) == null ? void 0 : _a.closest) == null ? void 0 : _b.call(_a, `#${BANNER_ID}`);
       const consume = () => {
         e.preventDefault();
         e.stopImmediatePropagation();
@@ -4166,11 +4184,74 @@
       document.addEventListener(type, _onTouch, { capture: true, passive: true });
     }
   }
+  function showLowConfidenceNotice(opts = {}) {
+    hideLowConfidenceNotice();
+    queueMicrotask(() => {
+      if (document.getElementById(NOTICE_ID)) _noticePrev = deepActiveElement();
+    });
+    const box = document.createElement("div");
+    box.id = NOTICE_ID;
+    box.setAttribute("role", "status");
+    box.setAttribute("aria-live", "polite");
+    Object.assign(box.style, {
+      position: "fixed",
+      left: "0",
+      right: "0",
+      bottom: "0",
+      zIndex: "2147483646",
+      display: "flex",
+      flexWrap: "wrap",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "0.75rem",
+      padding: "0.85rem 1.25rem",
+      background: "#0B2C5F",
+      color: "#fff",
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "1rem",
+      boxShadow: "0 -4px 16px rgba(0,0,0,0.25)"
+    });
+    const msg = document.createElement("span");
+    msg.textContent = STRINGS.lowConfNotice;
+    box.appendChild(msg);
+    const mk = (text, onClick) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = text;
+      Object.assign(b.style, {
+        minHeight: "44px",
+        minWidth: "44px",
+        padding: "0.5rem 1rem",
+        border: "1px solid rgba(255,255,255,0.7)",
+        borderRadius: "6px",
+        background: "transparent",
+        color: "#fff",
+        cursor: "pointer",
+        font: "inherit"
+      });
+      b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        onClick();
+      });
+      box.appendChild(b);
+    };
+    mk(STRINGS.lowConfChoose, () => {
+      var _a;
+      return (_a = opts.onChoose) == null ? void 0 : _a.call(opts);
+    });
+    mk(STRINGS.lowConfClose, hideLowConfidenceNotice);
+    document.body.appendChild(box);
+  }
+  function hideLowConfidenceNotice() {
+    var _a;
+    (_a = document.getElementById(NOTICE_ID)) == null ? void 0 : _a.remove();
+  }
   function isManualSelectActive() {
     return _onClick !== null;
   }
   function stopManualSelect() {
     var _a;
+    hideLowConfidenceNotice();
     const wasActive = _onClick !== null;
     if (_onClick) {
       document.removeEventListener("click", _onClick, true);
@@ -4338,15 +4419,16 @@
     };
     document.addEventListener("keydown", ms._onDocKeydown);
     ms._onDocClick = (e) => {
-      var _a, _b, _c;
+      var _a, _b, _c, _d, _e;
       if (!state_default.get().panelOpen) return;
       if (isManualSelectActive()) return;
+      if ((_b = (_a = e.target) == null ? void 0 : _a.closest) == null ? void 0 : _b.call(_a, "#ms-low-confidence-notice")) return;
       const path = typeof e.composedPath === "function" ? e.composedPath() : [];
-      if (path.includes(ms._host) || path.includes((_a = ms._panel) == null ? void 0 : _a.element) || path.includes((_b = ms._fab) == null ? void 0 : _b.element)) {
+      if (path.includes(ms._host) || path.includes((_c = ms._panel) == null ? void 0 : _c.element) || path.includes((_d = ms._fab) == null ? void 0 : _d.element)) {
         return;
       }
       if (e.target === ms._host) return;
-      if (!((_c = ms._host) == null ? void 0 : _c.contains(e.target)) && e.target !== ms._host) {
+      if (!((_e = ms._host) == null ? void 0 : _e.contains(e.target)) && e.target !== ms._host) {
         const { clientX, clientY } = e;
         const retargeted = e.target === document.body || e.target === document.documentElement;
         ms._closePanel();
@@ -5173,24 +5255,28 @@
         document.documentElement.classList.add("ms-ativo");
         applyOptions(currentState);
         holdPrincipal(true);
-        this._setPageInert(false);
-        startManualSelect({
-          onSelect: (el, path) => {
-            this._setPageInert(state_default.get().panelOpen);
-            setPrincipal(el, this._config);
-            this._savePrincipalPath(path, el);
-            applyModoSimples(state_default.get(), this._config);
-            announce("Conte\xFAdo principal definido");
-          },
-          onCancel: () => {
-            this._setPageInert(state_default.get().panelOpen);
-            announce("Sele\xE7\xE3o manual cancelada");
-          }
-        });
+        showLowConfidenceNotice({ onChoose: () => this._startManualChoice() });
       } else {
         applyModoSimples(currentState, this._config);
       }
       if (doAnnounce) announce("Modo Simples ativado");
+    }
+    /** Seleção manual opcional (IMP-22 vale aqui: nada oculto antes de confirmar; cancelar mantém a página). */
+    _startManualChoice() {
+      this._setPageInert(false);
+      startManualSelect({
+        onSelect: (el, path) => {
+          this._setPageInert(state_default.get().panelOpen);
+          setPrincipal(el, this._config);
+          this._savePrincipalPath(path, el);
+          applyModoSimples(state_default.get(), this._config);
+          announce("Conte\xFAdo principal definido");
+        },
+        onCancel: () => {
+          this._setPageInert(state_default.get().panelOpen);
+          announce("Sele\xE7\xE3o manual cancelada");
+        }
+      });
     }
     // ── State reactions ────────────────────────────────────────────────────────
     _onStateChange(prev, next) {

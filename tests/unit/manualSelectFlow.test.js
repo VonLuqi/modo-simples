@@ -25,6 +25,13 @@ function baixaConfianca() {
   inst.enable();
 }
 
+const notice = () => $('#ms-low-confidence-notice');
+
+/** "Escolher o conteúdo" no aviso: abre a seleção manual (opcional, UX-21) */
+function escolher() {
+  clicar(notice().querySelector('button'));
+}
+
 function clicar(el) {
   el.dispatchEvent(
     new env.win.MouseEvent('click', { bubbles: true, cancelable: true }),
@@ -42,19 +49,40 @@ afterEach(() => {
 });
 
 describe('seleção manual com confiança baixa (IMP-22)', () => {
-  it('enquanto o usuário não escolhe: banner aberto e NADA oculto nem marcado', () => {
+  it('confiança baixa (UX-21): aviso em linguagem simples, sem seleção aberta, nada oculto nem marcado', () => {
     baixaConfianca();
-    assert.ok(banner(), 'banner de seleção deveria estar aberto');
-    assert.equal(
-      hidden().length,
-      0,
-      'nada pode ser ocultado antes de confirmar',
-    );
+    assert.equal(banner(), null, 'a seleção manual não abre sozinha');
+    assert.ok(notice(), 'aviso aberto');
+    assert.equal(notice().getAttribute('aria-live'), 'polite');
+    assert.match(notice().textContent, /Não achei o conteúdo principal/);
+    assert.equal(hidden().length, 0);
+    assert.equal(document.querySelectorAll('[data-ms-principal]').length, 0);
+    assert.ok(document.documentElement.classList.contains('ms-ativo'));
+  });
+
+  it('"Fechar" dispensa o aviso e mantém a página simplificada', () => {
+    baixaConfianca();
+    const fechar = notice().querySelectorAll('button')[1];
+    assert.equal(fechar.textContent, 'Fechar');
+    clicar(fechar);
+    assert.equal(notice(), null);
+    assert.equal(banner(), null);
+    assert.ok(document.documentElement.classList.contains('ms-ativo'));
+  });
+
+  it('"Escolher o conteúdo": abre a seleção, sem jargão, e ainda nada oculto (IMP-22)', () => {
+    baixaConfianca();
+    escolher();
+    assert.ok(banner(), 'banner de seleção aberto');
+    assert.equal(notice(), null, 'o aviso sai quando a escolha começa');
+    assert.doesNotMatch(banner().textContent, /candidato|seletor/i);
+    assert.equal(hidden().length, 0, 'nada oculto antes de confirmar');
     assert.equal(document.querySelectorAll('[data-ms-principal]').length, 0);
   });
 
   it('confirmar: aplica em volta da escolha e fecha o banner', () => {
     baixaConfianca();
+    escolher();
     clicar($('main'));
 
     assert.equal(banner(), null);
@@ -66,6 +94,7 @@ describe('seleção manual com confiança baixa (IMP-22)', () => {
 
   it('cancelar pelo botão: modo ligado, SEM principal e nada oculto', () => {
     baixaConfianca();
+    escolher();
     const cancelar = banner().querySelector('button');
     clicar(cancelar);
 
@@ -82,6 +111,7 @@ describe('seleção manual com confiança baixa (IMP-22)', () => {
 
   it('cancelar com Esc: mesmo resultado do botão', () => {
     baixaConfianca();
+    escolher();
     document.dispatchEvent(
       new env.win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
     );
@@ -95,6 +125,7 @@ describe('seleção manual com confiança baixa (IMP-22)', () => {
     inst = new ModoSimples({ confidenceThreshold: 2 }); // com persistência
     inst.init();
     inst.enable();
+    escolher();
     clicar(banner().querySelector('button'));
     const keys = Object.keys(localStorage).filter((k) =>
       k.startsWith('ms_principal'),
@@ -111,6 +142,7 @@ describe('seleção manual com confiança baixa (IMP-22)', () => {
     });
     inst.init();
     inst.enable();
+    escolher();
     clicar(banner().querySelector('button'));
 
     const novo = document.createElement('div');
@@ -124,16 +156,19 @@ describe('seleção manual com confiança baixa (IMP-22)', () => {
     assert.ok(document.documentElement.classList.contains('ms-ativo'));
   });
 
-  it('desligar e ligar de novo recomeça a seleção após um cancelamento', () => {
+  it('desligar e ligar de novo mostra o aviso outra vez após um cancelamento', () => {
     baixaConfianca();
+    escolher();
     clicar(banner().querySelector('button'));
     inst.disable();
     inst.enable();
-    assert.ok(banner(), 'a seleção manual reabre');
+    assert.ok(notice(), 'o aviso volta');
+    assert.equal(banner(), null);
   });
 
   it('desligar o modo durante a seleção fecha o banner sem aplicar nada', () => {
     baixaConfianca();
+    escolher();
     inst.disable();
     assert.equal(banner(), null);
     assert.equal(hidden().length, 0);

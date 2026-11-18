@@ -7,15 +7,18 @@
  * data-ms-principal and returns a CSS path.
  */
 
+import { STRINGS } from '../ui/strings.js';
+
 const BANNER_ID = 'ms-manual-select-banner';
 const HIGHLIGHT_ID = 'ms-manual-select-highlight';
 const OVERLAY_CLASS = 'ms-manual-select-active';
-const INSTRUCTION =
-  'Clique ou toque no conteúdo principal. Teclado: Tab escolhe, ↑ ↓ ampliam ou reduzem, Enter confirma, Esc cancela.';
+const NOTICE_ID = 'ms-low-confidence-notice';
 const CANDIDATE_SELECTOR = 'main, [role="main"], article, section, aside, div';
 const MIN_W = 120;
 const MIN_H = 60;
 
+/** @type {Element|null} foco anterior ao aviso de confiança baixa */
+let _noticePrev = null;
 /** @type {HTMLElement|null} */
 let _banner = null;
 /** @type {HTMLElement|null} */
@@ -102,11 +105,20 @@ export function buildCssPath(el) {
   return parts.join(' > ');
 }
 
+function deepActiveElement() {
+  let active = document.activeElement;
+  while (active?.shadowRoot?.activeElement) {
+    active = active.shadowRoot.activeElement;
+  }
+  return active;
+}
+
 /** @param {Element|null} el */
 function isOwnUi(el) {
   return !!(
     el?.closest?.('#ms-container') ||
     el?.closest?.(`#${BANNER_ID}`) ||
+    el?.closest?.(`#${NOTICE_ID}`) ||
     el?.closest?.(`#${HIGHLIGHT_ID}`) ||
     // chrome da lib no light DOM: barra de sessão, switch SIMPLES e pills (QA R34 MED-2)
     el?.closest?.(
@@ -152,7 +164,7 @@ function setCurrent(el) {
     width: `${r.width}px`,
     height: `${r.height}px`,
   });
-  _status.textContent = ` Escolha atual: ${describe(el)}.`;
+  _status.textContent = ` ${STRINGS.manualCurrent} ${describe(el)}.`;
 }
 
 /** @param {1|-1} step */
@@ -206,10 +218,12 @@ export function startManualSelect(opts = {}) {
   _callbacks = opts;
   // Quem disparou pode estar num Shadow DOM (painel): guarda o elemento focado de verdade,
   // não o host #ms-container, para o foco poder voltar a ele (QA R34 LOW-2)
-  let active = document.activeElement;
-  while (active?.shadowRoot?.activeElement) {
-    active = active.shadowRoot.activeElement;
+  let active = deepActiveElement();
+  // veio do aviso de confiança baixa: o botão já saiu do DOM, o foco volta a quem o tinha antes
+  if ((!active || active === document.body) && _noticePrev?.isConnected) {
+    active = _noticePrev;
   }
+  _noticePrev = null;
   _prevFocus = active;
 
   _banner = document.createElement('div');
@@ -233,17 +247,18 @@ export function startManualSelect(opts = {}) {
     boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
     cursor: 'default',
   });
-  _banner.append(INSTRUCTION);
+  _banner.append(STRINGS.manualInstruction);
   _status = document.createElement('span');
   _banner.appendChild(_status);
 
   const cancelBtn = document.createElement('button');
   cancelBtn.type = 'button';
-  cancelBtn.textContent = 'Cancelar';
-  cancelBtn.setAttribute('aria-label', 'Cancelar seleção manual');
+  cancelBtn.textContent = STRINGS.manualCancel;
+  cancelBtn.setAttribute('aria-label', STRINGS.manualCancelLabel);
   Object.assign(cancelBtn.style, {
     marginLeft: '1rem',
     padding: '0.3rem 0.75rem',
+    minHeight: '44px',
     border: '1px solid rgba(255,255,255,0.5)',
     borderRadius: '6px',
     background: 'transparent',
@@ -359,6 +374,72 @@ export function startManualSelect(opts = {}) {
 }
 
 /**
+ * Aviso de confiança baixa (UX-21): o Modo Simples já foi aplicado sem ocultar nada em volta;
+ * a escolha manual é opcional. Não rouba o foco nem bloqueia a página.
+ * @param {{ onChoose?: () => void }} [opts]
+ */
+export function showLowConfidenceNotice(opts = {}) {
+  hideLowConfidenceNotice();
+  // depois do re-render do painel (o controle focado pode ser recriado na mesma ação)
+  queueMicrotask(() => {
+    if (document.getElementById(NOTICE_ID)) _noticePrev = deepActiveElement();
+  });
+  const box = document.createElement('div');
+  box.id = NOTICE_ID;
+  box.setAttribute('role', 'status');
+  box.setAttribute('aria-live', 'polite');
+  Object.assign(box.style, {
+    position: 'fixed',
+    left: '0',
+    right: '0',
+    bottom: '0',
+    zIndex: '2147483646',
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.75rem',
+    padding: '0.85rem 1.25rem',
+    background: '#0B2C5F',
+    color: '#fff',
+    fontFamily: 'system-ui, sans-serif',
+    fontSize: '1rem',
+    boxShadow: '0 -4px 16px rgba(0,0,0,0.25)',
+  });
+  const msg = document.createElement('span');
+  msg.textContent = STRINGS.lowConfNotice;
+  box.appendChild(msg);
+  const mk = (text, onClick) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = text;
+    Object.assign(b.style, {
+      minHeight: '44px',
+      minWidth: '44px',
+      padding: '0.5rem 1rem',
+      border: '1px solid rgba(255,255,255,0.7)',
+      borderRadius: '6px',
+      background: 'transparent',
+      color: '#fff',
+      cursor: 'pointer',
+      font: 'inherit',
+    });
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onClick();
+    });
+    box.appendChild(b);
+  };
+  mk(STRINGS.lowConfChoose, () => opts.onChoose?.());
+  mk(STRINGS.lowConfClose, hideLowConfidenceNotice);
+  document.body.appendChild(box);
+}
+
+export function hideLowConfidenceNotice() {
+  document.getElementById(NOTICE_ID)?.remove();
+}
+
+/**
  * @returns {boolean} true while the manual selection mode is open
  */
 export function isManualSelectActive() {
@@ -369,6 +450,7 @@ export function isManualSelectActive() {
  * Stop manual selection mode and remove the banner.
  */
 export function stopManualSelect() {
+  hideLowConfidenceNotice();
   const wasActive = _onClick !== null;
   if (_onClick) {
     document.removeEventListener('click', _onClick, true);

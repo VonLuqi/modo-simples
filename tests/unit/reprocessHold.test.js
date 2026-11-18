@@ -17,6 +17,12 @@ const marked = () =>
   document.querySelectorAll('[data-ms-hidden], [data-ms-principal]');
 const banner = () => $('#ms-manual-select-banner');
 
+function escolher() {
+  $('#ms-low-confidence-notice button').dispatchEvent(
+    new env.win.MouseEvent('click', { bubbles: true, cancelable: true }),
+  );
+}
+
 function addHostNode() {
   const el = document.createElement('div');
   el.className = 'ad novo';
@@ -43,7 +49,15 @@ afterEach(() => {
 });
 
 describe('reprocess com principal por escolher', () => {
+  it('só com o aviso (sem escolher), uma mutação do host não aplica a heurística', async () => {
+    addHostNode();
+    await env.wait(150);
+    assert.equal(marked().length, 0);
+    assert.equal(banner(), null);
+  });
+
   it('mutação do host durante a seleção manual não aplica a heurística', async () => {
+    escolher();
     assert.ok(banner(), 'seleção manual aberta');
     addHostNode();
     await env.wait(150);
@@ -53,6 +67,7 @@ describe('reprocess com principal por escolher', () => {
   });
 
   it('depois de o usuário escolher, o reprocess volta a funcionar (preserva a escolha)', async () => {
+    escolher();
     $('main').dispatchEvent(
       new env.win.MouseEvent('click', { bubbles: true, cancelable: true }),
     );
@@ -67,7 +82,11 @@ describe('reprocess com principal por escolher', () => {
     inst.disable();
     assert.equal(marked().length, 0);
     inst.enable();
-    assert.ok(banner(), 'seleção manual reaberta');
+    assert.ok(
+      $('#ms-low-confidence-notice'),
+      'aviso de confiança baixa de novo',
+    );
+    assert.equal(banner(), null, 'sem abrir a seleção sozinho');
     addHostNode();
     await env.wait(150);
     assert.equal(marked().length, 0);
