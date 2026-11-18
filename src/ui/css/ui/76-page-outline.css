@@ -1,10 +1,12 @@
     /* ── F9c: Estrutura da página (diálogo dentro do painel) ─────────────── */
     .ms-tile[data-action="page-outline"]:hover,
     .ms-tile[data-action="mouse-grid"]:hover,
-    .ms-tile[data-action="virtual-keyboard"]:hover { background: #eef3fb; }
+    .ms-tile[data-action="virtual-keyboard"]:hover,
+    .ms-tile[data-action="pause"]:hover { background: #eef3fb; }
     .ms-tile[data-action="page-outline"]:focus-visible,
     .ms-tile[data-action="mouse-grid"]:focus-visible,
     .ms-tile[data-action="virtual-keyboard"]:focus-visible,
+    .ms-tile[data-action="pause"]:focus-visible,
     .ms-outline-link:focus-visible { outline: 3px solid var(--ms-blue); outline-offset: 2px; }
     .ms-outline {
       position: absolute;

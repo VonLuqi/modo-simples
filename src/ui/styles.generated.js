@@ -654,7 +654,7 @@ export const UI_CSS = `
 
     .ms-switch.ms-tile,
     .ms-btn-ouvir.ms-tile,
-    .ms-tile[data-action="page-outline"], .ms-tile[data-action="mouse-grid"], .ms-tile[data-action="virtual-keyboard"] {
+    .ms-tile[data-action="page-outline"], .ms-tile[data-action="mouse-grid"], .ms-tile[data-action="virtual-keyboard"], .ms-tile[data-action="pause"] {
       position: relative;
       display: flex;
       flex-direction: column;
@@ -853,10 +853,12 @@ export const UI_CSS = `
     /* ── F9c: Estrutura da página (diálogo dentro do painel) ─────────────── */
     .ms-tile[data-action="page-outline"]:hover,
     .ms-tile[data-action="mouse-grid"]:hover,
-    .ms-tile[data-action="virtual-keyboard"]:hover { background: #eef3fb; }
+    .ms-tile[data-action="virtual-keyboard"]:hover,
+    .ms-tile[data-action="pause"]:hover { background: #eef3fb; }
     .ms-tile[data-action="page-outline"]:focus-visible,
     .ms-tile[data-action="mouse-grid"]:focus-visible,
     .ms-tile[data-action="virtual-keyboard"]:focus-visible,
+    .ms-tile[data-action="pause"]:focus-visible,
     .ms-outline-link:focus-visible { outline: 3px solid var(--ms-blue); outline-offset: 2px; }
     .ms-outline {
       position: absolute;

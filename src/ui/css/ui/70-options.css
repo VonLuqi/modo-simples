@@ -116,7 +116,7 @@
 
     .ms-switch.ms-tile,
     .ms-btn-ouvir.ms-tile,
-    .ms-tile[data-action="page-outline"], .ms-tile[data-action="mouse-grid"], .ms-tile[data-action="virtual-keyboard"] {
+    .ms-tile[data-action="page-outline"], .ms-tile[data-action="mouse-grid"], .ms-tile[data-action="virtual-keyboard"], .ms-tile[data-action="pause"] {
       position: relative;
       display: flex;
       flex-direction: column;
