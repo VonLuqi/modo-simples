@@ -43,6 +43,10 @@ export const STRINGS = Object.freeze({
   panelVoiceStopLabel: 'Parar leitura',
   mediaOtherSiteNotice:
     'Este vídeo é de outro site. Não consigo tirar o som dele.',
+  panelBlockFlashingTitle: 'Bloquear animações e GIFs',
+  panelBlockFlashingDesc:
+    'Para animações, textos que correm e vídeos que começam sozinhos. GIFs ficam parados até você clicar',
+  gifShowLabel: 'Mostrar animação',
   panelMuteMediaTitle: 'Pausar e mutar tudo',
   panelMuteMediaDesc:
     'Pausa e silencia vídeos e sons da página, inclusive os que começam sozinhos',

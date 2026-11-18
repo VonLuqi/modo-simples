@@ -292,6 +292,15 @@ const CONTROLS = {
       ),
     }),
   },
+  blockFlashing: {
+    html: switchTile({
+      option: 'blockFlashing',
+      title: S.panelBlockFlashingTitle,
+      label: S.panelBlockFlashingTitle,
+      desc: S.panelBlockFlashingDesc,
+      icon: svgIcon('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>'),
+    }),
+  },
   muteMedia: {
     html: switchTile({
       option: 'muteMedia',
@@ -359,7 +368,7 @@ const SECTIONS = [
     icon: svgIcon(
       '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>',
     ),
-    controls: ['reducedMotion', 'muteMedia', 'hideImages'],
+    controls: ['reducedMotion', 'blockFlashing', 'muteMedia', 'hideImages'],
   },
 ];
 
@@ -770,6 +779,7 @@ export function createA11yPanel({
       'hideImages',
       'readFocus',
       'muteMedia',
+      'blockFlashing',
     ].forEach((key) => {
       const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
       if (!btn) return;

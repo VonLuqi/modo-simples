@@ -1,0 +1,7 @@
+    /* F7d: bloqueio de intermitência vale também para a UI da lib (host recebe o atributo) */
+    :host([data-ms-noflash]) *,
+    :host([data-ms-noflash]) *::before,
+    :host([data-ms-noflash]) *::after {
+      animation: none !important;
+      transition: none !important;
+    }

@@ -69,6 +69,7 @@ const OPTION_FLAG_CLASSES = [
   'ms-highlight-links',
   'ms-text-spacing',
   'ms-reduced-motion',
+  'ms-block-flashing',
   'ms-hide-images',
   'ms-reading-ruler',
   'ms-simple-language',
@@ -165,6 +166,14 @@ function setHostCursor(on) {
   else host.removeAttribute('data-ms-cursor');
 }
 
+/** Atributo no host do widget (o Shadow DOM não enxerga as classes do <html>). */
+function setHostFlag(name, on) {
+  const host = document.querySelector?.('#ms-container');
+  if (!host) return;
+  if (on) host.setAttribute(name, '');
+  else host.removeAttribute(name);
+}
+
 /**
  * Apply option classes (text/theme/aids) independently of Modo Simples.
  * @param {Object} state
@@ -211,6 +220,8 @@ export function applyOptions(state) {
     else html.style?.removeProperty?.(prop);
   }
   html.classList.toggle('ms-reduced-motion', !!opts.reducedMotion);
+  html.classList.toggle('ms-block-flashing', !!opts.blockFlashing);
+  setHostFlag('data-ms-noflash', !!opts.blockFlashing);
   html.classList.toggle('ms-hide-images', !!opts.hideImages);
   html.classList.toggle('ms-reading-ruler', !!opts.readingRuler);
   html.classList.toggle('ms-simple-language', !!opts.simpleLanguage);
@@ -272,6 +283,7 @@ export function revertModoSimples() {
 export function revert() {
   revertModoSimples();
   setHostCursor(false);
+  setHostFlag('data-ms-noflash', false);
 
   document.documentElement.classList.remove(
     ...TEXT_SCALE_CLASSES,

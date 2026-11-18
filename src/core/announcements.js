@@ -19,6 +19,10 @@ const TOGGLE_ANNOUNCEMENTS = {
   simpleLanguage: ['Linguagem simples ligada', 'Linguagem simples desligada'],
   readFocus: ['Leitura do foco ligada', 'Leitura do foco desligada'],
   muteMedia: ['Vídeos e sons silenciados', 'Vídeos e sons liberados'],
+  blockFlashing: [
+    'Bloqueio de animações e GIFs ligado',
+    'Bloqueio de animações e GIFs desligado',
+  ],
 };
 
 const THEME_LABELS = {

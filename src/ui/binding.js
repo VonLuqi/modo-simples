@@ -43,6 +43,7 @@ const RESET_OPTIONS = {
   hideImages: false,
   simpleLanguage: false,
   readFocus: false,
+  blockFlashing: false,
   muteMedia: false,
 };
 

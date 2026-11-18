@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Intermitência — fixture do Modo Simples</title>
+    <style>
+      @keyframes pulse {
+        from {
+          opacity: 1;
+        }
+        to {
+          opacity: 0.2;
+        }
+      }
+      #anim {
+        animation: pulse 1s infinite alternate;
+        transition: color 2s;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Página com movimento</h1>
+      <p id="anim">Texto que pulsa</p>
+      <marquee id="marq" scrollamount="5">Texto que corre</marquee>
+      <img
+        id="gif"
+        alt="Gato girando"
+        width="40"
+        height="30"
+        src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs="
+      />
+      <video id="vid" autoplay muted loop playsinline width="200" height="100"></video>
+    </main>
+    <script src="../../../dist/modo-simples.min.js"></script>
+  </body>
+</html>

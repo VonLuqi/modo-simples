@@ -8,3 +8,12 @@
       scroll-behavior: auto !important;
     }
 
+
+    /* ── Bloqueio de intermitência (F7d): corta animação e transição do site ── */
+    html.ms-block-flashing *,
+    html.ms-block-flashing *::before,
+    html.ms-block-flashing *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }

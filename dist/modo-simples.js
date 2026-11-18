@@ -240,6 +240,7 @@
       hideImages: false,
       simpleLanguage: false,
       readFocus: false,
+      blockFlashing: false,
       muteMedia: false
     }
   };
@@ -298,7 +299,11 @@
     ],
     simpleLanguage: ["Linguagem simples ligada", "Linguagem simples desligada"],
     readFocus: ["Leitura do foco ligada", "Leitura do foco desligada"],
-    muteMedia: ["V\xEDdeos e sons silenciados", "V\xEDdeos e sons liberados"]
+    muteMedia: ["V\xEDdeos e sons silenciados", "V\xEDdeos e sons liberados"],
+    blockFlashing: [
+      "Bloqueio de anima\xE7\xF5es e GIFs ligado",
+      "Bloqueio de anima\xE7\xF5es e GIFs desligado"
+    ]
   };
   var THEME_LABELS = {
     senac: "Cores do site",
@@ -500,6 +505,7 @@
         hideImages: Boolean(opts.hideImages),
         readFocus: Boolean(opts.readFocus),
         muteMedia: Boolean(opts.muteMedia),
+        blockFlashing: Boolean(opts.blockFlashing),
         // Linguagem simples é acoplada ao MS; sem MS não reativa “órfã”
         simpleLanguage: modoSimples ? Boolean(opts.simpleLanguage) : false
       }
@@ -1561,6 +1567,13 @@
     :host([data-ms-cursor]) :is(button, a[href], summary, select, label, [role="button"], [role="switch"], [role="radio"], [role="tab"]) * {
       cursor: var(--ms-cur-hand) !important;
     }
+    /* F7d: bloqueio de intermit\xEAncia vale tamb\xE9m para a UI da lib (host recebe o atributo) */
+    :host([data-ms-noflash]) *,
+    :host([data-ms-noflash]) *::before,
+    :host([data-ms-noflash]) *::after {
+      animation: none !important;
+      transition: none !important;
+    }
   `;
   var PAGE_CSS = `
     /* \u2500\u2500 Hidden distractions (Modo Simples only) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
@@ -1803,6 +1816,15 @@
       scroll-behavior: auto !important;
     }
 
+
+    /* \u2500\u2500 Bloqueio de intermit\xEAncia (F7d): corta anima\xE7\xE3o e transi\xE7\xE3o do site \u2500\u2500 */
+    html.ms-block-flashing *,
+    html.ms-block-flashing *::before,
+    html.ms-block-flashing *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
     /* \u2500\u2500 Highlight links \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     html.ms-highlight-links a:not([data-ms-hidden]) {
       text-decoration: underline !important;
@@ -2376,6 +2398,9 @@
     panelVoiceStopButton: "Parar",
     panelVoiceStopLabel: "Parar leitura",
     mediaOtherSiteNotice: "Este v\xEDdeo \xE9 de outro site. N\xE3o consigo tirar o som dele.",
+    panelBlockFlashingTitle: "Bloquear anima\xE7\xF5es e GIFs",
+    panelBlockFlashingDesc: "Para anima\xE7\xF5es, textos que correm e v\xEDdeos que come\xE7am sozinhos. GIFs ficam parados at\xE9 voc\xEA clicar",
+    gifShowLabel: "Mostrar anima\xE7\xE3o",
     panelMuteMediaTitle: "Pausar e mutar tudo",
     panelMuteMediaDesc: "Pausa e silencia v\xEDdeos e sons da p\xE1gina, inclusive os que come\xE7am sozinhos",
     panelReadFocusTitle: "Ler o que eu seleciono",
@@ -3284,6 +3309,15 @@
         )
       })
     },
+    blockFlashing: {
+      html: switchTile({
+        option: "blockFlashing",
+        title: STRINGS.panelBlockFlashingTitle,
+        label: STRINGS.panelBlockFlashingTitle,
+        desc: STRINGS.panelBlockFlashingDesc,
+        icon: svgIcon('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>')
+      })
+    },
     muteMedia: {
       html: switchTile({
         option: "muteMedia",
@@ -3346,7 +3380,7 @@
       icon: svgIcon(
         '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>'
       ),
-      controls: ["reducedMotion", "muteMedia", "hideImages"]
+      controls: ["reducedMotion", "blockFlashing", "muteMedia", "hideImages"]
     }
   ];
   function renderSection(sec, index) {
@@ -3669,7 +3703,8 @@
         "reducedMotion",
         "hideImages",
         "readFocus",
-        "muteMedia"
+        "muteMedia",
+        "blockFlashing"
       ].forEach((key) => {
         var _a2;
         const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
@@ -4519,6 +4554,7 @@
     hideImages: false,
     simpleLanguage: false,
     readFocus: false,
+    blockFlashing: false,
     muteMedia: false
   };
   var FONT_KEYS = [
@@ -4845,6 +4881,7 @@
     "ms-highlight-links",
     "ms-text-spacing",
     "ms-reduced-motion",
+    "ms-block-flashing",
     "ms-hide-images",
     "ms-reading-ruler",
     "ms-simple-language"
@@ -4894,6 +4931,13 @@
     if (on) host.setAttribute("data-ms-cursor", "");
     else host.removeAttribute("data-ms-cursor");
   }
+  function setHostFlag(name, on) {
+    var _a;
+    const host = (_a = document.querySelector) == null ? void 0 : _a.call(document, "#ms-container");
+    if (!host) return;
+    if (on) host.setAttribute(name, "");
+    else host.removeAttribute(name);
+  }
   function applyOptions(state2) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     const html = document.documentElement;
@@ -4929,6 +4973,8 @@
       else (_h = (_g = html.style) == null ? void 0 : _g.removeProperty) == null ? void 0 : _h.call(_g, prop);
     }
     html.classList.toggle("ms-reduced-motion", !!opts.reducedMotion);
+    html.classList.toggle("ms-block-flashing", !!opts.blockFlashing);
+    setHostFlag("data-ms-noflash", !!opts.blockFlashing);
     html.classList.toggle("ms-hide-images", !!opts.hideImages);
     html.classList.toggle("ms-reading-ruler", !!opts.readingRuler);
     html.classList.toggle("ms-simple-language", !!opts.simpleLanguage);
@@ -4960,6 +5006,7 @@
     var _a, _b;
     revertModoSimples();
     setHostCursor(false);
+    setHostFlag("data-ms-noflash", false);
     document.documentElement.classList.remove(
       ...TEXT_SCALE_CLASSES,
       ...THEME_CLASSES,
@@ -5237,6 +5284,17 @@
     el.autoplay = false;
     if (!el.paused) el.pause();
   }
+  function pauseAutoplay(root = document) {
+    let n = 0;
+    walk(root, (el) => {
+      var _a;
+      if ((_a = el.matches) == null ? void 0 : _a.call(el, MEDIA_SELECTOR)) {
+        muteOne(el);
+        n += 1;
+      }
+    });
+    return n;
+  }
   function restoreMedia() {
     for (const ref of _tracked) {
       const el = ref.deref();
@@ -5362,6 +5420,151 @@
     restoreMedia();
   }
 
+  // src/features/flashBlock.js
+  var OWN_HOST2 = "#ms-container";
+  var STILL_ATTR = "data-ms-gif-still";
+  var _stills = /* @__PURE__ */ new Map();
+  var _revealed = /* @__PURE__ */ new WeakSet();
+  var _marquees = /* @__PURE__ */ new Set();
+  var _observer3 = null;
+  var _on3 = false;
+  var isOwn2 = (el) => {
+    var _a;
+    return !!((_a = el.closest) == null ? void 0 : _a.call(el, OWN_HOST2));
+  };
+  function isGif(img) {
+    const src = img.currentSrc || img.getAttribute("src") || "";
+    if (/^data:image\/gif/i.test(src)) return true;
+    try {
+      return /\.gif$/i.test(new URL(src, location.href).pathname);
+    } catch (_) {
+      return false;
+    }
+  }
+  function reveal(btn) {
+    var _a;
+    const img = _stills.get(btn);
+    if (!img) return;
+    _revealed.add(img);
+    _stills.delete(btn);
+    btn.replaceWith(img);
+    (_a = img.focus) == null ? void 0 : _a.call(img, { preventScroll: true });
+  }
+  function freeze(img) {
+    if (!_on3 || _revealed.has(img) || !img.isConnected || isOwn2(img)) return;
+    if (!img.complete || !img.naturalWidth) return;
+    const rect = img.getBoundingClientRect();
+    const w = Math.round(rect.width || img.naturalWidth);
+    const h = Math.round(rect.height || img.naturalHeight);
+    const canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    canvas.setAttribute("aria-hidden", "true");
+    Object.assign(canvas.style, {
+      width: "100%",
+      height: "100%",
+      display: "block"
+    });
+    const first = document.createElement("img");
+    first.onload = () => {
+      var _a;
+      return (_a = canvas.getContext("2d")) == null ? void 0 : _a.drawImage(first, 0, 0);
+    };
+    first.src = img.currentSrc || img.src;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.setAttribute(STILL_ATTR, "");
+    const alt = img.getAttribute("alt") || "";
+    btn.setAttribute(
+      "aria-label",
+      alt ? `${STRINGS.gifShowLabel}: ${alt}` : STRINGS.gifShowLabel
+    );
+    Object.assign(btn.style, {
+      position: "relative",
+      display: img.style.display || "inline-block",
+      width: `${w}px`,
+      height: `${h}px`,
+      maxWidth: "100%",
+      padding: "0",
+      border: "0",
+      background: "none",
+      cursor: "pointer",
+      verticalAlign: "bottom"
+    });
+    const tag = document.createElement("span");
+    tag.setAttribute("aria-hidden", "true");
+    tag.textContent = `\u25B6 ${STRINGS.gifShowLabel}`;
+    Object.assign(tag.style, {
+      position: "absolute",
+      left: "6px",
+      bottom: "6px",
+      padding: "0.2rem 0.5rem",
+      background: "#0B2C5F",
+      color: "#fff",
+      font: "600 0.85rem/1.2 system-ui, sans-serif",
+      borderRadius: "4px"
+    });
+    btn.append(canvas, tag);
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      reveal(btn);
+    });
+    _stills.set(btn, img);
+    img.replaceWith(btn);
+  }
+  function handleImg(img) {
+    if (!isGif(img) || _revealed.has(img)) return;
+    if (img.complete && img.naturalWidth) freeze(img);
+    else img.addEventListener("load", () => freeze(img), { once: true });
+  }
+  function handleMarquee(m) {
+    if (typeof m.stop !== "function" || _marquees.has(m)) return;
+    m.stop();
+    _marquees.add(m);
+  }
+  function scan3(root) {
+    if (root.nodeType !== 1 && root.nodeType !== 9) return;
+    const all = root.nodeType === 1 ? [root, ...root.querySelectorAll("*")] : root.querySelectorAll("*");
+    for (const el of all) {
+      if (el.id === "ms-container" || isOwn2(el)) continue;
+      if (el.tagName === "IMG") handleImg(el);
+      else if (el.tagName === "MARQUEE") handleMarquee(el);
+    }
+    pauseAutoplay(root);
+  }
+  function startFlashBlock() {
+    if (_on3) return;
+    _on3 = true;
+    _observer3 = new MutationObserver((records) => {
+      var _a;
+      for (const r of records) {
+        for (const n of r.addedNodes) {
+          if (n.nodeType === 1 && !isOwn2(n) && !((_a = n.hasAttribute) == null ? void 0 : _a.call(n, STILL_ATTR))) {
+            scan3(n);
+          }
+        }
+      }
+    });
+    _observer3.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+    scan3(document);
+  }
+  function stopFlashBlock({ keepMedia = false } = {}) {
+    var _a;
+    if (!_on3) return;
+    _on3 = false;
+    _observer3 == null ? void 0 : _observer3.disconnect();
+    _observer3 = null;
+    for (const [btn, img] of _stills) btn.replaceWith(img);
+    _stills.clear();
+    for (const m of _marquees) (_a = m.start) == null ? void 0 : _a.call(m);
+    _marquees.clear();
+    if (!keepMedia) restoreMedia();
+  }
+
   // src/modo-simples.js
   var ModoSimples = class {
     constructor(userConfig = {}) {
@@ -5408,6 +5611,7 @@
       }
       if (currentState.options.readFocus) startFocusReader();
       if (currentState.options.muteMedia) startMediaMute();
+      if (currentState.options.blockFlashing) startFlashBlock();
       if (currentState.modoSimples) {
         this._activateModoSimples(currentState, { announce: false });
         this._announceRestoredOnce();
@@ -5696,7 +5900,8 @@
         "hideImages",
         "simpleLanguage",
         "readFocus",
-        "muteMedia"
+        "muteMedia",
+        "blockFlashing"
       ];
       const optionChanged = optionKeys.some(
         (k) => prev.options[k] !== next.options[k]
@@ -5711,6 +5916,10 @@
       if (prev.options.muteMedia !== next.options.muteMedia) {
         if (next.options.muteMedia) startMediaMute();
         else stopMediaMute();
+      }
+      if (prev.options.blockFlashing !== next.options.blockFlashing) {
+        if (next.options.blockFlashing) startFlashBlock();
+        else stopFlashBlock({ keepMedia: next.options.muteMedia });
       }
       if (prev.options.readFocus !== next.options.readFocus) {
         if (next.options.readFocus) startFocusReader();

@@ -82,6 +82,7 @@ describe('Desligar tudo', () => {
       simpleLanguage: false,
       readFocus: false,
       muteMedia: false,
+      blockFlashing: false,
     });
     const saved = JSON.parse(stored('state'));
     assert.equal(saved.modoSimples, false);

@@ -802,6 +802,13 @@ export const UI_CSS = `
     :host([data-ms-cursor]) :is(button, a[href], summary, select, label, [role="button"], [role="switch"], [role="radio"], [role="tab"]) * {
       cursor: var(--ms-cur-hand) !important;
     }
+    /* F7d: bloqueio de intermitência vale também para a UI da lib (host recebe o atributo) */
+    :host([data-ms-noflash]) *,
+    :host([data-ms-noflash]) *::before,
+    :host([data-ms-noflash]) *::after {
+      animation: none !important;
+      transition: none !important;
+    }
   `;
 
 export const PAGE_CSS = `
@@ -1045,6 +1052,15 @@ export const PAGE_CSS = `
       scroll-behavior: auto !important;
     }
 
+
+    /* ── Bloqueio de intermitência (F7d): corta animação e transição do site ── */
+    html.ms-block-flashing *,
+    html.ms-block-flashing *::before,
+    html.ms-block-flashing *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
     /* ── Highlight links ─────────────────────────────────────────────────── */
     html.ms-highlight-links a:not([data-ms-hidden]) {
       text-decoration: underline !important;

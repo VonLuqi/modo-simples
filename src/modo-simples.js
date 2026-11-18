@@ -71,6 +71,7 @@ import {
 import { stopSpeaking, isSpeaking } from './features/tts.js';
 import { startFocusReader, stopFocusReader } from './features/focusReader.js';
 import { startMediaMute, stopMediaMute } from './features/mediaMute.js';
+import { startFlashBlock, stopFlashBlock } from './features/flashBlock.js';
 import {
   startManualSelect,
   stopManualSelect,
@@ -130,6 +131,7 @@ class ModoSimples {
     }
     if (currentState.options.readFocus) startFocusReader();
     if (currentState.options.muteMedia) startMediaMute();
+    if (currentState.options.blockFlashing) startFlashBlock();
 
     if (currentState.modoSimples) {
       this._activateModoSimples(currentState, { announce: false });
@@ -477,6 +479,7 @@ class ModoSimples {
       'simpleLanguage',
       'readFocus',
       'muteMedia',
+      'blockFlashing',
     ];
     const optionChanged = optionKeys.some(
       (k) => prev.options[k] !== next.options[k],
@@ -493,6 +496,11 @@ class ModoSimples {
     if (prev.options.muteMedia !== next.options.muteMedia) {
       if (next.options.muteMedia) startMediaMute();
       else stopMediaMute();
+    }
+
+    if (prev.options.blockFlashing !== next.options.blockFlashing) {
+      if (next.options.blockFlashing) startFlashBlock();
+      else stopFlashBlock({ keepMedia: next.options.muteMedia });
     }
 
     if (prev.options.readFocus !== next.options.readFocus) {

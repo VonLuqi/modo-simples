@@ -4,6 +4,14 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 
 ## [Unreleased]
 
+### Adicionado (F7d — "Bloquear animações e GIFs", segurança para epilepsia)
+
+- **Opção `blockFlashing`** (booleano, padrão desligado, persistida, zerada pelo "Desligar tudo", anunciada ao alternar; independente de `reducedMotion` e `muteMedia`) com interruptor na seção "Movimento e imagens". Mais forte que "Reduzir movimento": a classe `ms-block-flashing` no `<html>` aplica `animation: none`, `transition: none` e `scroll-behavior: auto` em todo o site e, via atributo `data-ms-noflash` no host `#ms-container`, na UI do próprio widget.
+- `<marquee>` para (`stop()`) e volta (`start()`) ao desligar; `<blink>` não anima (CSS).
+- **GIF animado** (`src` terminado em `.gif` ou `data:image/gif`) vira um botão com o 1º quadro (mesmo tamanho, texto alternativo mantido no rótulo, "▶ Mostrar animação"); clique, Enter ou Espaço mostra a animação. Desligar devolve o `<img>` original.
+- **Vídeo com autoplay** é pausado por `pauseAutoplay()` (F7c, sem duplicar lógica). Conteúdo que aparece depois é tratado por um observer próprio (`src/features/flashBlock.js`).
+- **Limites conhecidos:** GIF em `background-image` de CSS e GIF dentro de shadow roots **não** são congelados; GIF dentro de link não navega ao clicar no 1º quadro (o clique só mostra a animação); desligar nunca chama `play()` e, se "Pausar e mutar tudo" seguir ligado, o `muted` não é devolvido.
+
 ### Corrigido (F7a–c, revisão do QA T144)
 
 - **Aviso de confiança baixa** (UX-21) agora fica no **topo** da tela (embaixo cobria parte do texto e do "Fechar" com o botão flutuante e a dica dele no celular) e o texto entra na região `aria-live` depois da inserção, para o leitor de tela anunciar.
