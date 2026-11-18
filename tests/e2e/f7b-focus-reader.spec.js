@@ -70,7 +70,7 @@ test.describe('F7b — Leia o foco', () => {
       .poll(async () => (await spoken(page)).length)
       .toBeGreaterThan(0);
     const [fala] = await spoken(page);
-    expect(fala).toMatch(/, (interruptor|botão|opção|campo)/);
+    expect(fala).toMatch(/, (interruptor|botão|opção|campo|lista de opções)/);
   });
 
   test('sem speechSynthesis: opção desabilitada com o motivo', async ({

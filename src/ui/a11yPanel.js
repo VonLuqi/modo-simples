@@ -364,12 +364,18 @@ const CONTROLS = {
             <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-name">${S.panelVoiceSelectLabel}</label></div>
             <select class="ms-range-input" id="ms-voice-name" data-voice="voiceName"></select>
           </div>
-          ${VOICE_SLIDERS.map(
-            ([key, label]) => `<div class="ms-range">
-            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-${key}">${label}</label><span class="ms-a11y-control-state" data-state-for="${key}" aria-hidden="true"></span></div>
-            <input type="range" class="ms-range-input" id="ms-voice-${key}" data-voice="${key}">
-          </div>`,
-          ).join('')}
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-voiceRate">${S.panelVoiceRateLabel}</label><span class="ms-a11y-control-state" data-state-for="voiceRate" aria-hidden="true"></span></div>
+            <input type="range" class="ms-range-input" id="ms-voice-voiceRate" data-voice="voiceRate">
+          </div>
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-voicePitch">${S.panelVoicePitchLabel}</label><span class="ms-a11y-control-state" data-state-for="voicePitch" aria-hidden="true"></span></div>
+            <input type="range" class="ms-range-input" id="ms-voice-voicePitch" data-voice="voicePitch">
+          </div>
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-voiceVolume">${S.panelVoiceVolumeLabel}</label><span class="ms-a11y-control-state" data-state-for="voiceVolume" aria-hidden="true"></span></div>
+            <input type="range" class="ms-range-input" id="ms-voice-voiceVolume" data-voice="voiceVolume">
+          </div>
           <p class="ms-a11y-control-state" data-voice-note hidden>${S.panelVoiceUnsupported}</p>
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-test" aria-label="${S.panelVoiceTestLabel}">${S.panelVoiceTest}</button>
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-reset" aria-label="${S.panelVoiceResetLabel}">${S.panelVoiceReset}</button>
