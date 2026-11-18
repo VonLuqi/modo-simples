@@ -66,23 +66,38 @@ for (const vp of [
   test.describe(`lupa no tutorial (${vp.name}px)`, () => {
     test.use({ viewport: { width: vp.width, height: vp.height } });
 
-    test('o passo mostra a caixa da lupa sozinho, legível e fora do balão', async ({
-      site,
-    }) => {
-      const { page } = site;
-      await page.goto(INDEX);
-      await waitForLib(page);
-      await ateLupa(page);
-      await page.waitForTimeout(400);
-      await page.screenshot({ path: `test-results/lupa-${vp.name}.png` });
-      await expect(page.locator(BOX)).toBeVisible();
-      const info = await boxInfo(page);
-      expect(info.shown).toBe(true);
-      expect(info.text.length).toBeGreaterThan(5);
-      expect(info.font).toBeGreaterThanOrEqual(32);
-      expect(info.inView).toBe(true);
-      expect(info.overBalloon).toBe(false);
-    });
+    // fonte larga = o que o CI tem sem a Lexend (webfont bloqueada, fonte de reserva mais larga)
+    for (const larga of [false, true]) {
+      test(`o passo mostra a caixa da lupa sozinho, legível e fora do balão${larga ? ' (fonte larga, como no CI)' : ''}`, async ({
+        site,
+      }) => {
+        const { page } = site;
+        if (larga)
+          await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) =>
+            r.abort(),
+          );
+        await page.goto(INDEX);
+        await waitForLib(page);
+        if (larga) {
+          await page.addStyleTag({
+            content:
+              'html, body, body * { font-family: "DejaVu Sans", sans-serif !important; }',
+          });
+        }
+        await ateLupa(page);
+        await page.waitForTimeout(400);
+        await page.screenshot({
+          path: `test-results/lupa-${vp.name}${larga ? '-larga' : ''}.png`,
+        });
+        await expect(page.locator(BOX)).toBeVisible();
+        const info = await boxInfo(page);
+        expect(info.shown).toBe(true);
+        expect(info.text.length).toBeGreaterThan(5);
+        expect(info.font).toBeGreaterThanOrEqual(32);
+        expect(info.inView).toBe(true);
+        expect(info.overBalloon).toBe(false);
+      });
+    }
 
     test('a caixa some ao avançar e o estado do visitante é restaurado', async ({
       site,
