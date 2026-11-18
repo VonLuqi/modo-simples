@@ -59,6 +59,39 @@ export const STRINGS = Object.freeze({
   panelVoiceResetLabel: 'Voltar voz, velocidade, tom e volume ao padrão',
   panelVoiceUnsupported:
     'Este navegador não tem voz para ler. Tente outro navegador.',
+  // F10e — pausar/continuar e comandos de voz no painel
+  panelPause: 'Pausar',
+  panelPauseLabel: 'Pausar leitura',
+  panelResume: 'Continuar',
+  panelResumeLabel: 'Continuar leitura',
+  panelVcTitle: 'Comandos de voz',
+  panelVcDesc: 'Controle a leitura falando. Desligado até você ligar',
+  panelVcLabel: 'Comandos de voz',
+  panelVcUnsupported:
+    'Seu navegador não entende comandos de voz. Use Chrome ou Edge.',
+  panelVcListening: 'Ouvindo…',
+  panelVcBlocked:
+    'O microfone está bloqueado. Libere nas configurações do navegador.',
+  panelVcRevoke: 'Parar de enviar minha voz',
+  panelVcRevokeLabel: 'Parar de enviar minha voz e desligar comandos de voz',
+  panelVcShow: 'Ver comandos',
+  panelVcHide: 'Esconder comandos',
+  // lista separada por | (todas as chaves deste arquivo são texto)
+  panelVcCommands:
+    'ler página|parar|pausar|continuar|mais rápido|mais devagar|descer|subir|ligar modo simples|desligar modo simples|abrir painel|fechar painel|ajuda',
+  panelVcDownloadTitle: 'Baixar o português',
+  panelVcDownloadText:
+    'Para entender sua voz sem enviar nada para a internet, o navegador precisa baixar o português uma vez. Baixar agora?',
+  panelVcDownloadNow: 'Baixar',
+  panelVcDownloading: 'Baixando…',
+  panelVcDownloadFail: 'Não deu para baixar.',
+  panelVcUseInternet: 'Usar pela internet',
+  panelVcNotNow: 'Agora não',
+  panelVcCloudTitle: 'Enviar minha voz?',
+  panelVcCloudText:
+    'Neste navegador, o que você fala é enviado para a empresa do navegador (Google no Chrome, Microsoft no Edge) para ser entendido. O Modo Simples não guarda nada. Quer ligar mesmo assim?',
+  panelVcCloudYes: 'Ligar e enviar minha voz',
+  panelVcCloudNo: 'Não ligar',
   mediaOtherSiteNotice:
     'Este vídeo é de outro site. Não consigo tirar o som dele.',
   panelStrongFocusTitle: 'Foco bem visível',

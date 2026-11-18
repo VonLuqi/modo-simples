@@ -79,9 +79,27 @@ window.MSTutorialStrings = {
       text: 'Ligado: a página começa a ser lida em voz alta, bloco por bloco. Se o navegador bloquear o som, nada é forçado.',
     },
     {
+      tool: { t: 'pause' },
+      title: 'Pausar e continuar a leitura',
+      text: 'Enquanto a página é lida, aparece o botão Pausar. Ele para a leitura e vira Continuar, que retoma do mesmo ponto.',
+    },
+    {
       tool: { t: 'switch', o: 'readFocus' },
       title: 'Ler o que recebe o foco',
       text: 'Ligado: ao navegar com Tab, cada elemento focado é lido em voz alta.',
+    },
+    {
+      tool: {
+        t: 'show',
+        sel: '[role="group"][aria-labelledby="ms-label-voice"]',
+      },
+      title: 'Estúdio de Voz',
+      text: 'Aqui você escolhe a voz, a velocidade, o tom e o volume da leitura, e ouve um exemplo em Testar voz. Fica salvo. Nada foi alterado agora.',
+    },
+    {
+      tool: { t: 'show', sel: '[data-option="voiceCommands"]' },
+      title: 'Comandos de voz',
+      text: 'Você pode controlar a leitura falando, como "pausar" ou "mais rápido". Fica desligado até você ligar, e o painel avisa antes de usar o microfone. Nada foi ligado agora.',
     },
 
     // ── Cores e destaque ────────────────────────────────────────────────

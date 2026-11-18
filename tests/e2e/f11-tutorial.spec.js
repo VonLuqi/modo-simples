@@ -9,7 +9,7 @@ import { test, expect, waitForLib, expectNoNewViolations } from './helpers.js';
 const INDEX = '/examples/index.html';
 const PESQUISA = '/examples/pesquisa.html';
 const FORM = 'https://forms.cloud.microsoft/r/ZuaZ4S0i9t';
-const STEPS = 31;
+const STEPS = 34;
 const KEY = 'ms-demo-tutorial-seen';
 const CORNER_KEY = 'ms-demo-tutorial-corner';
 const PAGES = [
@@ -351,7 +351,7 @@ for (const perfil of [false, true]) {
     const before = await uiState(page);
 
     await iniciar(page);
-    await avancar(page, 21); // 21 = grade de mouse
+    await avancar(page, 24); // 24 = grade de mouse
     expect(await page.locator('#ms-mouse-grid').count()).toBe(1);
     await page.keyboard.press('Escape');
     await expect(tut(page)).toHaveCount(0);
@@ -360,7 +360,7 @@ for (const perfil of [false, true]) {
   });
 }
 
-test('Esc no teclado virtual (passo 22): fecha o teclado e restaura tudo', async ({
+test('Esc no teclado virtual (passo 25): fecha o teclado e restaura tudo', async ({
   site,
 }) => {
   test.setTimeout(120_000);
@@ -369,7 +369,7 @@ test('Esc no teclado virtual (passo 22): fecha o teclado e restaura tudo', async
   await waitForLib(page);
   const before = await uiState(page);
   await iniciar(page);
-  await avancar(page, 22);
+  await avancar(page, 25);
   await expect(page.locator('#ms-virtual-keyboard')).toHaveCount(1);
   await page.keyboard.press('Escape');
   await expect(tut(page)).toHaveCount(0);
@@ -484,7 +484,7 @@ for (const [w, h] of [
     const peek = page.locator('.ms-tut-peek');
 
     // passo 22: teclado virtual
-    await avancar(page, 22);
+    await avancar(page, 25);
     const vk = page.locator('#ms-virtual-keyboard');
     const demo = page.locator('.ms-tut-demo');
     await expect(demo).toBeVisible();
@@ -494,7 +494,7 @@ for (const [w, h] of [
     expect(cruza(bb, await vk.boundingBox()), 'balão cobre o teclado').toBe(
       false,
     );
-    await shot(22);
+    await shot(25);
     // digitar com o teclado da tela
     await vk.getByRole('button', { name: 'q', exact: true }).click();
     await expect(demo).toHaveValue('q');
@@ -522,8 +522,8 @@ for (const [w, h] of [
     ).toBe(false);
     expect(aberto.y + aberto.height).toBeLessThanOrEqual(h);
 
-    // passo 28: cartão de atalhos
-    await avancar(page, 28, 23);
+    // passo 31: cartão de atalhos
+    await avancar(page, 31, 26);
     const rows = await page
       .locator('#ms-shortcuts-card li, #ms-shortcuts-card button')
       .evaluateAll((ns) =>
@@ -533,14 +533,14 @@ for (const [w, h] of [
         }),
       );
     expect(rows.length).toBeGreaterThan(5);
-    const b28 = await balloon(page).boundingBox();
+    const b31 = await balloon(page).boundingBox();
     for (const r of rows) {
-      expect(cruza(b28, r), 'balão cobre linha do cartão').toBe(false);
+      expect(cruza(b31, r), 'balão cobre linha do cartão').toBe(false);
     }
     // T187: nem o título do cartão fica sob o balão
     const cartao = await page.locator('#ms-shortcuts-card').boundingBox();
-    expect(cruza(b28, cartao), 'balão encosta no cartão').toBe(false);
-    await shot(28);
+    expect(cruza(b31, cartao), 'balão encosta no cartão').toBe(false);
+    await shot(31);
   });
 }
 
@@ -626,7 +626,7 @@ test('sobreposições: balão livre do conteúdo, sem anel velho, teclado virtua
   await iniciar(page);
   const steps = await getSteps(page);
   const vp = page.viewportSize();
-  const shots = new Set([6, 20, 21, 22, 28]);
+  const shots = new Set([6, 23, 24, 25, 31]);
   const cruza = (a, b) =>
     a.x < b.x + b.width &&
     b.x < a.x + a.width &&

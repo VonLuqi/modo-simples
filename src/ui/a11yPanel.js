@@ -6,7 +6,7 @@
  */
 
 import { trapFocus } from '../utils/focus.js';
-import { STRINGS as S } from './strings.js';
+import { STRINGS as S, VOICE_CMD_STRINGS as VC } from './strings.js';
 import { TYPO_LIMITS } from '../core/state.js';
 import { isFocusReaderSupported } from '../features/focusReader.js';
 import {
@@ -16,6 +16,16 @@ import {
   onVoicesChanged,
   previewVoice,
 } from '../features/voice.js';
+import {
+  isPaused,
+  isReadingMain,
+  pauseSpeaking,
+  resumeSpeaking,
+} from '../features/tts.js';
+import {
+  getRecognitionMode,
+  installLocalModel,
+} from '../features/voiceCommands.js';
 import { createPageOutline } from '../features/pageOutline.js';
 import { PROFILES } from '../core/profiles.js';
 import { contrastRatio, effectiveColors } from '../utils/colorContrast.js';
@@ -262,6 +272,10 @@ const CONTROLS = {
   speak: {
     html: `<button type="button" class="ms-btn-ouvir ms-tile" data-action="speak" aria-label="${S.panelVoiceLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>')}</span><span class="ms-tile-label" data-speak-text>${S.panelVoiceButton}</span></button>`,
   },
+  // F10e: aparece só enquanto o "Ouvir" lê; alterna Pausar/Continuar (display:none via JS: .ms-tile é flex)
+  pause: {
+    html: `<button type="button" class="ms-tile" data-action="pause" hidden style="display:none" aria-label="${S.panelPauseLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M8 5v14"/><path d="M16 5v14"/>')}</span><span class="ms-tile-label" data-pause-text>${S.panelPause}</span></button>`,
+  },
   readFocus: {
     html: switchTile({
       option: 'readFocus',
@@ -381,6 +395,27 @@ const CONTROLS = {
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-reset" aria-label="${S.panelVoiceResetLabel}">${S.panelVoiceReset}</button>
         </div>`,
   },
+  // F10e: interruptor próprio (fluxo com avisos no JS) + linha de status/revogar/lista de comandos
+  voiceCommands: {
+    html: switchTile({
+      option: 'voiceCommands',
+      title: S.panelVcTitle,
+      label: S.panelVcLabel,
+      desc: S.panelVcDesc,
+      icon: svgIcon(
+        '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/>',
+      ),
+    }),
+  },
+  voiceCommandsMore: {
+    html: `
+        <div class="ms-a11y-block--span">
+          <p class="ms-a11y-control-state" data-vc-status role="status" aria-live="polite"></p>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="vc-revoke" hidden style="display:none" aria-label="${S.panelVcRevokeLabel}">${S.panelVcRevoke}</button>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="vc-commands" aria-expanded="false" aria-controls="ms-vc-commands">${S.panelVcShow}</button>
+          <ul class="ms-a11y-control-state" id="ms-vc-commands" data-vc-list hidden></ul>
+        </div>`,
+  },
   textSpacing: {
     html: switchTile({
       option: 'textSpacing',
@@ -473,8 +508,11 @@ const SECTIONS = [
       'textSpacing',
       'readingRuler',
       'speak',
+      'pause',
       'readFocus',
       'voiceStudio',
+      'voiceCommands',
+      'voiceCommandsMore',
       'typography',
     ],
   },
@@ -853,6 +891,217 @@ export function createA11yPanel({
     .addEventListener('click', () =>
       Object.entries(VOICE_DEFAULTS).forEach(([k, v]) => onSetOption(k, v)),
     );
+
+  // F10e: Pausar/Continuar a leitura (só aparece enquanto o "Ouvir" lê)
+  const setShown = (el, on) => {
+    el.hidden = !on;
+    el.style.display = on ? '' : 'none';
+  };
+  const pauseBtn = panel.querySelector('[data-action="pause"]');
+  pauseBtn.addEventListener('click', () => {
+    if (isPaused()) resumeSpeaking();
+    else pauseSpeaking();
+  });
+
+  // F10e: comandos de voz — liga só depois do aviso certo (local / baixar / internet)
+  const vcSwitch = panel.querySelector('[data-option="voiceCommands"]');
+  const vcStatus = panel.querySelector('[data-vc-status]');
+  const vcRevoke = panel.querySelector('[data-action="vc-revoke"]');
+  const vcToggleBtn = panel.querySelector('[data-action="vc-commands"]');
+  const vcList = panel.querySelector('[data-vc-list]');
+  S.panelVcCommands.split('|').forEach((c) => {
+    const li = document.createElement('li');
+    li.textContent = `“${c}”`;
+    vcList.appendChild(li);
+  });
+  vcToggleBtn.addEventListener('click', () => {
+    const open = vcToggleBtn.getAttribute('aria-expanded') !== 'true';
+    vcToggleBtn.setAttribute('aria-expanded', String(open));
+    vcToggleBtn.textContent = open ? S.panelVcHide : S.panelVcShow;
+    vcList.hidden = !open;
+  });
+  let recMode = null; // 'local' | 'download' | 'cloud' | 'none'
+  let vcOn = false;
+  let vcConsent = false;
+  let vcNote = ''; // 'blocked' | 'error' quando o núcleo desligou sozinho
+  let vcUserOff = false; // desligou por ação da pessoa (não é falha)
+  let lastSync = null;
+  // sem consultar o navegador ao criar o painel (available() só quando a pessoa clica):
+  // "none" = sem SpeechRecognition ou página sem HTTPS (mesma regra de getRecognitionMode)
+  if (
+    !(globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition) ||
+    globalThis.isSecureContext === false
+  ) {
+    recMode = 'none';
+  }
+  const renderVcStatus = () => {
+    vcStatus.textContent = vcOn
+      ? S.panelVcListening
+      : vcNote === 'blocked'
+        ? S.panelVcBlocked
+        : vcNote === 'error'
+          ? VC.status_error
+          : '';
+  };
+
+  // Diálogo próprio (role=dialog, modal): o resto do painel fica inerte, então o Tab não escapa
+  let dialogEl = null;
+  const closeDialog = () => {
+    if (!dialogEl) return;
+    dialogEl.remove();
+    dialogEl = null;
+    [...panel.children].forEach((c) => c.removeAttribute('inert'));
+    vcSwitch.focus();
+  };
+  const openDialog = ({ title, text, buttons }) => {
+    if (dialogEl) {
+      dialogEl.remove();
+      dialogEl = null;
+    }
+    const el = document.createElement('div');
+    el.className = 'ms-a11y-dialog';
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'true');
+    el.setAttribute('aria-labelledby', 'ms-vc-dlg-title');
+    el.setAttribute('aria-describedby', 'ms-vc-dlg-text');
+    Object.assign(el.style, {
+      position: 'absolute',
+      inset: '0',
+      zIndex: '5',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '12px',
+      boxSizing: 'border-box',
+      overflow: 'auto',
+      background: 'rgba(11, 44, 95, 0.6)',
+    });
+    const card = document.createElement('div');
+    Object.assign(card.style, {
+      background: '#fff',
+      color: '#1e293b',
+      borderRadius: '12px',
+      padding: '16px',
+      width: '100%',
+      maxHeight: '100%',
+      overflow: 'auto',
+      boxSizing: 'border-box',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px',
+    });
+    const h = document.createElement('h3');
+    h.id = 'ms-vc-dlg-title';
+    h.textContent = title;
+    Object.assign(h.style, { margin: '0', fontSize: '1.05em' });
+    const p = document.createElement('p');
+    p.id = 'ms-vc-dlg-text';
+    p.textContent = text;
+    p.style.margin = '0';
+    const live = document.createElement('p');
+    live.setAttribute('role', 'status');
+    live.style.margin = '0';
+    card.append(h, p, live);
+    const btns = buttons.map((b) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ms-a11y-action';
+      btn.textContent = b.label;
+      btn.style.minHeight = '44px';
+      btn.style.width = '100%';
+      btn.addEventListener('click', () => {
+        if (b.run) b.run({ live, btns });
+        else closeDialog();
+      });
+      card.appendChild(btn);
+      return btn;
+    });
+    el.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation(); // Esc cancela só o aviso; o painel continua aberto
+      closeDialog();
+    });
+    el.appendChild(card);
+    [...panel.children].forEach((c) => c.setAttribute('inert', ''));
+    panel.appendChild(el);
+    dialogEl = el;
+    btns[0].focus();
+    return el;
+  };
+  const turnOn = () => {
+    vcNote = '';
+    onSetOption('voiceCommands', true);
+  };
+  const askCloud = (prefix = '') => {
+    const me = openDialog({
+      title: S.panelVcCloudTitle,
+      text: `${prefix}${S.panelVcCloudText}`.trim(),
+      buttons: [
+        {
+          label: S.panelVcCloudYes,
+          run: () => {
+            closeDialog();
+            onSetOption('voiceCloudConsent', true); // 1º o consentimento, depois ligar
+            turnOn();
+          },
+        },
+        { label: S.panelVcCloudNo },
+      ],
+    });
+    return me;
+  };
+  const askDownload = () => {
+    const me = openDialog({
+      title: S.panelVcDownloadTitle,
+      text: S.panelVcDownloadText,
+      buttons: [
+        {
+          label: S.panelVcDownloadNow,
+          run: ({ live, btns }) => {
+            // instalação começa dentro do clique (exige gesto do usuário)
+            const p = installLocalModel();
+            btns.forEach((b) => (b.disabled = true));
+            live.textContent = S.panelVcDownloading;
+            p.then((ok) => {
+              if (dialogEl !== me) return; // Esc durante o download
+              if (ok) {
+                closeDialog();
+                turnOn();
+              } else askCloud(`${S.panelVcDownloadFail} `);
+            });
+          },
+        },
+        { label: S.panelVcUseInternet, run: () => askCloud() },
+        { label: S.panelVcNotNow },
+      ],
+    });
+  };
+  vcSwitch.addEventListener('click', async () => {
+    if (vcOn) {
+      vcUserOff = true;
+      vcNote = '';
+      onSetOption('voiceCommands', false);
+      return;
+    }
+    const mode = await getRecognitionMode();
+    recMode = mode;
+    if (mode === 'local' || (mode === 'cloud' && vcConsent)) turnOn();
+    else if (mode === 'download') askDownload();
+    else if (mode === 'cloud') askCloud();
+    else sync(...lastSync); // 'none': o interruptor fica desligado com o motivo
+  });
+  vcRevoke.addEventListener('click', () => {
+    vcUserOff = true;
+    vcNote = '';
+    onSetOption('voiceCommands', false);
+    onSetOption('voiceCloudConsent', false);
+  });
+  panel
+    .querySelector('[data-action="reset-all"]')
+    .addEventListener('click', () => {
+      vcUserOff = true;
+    });
   panel
     .querySelector('[data-action="move-side"]')
     .addEventListener('click', () => onMoveSide?.());
@@ -924,6 +1173,7 @@ export function createA11yPanel({
   });
 
   panel.querySelectorAll('.ms-switch[data-option]').forEach((btn) => {
+    if (btn.getAttribute('data-option') === 'voiceCommands') return; // F10e: fluxo próprio
     btn.addEventListener('click', () => {
       const key = btn.getAttribute('data-option');
       const next = btn.getAttribute('aria-checked') !== 'true';
@@ -941,6 +1191,7 @@ export function createA11yPanel({
    * @param {{ speaking?: boolean }} [ui]
    */
   function sync(s, ui = {}) {
+    lastSync = [s, ui];
     const modoBtn = panel.querySelector('[data-action="modo-simples"]');
     if (modoBtn) {
       modoBtn.setAttribute('aria-checked', String(!!s.modoSimples));
@@ -1060,6 +1311,7 @@ export function createA11yPanel({
       'blockFlashing',
       'strongFocus',
       'showShortcuts',
+      'voiceCommands',
     ].forEach((key) => {
       const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
       if (!btn) return;
@@ -1103,6 +1355,51 @@ export function createA11yPanel({
           el.setAttribute('title', S.panelVoiceUnsupported);
         });
       panel.querySelector('[data-voice-note]').hidden = false;
+    }
+
+    // F10e: comandos de voz (status, motivo de desligar sozinho, revogar consentimento)
+    const wasOn = vcOn;
+    vcOn = !!s.options?.voiceCommands;
+    vcConsent = !!s.options?.voiceCloudConsent;
+    if (vcOn) vcNote = '';
+    else if (wasOn && !vcUserOff) {
+      // o núcleo desligou sozinho: mic sem permissão = bloqueado; senão, os comandos pararam
+      vcNote = 'error';
+      navigator.permissions
+        ?.query({ name: 'microphone' })
+        .then((r) => {
+          if (r.state !== 'granted') vcNote = 'blocked';
+        })
+        .catch(() => {})
+        .finally(renderVcStatus);
+    }
+    if (!vcOn) vcUserOff = false;
+    renderVcStatus();
+    setShown(vcRevoke, vcConsent);
+    if (recMode === 'none') {
+      vcSwitch.disabled = true;
+      vcSwitch.setAttribute('title', S.panelVcUnsupported);
+      const st = vcSwitch.querySelector('[data-state]');
+      if (st) st.textContent = S.panelReadFocusUnsupportedState;
+      const d = panel.querySelector('#ms-desc-voiceCommands');
+      if (d) d.textContent = S.panelVcUnsupported;
+      vcStatus.textContent = S.panelVcUnsupported;
+    }
+
+    // Pausar/Continuar: só enquanto o "Ouvir" lê
+    const reading = isReadingMain();
+    setShown(pauseBtn, reading);
+    if (reading) {
+      const paused = isPaused();
+      pauseBtn.querySelector('[data-pause-text]').textContent = paused
+        ? S.panelResume
+        : S.panelPause;
+      pauseBtn.setAttribute(
+        'aria-label',
+        paused ? S.panelResumeLabel : S.panelPauseLabel,
+      );
+    } else if (panel.getRootNode?.().activeElement === pauseBtn) {
+      panel.querySelector('[data-action="speak"]').focus();
     }
 
     // Texto de estado dos radiogroups (valor atual); aria-hidden: aria-checked já o anuncia

@@ -351,7 +351,10 @@
         },
       };
     }
-    if (tool.t === 'speak') {
+    // F10e: só destaca (nunca liga nem pede permissão): Estúdio de Voz e Comandos de voz
+    if (tool.t === 'show') return {};
+    // 'pause': começa a leitura como 'speak' para o botão Pausar/Continuar aparecer
+    if (tool.t === 'speak' || tool.t === 'pause') {
       b = q('[data-action="speak"]');
       var label = b.getAttribute('aria-label');
       b.click();
@@ -411,6 +414,8 @@
       return q('[role="group"][aria-labelledby="ms-label-typo"]');
     }
     if (t.t === 'speak') return q('[data-action="speak"]');
+    if (t.t === 'pause') return q('[data-action="pause"]');
+    if (t.t === 'show') return q(t.sel);
     if (t.t === 'outline') return q('[data-action="page-outline"]');
     if (t.t === 'grid') return q('[data-action="mouse-grid"]');
     if (t.t === 'vk') return q('[data-action="virtual-keyboard"]');
@@ -868,7 +873,9 @@
           window.innerWidth < NARROW &&
           t0 !== 'grid' &&
           t0 !== 'vk' &&
-          t0 !== 'outline'
+          t0 !== 'outline' &&
+          t0 !== 'show' &&
+          t0 !== 'pause'
         ) {
           setPanelHidden(s, true); // o painel cobriria o efeito: só o balão fica
         }
