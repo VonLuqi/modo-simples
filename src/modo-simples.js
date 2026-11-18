@@ -853,6 +853,19 @@ export function bootModoSimples(win) {
 }
 
 /**
+ * Aplica as preferências salvas (classes no <html> + CSS da página) assim que o script roda,
+ * sem esperar o DOMContentLoaded — evita o flash do tema padrão (IMP-26). Só o que não depende
+ * do corpo da página: detecção, UI e Modo Simples continuam no boot normal.
+ * @param {Window} win
+ */
+export function applyEarlyPrefs(win) {
+  if (!win.document.documentElement || !win.document.head) return;
+  new ModoSimples(readPreBootConfig(win))._loadPersistedState();
+  injectPageStyles(getPageStyles());
+  applyOptions(state.get());
+}
+
+/**
  * Auto-boot ligado? Opt-out por `<script data-ms-autoboot="false">` ou
  * `window.ModoSimplesConfig = { autoboot: false }` (IMP-32).
  * @param {{ ModoSimplesConfig?: unknown }} win
@@ -873,6 +886,7 @@ if (typeof window !== 'undefined') {
   if (shouldAutoBoot(window, script)) {
     const boot = () => bootModoSimples(window);
     if (document.readyState === 'loading') {
+      applyEarlyPrefs(window);
       document.addEventListener('DOMContentLoaded', boot);
     } else {
       boot();

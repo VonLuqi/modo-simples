@@ -28,27 +28,28 @@ const defaults = {
    * of whether they match these selectors.
    */
   distractionSelectors: [
-    'header',
+    // IMP-20: nunca pega diálogos/modais (role=dialog|alertdialog, aria-modal), cookie/consent
+    // (o usuário precisa responder) nem iframes de conteúdo; header/nav só como cromo do site.
+    'header:not([role="dialog"]):not([role="alertdialog"]):not([aria-modal="true"])',
     'footer',
     'aside',
     '[role="complementary"]',
     '[role="banner"]',
     '[role="contentinfo"]',
-    'nav',
+    'nav:not([role="dialog"]):not([role="alertdialog"]):not([aria-modal="true"])',
     '.ad',
     '.ads',
     '.advertisement',
-    '[class*="banner"]:not([class*="page-banner"])',
-    '[class*="popup"]',
-    '[class*="overlay"]',
+    '[class*="banner"]:not([class*="page-banner"]):not([role="dialog"]):not([role="alertdialog"]):not([aria-modal="true"]):not([class*="cookie"]):not([class*="consent"])',
+    '[class*="popup"]:not([role="dialog"]):not([role="alertdialog"]):not([aria-modal="true"])',
+    '[class*="overlay"]:not([role="dialog"]):not([role="alertdialog"]):not([aria-modal="true"]):not([class*="modal"]):not([class*="dialog"])',
     '[class*="sidebar"]',
-    '[class*="cookie"]',
     '[class*="newsletter"]',
     '[class*="promo"]',
     '[class*="carousel"]',
     '[class*="slider"]',
     '.slider',
-    'iframe',
+    'iframe[src*="doubleclick"], iframe[src*="googlesyndication"], iframe[id^="google_ads"], iframe[title*="dvertis"]',
   ],
 
   /**
