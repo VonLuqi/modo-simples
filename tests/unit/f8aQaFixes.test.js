@@ -108,6 +108,7 @@ describe('M1 — cor efetiva (lado não escolhido ganha contraparte legível)', 
     state.set({ options: { customText: '#fef08a', customBg: '#ffffff' } });
     assert.match(warn.textContent, /Atenção: contraste baixo/);
     assert.match(warn.textContent, /Cor do texto/);
+    assert.match(warn.textContent, /Cor do texto \/ Cor do fundo:/); // fundo escolhido pelo usuário
     assert.match(warn.textContent, /1,2:1/);
     state.set({ options: { customHeading: '#bae6fd' } });
     assert.match(warn.textContent, /Cor dos títulos/);
@@ -132,6 +133,9 @@ describe('M1 — cor efetiva (lado não escolhido ganha contraparte legível)', 
     });
     assert.match(warn.textContent, /Cor dos títulos/);
     assert.match(warn.textContent, /1,0:1/);
+    // fundo não escolhido pelo usuário: o aviso diz "Fundo automático", não "Cor do fundo"
+    assert.match(warn.textContent, /Cor dos títulos \/ Fundo automático:/);
+    assert.equal(/Cor do fundo/.test(warn.textContent), false);
     // inverso: texto #000 + título #fff
     state.set({ options: { customText: '#000000', customHeading: '#ffffff' } });
     assert.match(warn.textContent, /Cor dos títulos/);

@@ -95,6 +95,7 @@ export const STRINGS = Object.freeze({
   panelCustomSwatchLabel: 'Usar cor',
   panelCustomPickerLabel: 'Escolher outra cor para',
   panelCustomOther: 'Personalizada',
+  panelAutoBgTitle: 'Fundo automático',
   panelContrastWarn: 'Atenção: contraste baixo (recomendado 4,5:1 ou mais) em',
 
   // sessionChrome.js

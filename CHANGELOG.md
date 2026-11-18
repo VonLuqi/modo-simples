@@ -15,7 +15,7 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 
 - **Cor personalizada completa o outro lado.** Escolher **qualquer** cor (texto, título ou fundo) passa a definir também a contraparte legível: só o fundo → texto preto/branco automático; só texto/título → fundo preto/branco automático (o que serve aos dois quando possível). Antes o lado não escolhido mantinha a cor do tema/site, o que podia deixar texto ilegível. A cor escolhida **nunca** é trocada; se o par efetivo (texto/fundo ou título/fundo) ficar abaixo de 4,5:1, o painel mostra um aviso (`role="status"`) sem bloquear.
 - **Links sob cor personalizada** ganham cor própria (≥ 4,5:1 sobre o fundo efetivo) e sublinhado, em vez de herdar a cor do texto; isso vence a cor de link dos temas (ex.: o `#0000cc` do Claro Alto Contraste).
-- Integradores com CSS próprio sobre `html` devem considerar as novas classes de raiz: `ms-theme-mono`, `ms-theme-lightHigh`, `ms-sat-low|high`, `ms-custom-text|heading|bg|link`, `ms-lh|ws|ls`, `ms-cursor-white|black` (e as variáveis `--ms-custom-*`, `--ms-lh|ws|ls`, `--ms-cur-arrow|hand`).
+- Integradores com CSS próprio sobre `html` devem considerar as novas classes de raiz: `ms-theme-mono`, `ms-theme-lightHigh`, `ms-sat-low|high`, `ms-custom-text|heading|bg|link`, `ms-lh|ws|ls`, `ms-cursor-white|black` (e as variáveis `--ms-custom-*`, `--ms-lh|ws|ls`, `--ms-cur-arrow|hand`). O host do widget (`#ms-container`) ganha o atributo `data-ms-cursor` enquanto o cursor grande está ligado.
 
 ### Corrigido (F8)
 

@@ -2420,6 +2420,7 @@
     panelCustomSwatchLabel: "Usar cor",
     panelCustomPickerLabel: "Escolher outra cor para",
     panelCustomOther: "Personalizada",
+    panelAutoBgTitle: "Fundo autom\xE1tico",
     panelContrastWarn: "Aten\xE7\xE3o: contraste baixo (recomendado 4,5:1 ou mais) em",
     // sessionChrome.js
     sessionOpenPanelLabel: "Abrir painel de acessibilidade",
@@ -3145,7 +3146,7 @@
     });
     panel.querySelector('[data-action="speak"]').addEventListener("click", () => onSpeak());
     function sync(s, ui = {}) {
-      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
       const modoBtn = panel.querySelector('[data-action="modo-simples"]');
       if (modoBtn) {
         modoBtn.setAttribute("aria-checked", String(!!s.modoSimples));
@@ -3219,8 +3220,9 @@
           [STRINGS.panelCustomTextTitle, eff.text],
           [STRINGS.panelCustomHeadingTitle, eff.heading]
         ].filter(([, c]) => c && eff.bg).map(([title, c]) => [title, contrastRatio(c, eff.bg)]).filter(([, r]) => r < 4.5);
+        const bgLabel = ((_e = s.options) == null ? void 0 : _e.customBg) ? STRINGS.panelCustomBgTitle : STRINGS.panelAutoBgTitle;
         warn.textContent = low.map(
-          ([title, r]) => `${STRINGS.panelContrastWarn} ${title} / ${STRINGS.panelCustomBgTitle}: ${r.toFixed(1).replace(".", ",")}:1.`
+          ([title, r]) => `${STRINGS.panelContrastWarn} ${title} / ${bgLabel}: ${r.toFixed(1).replace(".", ",")}:1.`
         ).join(" ");
       }
       [
@@ -3251,15 +3253,15 @@
       );
       setState(
         "colorTheme",
-        (_f = (_e = COLOR_THEMES.find((x) => x.value === theme)) == null ? void 0 : _e.label) != null ? _f : theme
+        (_g = (_f = COLOR_THEMES.find((x) => x.value === theme)) == null ? void 0 : _f.label) != null ? _g : theme
       );
       setState(
         "colorSaturation",
-        (_h = (_g = SATURATIONS.find((x) => x.value === sat)) == null ? void 0 : _g.label) != null ? _h : sat
+        (_i = (_h = SATURATIONS.find((x) => x.value === sat)) == null ? void 0 : _h.label) != null ? _i : sat
       );
       setState(
         "cursorStyle",
-        (_j = (_i = CURSORS.find((x) => x.value === cursor)) == null ? void 0 : _i.label) != null ? _j : cursor
+        (_k = (_j = CURSORS.find((x) => x.value === cursor)) == null ? void 0 : _j.label) != null ? _k : cursor
       );
       const speakBtn = panel.querySelector('[data-action="speak"]');
       if (speakBtn && ui.speaking !== void 0) {

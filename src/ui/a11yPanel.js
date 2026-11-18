@@ -723,10 +723,14 @@ export function createA11yPanel({
         .filter(([, c]) => c && eff.bg)
         .map(([title, c]) => [title, contrastRatio(c, eff.bg)])
         .filter(([, r]) => r < 4.5);
+      // fundo que o usuário não escolheu é o automático: dizer isso no aviso
+      const bgLabel = s.options?.customBg
+        ? S.panelCustomBgTitle
+        : S.panelAutoBgTitle;
       warn.textContent = low
         .map(
           ([title, r]) =>
-            `${S.panelContrastWarn} ${title} / ${S.panelCustomBgTitle}: ${r
+            `${S.panelContrastWarn} ${title} / ${bgLabel}: ${r
               .toFixed(1)
               .replace('.', ',')}:1.`,
         )

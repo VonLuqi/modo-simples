@@ -110,6 +110,7 @@ test.describe('T126 — aviso do par efetivo e região viva persistente', () => 
       .click();
     await expect(warn).toBeVisible();
     await expect(warn).toContainText('Cor dos títulos');
+    await expect(warn).toContainText('Fundo automático'); // fundo não escolhido
     // não bloqueou: o título foi aplicado
     expect(await css(page, 'h1', 'color')).toBe('rgb(0, 0, 0)');
 
