@@ -46,6 +46,28 @@ a:hover {
   outline-offset: 2px;
 }
 
+/* UX-26: skip link — fora da tela até receber foco; alvo ≥44px, contraste alto */
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 1rem;
+  background: #000;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: underline;
+  transform: translateY(-120%);
+}
+.skip-link:focus {
+  transform: none;
+  outline: 3px solid #ffe600;
+  outline-offset: 2px;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

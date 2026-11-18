@@ -950,9 +950,11 @@ export const PAGE_CSS = `
       color: #ffe600 !important;
     }
     html.ms-theme-yellowBlack body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
-      background-color: transparent !important;
       color: #ffe600 !important;
       border-color: #ffe600 !important;
+    }
+    html.ms-theme-yellowBlack body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *):not(img):not(picture):not(video):not(canvas):not(svg):not(svg *):not(iframe) {
+      background-color: transparent !important;
     }
     html.ms-theme-yellowBlack a,
     html.ms-theme-yellowBlack a:visited {
@@ -994,9 +996,11 @@ export const PAGE_CSS = `
       color: #f8fafc !important;
     }
     html.ms-theme-darkHigh body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
-      background-color: transparent !important;
       color: #f8fafc !important;
       border-color: #94a3b8 !important;
+    }
+    html.ms-theme-darkHigh body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *):not(img):not(picture):not(video):not(canvas):not(svg):not(svg *):not(iframe) {
+      background-color: transparent !important;
     }
     html.ms-theme-darkHigh a,
     html.ms-theme-darkHigh a:visited {
@@ -1036,9 +1040,11 @@ export const PAGE_CSS = `
       color: #3d3226 !important;
     }
     html.ms-theme-soft body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
-      background-color: transparent !important;
       color: #3d3226 !important;
       border-color: #c4b59a !important;
+    }
+    html.ms-theme-soft body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *):not(img):not(picture):not(video):not(canvas):not(svg):not(svg *):not(iframe) {
+      background-color: transparent !important;
     }
     html.ms-theme-soft a,
     html.ms-theme-soft a:visited {
@@ -1069,9 +1075,11 @@ export const PAGE_CSS = `
       color: #000000 !important;
     }
     html.ms-theme-lightHigh body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
-      background-color: transparent !important;
       color: #000000 !important;
       border-color: #000000 !important;
+    }
+    html.ms-theme-lightHigh body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *):not(img):not(picture):not(video):not(canvas):not(svg):not(svg *):not(iframe) {
+      background-color: transparent !important;
     }
     html.ms-theme-lightHigh a,
     html.ms-theme-lightHigh a:visited {
@@ -1131,7 +1139,7 @@ export const PAGE_CSS = `
     html.ms-custom-bg body {
       background-color: var(--ms-custom-bg) !important;
     }
-    html.ms-custom-bg body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+    html.ms-custom-bg body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *):not(img):not(picture):not(video):not(canvas):not(svg):not(svg *):not(iframe) {
       background-color: transparent !important;
     }
     html.ms-custom-text,
