@@ -1,106 +1,213 @@
 /**
- * Textos do tutorial guiado do demo (ADR-016 / F11b). SÓ do demo: este arquivo vive em examples/
- * e nunca entra em dist/ nem em src/. Todo texto do tutorial fica aqui (módulo único de strings).
+ * Textos do tutorial guiado do demo (ADR-016 / F11b, reescrito em T179). SÓ do demo: este arquivo
+ * vive em examples/ e nunca entra em dist/ nem em src/. Todo texto do tutorial fica aqui.
  * Carregue ANTES de js/tutorial.js.
+ *
+ * Cada passo de ferramenta liga UM ajuste do painel (tool), mostra o efeito na página e o
+ * desliga ao avançar. tool.t: switch | radio | range | speak | outline | grid | vk | profile | modo.
+ * Sem tool = passo de texto (intro / final); o final traz as ações de feedback.
  */
 window.MSTutorialStrings = {
   storageKey: 'ms-demo-tutorial-seen',
+  cornerKey: 'ms-demo-tutorial-corner', // '1' = botão do canto visível; 'x' = dispensado
   formUrl: 'https://forms.cloud.microsoft/r/ZuaZ4S0i9t',
 
   dialogLabel: 'Tutorial do painel de acessibilidade',
   skip: 'Pular',
   back: 'Voltar',
   next: 'Próximo',
-  done: 'Concluir',
+  explore: 'Explorar sozinho',
   startButton: 'Tutorial',
   startButtonLabel: 'Tutorial: conhecer o painel de acessibilidade',
   counter: (n, total) => 'Passo ' + n + ' de ' + total,
   announce: (n, total, title, text) =>
     'Passo ' + n + ' de ' + total + '. ' + title + '. ' + text,
   closed: 'Tutorial encerrado.',
+  exploreClosed: 'Tutorial encerrado. Explore o painel à vontade.',
+  peekHide: 'Recolher',
+  peekShow: 'Expandir',
+  peekLabel: 'Recolher ou expandir o texto do balão para ver melhor a página',
+  unsupported:
+    ' Este navegador não tem voz: o ajuste não pode ser mostrado aqui.',
 
-  formLink: 'Responder ao formulário de feedback',
+  formNow: 'Responder agora',
   formLinkNote: '(abre em uma nova aba)',
 
-  // target: chave resolvida em tutorial.js. title: fallback; para seções o título real vem do painel.
+  cornerLabel: 'Responder formulário de feedback (abre em uma nova aba)',
+  cornerText: 'Responder formulário',
+  cornerDismiss: 'Dispensar o botão do formulário',
+
   steps: [
     {
-      target: 'fab',
-      title: 'Botão de acessibilidade',
-      text: 'Este botão abre o painel. Você pode usá-lo com o mouse, o toque ou o teclado (Tab e Enter).',
-    },
-    {
+      dim: true,
       target: 'panel',
-      title: 'O painel',
-      text: 'Aqui ficam todos os ajustes. Cada ajuste liga e desliga com um toque, vale para o site todo e fica salvo neste navegador. Este tutorial só mostra: nada será alterado.',
+      title: 'Vamos experimentar o painel',
+      text: 'Cada ajuste será ligado para você ver o efeito na página e desligado quando você avançar. Ao terminar, tudo volta exatamente como estava. Esc ou Pular encerram a qualquer momento e também restauram tudo.',
+    },
+
+    // ── Texto e leitura ─────────────────────────────────────────────────
+    {
+      tool: { t: 'radio', o: 'textScale', v: '150', off: '100' },
+      title: 'Tamanho do texto',
+      text: 'Ligado em 150%: todo o texto da página ficou maior.',
     },
     {
-      target: 'section:text',
-      title: 'Texto e leitura',
-      text: 'Deixe a leitura confortável:',
-      tools: [
-        'tamanho do texto, fonte Lexend e espaçamentos',
-        'régua de foco de leitura',
-        'leitor de tela por voz',
-        'ler o que você seleciona',
-        'escolha de tipografia',
-      ],
+      tool: { t: 'switch', o: 'dyslexiaFont' },
+      title: 'Fonte para dislexia (Lexend)',
+      text: 'Ligada: a fonte da página mudou para a Lexend, de letras mais distintas.',
     },
     {
-      target: 'section:colors',
-      title: 'Cores e destaque',
-      text: 'Ajuste o visual da página:',
-      tools: [
-        'temas de contraste e saturação das cores',
-        'cor do texto, dos títulos e do fundo',
-        'estilo do cursor do mouse',
-        'destaque de links',
-      ],
+      tool: { t: 'switch', o: 'textSpacing' },
+      title: 'Espaçamento do texto',
+      text: 'Ligado: mais espaço entre linhas, palavras e letras.',
     },
     {
-      target: 'section:pageTools',
-      title: 'Ferramentas de página',
-      text: 'Facilite a navegação:',
-      tools: [
-        'destacar títulos e controles, aumentar alvos de clique',
-        'lupa de texto',
-        'estrutura da página (ir direto a uma seção)',
-        'grade de mouse (clique por células)',
-        'teclado virtual',
-      ],
+      tool: { t: 'range' },
+      title: 'Ajuste fino da tipografia',
+      text: 'Altura da linha, espaço entre palavras e entre letras, cada um em um controle. Aqui colocamos um valor para você ver.',
     },
     {
-      target: 'section:motion',
-      title: 'Movimento e imagens',
-      text: 'Reduza o que distrai:',
-      tools: [
-        'menos movimento',
-        'bloquear animações e GIFs',
-        'pausar e mutar vídeos e áudios',
-        'ocultar imagens',
-      ],
+      tool: { t: 'switch', o: 'readingRuler' },
+      title: 'Régua de leitura',
+      text: 'Ligada: uma faixa acompanha o mouse ou o foco e destaca a linha que você lê.',
     },
     {
-      target: 'section:keyboard',
-      title: 'Teclado e foco',
-      text: 'Para quem navega sem mouse:',
-      tools: ['foco bem visível', 'lista de atalhos do teclado'],
+      tool: { t: 'speak' },
+      title: 'Ouvir a página',
+      text: 'Ligado: a página começa a ser lida em voz alta, bloco por bloco. Se o navegador bloquear o som, nada é forçado.',
     },
     {
-      target: 'profiles',
+      tool: { t: 'switch', o: 'readFocus' },
+      title: 'Ler o que recebe o foco',
+      text: 'Ligado: ao navegar com Tab, cada elemento focado é lido em voz alta.',
+    },
+
+    // ── Cores e destaque ────────────────────────────────────────────────
+    {
+      tool: { t: 'radio', o: 'colorTheme', v: 'yellowBlack', off: 'senac' },
+      title: 'Tema de contraste',
+      text: 'Ligado o tema amarelo sobre preto, de alto contraste.',
+    },
+    {
+      tool: { t: 'radio', o: 'colorSaturation', v: 'auto', off: 'normal' },
+      title: 'Saturação das cores',
+      text: 'As cores da página mudaram de intensidade. Dá para suavizá-las ou tirá-las.',
+    },
+    {
+      tool: { t: 'radio', o: 'customText', v: 'auto', off: '' },
+      title: 'Cor do texto',
+      text: 'Escolhemos uma cor de texto para você ver. Você pode usar qualquer cor.',
+    },
+    {
+      tool: { t: 'radio', o: 'customHeading', v: 'auto', off: '' },
+      title: 'Cor dos títulos',
+      text: 'Os títulos da página ganharam uma cor própria.',
+    },
+    {
+      tool: { t: 'radio', o: 'customBg', v: 'auto', off: '' },
+      title: 'Cor do fundo',
+      text: 'O fundo da página mudou de cor.',
+    },
+    {
+      tool: { t: 'radio', o: 'cursorStyle', v: 'auto', off: 'default' },
+      title: 'Cursor do mouse',
+      text: 'O cursor do mouse ficou grande. Em telas de toque não há cursor.',
+    },
+    {
+      tool: { t: 'switch', o: 'highlightLinks' },
+      title: 'Destacar links',
+      text: 'Ligado: todos os links da página ganharam destaque.',
+    },
+
+    // ── Ferramentas de página ───────────────────────────────────────────
+    {
+      tool: { t: 'switch', o: 'highlightHeadings' },
+      title: 'Destacar títulos',
+      text: 'Ligado: os títulos da página ficaram marcados.',
+    },
+    {
+      tool: { t: 'switch', o: 'highlightControls' },
+      title: 'Destacar botões e campos',
+      text: 'Ligado: botões e campos de formulário ganharam contorno.',
+    },
+    {
+      tool: { t: 'switch', o: 'enlargeTargets' },
+      title: 'Aumentar áreas de clique',
+      text: 'Ligado: links e botões ficaram maiores e mais fáceis de acertar.',
+    },
+    {
+      tool: { t: 'switch', o: 'textMagnifier' },
+      title: 'Lupa de texto',
+      text: 'Ligada: passe o mouse ou o foco sobre um texto para vê-lo ampliado.',
+    },
+    {
+      tool: { t: 'outline' },
+      title: 'Estrutura da página',
+      text: 'Aberta a lista de títulos e regiões da página, para ir direto a uma seção.',
+    },
+    {
+      tool: { t: 'grid' },
+      title: 'Grade de mouse',
+      text: 'Aberta a grade: escolha uma célula (1 a 9) para chegar a qualquer ponto da tela sem mouse.',
+    },
+    {
+      tool: { t: 'vk' },
+      title: 'Teclado virtual',
+      text: 'Aberto o teclado na tela, fixo no rodapé, para digitar sem o teclado físico.',
+    },
+
+    // ── Movimento e imagens ─────────────────────────────────────────────
+    {
+      tool: { t: 'switch', o: 'reducedMotion' },
+      title: 'Menos movimento',
+      text: 'Ligado: transições e animações da página ficam reduzidas.',
+    },
+    {
+      tool: { t: 'switch', o: 'blockFlashing' },
+      title: 'Bloquear animações e GIFs',
+      text: 'Ligado: nada pisca nem se mexe sozinho. Indicado para epilepsia.',
+    },
+    {
+      tool: { t: 'switch', o: 'muteMedia' },
+      title: 'Pausar e mutar mídia',
+      text: 'Ligado: vídeos e áudios da página são pausados e mutados.',
+    },
+    {
+      tool: { t: 'switch', o: 'hideImages' },
+      title: 'Ocultar imagens',
+      text: 'Ligado: as imagens da página sumiram, ficam só os textos.',
+    },
+
+    // ── Teclado e foco ──────────────────────────────────────────────────
+    {
+      tool: { t: 'switch', o: 'strongFocus' },
+      title: 'Foco bem visível',
+      text: 'Ligado: o contorno do elemento em foco ficou grosso e fácil de achar ao usar Tab.',
+    },
+    {
+      tool: { t: 'switch', o: 'showShortcuts' },
+      title: 'Atalhos do teclado',
+      text: 'Ligado: um cartão lista os atalhos do teclado no canto da tela.',
+    },
+
+    // ── Perfis e Modo Simples ───────────────────────────────────────────
+    {
+      tool: { t: 'profile', v: 'lowVision' },
       title: 'Perfis prontos',
-      text: 'Não quer escolher um a um? Um perfil aplica um conjunto de ajustes de uma vez: Modo Simples, Baixa visão, Dislexia, TDAH, Epilepsia ou Teclado.',
+      text: 'Aplicamos o perfil Baixa visão: texto maior, alto contraste e cursor grande de uma vez. Há também Modo Simples, Dislexia, TDAH, Epilepsia e Teclado.',
     },
     {
-      target: 'simple',
+      tool: { t: 'modo' },
       title: 'Modo Simples',
-      text: 'O recomendado para começar: linguagem direta, página enxuta e navegação por atalhos grandes. Dá para ligar e desligar a qualquer momento.',
+      text: 'Ligado o recomendado para começar: linguagem direta, página enxuta e atalhos grandes.',
     },
+
     {
-      target: 'panel',
-      title: 'Pronto! Conte o que achou',
-      text: 'Para rever este tutorial, use o botão "Tutorial" no topo da página. Sua opinião ajuda a melhorar o projeto.',
+      dim: true,
       final: true,
+      target: 'panel',
+      title: 'Pronto! Agora é com você',
+      text: 'Tudo voltou como estava. Explore o painel sozinho, ou conte o que achou: sua opinião ajuda a melhorar o projeto. O botão "Tutorial" no topo da página mostra tudo de novo.',
     },
   ],
 };
