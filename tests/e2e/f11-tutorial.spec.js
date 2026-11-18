@@ -124,8 +124,8 @@ async function iniciar(page) {
   await page.locator('.header-tutorial').click();
   await expect(count(page)).toHaveText(`Passo 1 de ${STEPS}`);
 }
-async function avancar(page, ate) {
-  for (let n = 2; n <= ate; n++) {
+async function avancar(page, ate, de = 2) {
+  for (let n = de; n <= ate; n++) {
     await nextBtn(page).focus();
     await page.keyboard.press('Enter');
     await expect(count(page)).toHaveText(`Passo ${n} de ${STEPS}`);
@@ -455,6 +455,91 @@ test('Recolher o balão esconde o texto e mantém Próximo/Voltar', async ({
   await nextBtn(page).click();
   await expect(page.locator('.ms-tut-text')).toBeHidden(); // vale para os próximos passos
 });
+
+for (const [w, h] of [
+  [320, 568],
+  [360, 640],
+]) {
+  test(`celular pequeno ${w}x${h}: teclado virtual com teclas e campo, Expandir/Recolher funcionam, atalhos livres (T183)`, async ({
+    site,
+  }, testInfo) => {
+    test.setTimeout(180_000);
+    const { page } = site;
+    await page.setViewportSize({ width: w, height: h });
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await iniciar(page);
+    const cruza = (a, b) =>
+      a.x < b.x + b.width &&
+      b.x < a.x + a.width &&
+      a.y < b.y + b.height &&
+      b.y < a.y + a.height;
+    const shot = async (n) => {
+      if (!process.env.F11_SHOTS) return;
+      await page.waitForTimeout(350); // passa o fade de entrada do balão
+      await page.screenshot({
+        path: `${process.env.F11_SHOTS}/${testInfo.project.name}-${w}x${h}-passo-${n}.png`,
+      });
+    };
+    const peek = page.locator('.ms-tut-peek');
+
+    // passo 22: teclado virtual
+    await avancar(page, 22);
+    const vk = page.locator('#ms-virtual-keyboard');
+    const demo = page.locator('.ms-tut-demo');
+    await expect(demo).toBeVisible();
+    await expect(demo).toBeFocused();
+    expect(await vk.locator('button').count()).toBeGreaterThan(20);
+    const bb = await balloon(page).boundingBox();
+    expect(cruza(bb, await vk.boundingBox()), 'balão cobre o teclado').toBe(
+      false,
+    );
+    await shot(22);
+    // digitar com o teclado da tela
+    await vk.getByRole('button', { name: 'q', exact: true }).click();
+    await expect(demo).toHaveValue('q');
+    // Expandir / Recolher sempre funcionam e o campo e as teclas seguem à vista
+    for (let i = 0; i < 2; i++) {
+      const antes = await peek.getAttribute('aria-expanded');
+      await peek.click();
+      await expect(peek).toHaveAttribute(
+        'aria-expanded',
+        antes === 'true' ? 'false' : 'true',
+      );
+      await expect(demo).toBeVisible();
+      expect(await vk.locator('button').count()).toBeGreaterThan(20);
+    }
+    // texto expandido: aparece e não cobre o teclado
+    if ((await peek.getAttribute('aria-expanded')) === 'false') {
+      await peek.click();
+    }
+    await expect(peek).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('.ms-tut-text')).toBeVisible();
+    const aberto = await balloon(page).boundingBox();
+    expect(
+      cruza(aberto, await vk.boundingBox()),
+      'aberto cobre as teclas',
+    ).toBe(false);
+    expect(aberto.y + aberto.height).toBeLessThanOrEqual(h);
+
+    // passo 28: cartão de atalhos
+    await avancar(page, 28, 23);
+    const rows = await page
+      .locator('#ms-shortcuts-card li, #ms-shortcuts-card button')
+      .evaluateAll((ns) =>
+        ns.map((n) => {
+          const r = n.getBoundingClientRect();
+          return { x: r.x, y: r.y, width: r.width, height: r.height };
+        }),
+      );
+    expect(rows.length).toBeGreaterThan(5);
+    const b28 = await balloon(page).boundingBox();
+    for (const r of rows) {
+      expect(cruza(b28, r), 'balão cobre linha do cartão').toBe(false);
+    }
+    await shot(28);
+  });
+}
 
 test('sobreposições: balão livre do conteúdo, sem anel velho, teclado virtual com teclas (T181)', async ({
   site,

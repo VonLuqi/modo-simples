@@ -148,6 +148,23 @@
   margin-top: -0.2rem;
 }
 
+/* Sem lugar livre com o texto aberto: título e botões fixos, só o texto rola */
+.ms-tut-balloon--fit {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ms-tut-balloon--fit > * {
+  flex: 0 0 auto;
+}
+
+.ms-tut-balloon--fit > .ms-tut-body {
+  flex: 1 1 auto;
+  min-height: 3rem;
+  overflow: auto;
+}
+
 .ms-tut-btn {
   min-height: 44px;
   min-width: 44px;

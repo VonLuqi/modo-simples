@@ -486,6 +486,7 @@
 
     return {
       root: r,
+      shield: shield,
       spot: spot,
       balloon: b,
       title: title,
@@ -494,6 +495,7 @@
       text: text,
       link: link,
       demo: demo,
+      actions: actions,
       count: count,
       skip: skip,
       back: back,
@@ -528,7 +530,20 @@
       return [{ left: 0, top: 0, right: vw / 3, bottom: vh / 3 }];
     }
     if (t.t === 'switch' && t.o === 'showShortcuts') {
+      // as linhas (da 1ª à última, com o Fechar): o título do cartão pode ficar sob o balão
       n = document.getElementById('ms-shortcuts-card');
+      var ul = n && n.querySelector('ul');
+      if (n && ul && shown(n)) {
+        var c = n.getBoundingClientRect();
+        return [
+          {
+            left: c.left,
+            right: c.right,
+            top: ul.getBoundingClientRect().top,
+            bottom: c.bottom,
+          },
+        ];
+      }
     } else if (t.t === 'outline') {
       n = q('.ms-outline');
     } else if (t.t === 'vk') {
@@ -598,17 +613,44 @@
     var rs = avoidRects(T.steps[run.i]);
     var b = run.ui.balloon;
     if (!rs.length || !hits(b, rs) || tryFree(b, rs)) return;
-    // sem área livre com o texto aberto: recolhe o balão (Recolher) e tenta de novo
-    if (!run.ui.body.hidden && !run.ui.peek.hidden) {
+    // sem área livre com o texto aberto: recolhe o balão (Recolher) e tenta de novo, a não ser que
+    // o visitante tenha acabado de expandir (Expandir nunca pode virar um não-faz-nada)
+    if (!run.userOpen && !run.ui.body.hidden && !run.ui.peek.hidden) {
       setCollapsed(true);
       layout();
       if (!hits(b, rs) || tryFree(b, rs)) return;
+    }
+    // ainda não cabe: faixa no topo com a altura que sobra acima do conteúdo, texto rolável
+    var room = Math.min.apply(
+      null,
+      rs.map(function (a) {
+        return a.top;
+      }),
+    );
+    if (room > 150) {
+      b.classList.add(
+        'ms-tut-balloon--sheet',
+        'ms-tut-balloon--sheet-top',
+        'ms-tut-balloon--fit',
+      );
+      b.style.left = b.style.top = '';
+      b.style.maxHeight = room - 24 + 'px';
     }
   }
 
   function layout() {
     var ui = run.ui;
+    ui.balloon.classList.remove('ms-tut-balloon--fit');
+    ui.balloon.style.maxHeight = '';
     var step = T.steps[run.i];
+    // teclado virtual: a película de proteção termina acima dele, para as teclas poderem ser usadas
+    var vkEl =
+      step.tool && step.tool.t === 'vk'
+        ? document.getElementById('ms-virtual-keyboard')
+        : null;
+    ui.shield.style.bottom = vkEl
+      ? vkEl.getBoundingClientRect().height + 'px'
+      : '';
     var t = targetEl(step);
     var panel = q('#ms-a11y-panel');
     var open = panelOpen() && !run.panelHidden;
@@ -696,8 +738,12 @@
     ui.peek.hidden = !!step.final || !!step.dim;
     // campo de teste: só no passo do teclado virtual (as teclas só aparecem com um campo em foco)
     ui.demo.value = '';
-    if (step.tool && step.tool.t === 'vk') ui.body.appendChild(ui.demo);
-    else ui.demo.remove();
+    // fora do corpo recolhível: continua visível com o balão recolhido (telas pequenas)
+    if (step.tool && step.tool.t === 'vk') {
+      ui.balloon.insertBefore(ui.demo, ui.actions);
+    } else {
+      ui.demo.remove();
+    }
     setCollapsed(run.peek && !ui.peek.hidden);
     announce(T.announce(run.i + 1, total, step.title, text));
   }
@@ -707,6 +753,7 @@
     var token = ++s.token;
     leave(s);
     s.i = i;
+    s.userOpen = false;
     var step = T.steps[i];
     s.ui.root.classList.toggle('ms-tut--live', !step.dim);
     if (step.tool) baseline(s);
@@ -748,7 +795,7 @@
       place();
       var prefer = firstFocus ? s.ui.balloon : s.lastBtn;
       // teclado virtual: o foco vai ao campo de teste (dentro do balão) e as teclas aparecem
-      if (step.tool && step.tool.t === 'vk' && !s.ui.body.hidden) {
+      if (step.tool && step.tool.t === 'vk') {
         prefer = s.ui.demo;
       }
       if (!prefer || prefer.hidden) prefer = s.ui.next;
@@ -870,7 +917,14 @@
       end(false);
     });
     ui.peek.addEventListener('click', function () {
-      run.peek = !run.peek;
+      // age sobre o que está na tela (o balão pode estar recolhido sozinho, não pelo visitante)
+      if (ui.body.hidden) {
+        run.peek = false;
+        run.userOpen = true;
+      } else {
+        run.peek = true;
+        run.userOpen = false;
+      }
       render();
       place();
       ui.peek.focus();
