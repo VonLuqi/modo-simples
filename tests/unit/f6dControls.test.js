@@ -42,6 +42,18 @@ afterEach(() => {
   env.restore();
 });
 
+describe('Desligar tudo mantém o idioma escolhido (L1)', () => {
+  it('language continua após reset-all e é persistido', () => {
+    boot();
+    state.set({ options: { language: 'es', textScale: '150' } });
+    panel().querySelector('[data-action="reset-all"]').click();
+    assert.equal(state.get().options.language, 'es');
+    assert.equal(state.get().options.textScale, '100');
+    assert.equal(JSON.parse(stored('state')).options.language, 'es');
+    state.set({ options: { language: 'auto' } });
+  });
+});
+
 describe('Desligar tudo', () => {
   it('desliga o Modo Simples, zera todas as opções e persiste', () => {
     boot();

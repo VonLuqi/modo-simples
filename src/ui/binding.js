@@ -66,7 +66,6 @@ export const RESET_OPTIONS = {
   voiceRate: 1,
   voicePitch: 1,
   voiceVolume: 1,
-  language: 'auto',
 };
 
 /** "Redefinir fonte": só as opções de tipografia (F8b). */

@@ -333,7 +333,7 @@ function speakChunk(index, chunks, i, run) {
   _resume = { index, chunks, i };
   const utterance = new SpeechSynthesisUtterance(chunks[i]);
   _utterance = utterance;
-  applyVoice(utterance, state.get().options);
+  applyVoice(utterance, state.get().options, 'page');
   const next = () => {
     if (run !== _runId) return; // evento de uma leitura antiga: ignora (IMP-13)
     _utterance = null;
@@ -354,7 +354,7 @@ function speakFallback(text, run) {
   _resume = { text };
   const utterance = new SpeechSynthesisUtterance(text);
   _utterance = utterance;
-  applyVoice(utterance, state.get().options);
+  applyVoice(utterance, state.get().options, 'page');
   const done = () => {
     if (run !== _runId) return; // evento de uma leitura antiga (IMP-13)
     _speaking = false;

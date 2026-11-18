@@ -74,6 +74,7 @@ export function profileDiffers(base, now, reducedMotionIsUserChoice) {
   return Object.keys(base.options).some(
     (k) =>
       !k.startsWith('voice') && // voz é preferência do aparelho, não do perfil (F10)
+      k !== 'language' && // idioma também não é de perfil
       (k !== 'reducedMotion' || reducedMotionIsUserChoice) &&
       base.options[k] !== now.options[k],
   );

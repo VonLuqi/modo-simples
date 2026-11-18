@@ -7,7 +7,12 @@ import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { setLocale, getLocale, t } from '../../src/i18n/index.js';
-import { applyVoice, listVoices } from '../../src/features/voice.js';
+import { readFileSync } from 'node:fs';
+import {
+  applyVoice,
+  listVoices,
+  pageLocale,
+} from '../../src/features/voice.js';
 import { parseCommand } from '../../src/features/voiceCommands.js';
 import {
   KEYBOARD_ID,
@@ -86,6 +91,66 @@ describe('voz (TTS) segue o idioma', () => {
     applyVoice(utt, { voiceName: 'Luciana' });
     assert.equal(utt.voice.name, 'Luciana');
     assert.equal(utt.lang, 'en-US');
+  });
+});
+
+describe('voz de leitura do texto da página usa o lang da página (M1)', () => {
+  beforeEach(() => {
+    globalThis.SpeechSynthesisUtterance = class {};
+    globalThis.speechSynthesis = {
+      getVoices: () => [
+        V('Sam', 'en-US'),
+        V('Luciana', 'pt-BR'),
+        V('Lucia', 'es-ES'),
+      ],
+    };
+    setLocale('en'); // UI em inglês
+  });
+
+  it("source 'page' com html lang=pt-BR: fala em pt-BR com voz pt, UI continua en", () => {
+    document.documentElement.setAttribute('lang', 'pt-BR');
+    const page = {};
+    applyVoice(page, {}, 'page');
+    assert.equal(page.lang, 'pt-BR');
+    assert.equal(page.voice.name, 'Luciana');
+    const ui = {};
+    applyVoice(ui, {});
+    assert.equal(ui.lang, 'en-US');
+    assert.equal(ui.voice.name, 'Sam');
+    assert.equal(pageLocale(), 'pt');
+  });
+
+  it('página sem lang ou com idioma não suportado cai no idioma da UI', () => {
+    for (const lang of [null, 'fr', '']) {
+      if (lang === null) document.documentElement.removeAttribute('lang');
+      else document.documentElement.setAttribute('lang', lang);
+      const page = {};
+      applyVoice(page, {}, 'page');
+      assert.equal(page.lang, 'en-US', String(lang));
+    }
+  });
+
+  it('página em es com UI em pt: lê em es-ES', () => {
+    setLocale('pt');
+    document.documentElement.setAttribute('lang', 'es-MX');
+    const page = {};
+    applyVoice(page, {}, 'page');
+    assert.equal(page.lang, 'es-ES');
+    assert.equal(page.voice.name, 'Lucia');
+  });
+
+  it('tts, focusReader e ajuda usam as fontes certas', async () => {
+    const read = (f) =>
+      readFileSync(new URL(`../../src/${f}`, import.meta.url), 'utf8');
+    assert.match(
+      read('features/tts.js'),
+      /applyVoice\(utterance, state\.get\(\)\.options, 'page'\)/,
+    );
+    assert.match(
+      read('features/focusReader.js'),
+      /applyVoice\(utterance, state\.get\(\)\.options, 'page'\)/,
+    );
+    assert.doesNotMatch(read('modo-simples.js'), /applyVoice\([^)]*'page'\)/);
   });
 });
 

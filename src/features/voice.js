@@ -29,16 +29,30 @@ export function isVoiceSupported() {
 }
 
 /** Voz do idioma atual (ex.: 'en-GB' para en) e voz da região exata (ex.: 'en-US'). */
-const isLang = (v) =>
-  (v.lang || '').toLowerCase().split(/[-_]/)[0] === getLocale();
-const isExact = (v) =>
-  (v.lang || '').toLowerCase().replace('_', '-') ===
-  BCP47[getLocale()].toLowerCase();
+const isLang = (v, loc) =>
+  (v.lang || '').toLowerCase().split(/[-_]/)[0] === loc;
+const isExact = (v, loc) =>
+  (v.lang || '').toLowerCase().replace('_', '-') === BCP47[loc].toLowerCase();
+
+/**
+ * Idioma do TEXTO da página: html[lang] se for pt/en/es, senão o idioma da UI.
+ * @returns {'pt'|'en'|'es'}
+ */
+export function pageLocale() {
+  const lang =
+    typeof document !== 'undefined'
+      ? document.documentElement?.getAttribute('lang')
+      : null;
+  const primary = String(lang || '')
+    .toLowerCase()
+    .split(/[-_]/)[0];
+  return primary in BCP47 ? primary : getLocale();
+}
 
 /** Vozes instaladas: região exata (ex.: pt-BR), depois o idioma, depois o resto — por nome. */
-export function listVoices() {
+export function listVoices(loc = getLocale()) {
   if (!isVoiceSupported()) return [];
-  const rank = (v) => (isExact(v) ? 0 : isLang(v) ? 1 : 2);
+  const rank = (v) => (isExact(v, loc) ? 0 : isLang(v, loc) ? 1 : 2);
   return [...(speechSynthesis.getVoices?.() || [])].sort(
     (a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name),
   );
@@ -84,14 +98,19 @@ export function onVoicesChanged(cb) {
   return () => speechSynthesis.removeEventListener('voiceschanged', cb);
 }
 
-/** Aplica voz, velocidade, tom e volume a uma fala; o idioma segue o idioma da UI. */
-export function applyVoice(utt, prefs = {}) {
-  utt.lang = BCP47[getLocale()];
-  const voices = listVoices();
+/**
+ * Aplica voz, velocidade, tom e volume a uma fala. `source`: 'ui' (padrão) fala no idioma da UI
+ * (avisos, ajuda, amostra); 'page' lê texto da página e usa o html[lang] dela (pageLocale).
+ * @param {'ui'|'page'} [source]
+ */
+export function applyVoice(utt, prefs = {}, source = 'ui') {
+  const loc = source === 'page' ? pageLocale() : getLocale();
+  utt.lang = BCP47[loc];
+  const voices = listVoices(loc);
   const chosen =
     (prefs.voiceName && voices.find((v) => v.name === prefs.voiceName)) ||
-    voices.find(isExact) ||
-    voices.find(isLang);
+    voices.find((v) => isExact(v, loc)) ||
+    voices.find((v) => isLang(v, loc));
   if (chosen) utt.voice = chosen;
   utt.rate = clampVoice('rate', prefs.voiceRate);
   utt.pitch = clampVoice('pitch', prefs.voicePitch);

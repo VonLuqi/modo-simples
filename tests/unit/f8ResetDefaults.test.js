@@ -58,10 +58,12 @@ const chavesDoObjeto = (texto, nome) => {
 };
 
 describe('F8 — conjunto padrão do Desligar tudo (ADR-015)', () => {
-  it('RESET_OPTIONS tem exatamente as chaves do estado inicial', () => {
+  it('RESET_OPTIONS tem exatamente as chaves do estado inicial (menos o idioma, que o Desligar tudo mantém)', () => {
     assert.deepEqual(
       chavesDoObjeto(src('ui/binding.js'), 'RESET_OPTIONS').sort(),
-      Object.keys(DEFAULTS).sort(),
+      Object.keys(DEFAULTS)
+        .filter((k) => k !== 'language')
+        .sort(),
     );
   });
 

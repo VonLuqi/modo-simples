@@ -138,7 +138,7 @@ function speakNow(target) {
   if (!text) return;
   speechSynthesis.cancel(); // o novo foco cancela a fala anterior
   const utterance = new SpeechSynthesisUtterance(text);
-  applyVoice(utterance, state.get().options);
+  applyVoice(utterance, state.get().options, 'page');
   _spoke = true;
   utterance.onerror = (e) => {
     if (isSpeechFailure(e)) notifySpeechError();
