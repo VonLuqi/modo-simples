@@ -894,49 +894,79 @@
     );
   }
 
-  /** Caixa que a lupa ocuparia para o texto (mesma conta da lib: ≥32px, até 720px, 40vh). */
-  function magBox(r, len) {
-    var vw = window.innerWidth;
-    var vh = window.innerHeight;
-    var w = Math.min(720, vw - 32);
-    var perLine = Math.max(1, Math.floor((w - 42) / 17.6));
-    var lines = Math.min(
-      Math.ceil(Math.min(len, 280) / perLine),
-      Math.max(1, Math.floor((0.4 * vh - 34) / 43.2)),
-    );
-    var h = lines * 43.2 + 34;
-    var left = Math.min(Math.max(8, r.left), Math.max(8, vw - w - 8));
-    var top = r.bottom + 12 + h <= vh ? r.bottom + 12 : r.top - 12 - h;
-    return { left: left, top: top, right: left + w, bottom: top + h };
+  /** Área (px²) em que dois retângulos se sobrepõem (0 = não se tocam). */
+  function overlapArea(a, b) {
+    var w = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+    var h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+    return w > 0 && h > 0 ? w * h : 0;
   }
 
+  /**
+   * Mostra a lupa sobre um texto da página. A conta da caixa depende da fonte (fonte de reserva
+   * mais larga = mais linhas = caixa mais alta), então cada candidato é MEDIDO depois que a lupa
+   * o desenha: serve o primeiro cuja caixa fica na tela, longe do balão e do painel; se nenhum
+   * servir, o de menor sobreposição.
+   */
   function demoMagnifier() {
+    var token = run.token;
     var avoid = [run.ui.balloon.getBoundingClientRect()];
     var p = q('#ms-a11y-panel');
     if (p && panelOpen() && !run.panelHidden) {
       avoid.push(p.getBoundingClientRect());
     }
-    var cands = magCandidates();
-    var pick = null;
-    // preferência: título; a caixa da lupa não pode cair sobre o balão nem sobre o painel
-    ['h1, h2, h3', 'p, li, a'].some(function (sel) {
-      return cands.some(function (c) {
-        if (!c.n.matches(sel)) return false;
+    var cands = [];
+    ['h1, h2, h3', 'p, li', 'a, button, label'].forEach(function (sel) {
+      magCandidates().forEach(function (c) {
+        if (!c.n.matches(sel) || cands.length >= 10) return;
         var x = c.r.left + 20;
         var y = c.r.top + c.r.height / 2;
-        var b = magBox(c.r, (c.n.textContent || '').trim().length);
-        var clash = avoid.some(function (a) {
-          return (
-            overlap(a, b) ||
-            (x > a.left && x < a.right && y > a.top && y < a.bottom)
-          );
+        var under = avoid.some(function (a) {
+          return x > a.left && x < a.right && y > a.top && y < a.bottom;
         });
-        if (clash || b.top < 0 || b.bottom > window.innerHeight) return false;
-        pick = { n: c.n, x: x, y: y };
-        return true;
+        if (!under) cands.push({ n: c.n, x: x, y: y });
       });
     });
-    if (pick) magEvent(pick.n, 'pointermove', pick.x, pick.y, 'mouse');
+    var best = null;
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+
+    function fire(c) {
+      magEvent(c.n, 'pointermove', c.x, c.y, 'mouse');
+    }
+    function measure(i) {
+      // a lupa desenha em requestAnimationFrame; o segundo quadro já tem a caixa posicionada
+      window.requestAnimationFrame(function () {
+        window.requestAnimationFrame(function () {
+          if (!run || token !== run.token) return;
+          var box = document.getElementById('ms-text-magnifier');
+          var r = box && box.getBoundingClientRect();
+          var shown = r && r.width > 0 && box.style.display !== 'none';
+          var out = shown
+            ? Math.max(0, -r.left) +
+              Math.max(0, -r.top) +
+              Math.max(0, r.right - vw) +
+              Math.max(0, r.bottom - vh)
+            : Infinity;
+          var clash = shown
+            ? avoid.reduce(function (s, a) {
+                return s + overlapArea(r, a);
+              }, 0) +
+              out * 1000
+            : Infinity;
+          if (shown && clash === 0) return; // caixa boa: fica
+          if (!best || clash < best.clash) best = { c: cands[i], clash: clash };
+          if (i + 1 < cands.length) {
+            fire(cands[i + 1]);
+            measure(i + 1);
+          } else if (best && best.c !== cands[i]) {
+            fire(best.c); // nenhum serviu: o de menor sobreposição
+          }
+        });
+      });
+    }
+    if (!cands.length) return;
+    fire(cands[0]);
+    measure(0);
   }
 
   function forwardToPage(e) {
