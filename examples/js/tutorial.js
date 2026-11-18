@@ -484,6 +484,10 @@
     r.appendChild(b);
     document.body.appendChild(r);
 
+    // passo da lupa: mouse/toque sobre a película chegam ao texto da página (só pointermove/down)
+    shield.addEventListener('pointermove', forwardToPage, { passive: true });
+    shield.addEventListener('pointerdown', forwardToPage, { passive: true });
+
     // cliques no tutorial nunca chegam ao "clicar fora fecha o painel" da lib
     r.addEventListener('click', function (e) {
       e.stopPropagation();
@@ -837,6 +841,112 @@
     announce(T.announce(run.i + 1, total, step.title, text));
   }
 
+  // ── Lupa de texto (T239) ──────────────────────────────────────────────────
+  // A película engole o mouse e o painel (modal) deixa a página inert: sem ajuda a lupa ligada nunca
+  // mostrava nada. Neste passo o tutorial (1) dispara um pointermove de mentira sobre um texto
+  // visível da página e (2) repassa o mouse/toque da película ao texto que está por baixo.
+  var MAG_BLOCK =
+    'h1, h2, h3, h4, h5, h6, p, li, a, button, label, td, th, figcaption, blockquote';
+
+  function magStep() {
+    var st = run && T.steps[run.i];
+    return !!(st && st.tool && st.tool.o === 'textMagnifier');
+  }
+
+  function magCandidates() {
+    var out = [];
+    var all = document.querySelectorAll(MAG_BLOCK);
+    for (var k = 0; k < all.length; k++) {
+      var n = all[k];
+      if (n.closest('#ms-tutorial, #ms-container')) continue;
+      var r = n.getBoundingClientRect();
+      if (r.width < 80 || r.height < 14) continue;
+      if (r.bottom < 0 || r.top > window.innerHeight) continue;
+      if (!(n.textContent || '').trim()) continue;
+      out.push({ n: n, r: r });
+    }
+    return out;
+  }
+
+  /** O menor texto da página sob o ponto (a página está inert: elementFromPoint não a enxerga). */
+  function blockAt(x, y) {
+    var best = null;
+    var area = Infinity;
+    magCandidates().forEach(function (c) {
+      var r = c.r;
+      if (x < r.left || x > r.right || y < r.top || y > r.bottom) return;
+      if (r.width * r.height < area) {
+        area = r.width * r.height;
+        best = c.n;
+      }
+    });
+    return best;
+  }
+
+  function magEvent(node, type, x, y, pointerType) {
+    node.dispatchEvent(
+      new PointerEvent(type, {
+        bubbles: true,
+        clientX: x,
+        clientY: y,
+        pointerType: pointerType,
+      }),
+    );
+  }
+
+  /** Caixa que a lupa ocuparia para o texto (mesma conta da lib: ≥32px, até 720px, 40vh). */
+  function magBox(r, len) {
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    var w = Math.min(720, vw - 32);
+    var perLine = Math.max(1, Math.floor((w - 42) / 17.6));
+    var lines = Math.min(
+      Math.ceil(Math.min(len, 280) / perLine),
+      Math.max(1, Math.floor((0.4 * vh - 34) / 43.2)),
+    );
+    var h = lines * 43.2 + 34;
+    var left = Math.min(Math.max(8, r.left), Math.max(8, vw - w - 8));
+    var top = r.bottom + 12 + h <= vh ? r.bottom + 12 : r.top - 12 - h;
+    return { left: left, top: top, right: left + w, bottom: top + h };
+  }
+
+  function demoMagnifier() {
+    var avoid = [run.ui.balloon.getBoundingClientRect()];
+    var p = q('#ms-a11y-panel');
+    if (p && panelOpen() && !run.panelHidden) {
+      avoid.push(p.getBoundingClientRect());
+    }
+    var cands = magCandidates();
+    var pick = null;
+    // preferência: título; a caixa da lupa não pode cair sobre o balão nem sobre o painel
+    ['h1, h2, h3', 'p, li, a'].some(function (sel) {
+      return cands.some(function (c) {
+        if (!c.n.matches(sel)) return false;
+        var x = c.r.left + 20;
+        var y = c.r.top + c.r.height / 2;
+        var b = magBox(c.r, (c.n.textContent || '').trim().length);
+        var clash = avoid.some(function (a) {
+          return (
+            overlap(a, b) ||
+            (x > a.left && x < a.right && y > a.top && y < a.bottom)
+          );
+        });
+        if (clash || b.top < 0 || b.bottom > window.innerHeight) return false;
+        pick = { n: c.n, x: x, y: y };
+        return true;
+      });
+    });
+    if (pick) magEvent(pick.n, 'pointermove', pick.x, pick.y, 'mouse');
+  }
+
+  function forwardToPage(e) {
+    if (!run || !magStep()) return;
+    var node = blockAt(e.clientX, e.clientY);
+    if (!node) return;
+    magEvent(node, e.type, e.clientX, e.clientY, e.pointerType);
+    e.stopPropagation(); // o evento da película faria a lupa esconder (alvo sem texto)
+  }
+
   function go(i, firstFocus) {
     var s = run;
     var token = ++s.token;
@@ -891,6 +1001,12 @@
       }
       if (!prefer || prefer.hidden) prefer = s.ui.next;
       prefer.focus();
+      // lupa: o foco no botão do balão faria a lupa ampliar "Próximo"; mostra um texto da página
+      if (step.tool && step.tool.o === 'textMagnifier') {
+        window.requestAnimationFrame(function () {
+          if (run && token === run.token) demoMagnifier();
+        });
+      }
     });
   }
 
