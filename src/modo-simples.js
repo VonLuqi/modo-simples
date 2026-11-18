@@ -69,6 +69,7 @@ import {
 } from './features/readingRuler.js';
 import { stopSpeaking, isSpeaking } from './features/tts.js';
 import { startFocusReader, stopFocusReader } from './features/focusReader.js';
+import { startMediaMute, stopMediaMute } from './features/mediaMute.js';
 import {
   startManualSelect,
   stopManualSelect,
@@ -127,6 +128,7 @@ class ModoSimples {
       startReadingRuler();
     }
     if (currentState.options.readFocus) startFocusReader();
+    if (currentState.options.muteMedia) startMediaMute();
 
     if (currentState.modoSimples) {
       this._activateModoSimples(currentState, { announce: false });
@@ -157,6 +159,7 @@ class ModoSimples {
     }
     stopReadingRuler();
     stopFocusReader();
+    stopMediaMute();
     stopSpeaking();
     stopManualSelect();
     this._setPageInert(false);
@@ -472,6 +475,7 @@ class ModoSimples {
       'hideImages',
       'simpleLanguage',
       'readFocus',
+      'muteMedia',
     ];
     const optionChanged = optionKeys.some(
       (k) => prev.options[k] !== next.options[k],
@@ -483,6 +487,11 @@ class ModoSimples {
     if (prev.options.readingRuler !== next.options.readingRuler) {
       if (next.options.readingRuler) startReadingRuler();
       else stopReadingRuler();
+    }
+
+    if (prev.options.muteMedia !== next.options.muteMedia) {
+      if (next.options.muteMedia) startMediaMute();
+      else stopMediaMute();
     }
 
     if (prev.options.readFocus !== next.options.readFocus) {

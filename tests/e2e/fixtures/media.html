@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mídia — fixture do Modo Simples</title>
+  </head>
+  <body>
+    <main>
+      <h1>Página com vídeo e som</h1>
+      <video
+        id="video"
+        controls
+        loop
+        playsinline
+        width="200"
+        height="100"
+      ></video>
+      <audio id="audio" controls loop></audio>
+      <iframe
+        id="yt"
+        width="300"
+        height="150"
+        src="https://www.youtube.com/embed/abc"
+        allow="autoplay"
+      ></iframe>
+    </main>
+    <script src="../../../dist/modo-simples.min.js"></script>
+  </body>
+</html>

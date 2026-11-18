@@ -292,6 +292,17 @@ const CONTROLS = {
       ),
     }),
   },
+  muteMedia: {
+    html: switchTile({
+      option: 'muteMedia',
+      title: S.panelMuteMediaTitle,
+      label: S.panelMuteMediaTitle,
+      desc: S.panelMuteMediaDesc,
+      icon: svgIcon(
+        '<path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6"/><path d="m21 9-5 6"/>',
+      ),
+    }),
+  },
   hideImages: {
     html: switchTile({
       option: 'hideImages',
@@ -348,7 +359,7 @@ const SECTIONS = [
     icon: svgIcon(
       '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>',
     ),
-    controls: ['reducedMotion', 'hideImages'],
+    controls: ['reducedMotion', 'muteMedia', 'hideImages'],
   },
 ];
 
@@ -758,6 +769,7 @@ export function createA11yPanel({
       'reducedMotion',
       'hideImages',
       'readFocus',
+      'muteMedia',
     ].forEach((key) => {
       const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
       if (!btn) return;

@@ -239,7 +239,8 @@
       reducedMotion: false,
       hideImages: false,
       simpleLanguage: false,
-      readFocus: false
+      readFocus: false,
+      muteMedia: false
     }
   };
   function cloneState(s) {
@@ -296,7 +297,8 @@
       "Movimento reduzido desativado"
     ],
     simpleLanguage: ["Linguagem simples ligada", "Linguagem simples desligada"],
-    readFocus: ["Leitura do foco ligada", "Leitura do foco desligada"]
+    readFocus: ["Leitura do foco ligada", "Leitura do foco desligada"],
+    muteMedia: ["V\xEDdeos e sons silenciados", "V\xEDdeos e sons liberados"]
   };
   var THEME_LABELS = {
     senac: "Cores do site",
@@ -497,6 +499,7 @@
         reducedMotion: Boolean(opts.reducedMotion),
         hideImages: Boolean(opts.hideImages),
         readFocus: Boolean(opts.readFocus),
+        muteMedia: Boolean(opts.muteMedia),
         // Linguagem simples é acoplada ao MS; sem MS não reativa “órfã”
         simpleLanguage: modoSimples ? Boolean(opts.simpleLanguage) : false
       }
@@ -2372,6 +2375,8 @@
     panelVoiceButton: "Ouvir",
     panelVoiceStopButton: "Parar",
     panelVoiceStopLabel: "Parar leitura",
+    panelMuteMediaTitle: "Pausar e mutar tudo",
+    panelMuteMediaDesc: "Pausa e silencia v\xEDdeos e sons da p\xE1gina, inclusive os que come\xE7am sozinhos",
     panelReadFocusTitle: "Ler o que eu seleciono",
     panelReadFocusDesc: "A voz l\xEA o bot\xE3o, link, campo ou texto em que voc\xEA clicar ou parar com a tecla Tab",
     panelReadFocusUnsupported: "Este navegador n\xE3o tem voz para ler em voz alta",
@@ -3259,6 +3264,17 @@
         )
       })
     },
+    muteMedia: {
+      html: switchTile({
+        option: "muteMedia",
+        title: STRINGS.panelMuteMediaTitle,
+        label: STRINGS.panelMuteMediaTitle,
+        desc: STRINGS.panelMuteMediaDesc,
+        icon: svgIcon(
+          '<path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6"/><path d="m21 9-5 6"/>'
+        )
+      })
+    },
     hideImages: {
       html: switchTile({
         option: "hideImages",
@@ -3310,7 +3326,7 @@
       icon: svgIcon(
         '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>'
       ),
-      controls: ["reducedMotion", "hideImages"]
+      controls: ["reducedMotion", "muteMedia", "hideImages"]
     }
   ];
   function renderSection(sec, index) {
@@ -3632,7 +3648,8 @@
         "textSpacing",
         "reducedMotion",
         "hideImages",
-        "readFocus"
+        "readFocus",
+        "muteMedia"
       ].forEach((key) => {
         var _a2;
         const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
@@ -4477,7 +4494,8 @@
     reducedMotion: false,
     hideImages: false,
     simpleLanguage: false,
-    readFocus: false
+    readFocus: false,
+    muteMedia: false
   };
   var FONT_KEYS = [
     "textScale",
@@ -4985,6 +5003,7 @@
     "#ms-simples-chrome",
     "#ms-manual-select-banner",
     "#ms-reading-ruler",
+    "[data-ms-media-badge]",
     "[data-ms-pills][data-ms-injected]",
     "[data-ms-live]"
   ].join(",");
@@ -5147,6 +5166,160 @@
     _ruler = null;
   }
 
+  // src/features/mediaMute.js
+  var OWN_HOST = "#ms-container";
+  var BADGE_ATTR = "data-ms-media-badge";
+  var MEDIA_SELECTOR = "video, audio";
+  var BADGE_TEXT = "Este v\xEDdeo \xE9 de outro site. N\xE3o consigo tirar o som dele.";
+  var VIDEO_HOSTS = /(^|\.)(youtube\.com|youtube-nocookie\.com|youtu\.be|vimeo\.com|dailymotion\.com|twitch\.tv|facebook\.com|tiktok\.com|wistia\.com|wistia\.net|jwplatform\.com|brightcove\.net)$/i;
+  var _prior = /* @__PURE__ */ new WeakMap();
+  var _tracked = /* @__PURE__ */ new Set();
+  var _badges = /* @__PURE__ */ new Map();
+  var _observer2 = null;
+  var _on2 = false;
+  var userActive = () => {
+    var _a;
+    return !!((_a = navigator.userActivation) == null ? void 0 : _a.isActive);
+  };
+  function isOwn(el) {
+    var _a;
+    return !!((_a = el.closest) == null ? void 0 : _a.call(el, `${OWN_HOST}, [${BADGE_ATTR}]`));
+  }
+  function walk(root, visit) {
+    const els = root.nodeType === 1 ? [root, ...root.querySelectorAll("*")] : Array.from(root.querySelectorAll("*"));
+    for (const el of els) {
+      if (el.id === "ms-container" || isOwn(el)) continue;
+      visit(el);
+      if (el.shadowRoot) walk(el.shadowRoot, visit);
+    }
+  }
+  function muteOne(el) {
+    if (!_prior.has(el)) {
+      _prior.set(el, el.muted);
+      _tracked.add(new WeakRef(el));
+    }
+    el.muted = true;
+    el.removeAttribute("autoplay");
+    el.autoplay = false;
+    if (!el.paused) el.pause();
+  }
+  function restoreMedia() {
+    for (const ref of _tracked) {
+      const el = ref.deref();
+      if (el && _prior.has(el)) {
+        el.muted = _prior.get(el);
+        _prior.delete(el);
+      }
+    }
+    _tracked.clear();
+  }
+  function isForeignVideoFrame(el) {
+    if (el.tagName !== "IFRAME") return false;
+    let u;
+    try {
+      u = new URL(el.getAttribute("src") || "", location.href);
+    } catch (_) {
+      return false;
+    }
+    if (u.origin === location.origin) return false;
+    return VIDEO_HOSTS.test(u.hostname) || /autoplay/i.test(el.getAttribute("allow") || "");
+  }
+  function placeBadge(frame, badge) {
+    const r = frame.getBoundingClientRect();
+    Object.assign(badge.style, {
+      top: `${r.top + window.scrollY + 8}px`,
+      left: `${r.left + window.scrollX + 8}px`,
+      maxWidth: `${Math.max(120, r.width - 16)}px`
+    });
+  }
+  function badgeFor(frame) {
+    if (_badges.has(frame)) return;
+    const badge = document.createElement("div");
+    badge.setAttribute(BADGE_ATTR, "");
+    badge.setAttribute("role", "note");
+    badge.textContent = BADGE_TEXT;
+    Object.assign(badge.style, {
+      position: "absolute",
+      zIndex: "2147483644",
+      pointerEvents: "none",
+      // não bloqueia cliques no vídeo
+      padding: "0.5rem 0.75rem",
+      background: "#0B2C5F",
+      color: "#fff",
+      font: "600 0.9rem/1.3 system-ui, sans-serif",
+      borderRadius: "6px",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
+    });
+    document.body.appendChild(badge);
+    placeBadge(frame, badge);
+    _badges.set(frame, badge);
+  }
+  function scan2(root) {
+    walk(root, (el) => {
+      var _a;
+      if ((_a = el.matches) == null ? void 0 : _a.call(el, MEDIA_SELECTOR)) muteOne(el);
+      else if (isForeignVideoFrame(el)) badgeFor(el);
+    });
+  }
+  function relayout() {
+    for (const [frame, badge] of _badges) {
+      if (frame.isConnected) placeBadge(frame, badge);
+      else {
+        badge.remove();
+        _badges.delete(frame);
+      }
+    }
+  }
+  function onPlay(e) {
+    var _a;
+    const el = e.target;
+    if (!((_a = el == null ? void 0 : el.matches) == null ? void 0 : _a.call(el, MEDIA_SELECTOR)) || isOwn(el)) return;
+    if (!_prior.has(el)) {
+      _prior.set(el, el.muted);
+      _tracked.add(new WeakRef(el));
+    }
+    el.muted = true;
+    if (!userActive()) el.pause();
+  }
+  function onVolume(e) {
+    var _a;
+    const el = e.target;
+    if (!((_a = el == null ? void 0 : el.matches) == null ? void 0 : _a.call(el, MEDIA_SELECTOR)) || isOwn(el)) return;
+    if (!el.muted && !userActive()) el.muted = true;
+  }
+  function startMediaMute() {
+    if (_on2) return;
+    _on2 = true;
+    scan2(document);
+    document.addEventListener("play", onPlay, true);
+    document.addEventListener("volumechange", onVolume, true);
+    window.addEventListener("resize", relayout);
+    _observer2 = new MutationObserver((records) => {
+      for (const r of records) {
+        for (const n of r.addedNodes) {
+          if (n.nodeType === 1 && !isOwn(n)) scan2(n);
+        }
+      }
+      relayout();
+    });
+    _observer2.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+  }
+  function stopMediaMute() {
+    if (!_on2) return;
+    _on2 = false;
+    _observer2 == null ? void 0 : _observer2.disconnect();
+    _observer2 = null;
+    document.removeEventListener("play", onPlay, true);
+    document.removeEventListener("volumechange", onVolume, true);
+    window.removeEventListener("resize", relayout);
+    for (const badge of _badges.values()) badge.remove();
+    _badges.clear();
+    restoreMedia();
+  }
+
   // src/modo-simples.js
   var ModoSimples = class {
     constructor(userConfig = {}) {
@@ -5192,6 +5365,7 @@
         startReadingRuler();
       }
       if (currentState.options.readFocus) startFocusReader();
+      if (currentState.options.muteMedia) startMediaMute();
       if (currentState.modoSimples) {
         this._activateModoSimples(currentState, { announce: false });
         this._announceRestoredOnce();
@@ -5219,6 +5393,7 @@
       }
       stopReadingRuler();
       stopFocusReader();
+      stopMediaMute();
       stopSpeaking();
       stopManualSelect();
       this._setPageInert(false);
@@ -5478,7 +5653,8 @@
         "reducedMotion",
         "hideImages",
         "simpleLanguage",
-        "readFocus"
+        "readFocus",
+        "muteMedia"
       ];
       const optionChanged = optionKeys.some(
         (k) => prev.options[k] !== next.options[k]
@@ -5489,6 +5665,10 @@
       if (prev.options.readingRuler !== next.options.readingRuler) {
         if (next.options.readingRuler) startReadingRuler();
         else stopReadingRuler();
+      }
+      if (prev.options.muteMedia !== next.options.muteMedia) {
+        if (next.options.muteMedia) startMediaMute();
+        else stopMediaMute();
       }
       if (prev.options.readFocus !== next.options.readFocus) {
         if (next.options.readFocus) startFocusReader();

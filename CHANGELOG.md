@@ -4,6 +4,13 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 
 ## [Unreleased]
 
+### Adicionado (F7c — "Pausar e mutar tudo")
+
+- **Opção `muteMedia`** (booleano, padrão desligado, persistida, zerada pelo "Desligar tudo", anunciada ao alternar) com interruptor "Pausar e mutar tudo" na seção "Movimento e imagens". Ligada, todo `<video>`/`<audio>` da página (inclusive em shadow roots abertos) é pausado, mutado e perde o `autoplay`; mídia que aparece depois (e `play()` de script sem gesto do usuário) recebe o mesmo tratamento. O usuário ainda pode dar play/ligar o som manualmente (não se briga com ele).
+- Desligar devolve só o estado `muted` anterior de cada mídia e **nunca chama `play()`**.
+- **Iframes de outro site** (YouTube, Vimeo etc. ou com `allow=autoplay`) não dá para controlar: aviso por cima "Este vídeo é de outro site. Não consigo tirar o som dele." (`pointer-events: none`, some ao desligar).
+- Módulo novo `src/features/mediaMute.js`; `pauseAutoplay(root)`/`restoreMedia()` exportadas para reuso (F7d). Usa observer próprio (o `domObserver` só age com o Modo Simples ligado e com debounce, longe de bastar para autoplay); o aviso entra na lista de nós da lib ignorados pelo `domObserver`.
+
 ### Adicionado (F7b — "Leia o foco")
 
 - **Opção `readFocus`** (booleano, padrão desligado, persistida, zerada pelo "Desligar tudo", anunciada ao alternar) com interruptor "Ler o que eu seleciono" na seção "Texto e leitura". Ligada, a voz (`speechSynthesis`, pt-BR) lê o que recebe foco por Tab ou clique, na página e no painel: nome acessível (`aria-labelledby` > `aria-label` > label/`alt`/`title` > texto, até ~200 caracteres) + papel em português (botão, link, campo, caixa de seleção, interruptor, lista de opções, título) e o estado de caixas/interruptores.

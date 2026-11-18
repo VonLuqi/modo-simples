@@ -43,6 +43,7 @@ const RESET_OPTIONS = {
   hideImages: false,
   simpleLanguage: false,
   readFocus: false,
+  muteMedia: false,
 };
 
 /** "Redefinir fonte": só as opções de tipografia (F8b). */

@@ -41,6 +41,9 @@ export const STRINGS = Object.freeze({
   panelVoiceButton: 'Ouvir',
   panelVoiceStopButton: 'Parar',
   panelVoiceStopLabel: 'Parar leitura',
+  panelMuteMediaTitle: 'Pausar e mutar tudo',
+  panelMuteMediaDesc:
+    'Pausa e silencia vídeos e sons da página, inclusive os que começam sozinhos',
   panelReadFocusTitle: 'Ler o que eu seleciono',
   panelReadFocusDesc:
     'A voz lê o botão, link, campo ou texto em que você clicar ou parar com a tecla Tab',
