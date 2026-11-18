@@ -8,6 +8,7 @@ import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 import defaults from '../../src/config/defaults.js';
+import { detectDistractions } from '../../src/heuristics/distractionDetector.js';
 import { applyEarlyPrefs } from '../../src/modo-simples.js';
 import persistence from '../../src/core/persistence.js';
 import state from '../../src/core/state.js';
@@ -59,6 +60,35 @@ describe('IMP-20 — seletores de distração', () => {
       'a9',
       'a7',
     ]);
+  });
+});
+
+describe('IMP-20 — detectDistractions ignora diálogos e seus filhos', () => {
+  const detected = (bodyHtml) => {
+    env = installHappy({ bodyHtml });
+    return detectDistractions(null).map((el) => el.id);
+  };
+
+  it('header/nav/footer dentro de dialog aria-modal não são ocultados', () => {
+    const ids = detected(`
+      <div role="dialog" aria-modal="true" class="cookie-box">
+        <header id="h"></header><nav id="n"></nav><footer id="f"></footer>
+      </div>`);
+    assert.deepEqual(ids, []);
+  });
+
+  it('div[role=dialog] com classe newsletter/promo não é ocultado', () => {
+    const ids = detected(`
+      <div id="d1" role="dialog" class="newsletter-modal"></div>
+      <div id="d2" role="alertdialog" class="promo"></div>`);
+    assert.deepEqual(ids, []);
+  });
+
+  it('.ad fora de dialog continua ocultado', () => {
+    const ids = detected(`
+      <div role="dialog"><p>ok</p></div>
+      <div id="ad" class="ad"></div>`);
+    assert.deepEqual(ids, ['ad']);
   });
 });
 

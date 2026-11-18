@@ -48,6 +48,13 @@ export function detectDistractions(mainElement, config = defaults) {
     // Never hide Modo Simples chrome / pills / host UI
     if (isMsChrome(el)) continue;
 
+    // Never hide a dialog/modal or anything inside one (IMP-20): it would be unusable
+    if (
+      el.closest?.('[role="dialog"],[role="alertdialog"],[aria-modal="true"]')
+    ) {
+      continue;
+    }
+
     // Never hide an ancestor of the main content — that would hide the content
     if (mainElement && el.contains(mainElement)) continue;
 
