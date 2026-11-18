@@ -524,6 +524,10 @@ class ModoSimples {
       'blockFlashing',
       'strongFocus',
       'showShortcuts',
+      'voiceName',
+      'voiceRate',
+      'voicePitch',
+      'voiceVolume',
     ];
     const optionChanged = optionKeys.some(
       (k) => prev.options[k] !== next.options[k],

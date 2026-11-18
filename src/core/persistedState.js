@@ -1,5 +1,6 @@
 import { getProfile } from './profiles.js';
 import { clampTypo } from './state.js';
+import { clampVoice } from '../features/voice.js';
 
 /**
  * Hydrate in-memory state from a persisted payload (localStorage).
@@ -80,6 +81,10 @@ export function hydratePersistedState(saved) {
       blockFlashing: Boolean(opts.blockFlashing),
       strongFocus: Boolean(opts.strongFocus),
       showShortcuts: Boolean(opts.showShortcuts),
+      voiceName: typeof opts.voiceName === 'string' ? opts.voiceName : '',
+      voiceRate: clampVoice('rate', opts.voiceRate),
+      voicePitch: clampVoice('pitch', opts.voicePitch),
+      voiceVolume: clampVoice('volume', opts.voiceVolume),
       // Linguagem simples é acoplada ao MS; sem MS não reativa “órfã”
       simpleLanguage: modoSimples ? Boolean(opts.simpleLanguage) : false,
     },

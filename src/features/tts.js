@@ -5,6 +5,9 @@
  * block by block, highlighting the current element.
  */
 
+import state from '../core/state.js';
+import { applyVoice } from './voice.js';
+
 /** @type {SpeechSynthesisUtterance|null} */
 let _utterance = null;
 let _speaking = false;
@@ -276,8 +279,7 @@ function speakBlockAt(index, run) {
     if (!_speaking || run !== _runId) return;
     const utterance = new SpeechSynthesisUtterance(chunks[i]);
     _utterance = utterance;
-    utterance.lang = 'pt-BR';
-    utterance.rate = 1;
+    applyVoice(utterance, state.get().options);
     const next = () => {
       if (run !== _runId) return; // evento de uma leitura antiga: ignora (IMP-13)
       _utterance = null;
@@ -313,8 +315,7 @@ export function speakMainContent() {
 
     const utterance = new SpeechSynthesisUtterance(text);
     _utterance = utterance;
-    utterance.lang = 'pt-BR';
-    utterance.rate = 1;
+    applyVoice(utterance, state.get().options);
     const done = () => {
       if (run !== _runId) return; // evento de uma leitura antiga (IMP-13)
       _speaking = false;

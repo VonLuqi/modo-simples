@@ -32,6 +32,8 @@ import eventBus from './eventBus.js';
  *       strongFocus:   boolean,  // F7e: anel de foco reforçado na página
  *       showShortcuts: boolean,  // F7e: cartão com os atalhos do teclado
  *       blockFlashing: boolean,  // F7d: sem animação/GIF/autoplay (epilepsia)
+ *       voiceName: string,       // F10: nome da voz instalada ('' = automática pt-BR)
+ *       voiceRate / voicePitch / voiceVolume: number, // F10: ver VOICE_LIMITS (features/voice.js)
  *     }
  *   }
  */
@@ -88,6 +90,10 @@ const initialState = {
     strongFocus: false,
     showShortcuts: false,
     muteMedia: false,
+    voiceName: '',
+    voiceRate: 1,
+    voicePitch: 1,
+    voiceVolume: 1,
   },
 };
 

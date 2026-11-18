@@ -7,6 +7,8 @@
  */
 
 import { isReadingMain } from './tts.js';
+import state from '../core/state.js';
+import { applyVoice } from './voice.js';
 import { STRINGS as S } from '../ui/strings.js';
 
 const MAX_TEXT = 200;
@@ -136,8 +138,7 @@ function speakNow(target) {
   if (!text) return;
   speechSynthesis.cancel(); // o novo foco cancela a fala anterior
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'pt-BR';
-  utterance.rate = 1;
+  applyVoice(utterance, state.get().options);
   _spoke = true;
   speechSynthesis.speak(utterance);
 }

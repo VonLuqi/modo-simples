@@ -47,6 +47,10 @@ const DEFAULTS = {
   blockFlashing: false,
   strongFocus: false,
   showShortcuts: false,
+  voiceName: '',
+  voiceRate: 1,
+  voicePitch: 1,
+  voiceVolume: 1,
 };
 /** o Modo Simples deriva estas duas ao ligar (imagens e linguagem simples) */
 const DERIVED_BY_MS = ['hideImages', 'simpleLanguage'];

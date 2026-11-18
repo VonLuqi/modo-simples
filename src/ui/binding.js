@@ -59,6 +59,10 @@ export const RESET_OPTIONS = {
   strongFocus: false,
   showShortcuts: false,
   muteMedia: false,
+  voiceName: '',
+  voiceRate: 1,
+  voicePitch: 1,
+  voiceVolume: 1,
 };
 
 /** "Redefinir fonte": só as opções de tipografia (F8b). */
@@ -335,6 +339,7 @@ export function inertSibling(ms, el) {
     el.hasAttribute('inert') ||
     el.hasAttribute('aria-live') ||
     el.hasAttribute('data-ms-live') ||
+    el.id === 'ms-shortcuts-card' || // cartão de atalhos: "Fechar" precisa responder com o painel aberto
     el.id === 'ms-manual-select-banner' ||
     el.id === 'ms-manual-select-highlight'
   ) {
@@ -418,10 +423,19 @@ export function applyProfile(ms, id) {
   try {
     ms._reducedMotionUser = prof?.options.reducedMotion ? true : null;
     if (state.get().modoSimples) ms._setModoSimples(false);
+    const { voiceName, voiceRate, voicePitch, voiceVolume } =
+      state.get().options; // voz não faz parte de perfil: troca de perfil a mantém (F10)
     state.set({
       activeProfile: prof ? prof.id : null,
       profileCustom: false,
-      options: { ...RESET_OPTIONS, ...(prof ? prof.options : {}) },
+      options: {
+        ...RESET_OPTIONS,
+        voiceName,
+        voiceRate,
+        voicePitch,
+        voiceVolume,
+        ...(prof ? prof.options : {}),
+      },
     });
     ms._syncReducedMotion();
     if (prof?.modoSimples) ms._setModoSimples(true);
