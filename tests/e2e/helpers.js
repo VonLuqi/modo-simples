@@ -27,9 +27,21 @@ const EMPTY_BY_TYPE = {
  * Requisições externas são respondidas com corpo vazio (sem rede, sem ruído no console).
  */
 export const test = base.extend({
-  site: async ({ page }, use) => {
+  // Tutorial do demo (F11b) abre sozinho na 1ª visita: por padrão os testes já "viram" (f11 usa false)
+  tutorialSeen: [true, { option: true }],
+  site: async ({ page, tutorialSeen }, use) => {
     const errors = [];
     const external = [];
+
+    if (tutorialSeen) {
+      await page.addInitScript(() => {
+        try {
+          localStorage.setItem('ms-demo-tutorial-seen', '1');
+        } catch {
+          /* sem storage */
+        }
+      });
+    }
 
     page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
     page.on('console', (m) => {
