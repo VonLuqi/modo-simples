@@ -10,6 +10,8 @@ const TOGGLE = '.main-nav .nav-toggle';
 const LIST = '#main-nav-list';
 
 test.describe('nav em uma linha (largo)', () => {
+  // com fonte de fallback larga (E2E_FONT) o nav recolhe por falta de espaço: é o comportamento certo
+  test.skip(!!process.env.E2E_FONT, 'só vale com a fonte normal');
   test.use({ viewport: { width: 1200, height: 800 } });
 
   for (const largura of [1200, 1181]) {
