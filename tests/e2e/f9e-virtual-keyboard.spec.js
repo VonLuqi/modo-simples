@@ -174,12 +174,53 @@ test.describe('F9e — Teclado virtual', () => {
     expect(m.minH).toBeGreaterThanOrEqual(40);
   });
 
-  // F11 (QA T173 L3/M1): cada linha ABNT2 cabe numa linha só, sem quebra, sem corte e sem rolagem horizontal
-  for (const [w, minW] of [
-    [390, 24],
-    [320, 19], // 14 teclas em 304px: 24px não cabe (14*24 > 304)
+  // F11: >= 375px cada fileira ABNT2 numa linha só; abaixo disso cada fileira parte em 2 linhas
+  // (teclas >= 24px, WCAG 2.5.8). Sempre: altura >= 44, ordem ABNT2, rótulos sem corte, sem rolagem horizontal.
+  const ABNT2 = [
+    [
+      '\'"',
+      '1!',
+      '2@',
+      '3#',
+      '4$',
+      '5%',
+      '6¨',
+      '7&',
+      '8*',
+      '9(',
+      '0)',
+      '-_',
+      '=+',
+      'Backspace',
+    ],
+    ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '´`', '[{'],
+    ['Caps', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ç', '~^', ']}'],
+    [
+      'Shift',
+      '\\|',
+      'z',
+      'x',
+      'c',
+      'v',
+      'b',
+      'n',
+      'm',
+      ',<',
+      '.>',
+      ';:',
+      '/?',
+      'Shift',
+    ],
+    ['Fechar', 'AltGr', 'Space', 'Enter'],
+  ];
+  for (const [w, lines] of [
+    [1280, 1],
+    [390, 1],
+    [375, 1],
+    [360, 2],
+    [320, 2],
   ]) {
-    test(`${w}px: 5 linhas ABNT2 (uma linha cada), teclas >=44px de altura, rótulos sem corte`, async ({
+    test(`${w}px: 5 fileiras ABNT2 em ${lines} linha(s) cada, teclas >=44px de altura e >=24px de largura, rótulos sem corte`, async ({
       site,
     }) => {
       const { page } = site;
@@ -196,11 +237,14 @@ test.describe('F9e — Teclado virtual', () => {
         ];
         const btns = [...root.querySelectorAll('[data-vk]')];
         return {
+          order: rows.map((r) =>
+            [...r.querySelectorAll('[data-vk]')].map((b) => b.dataset.vk),
+          ),
           rows: rows.length,
           rowLines: rows.map(
             (r) =>
               new Set(
-                [...r.children].map((b) =>
+                [...r.querySelectorAll('[data-vk]')].map((b) =>
                   Math.round(b.getBoundingClientRect().top),
                 ),
               ).size,
@@ -217,14 +261,15 @@ test.describe('F9e — Teclado virtual', () => {
         };
       });
       expect(m.rows).toBe(5);
-      expect(m.rowLines).toEqual([1, 1, 1, 1, 1]);
+      expect(m.order).toEqual(ABNT2);
+      expect(m.rowLines).toEqual(Array(5).fill(lines));
       expect(m.minH).toBeGreaterThanOrEqual(44);
-      expect(m.minW).toBeGreaterThanOrEqual(minW);
+      expect(m.minW).toBeGreaterThanOrEqual(24);
       expect(m.clipped).toEqual([]);
       expect(m.hscroll).toBeLessThanOrEqual(0);
       expect(m.rootOver).toBeLessThanOrEqual(0);
       if (process.env.VK_SHOTS)
-        await page.screenshot({ path: `${process.env.VK_SHOTS}/vk-${w}.png` });
+        await page.screenshot({ path: `${process.env.VK_SHOTS}/kb-${w}.png` });
     });
   }
 

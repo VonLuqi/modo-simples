@@ -577,6 +577,7 @@ function reserve() {
 
 function render() {
   if (!_root) return;
+  layoutRows();
   const has = !!_target;
   _root
     .querySelector('[data-vk-hint]')
@@ -678,10 +679,54 @@ const WEIGHT = {
 /** Teclas de uma unidade mostram um símbolo (o nome acessível vem de labelOf). */
 const GLYPH = { Backspace: '←', Caps: '⇪', Shift: '⇧' };
 const rowUnits = (row) => row.reduce((n, d) => n + (WEIGHT[d] || 1), 0);
-const MAX_UNITS = Math.max(...ROWS.map(rowUnits));
-/** 1 unidade = a linha mais larga numa linha só (sem quebra, sem esticar), no máximo 56px nas telas largas. */
-const UNIT = `min(calc((100% - ${(MAX_UNITS - 1) * GAP}px) / ${MAX_UNITS}), 56px)`;
-const basis = (w) => `calc(${w} * ${UNIT} + ${(w - 1) * GAP}px)`;
+/** Abaixo desta largura (px) cada linha se parte em duas, para as teclas terem >= 24px (WCAG 2.5.8). */
+const NARROW = 375;
+/** Índice que parte a linha em duas metades de largura (unidades) o mais parecidas possível. */
+function splitIndex(row) {
+  const total = rowUnits(row);
+  let acc = 0;
+  let best = 1;
+  let bestMax = Infinity;
+  for (let k = 1; k < row.length; k++) {
+    acc += WEIGHT[row[k - 1]] || 1;
+    const m = Math.max(acc, total - acc);
+    if (m < bestMax) {
+      bestMax = m;
+      best = k;
+    }
+  }
+  return best;
+}
+/** Maior largura de linha (unidades) no modo largo (linha inteira) e no estreito (metades). */
+const unitsOf = (row, narrow) => {
+  if (!narrow) return rowUnits(row);
+  const k = splitIndex(row);
+  return Math.max(rowUnits(row.slice(0, k)), rowUnits(row.slice(k)));
+};
+/** 1 unidade = a linha mais larga que cabe numa linha só (sem esticar), no máximo 56px nas telas largas. */
+const unitCss = (narrow) => {
+  const n = Math.max(...ROWS.map((r) => unitsOf(r, narrow)));
+  return `min(calc((100% - ${(n - 1) * GAP}px) / ${n}), 56px)`;
+};
+const basis = (w) => `calc(${w} * var(--vk-u) + ${(w - 1) * GAP}px)`;
+/** Linhas montadas: [{ line, row }] */
+let _lines = [];
+
+/** Modo largo: uma linha por fileira. Modo estreito (< 375px): cada fileira em duas linhas, mesma ordem. */
+function layoutRows() {
+  if (!_root) return;
+  const narrow = (win().innerWidth || 1024) < NARROW;
+  _root.style.setProperty('--vk-u', unitCss(narrow), 'important');
+  for (const { line, row } of _lines) {
+    line.querySelector('[data-vk-break]')?.remove();
+    setStyle(line, { 'flex-wrap': narrow ? 'wrap' : 'nowrap' });
+    if (!narrow) continue;
+    const br = document.createElement('div');
+    br.dataset.vkBreak = '';
+    setStyle(br, { 'flex-basis': '100%', height: '0', margin: '0' });
+    line.children[splitIndex(row) - 1].after(br);
+  }
+}
 
 function buildRow(row) {
   const line = document.createElement('div');
@@ -692,6 +737,7 @@ function buildRow(row) {
     'justify-content': 'center',
     margin: '0 0 4px',
   });
+  _lines.push({ line, row });
   for (const def of row) {
     const w = WEIGHT[def] || 1;
     const btn = document.createElement('button');
@@ -706,7 +752,7 @@ function buildRow(row) {
       'min-height': '44px',
       margin: '0',
       padding: '0',
-      font: `600 ${GLYPH[def] ? 12 : 18}px/1 system-ui, sans-serif`,
+      font: `600 ${GLYPH[def] ? 16 : 18}px/1 system-ui, sans-serif`,
       'border-radius': '8px',
       cursor: 'pointer',
     });
@@ -735,7 +781,7 @@ function build() {
     display: 'flex',
     'flex-direction': 'column',
     'box-sizing': 'border-box',
-    padding: '8px',
+    padding: '8px 6px',
     'z-index': '2147483644',
     font: '600 20px/1 system-ui, sans-serif',
     'max-height': '60vh',
@@ -818,6 +864,7 @@ export function openVirtualKeyboard({ touch } = {}) {
   _caps = false;
   _dead = null;
   _keys = [];
+  _lines = [];
   _root = build();
   document.documentElement.appendChild(_root);
   hideFab();
@@ -869,5 +916,6 @@ export function closeVirtualKeyboard({ silent = false } = {}) {
   _altgr = false;
   _caps = false;
   _keys = [];
+  _lines = [];
   if (!silent) announce(S.vkClosed);
 }

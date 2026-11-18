@@ -441,3 +441,27 @@ describe('F11a — AltGr (ABNT2)', () => {
     assert.equal(key('AltGr').getAttribute('aria-pressed'), 'false');
   });
 });
+
+describe('F11 — fileiras abaixo de 375px', () => {
+  it('parte cada fileira em duas linhas (mesma ordem) e volta a uma linha ao alargar', () => {
+    const w0 = window.innerWidth;
+    window.innerWidth = 320;
+    try {
+      openVirtualKeyboard({ touch: false });
+      const order = () =>
+        [...document.querySelectorAll(`#${KEYBOARD_ID} [data-vk]`)].map(
+          (b) => b.dataset.vk,
+        );
+      const flat = ROWS.flat();
+      assert.deepEqual(order(), flat);
+      const brs = () => document.querySelectorAll('[data-vk-break]').length;
+      assert.equal(brs(), ROWS.length);
+      window.innerWidth = 1024;
+      window.dispatchEvent(new window.Event('resize'));
+      assert.equal(brs(), 0);
+      assert.deepEqual(order(), flat);
+    } finally {
+      window.innerWidth = w0;
+    }
+  });
+});
