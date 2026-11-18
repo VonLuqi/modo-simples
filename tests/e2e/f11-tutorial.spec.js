@@ -537,7 +537,82 @@ for (const [w, h] of [
     for (const r of rows) {
       expect(cruza(b28, r), 'balão cobre linha do cartão').toBe(false);
     }
+    // T187: nem o título do cartão fica sob o balão
+    const cartao = await page.locator('#ms-shortcuts-card').boundingBox();
+    expect(cruza(b28, cartao), 'balão encosta no cartão').toBe(false);
     await shot(28);
+  });
+}
+
+/** O elemento no ponto (x, y) é o do overlay e não a película/balão do tutorial? (ponteiro REAL) */
+const livreDoTutorial = (page, x, y) =>
+  page.evaluate(
+    ([px, py]) => {
+      const el = document.elementFromPoint(px, py);
+      return !!el && !el.closest('.ms-tut-shield');
+    },
+    [x, y],
+  );
+const centro = (b) => ({ x: b.x + b.width / 2, y: b.y + b.height / 2 });
+
+for (const [w, h] of [
+  [320, 568],
+  [390, 844],
+  [1280, 800],
+]) {
+  test(`ponteiro real ${w}x${h}: a película nunca cobre teclado virtual, grade, atalhos e estrutura (T187)`, async ({
+    site,
+  }) => {
+    test.setTimeout(180_000);
+    const { page } = site;
+    await page.setViewportSize({ width: w, height: h });
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await iniciar(page);
+    const steps = await getSteps(page);
+    const idx = (fn) => steps.findIndex((s) => s.tool && fn(s.tool)) + 1;
+    let at = 1;
+    const ir = async (n) => {
+      await avancar(page, n, at + 1);
+      at = n;
+    };
+
+    // estrutura da página: botão Fechar e um link da lista
+    await ir(idx((t) => t.t === 'outline'));
+    for (const sel of ['.ms-outline-close', '.ms-outline-link']) {
+      const c = centro(await page.locator(sel).first().boundingBox());
+      expect(await livreDoTutorial(page, c.x, c.y), `estrutura ${sel}`).toBe(
+        true,
+      );
+    }
+    // grade de mouse: centro da tela (cada célula é clicável)
+    await ir(idx((t) => t.t === 'grid'));
+    expect(await livreDoTutorial(page, w / 2, h / 2), 'grade').toBe(true);
+    // teclado virtual: cada tecla visível recebe o clique real e digita no campo de teste
+    await ir(idx((t) => t.t === 'vk'));
+    const vk = page.locator('#ms-virtual-keyboard');
+    const demo = page.locator('.ms-tut-demo');
+    await expect(demo).toBeFocused();
+    const q = vk.getByRole('button', { name: 'q', exact: true });
+    const c = centro(await q.boundingBox());
+    expect(await livreDoTutorial(page, c.x, c.y), 'tecla q').toBe(true);
+    await page.mouse.click(c.x, c.y);
+    await page.mouse.click(c.x, c.y);
+    await expect(demo).toHaveValue('qq');
+    // Expandir/Recolher com o mouse: o foco volta ao campo e as teclas continuam à vista
+    const peek = page.locator('.ms-tut-peek');
+    for (let i = 0; i < 2; i++) {
+      await peek.click();
+      await expect(demo).toBeFocused();
+      expect(await vk.locator('button').count()).toBeGreaterThan(20);
+    }
+    // cartão de atalhos: botão Fechar do cartão
+    await ir(idx((t) => t.t === 'switch' && t.o === 'showShortcuts'));
+    const f = page.locator('#ms-shortcuts-card button');
+    const cf = centro(await f.boundingBox());
+    expect(await livreDoTutorial(page, cf.x, cf.y), 'atalhos Fechar').toBe(
+      true,
+    );
   });
 }
 

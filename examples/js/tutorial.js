@@ -609,6 +609,23 @@
   }
   function place() {
     if (!run) return;
+    placeCore();
+    // cartão de atalhos em tela baixa: se a faixa ainda encosta no cartão (só no título), usa a
+    // versão mais baixa possível para ficar inteira acima dele
+    var step = T.steps[run.i];
+    var card = document.getElementById('ms-shortcuts-card');
+    if (
+      step.tool &&
+      step.tool.o === 'showShortcuts' &&
+      card &&
+      shown(card) &&
+      window.innerWidth < NARROW &&
+      hits(run.ui.balloon, [card.getBoundingClientRect()])
+    ) {
+      run.ui.balloon.classList.add('ms-tut-balloon--tight');
+    }
+  }
+  function placeCore() {
     layout();
     var rs = avoidRects(T.steps[run.i]);
     var b = run.ui.balloon;
@@ -638,19 +655,83 @@
     }
   }
 
+  // A película do tutorial (clique nunca muda configuração por acidente) cobre a tela inteira, MENOS
+  // as sobreposições da lib que o visitante precisa usar: teclado virtual, grade, cartão de
+  // atalhos e estrutura. O "buraco" segue o tamanho delas (ResizeObserver): o teclado, por
+  // exemplo, só cresce depois que o campo de teste recebe o foco.
+  function overlayEls() {
+    return [
+      document.getElementById('ms-virtual-keyboard'),
+      document.getElementById('ms-shortcuts-card'),
+      document.getElementById('ms-mouse-grid'),
+      q('.ms-outline'),
+    ].filter(function (n) {
+      return n && shown(n);
+    });
+  }
+  function overlap(a, b) {
+    return (
+      a.left < b.right &&
+      b.left < a.right &&
+      a.top < b.bottom &&
+      b.top < a.bottom
+    );
+  }
+  function syncShield() {
+    var els = overlayEls();
+    var rects = els.map(function (n) {
+      if (!run.watched.has(n)) {
+        run.watched.add(n);
+        run.ro.observe(n);
+      }
+      var r = n.getBoundingClientRect();
+      return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    });
+    // evenodd: buracos que se tocam virariam película de novo; une os que se sobrepõem
+    var merged = true;
+    while (merged) {
+      merged = false;
+      for (var i = 0; i < rects.length && !merged; i++) {
+        for (var j = i + 1; j < rects.length && !merged; j++) {
+          if (overlap(rects[i], rects[j])) {
+            rects[i] = {
+              left: Math.min(rects[i].left, rects[j].left),
+              top: Math.min(rects[i].top, rects[j].top),
+              right: Math.max(rects[i].right, rects[j].right),
+              bottom: Math.max(rects[i].bottom, rects[j].bottom),
+            };
+            rects.splice(j, 1);
+            merged = true;
+          }
+        }
+      }
+    }
+    var d = 'M0 0H' + window.innerWidth + 'V' + window.innerHeight + 'H0Z';
+    rects.forEach(function (r) {
+      d +=
+        'M' +
+        r.left +
+        ' ' +
+        r.top +
+        'H' +
+        r.right +
+        'V' +
+        r.bottom +
+        'H' +
+        r.left +
+        'Z';
+    });
+    run.ui.shield.style.clipPath = rects.length
+      ? 'path(evenodd, "' + d + '")'
+      : '';
+  }
+
   function layout() {
     var ui = run.ui;
-    ui.balloon.classList.remove('ms-tut-balloon--fit');
+    ui.balloon.classList.remove('ms-tut-balloon--fit', 'ms-tut-balloon--tight');
     ui.balloon.style.maxHeight = '';
     var step = T.steps[run.i];
-    // teclado virtual: a película de proteção termina acima dele, para as teclas poderem ser usadas
-    var vkEl =
-      step.tool && step.tool.t === 'vk'
-        ? document.getElementById('ms-virtual-keyboard')
-        : null;
-    ui.shield.style.bottom = vkEl
-      ? vkEl.getBoundingClientRect().height + 'px'
-      : '';
+    syncShield();
     var t = targetEl(step);
     var panel = q('#ms-a11y-panel');
     var open = panelOpen() && !run.panelHidden;
@@ -740,7 +821,10 @@
     ui.demo.value = '';
     // fora do corpo recolhível: continua visível com o balão recolhido (telas pequenas)
     if (step.tool && step.tool.t === 'vk') {
-      ui.balloon.insertBefore(ui.demo, ui.actions);
+      // (só se ainda não está lá: mover o nó focado tiraria o foco do campo)
+      if (ui.demo.parentNode !== ui.balloon) {
+        ui.balloon.insertBefore(ui.demo, ui.actions);
+      }
     } else {
       ui.demo.remove();
     }
@@ -851,6 +935,7 @@
     window.removeEventListener('pagehide', onHide);
     var r = root();
     if (r) r.removeEventListener('scroll', place, true);
+    s.ro.disconnect();
     s.ui.root.remove();
     // devolve o painel ao estado de antes: acordeões, rolagem e aberto/fechado
     toggles().forEach(function (tg) {
@@ -905,6 +990,10 @@
       sections: sections,
       scroll: scroller ? scroller.scrollTop : 0,
       snap: { ui: readUi(), store: readStore() },
+      watched: new WeakSet(),
+      ro: new ResizeObserver(function () {
+        if (run) place();
+      }),
       baselined: false,
       panelHidden: false,
       peek: false,
@@ -927,7 +1016,16 @@
       }
       render();
       place();
-      ui.peek.focus();
+      // teclado virtual: foco no botão derrubaria as teclas (só aparecem com um campo em foco).
+      // O teclado cresce ao receber o campo em foco: reposiciona o balão com o tamanho final
+      // (o ResizeObserver não vê o encolhe-e-cresce no mesmo quadro).
+      var vkStep = T.steps[run.i].tool && T.steps[run.i].tool.t === 'vk';
+      if (vkStep) {
+        ui.demo.focus();
+        place();
+      } else {
+        ui.peek.focus();
+      }
     });
     ui.back.addEventListener('click', function () {
       run.lastBtn = ui.back;

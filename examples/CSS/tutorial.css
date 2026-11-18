@@ -148,6 +148,31 @@
   margin-top: -0.2rem;
 }
 
+/* Ainda mais baixo (celular de tela baixa com o cartão de atalhos): cabe acima do cartão */
+.ms-tut-balloon--tight {
+  top: 4px;
+  padding: 0.2rem 0.7rem 0.25rem;
+}
+
+.ms-tut-balloon--tight .ms-tut-title {
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.ms-tut-balloon--tight .ms-tut-peek {
+  min-height: 28px;
+  margin-top: 0;
+}
+
+.ms-tut-balloon--tight .ms-tut-actions {
+  margin-top: 0;
+}
+
+.ms-tut-balloon--tight .ms-tut-btn {
+  min-height: 36px;
+  padding: 0.15rem 0.9rem;
+}
+
 /* Sem lugar livre com o texto aberto: título e botões fixos, só o texto rola */
 .ms-tut-balloon--fit {
   display: flex;
