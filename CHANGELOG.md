@@ -4,11 +4,25 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 
 ## [Unreleased]
 
+### Corrigido (F9d–F9e, revisão do QA T163)
+
+- **Teclado virtual em campo numérico** (`type="number"`): o navegador descarta o texto intermediário ("1.", "-"), e o dígito seguinte se perdia. Agora o texto pendente fica guardado e aparece na linha **"Digitando:"** do teclado até virar um número válido (`1` `.` `5` → `1.5`; `-` `5` → `-5`; `1` `,` `5` → `1.5`, vírgula vira ponto). O campo mantém o último valor válido enquanto isso. Em `number` e `email` o navegador não expõe o cursor: o teclado **escreve e apaga sempre no fim** do campo (limite conhecido).
+- **Teclado virtual cabe na tela**: 10 teclas por linha em telas estreitas (mínimo 24 × 40 px, acima do piso de 24 px da WCAG 2.5.8; ≥ 56 px em telas largas), inteiro a 390 × 844 sem rolagem interna. Em telas baixas (390 × 600) as linhas rolam e a **linha de baixo (Fechar, Espaço, Enter) fica sempre visível**; o campo continua visível acima do teclado. O Enter fica nessa linha de baixo.
+- O **botão flutuante some** enquanto o teclado está aberto (não cobre mais a tecla do canto) e volta ao fechar; as preferências salvas do botão não mudam. Sem campo focado, a dica também tem **Fechar**.
+- Mover o foco para a **própria interface** (grade de mouse, botão flutuante, painel, teclas) **não esconde mais as teclas**: com um campo focado, a grade de mouse consegue clicar numa tecla do teclado e o caractere vai para o campo. Com o teclado aberto a barra da grade vai para o **topo** (o rodapé é do teclado).
+- **Grade de mouse**: a área das células é a janela **menos a barra de botões**, então nenhuma célula fica debaixo dela; a barra ocupa uma linha só a 390 px e a 390 px com zoom de 175% (rótulos curtos "Clicar", "Voltar", "Fechar" em telas estreitas). Os cliques sintéticos agora têm `detail: 1` (mousedown/mouseup/click) e `pointerId: 1`, `isPrimary: true`, `pointerType: "mouse"` (pointerdown/pointerup).
+- **Enter no teclado virtual** só envia o formulário quando o Enter nativo enviaria (há botão de envio habilitado, que é acionado, ou um único campo de texto no formulário). Formulário de vários campos sem botão de envio não é mais enviado.
+
+### Limites conhecidos (F9d–F9e)
+
+- O layout **ABNT2 não tem as teclas de AltGr** (`°` `ª` `§` `¢` `£` `¬` `€`), nem **Tab e setas**: por decisão, o teclado virtual só escreve em campos de texto e não envia essas teclas.
+- **Alt+Shift+G** (grade de mouse) continua **bloqueado enquanto o foco está num campo editável**, para não atrapalhar a digitação. Com o teclado virtual, mova o foco para o botão "Fechar" do teclado (ou clique fora do campo) antes de usar o atalho.
+
 ### Adicionado (F9e — Teclado virtual)
 
 - Botão **Teclado virtual** em "Ferramentas de página" (ação da sessão, não persistida; "Desligar tudo" e `destroy()` fecham). Liga um teclado **ABNT2 pt-BR** fixo no rodapé, com `ç` e acentos (teclas mortas `´` `` ` `` `~` `^` `¨` compõem com a letra seguinte; morta + espaço escreve o símbolo), Shift (uma tecla), Caps, Apagar, Espaço e Enter. Com o modo ligado, o teclado mostra as teclas sempre que um campo de texto recebe foco; sem campo focado mostra "Toque num campo de texto". **Fechar** desliga o modo.
 - Escreve **só** em campos de texto (`input` text/search/email/url/tel/number/password, `textarea`, `contenteditable`; nunca `readonly`/`disabled`), no cursor ou trocando a seleção, com `beforeinput`/`input` reais (`insertText`, `deleteContentBackward`) para campos ligados a frameworks. Enter em `input` dispara Enter e envia o formulário (`requestSubmit`); em `textarea`/`contenteditable` quebra a linha. Não envia Tab nem setas.
-- As teclas não tiram o foco do campo (mouse e toque), têm ≥ 44 px e usam as cores do tema ativo. O teclado reserva espaço no fim da página e rola o campo para cima dele. No celular o `inputmode` do campo vira `none` enquanto o modo está ligado (o original volta ao trocar de campo e ao fechar).
+- As teclas não tiram o foco do campo (mouse e toque) e usam as cores do tema ativo. O teclado reserva espaço no fim da página e rola o campo para cima dele. No celular o `inputmode` do campo vira `none` enquanto o modo está ligado (o original volta ao trocar de campo e ao fechar).
 - **Limite conhecido:** não alcança campos dentro de **iframes de outros sites** (origem diferente): o foco não chega ao documento da página.
 
 ### Corrigido (F9a–F9b, revisão do QA T159)

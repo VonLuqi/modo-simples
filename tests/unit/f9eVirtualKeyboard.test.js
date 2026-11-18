@@ -235,7 +235,7 @@ describe('teclado na tela', () => {
     assert.equal(root.querySelector('[data-vk-keys]').style.display, 'none');
     assert.match(root.textContent, /Toque num campo de texto/);
     focus($('#t'));
-    assert.equal(root.querySelector('[data-vk-keys]').style.display, 'block');
+    assert.equal(root.querySelector('[data-vk-keys]').style.display, 'flex');
     focus($('#ro'));
     assert.equal(root.querySelector('[data-vk-hint]').style.display, 'block');
     focus($('#dis'));
@@ -311,14 +311,14 @@ describe('teclado na tela', () => {
     assert.equal(ta.value, 'x\ny');
   });
 
-  it('teclas não roubam o foco (mousedown/pointerdown cancelados) e têm ≥ 44px de largura mínima', () => {
+  it('teclas não roubam o foco (mousedown/pointerdown cancelados) e têm tamanho mínimo (24x40)', () => {
     openVirtualKeyboard({ touch: false });
     focus($('#t'));
     const b = key('a');
     assert.equal(fire(b, 'mousedown'), false);
     assert.equal(fire(b, 'pointerdown'), false);
-    assert.equal(b.style.minWidth, '44px');
-    assert.ok(parseInt(b.style.minHeight) >= 44);
+    assert.equal(b.style.minWidth, '24px');
+    assert.ok(parseInt(b.style.minHeight) >= 40);
   });
 
   it('toque: inputmode=none no campo focado; volta ao original ao trocar de campo e ao fechar', () => {
@@ -376,7 +376,7 @@ describe('teclado na tela', () => {
     const t = $('#t');
     t.focus();
     openVirtualKeyboard({ touch: false });
-    assert.equal($(`#${KEYBOARD_ID} [data-vk-keys]`).style.display, 'block');
+    assert.equal($(`#${KEYBOARD_ID} [data-vk-keys]`).style.display, 'flex');
   });
 });
 

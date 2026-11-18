@@ -27,16 +27,24 @@ let _releaseTrap = null;
 /** @type {Array<{x:number,y:number,w:number,h:number}>} áreas em frações da janela */
 let _stack = [];
 
+/** altura ocupada pela barra de botões (as células nunca ficam debaixo dela) */
+let _barH = 0;
+/** barra no topo quando o teclado virtual está aberto (ele ocupa o rodapé e precisa ser clicável) */
+let _barTop = false;
 const viewport = () => ({
   w: document.documentElement.clientWidth || window.innerWidth || 1,
-  h: document.documentElement.clientHeight || window.innerHeight || 1,
+  h: Math.max(
+    1,
+    (document.documentElement.clientHeight || window.innerHeight || 1) - _barH,
+  ),
+  y0: _barTop ? _barH : 0,
 });
 const current = () => _stack[_stack.length - 1];
 
 /** Área em pixels. */
 function px(a) {
   const v = viewport();
-  return { x: a.x * v.w, y: a.y * v.h, w: a.w * v.w, h: a.h * v.h };
+  return { x: a.x * v.w, y: v.y0 + a.y * v.h, w: a.w * v.w, h: a.h * v.h };
 }
 
 /** Subdivide a área atual em células de 3x3? (só se cada célula tem ≥ 24px) */
@@ -94,6 +102,45 @@ function render() {
   if (!_root) return;
   const { fg, bg } = theme();
   _root.textContent = '';
+  _barH = 0;
+  _barTop = !!document.getElementById('ms-virtual-keyboard');
+  // a barra vem primeiro: a altura dela entra na conta da área das células (L1)
+  const compact = viewport().w < 420;
+  const bar = box(_root, {
+    position: 'absolute',
+    left: '0',
+    right: '0',
+    [_barTop ? 'top' : 'bottom']: '8px',
+    display: 'flex',
+    gap: compact ? '4px' : '8px',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    zIndex: '1',
+  });
+  const mk = (label, fn) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = label;
+    Object.assign(b.style, {
+      minHeight: '44px',
+      padding: compact ? '0 8px' : '0 14px',
+      border: `3px solid ${fg}`,
+      borderRadius: '8px',
+      background: bg,
+      color: fg,
+      font: compact ? '700 14px/1 sans-serif' : '700 16px/1 sans-serif',
+      cursor: 'pointer',
+    });
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fn();
+    });
+    bar.appendChild(b);
+  };
+  mk(compact ? S.gridClickShort : S.gridClickBtn, () => clickCurrent());
+  mk(compact ? S.gridBackShort : S.gridBackBtn, () => goBack());
+  mk(compact ? S.gridCloseShort : S.gridCloseBtn, () => closeMouseGrid());
+  _barH = bar.offsetHeight + 16;
   const a = px(current());
   // área atual: o resto da tela escurece (sombra), a área fica com moldura forte
   box(_root, {
@@ -137,41 +184,6 @@ function render() {
       _root.appendChild(b);
     }
   }
-  const bar = box(_root, {
-    position: 'absolute',
-    left: '50%',
-    bottom: '8px',
-    transform: 'translateX(-50%)',
-    display: 'flex',
-    gap: '8px',
-    maxWidth: '100%',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    zIndex: '1',
-  });
-  const mk = (label, fn) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = label;
-    Object.assign(b.style, {
-      minHeight: '44px',
-      padding: '0 14px',
-      border: `3px solid ${fg}`,
-      borderRadius: '8px',
-      background: bg,
-      color: fg,
-      font: '700 16px/1 sans-serif',
-      cursor: 'pointer',
-    });
-    b.addEventListener('click', (e) => {
-      e.stopPropagation();
-      fn();
-    });
-    bar.appendChild(b);
-  };
-  mk(S.gridClickBtn, () => clickCurrent());
-  mk(S.gridBackBtn, () => goBack());
-  mk(S.gridCloseBtn, () => closeMouseGrid());
 }
 
 function levelText() {
@@ -302,6 +314,8 @@ export function closeMouseGrid({ restoreFocus = true, silent = false } = {}) {
   _releaseTrap = null;
   _root.remove();
   _root = null;
+  _barH = 0;
+  _barTop = false;
   _stack = [];
   const prev = _prevFocus;
   _prevFocus = null;
@@ -337,15 +351,18 @@ export function clickCurrent() {
     typeof window.PointerEvent === 'function'
       ? window.PointerEvent
       : window.MouseEvent;
+  const ptr = { pointerType: 'mouse', pointerId: 1, isPrimary: true };
+  target.dispatchEvent(new Ptr('pointerdown', { ...init(1), ...ptr }));
   target.dispatchEvent(
-    new Ptr('pointerdown', { ...init(1), pointerType: 'mouse' }),
+    new window.MouseEvent('mousedown', { ...init(1), detail: 1 }),
   );
-  target.dispatchEvent(new window.MouseEvent('mousedown', init(1)));
+  target.dispatchEvent(new Ptr('pointerup', { ...init(0), ...ptr }));
   target.dispatchEvent(
-    new Ptr('pointerup', { ...init(0), pointerType: 'mouse' }),
+    new window.MouseEvent('mouseup', { ...init(0), detail: 1 }),
   );
-  target.dispatchEvent(new window.MouseEvent('mouseup', init(0)));
-  target.dispatchEvent(new window.MouseEvent('click', init(0)));
+  target.dispatchEvent(
+    new window.MouseEvent('click', { ...init(0), detail: 1 }),
+  );
   const focusable = target.closest?.(FOCUSABLE);
   if (focusable && !focusable.disabled) focusable.focus?.();
   announce(S.gridClicked);

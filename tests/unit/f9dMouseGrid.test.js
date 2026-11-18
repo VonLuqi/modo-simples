@@ -196,7 +196,8 @@ describe('F9d clique', () => {
     key('Enter', { key: 'Enter' });
     assert.equal(hitWhileOpen, false);
     assert.ok(
-      Math.abs(point[0] - 750) < 1e-6 && Math.abs(point[1] - 500) < 1e-6,
+      Math.abs(point[0] - 750) < 1e-6 &&
+        Math.abs(point[1] - (5 / 6) * 584) < 1e-6,
     );
     assert.deepEqual(
       seen.map((s) => s[0]),
@@ -204,7 +205,9 @@ describe('F9d clique', () => {
     );
     for (const s of seen)
       assert.ok(
-        Math.abs(s[1] - 750) < 1e-6 && Math.abs(s[2] - 500) < 1e-6 && s[3],
+        Math.abs(s[1] - 750) < 1e-6 &&
+          Math.abs(s[2] - (5 / 6) * 584) < 1e-6 &&
+          s[3],
       );
     assert.equal(isMouseGridOpen(), false);
     assert.equal(document.activeElement, b);

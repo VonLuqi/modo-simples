@@ -116,22 +116,7 @@ export const ROWS = [
     'Backspace',
   ],
   ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '´`', '[{'],
-  [
-    'Caps',
-    'a',
-    's',
-    'd',
-    'f',
-    'g',
-    'h',
-    'j',
-    'k',
-    'l',
-    'ç',
-    '~^',
-    ']}',
-    'Enter',
-  ],
+  ['Caps', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ç', '~^', ']}'],
   [
     'Shift',
     '\\|',
@@ -148,7 +133,7 @@ export const ROWS = [
     '/?',
     'Shift',
   ],
-  ['Fechar', 'Space'],
+  ['Fechar', 'Space', 'Enter'],
 ];
 const DEAD_NAMES = {
   '´': S.vkDeadAcute,
@@ -177,6 +162,53 @@ export function isEditableField(el) {
 }
 
 // ── escrita no campo ────────────────────────────────────────────────────────
+
+const isNumber = (el) =>
+  el.tagName === 'INPUT' &&
+  (el.getAttribute('type') || '').toLowerCase() === 'number';
+
+/**
+ * <input type=number> descarta o texto intermediário ("1.", "-", "1e"): value vira "" e o dígito
+ * seguinte se perderia. Guardamos o texto candidato aqui (e na linha "Digitando:" do teclado) até
+ * ele virar um número válido; o campo mantém o último valor válido nesse meio-tempo.
+ * @type {{el: HTMLInputElement, text: string, last: string}|null}
+ */
+let _num = null;
+const NUM_OK = /^[0-9.,+\-eE]+$/;
+
+function numBase(el) {
+  // valor mudado por fora (usuário/site): recomeça dele
+  return _num && _num.el === el && el.value === _num.last
+    ? _num.text
+    : el.value;
+}
+
+function numCommit(el, candidate, inputType, data) {
+  const before = el.value;
+  if (!fire(el, 'beforeinput', { inputType, data })) return false;
+  setValue(el, candidate);
+  if (candidate !== '' && el.value === '') {
+    setValue(el, before); // o navegador recusou o intermediário: o campo segue como estava
+    _num = { el, text: candidate, last: before };
+    updatePreview();
+    return true;
+  }
+  _num = null;
+  fire(el, 'input', { inputType, data });
+  updatePreview();
+  return true;
+}
+
+function numInsert(el, text, inputType) {
+  if (!NUM_OK.test(text)) return false; // letras não entram em campo numérico
+  return numCommit(el, numBase(el) + text.replace(/,/g, '.'), inputType, text);
+}
+
+function numDelete(el) {
+  const base = numBase(el);
+  if (base === '') return false;
+  return numCommit(el, base.slice(0, -1), 'deleteContentBackward', null);
+}
 
 const win = () => document.defaultView || window;
 
@@ -252,6 +284,7 @@ export function insertText(el, text, inputType = 'insertText') {
     fire(el, 'input', { inputType, data: text });
     return true;
   }
+  if (isNumber(el)) return numInsert(el, text, inputType);
   const [s, e, val] = selection(el);
   const max = el.maxLength;
   if (max >= 0 && val.length - (e - s) + text.length > max) return false;
@@ -279,6 +312,7 @@ export function deleteBack(el) {
     fire(el, 'input', { inputType: 'deleteContentBackward' });
     return true;
   }
+  if (isNumber(el)) return numDelete(el);
   let [s, e, val] = selection(el);
   if (s === e) {
     if (s === 0) return false;
@@ -294,7 +328,42 @@ export function deleteBack(el) {
   return true;
 }
 
-/** Enter: quebra de linha em textarea/contenteditable; em input, Enter real + envio do form. */
+const IMPLICIT = [
+  'text',
+  'search',
+  'url',
+  'tel',
+  'email',
+  'password',
+  'date',
+  'month',
+  'week',
+  'time',
+  'datetime-local',
+  'number',
+];
+
+/**
+ * Elemento que o Enter nativo acionaria: o botão de envio padrão do form, ou `true` quando o form
+ * tem um único campo de texto (envio implícito), ou null (o Enter nativo não enviaria).
+ */
+function enterSubmit(form) {
+  const els = [...form.elements];
+  const btn = els.find(
+    (e) =>
+      (e.tagName === 'BUTTON' && e.type === 'submit') ||
+      (e.tagName === 'INPUT' && (e.type === 'submit' || e.type === 'image')),
+  );
+  if (btn) return btn.disabled ? null : btn;
+  const fields = els.filter(
+    (e) =>
+      e.tagName === 'INPUT' &&
+      IMPLICIT.includes((e.getAttribute('type') || 'text').toLowerCase()),
+  );
+  return fields.length === 1 ? true : null;
+}
+
+/** Enter: quebra de linha em textarea/contenteditable; em input, Enter real + envio como o nativo. */
 export function pressEnter(el) {
   if (!el) return false;
   if (el.tagName !== 'INPUT') return insertText(el, '\n', 'insertLineBreak');
@@ -309,7 +378,11 @@ export function pressEnter(el) {
     cancelable: true,
   };
   const go = el.dispatchEvent(new K('keydown', init));
-  if (go) el.form?.requestSubmit?.();
+  if (go && el.form) {
+    const how = enterSubmit(el.form);
+    if (how === true) el.form.requestSubmit?.();
+    else if (how) el.form.requestSubmit?.(how);
+  }
   el.dispatchEvent(new K('keyup', init));
   return true;
 }
@@ -329,6 +402,8 @@ let _inputmodes = new Map();
 let _bodyPad = null;
 let _basePad = 0;
 let _keys = [];
+/** FAB escondido enquanto o teclado está aberto: [elemento, display antigo, prioridade] */
+let _fab = null;
 
 const isTouchDevice = () =>
   (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0) ||
@@ -371,10 +446,42 @@ function setStyle(el, styles) {
     el.style.setProperty(k, v, 'important');
 }
 
+function updatePreview() {
+  const p = _root?.querySelector('[data-vk-preview]');
+  if (!p) return;
+  p.textContent = _num ? `${S.vkPendingPre} ${_num.text}` : '';
+  p.style.setProperty('display', _num ? 'block' : 'none', 'important');
+  reserve();
+}
+
+/** Esconde o botão flutuante (ele cobriria a tecla do canto); as preferências salvas não mudam. */
+function hideFab() {
+  const wrap = document
+    .getElementById('ms-container')
+    ?.shadowRoot?.querySelector('[data-ms-fab-wrap]');
+  if (!wrap || _fab) return;
+  _fab = [
+    wrap,
+    wrap.style.getPropertyValue('display'),
+    wrap.style.getPropertyPriority('display'),
+  ];
+  wrap.style.setProperty('display', 'none', 'important');
+}
+
+function restoreFab() {
+  if (!_fab) return;
+  const [wrap, v, p] = _fab;
+  if (v) wrap.style.setProperty('display', v, p);
+  else wrap.style.removeProperty('display');
+  _fab = null;
+}
+
 function paint() {
   if (!_root) return;
   const { color, background } = themeColors();
   setStyle(_root, { background, color, 'border-top': `3px solid ${color}` });
+  const hc = _root.querySelector('[data-vk-hint-close]');
+  if (hc) setStyle(hc, { background, color, border: `2px solid ${color}` });
   for (const { btn, def } of _keys) {
     const pressed =
       (def === 'Shift' && _shift) ||
@@ -434,8 +541,11 @@ function render() {
     .querySelector('[data-vk-hint]')
     .style.setProperty('display', has ? 'none' : 'block', 'important');
   _root
+    .querySelector('[data-vk-hintrow]')
+    .style.setProperty('display', has ? 'none' : 'flex', 'important');
+  _root
     .querySelector('[data-vk-keys]')
-    .style.setProperty('display', has ? 'block' : 'none', 'important');
+    .style.setProperty('display', has ? 'flex' : 'none', 'important');
   paint();
   reserve();
 }
@@ -454,6 +564,8 @@ function setTarget(el) {
   _target = el;
   _dead = null;
   _shift = false;
+  _num = null;
+  updatePreview();
   if (el && _touch) {
     // celular: a tela já tem o nosso teclado; some o nativo
     _inputmodes.set(el, el.getAttribute('inputmode'));
@@ -507,6 +619,55 @@ function press(def) {
   paint();
 }
 
+/** Largura de 1 unidade de tecla: 10 por linha em telas estreitas, no máximo 56px nas largas. */
+const UNIT = 'min(calc((100% - 40px) / 10), 56px)';
+const basis = (w) => `calc(${w} * ${UNIT} + ${(w - 1) * 4}px)`;
+const WEIGHT = {
+  Backspace: 2,
+  Caps: 2,
+  Shift: 2,
+  Fechar: 2,
+  Enter: 2,
+  Space: 6,
+};
+
+function buildRow(row) {
+  const line = document.createElement('div');
+  setStyle(line, {
+    display: 'flex',
+    'flex-wrap': 'wrap',
+    gap: '4px',
+    margin: '0 0 4px',
+  });
+  for (const def of row) {
+    const w = WEIGHT[def] || 1;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.vk = def;
+    if (def !== 'Fechar') btn.tabIndex = -1; // só o Fechar entra na ordem do Tab
+    btn.textContent = SPECIAL.includes(def) ? labelOf(def) : '';
+    setStyle(btn, {
+      flex: `${w} 1 ${basis(w)}`,
+      'min-width': '24px',
+      'min-height': '40px',
+      margin: '0',
+      padding: '0 2px',
+      font: '600 18px/1 system-ui, sans-serif',
+      'border-radius': '8px',
+      cursor: 'pointer',
+    });
+    if (def === 'Shift' || def === 'Caps')
+      btn.setAttribute('aria-pressed', 'false');
+    // sem roubar o foco do campo (mouse e toque)
+    btn.addEventListener('pointerdown', (e) => e.preventDefault());
+    btn.addEventListener('mousedown', (e) => e.preventDefault());
+    btn.addEventListener('click', () => press(def));
+    line.append(btn);
+    _keys.push({ btn, def });
+  }
+  return line;
+}
+
 function build() {
   const root = document.createElement('div');
   root.id = KEYBOARD_ID;
@@ -517,12 +678,20 @@ function build() {
     left: '0',
     right: '0',
     bottom: '0',
+    display: 'flex',
+    'flex-direction': 'column',
     'box-sizing': 'border-box',
     padding: '8px',
     'z-index': '2147483644',
     font: '600 20px/1 system-ui, sans-serif',
-    'max-height': '70vh',
-    'overflow-y': 'auto',
+    'max-height': '60vh',
+  });
+  const hintRow = document.createElement('div');
+  hintRow.dataset.vkHintrow = '';
+  setStyle(hintRow, {
+    'align-items': 'center',
+    gap: '8px',
+    'justify-content': 'space-between',
   });
   const hint = document.createElement('p');
   hint.dataset.vkHint = '';
@@ -532,54 +701,55 @@ function build() {
     font: '600 18px/1.4 system-ui, sans-serif',
     color: 'inherit',
   });
+  // sem campo focado só a dica aparece: o Fechar precisa estar aqui também
+  const hintClose = document.createElement('button');
+  hintClose.type = 'button';
+  hintClose.dataset.vkHintClose = '';
+  hintClose.textContent = S.vkClose;
+  setStyle(hintClose, {
+    'min-width': '44px',
+    'min-height': '44px',
+    padding: '0 14px',
+    font: '600 18px/1 system-ui, sans-serif',
+    'border-radius': '8px',
+    cursor: 'pointer',
+  });
+  hintClose.addEventListener('pointerdown', (e) => e.preventDefault());
+  hintClose.addEventListener('mousedown', (e) => e.preventDefault());
+  hintClose.addEventListener('click', () => closeVirtualKeyboard());
+  hintRow.append(hint, hintClose);
+
+  // teclas: preview (número pendente) + linhas com rolagem + linha de baixo sempre visível
   const keys = document.createElement('div');
   keys.dataset.vkKeys = '';
-  keys.style.setProperty('max-width', '960px', 'important');
-  keys.style.setProperty('margin', '0 auto', 'important');
-  const wide = {
-    Backspace: 2,
-    Caps: 2,
-    Enter: 2,
-    Shift: 2,
-    Fechar: 2,
-    Space: 8,
-  };
-  for (const row of ROWS) {
-    const line = document.createElement('div');
-    setStyle(line, {
-      display: 'flex',
-      'flex-wrap': 'wrap',
-      gap: '4px',
-      margin: '0 0 4px',
-    });
-    for (const def of row) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.dataset.vk = def;
-      if (def !== 'Fechar') btn.tabIndex = -1; // só o Fechar entra na ordem do Tab
-      btn.textContent = SPECIAL.includes(def) ? labelOf(def) : '';
-      setStyle(btn, {
-        flex: `${wide[def] || 1} 0 ${(wide[def] || 1) * 44}px`,
-        'min-width': '44px',
-        'min-height': '48px',
-        margin: '0',
-        padding: '0 4px',
-        font: 'inherit',
-        'border-radius': '8px',
-        cursor: 'pointer',
-      });
-      if (def === 'Shift' || def === 'Caps')
-        btn.setAttribute('aria-pressed', 'false');
-      // sem roubar o foco do campo (mouse e toque)
-      btn.addEventListener('pointerdown', (e) => e.preventDefault());
-      btn.addEventListener('mousedown', (e) => e.preventDefault());
-      btn.addEventListener('click', () => press(def));
-      line.append(btn);
-      _keys.push({ btn, def });
-    }
-    keys.append(line);
-  }
-  root.append(hint, keys);
+  setStyle(keys, {
+    'flex-direction': 'column',
+    'min-height': '0',
+    width: '100%',
+    'max-width': '1000px',
+    margin: '0 auto',
+  });
+  const preview = document.createElement('div');
+  preview.dataset.vkPreview = '';
+  setStyle(preview, {
+    display: 'none',
+    margin: '0 0 6px',
+    font: '600 20px/1.3 system-ui, sans-serif',
+  });
+  const scroll = document.createElement('div');
+  scroll.dataset.vkScroll = '';
+  setStyle(scroll, {
+    'overflow-y': 'auto',
+    'min-height': '0',
+    flex: '1 1 auto',
+  });
+  for (const row of ROWS.slice(0, -1)) scroll.append(buildRow(row));
+  const bottom = buildRow(ROWS[ROWS.length - 1]);
+  bottom.dataset.vkBottom = '';
+  bottom.style.setProperty('flex', '0 0 auto', 'important');
+  bottom.style.setProperty('margin', '4px 0 0', 'important');
+  keys.append(preview, scroll, bottom);
+  root.append(hintRow, keys);
   return root;
 }
 
@@ -595,9 +765,11 @@ export function openVirtualKeyboard({ touch } = {}) {
   _keys = [];
   _root = build();
   document.documentElement.appendChild(_root);
+  hideFab();
   const focus = (e) => {
     const t = e.target;
-    if (t?.closest?.(`#${KEYBOARD_ID}`)) return; // foco numa tecla (Tab): mantém o campo
+    // foco na UI da lib (tecla, grade de mouse, FAB, painel): mantém o campo, para poder usá-la
+    if (t?.closest?.(`#${KEYBOARD_ID}, #ms-mouse-grid, #ms-container`)) return;
     setTarget(isEditableField(t) ? t : null);
   };
   on(document, 'focusin', focus);
@@ -629,6 +801,8 @@ export function closeVirtualKeyboard({ silent = false } = {}) {
     else document.body.style.removeProperty('padding-bottom');
   }
   _bodyPad = null;
+  restoreFab();
+  _num = null;
   _root.remove();
   _root = null;
   _target = null;

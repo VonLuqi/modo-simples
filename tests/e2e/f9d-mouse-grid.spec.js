@@ -12,6 +12,16 @@ async function load(page) {
   await page.goto(PAGE);
   await waitForLib(page);
 }
+/** A barra de botões tira altura da área da grade: põe o alvo no centro da célula 9 → 5 dela. */
+const alignTarget = (page) =>
+  page.evaluate(() => {
+    const bar = document.querySelector(
+      '#ms-mouse-grid button:not([data-cell])',
+    ).parentElement;
+    const barH = bar.offsetHeight + 16;
+    document.getElementById('target').style.top =
+      `${((innerHeight - barH) * 5) / 6}px`;
+  });
 const clicks = (page) => page.evaluate(() => window.__clicks);
 const activeId = (page) => page.evaluate(() => document.activeElement?.id);
 
@@ -42,6 +52,7 @@ test.describe('F9d — Grade de mouse', () => {
     await load(page);
     await page.keyboard.press('Alt+Shift+G');
     await expect(page.locator(GRID)).toBeVisible();
+    await alignTarget(page);
     await page.keyboard.press('9');
     await expect(page.locator(CELLS)).toHaveCount(9); // 2º nível desenhado
     await page.keyboard.press('5');
@@ -90,6 +101,7 @@ test.describe('F9d — Grade de mouse', () => {
     const { page } = site;
     await load(page);
     await page.keyboard.press('Alt+Shift+G');
+    await alignTarget(page);
     // sobre o alvo, o elemento do topo é a grade; ao clicar, o alvo da página recebe o clique
     const top = await page.evaluate(() => {
       const r = document.getElementById('target').getBoundingClientRect();
@@ -110,9 +122,10 @@ test.describe('F9d — Grade de mouse', () => {
     const { page } = site;
     await load(page);
     await page.keyboard.press('Alt+Shift+G');
+    await alignTarget(page);
     await page.locator(`${CELLS}[data-cell="9"]`).click();
     await page.locator(`${CELLS}[data-cell="5"]`).click();
-    await page.getByRole('button', { name: /Clicar aqui/ }).click();
+    await page.getByRole('button', { name: /^Clicar/ }).click();
     await expect(page.locator(GRID)).toHaveCount(0);
     expect((await clicks(page)).at(-1)).toBe('click');
   });
@@ -130,5 +143,79 @@ test.describe('F9d — Grade de mouse', () => {
     const last = await page.locator(`${CELLS} >> nth=8`).boundingBox();
     expect(last.x + last.width).toBeLessThanOrEqual(vp.width + 1);
     expect(last.y + last.height).toBeLessThanOrEqual(vp.height + 1);
+  });
+
+  for (const vp of [
+    { width: 390, height: 844 },
+    { width: 223, height: 482 }, // 390 px com zoom de 175%
+  ]) {
+    test(`QA L1: a ${vp.width}x${vp.height} nenhuma célula fica debaixo da barra de botões`, async ({
+      site,
+    }) => {
+      const { page } = site;
+      await page.setViewportSize(vp);
+      await load(page);
+      await page.keyboard.press('Alt+Shift+G');
+      await expect(page.locator(CELLS)).toHaveCount(9);
+      for (let nivel = 0; nivel < 2; nivel++) {
+        const m = await page.evaluate(() => {
+          const bar = [
+            ...document.querySelectorAll(
+              '#ms-mouse-grid button:not([data-cell])',
+            ),
+          ].map((b) => b.getBoundingClientRect());
+          const barTop = Math.min(...bar.map((r) => r.top));
+          const cells = [
+            ...document.querySelectorAll('#ms-mouse-grid [data-cell]'),
+          ].map((b) => b.getBoundingClientRect());
+          return {
+            barTop,
+            cellsBottom: Math.max(...cells.map((r) => r.bottom)),
+            nBar: bar.length,
+            barH: Math.max(...bar.map((r) => r.bottom)) - barTop,
+          };
+        });
+        expect(m.cellsBottom).toBeLessThanOrEqual(m.barTop + 1);
+        await page.keyboard.press('9');
+      }
+      // a barra em uma linha só (botões lado a lado)
+      const tops = await page.$$eval(
+        '#ms-mouse-grid button:not([data-cell])',
+        (bs) => bs.map((b) => Math.round(b.getBoundingClientRect().top)),
+      );
+      expect(new Set(tops).size).toBe(1);
+    });
+  }
+
+  test('QA L1/M3: com o teclado virtual aberto a barra vai para o topo e as células cobrem o teclado', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.setViewportSize({ width: 390, height: 844 });
+    await load(page);
+    await page.evaluate(() => {
+      const kb = document.createElement('div');
+      kb.id = 'ms-virtual-keyboard';
+      kb.style.cssText = 'position:fixed;left:0;right:0;bottom:0;height:200px';
+      document.body.appendChild(kb);
+    });
+    await page.keyboard.press('Alt+Shift+G');
+    const m = await page.evaluate(() => {
+      const bar = [
+        ...document.querySelectorAll('#ms-mouse-grid button:not([data-cell])'),
+      ].map((b) => b.getBoundingClientRect());
+      const barBottom = Math.max(...bar.map((r) => r.bottom));
+      const cells = [
+        ...document.querySelectorAll('#ms-mouse-grid [data-cell]'),
+      ].map((b) => b.getBoundingClientRect());
+      return {
+        barBottom,
+        cellsTop: Math.min(...cells.map((r) => r.top)),
+        cellsBottom: Math.max(...cells.map((r) => r.bottom)),
+        vh: innerHeight,
+      };
+    });
+    expect(m.cellsTop).toBeGreaterThanOrEqual(m.barBottom - 1);
+    expect(m.cellsBottom).toBeGreaterThan(m.vh - 4); // chega ao rodapé (onde fica o teclado)
   });
 });

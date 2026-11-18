@@ -2666,6 +2666,7 @@
     vkOpened: "Teclado virtual aberto. Toque num campo de texto.",
     vkClosed: "Teclado virtual fechado.",
     vkClose: "Fechar",
+    vkPendingPre: "Digitando:",
     vkBackspace: "Apagar",
     vkEnter: "Enter",
     vkShift: "Shift",
@@ -2688,6 +2689,9 @@
     gridClickBtn: "Clicar aqui (Enter)",
     gridBackBtn: "Voltar (Backspace)",
     gridCloseBtn: "Fechar (Esc)",
+    gridClickShort: "Clicar",
+    gridBackShort: "Voltar",
+    gridCloseShort: "Fechar",
     outlineTitle: "Estrutura da p\xE1gina",
     outlineClose: "Fechar",
     outlineLandmarks: "\xC1reas da p\xE1gina",
@@ -5372,14 +5376,20 @@
   var _prevFocus2 = null;
   var _releaseTrap = null;
   var _stack = [];
+  var _barH = 0;
+  var _barTop = false;
   var viewport = () => ({
     w: document.documentElement.clientWidth || window.innerWidth || 1,
-    h: document.documentElement.clientHeight || window.innerHeight || 1
+    h: Math.max(
+      1,
+      (document.documentElement.clientHeight || window.innerHeight || 1) - _barH
+    ),
+    y0: _barTop ? _barH : 0
   });
   var current = () => _stack[_stack.length - 1];
   function px(a) {
     const v = viewport();
-    return { x: a.x * v.w, y: a.y * v.h, w: a.w * v.w, h: a.h * v.h };
+    return { x: a.x * v.w, y: v.y0 + a.y * v.h, w: a.w * v.w, h: a.h * v.h };
   }
   function canSubdivide(area) {
     const p = px(area);
@@ -5424,6 +5434,44 @@
     if (!_root2) return;
     const { fg, bg } = theme();
     _root2.textContent = "";
+    _barH = 0;
+    _barTop = !!document.getElementById("ms-virtual-keyboard");
+    const compact = viewport().w < 420;
+    const bar = box(_root2, {
+      position: "absolute",
+      left: "0",
+      right: "0",
+      [_barTop ? "top" : "bottom"]: "8px",
+      display: "flex",
+      gap: compact ? "4px" : "8px",
+      flexWrap: "wrap",
+      justifyContent: "center",
+      zIndex: "1"
+    });
+    const mk = (label, fn) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = label;
+      Object.assign(b.style, {
+        minHeight: "44px",
+        padding: compact ? "0 8px" : "0 14px",
+        border: `3px solid ${fg}`,
+        borderRadius: "8px",
+        background: bg,
+        color: fg,
+        font: compact ? "700 14px/1 sans-serif" : "700 16px/1 sans-serif",
+        cursor: "pointer"
+      });
+      b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        fn();
+      });
+      bar.appendChild(b);
+    };
+    mk(compact ? STRINGS.gridClickShort : STRINGS.gridClickBtn, () => clickCurrent());
+    mk(compact ? STRINGS.gridBackShort : STRINGS.gridBackBtn, () => goBack());
+    mk(compact ? STRINGS.gridCloseShort : STRINGS.gridCloseBtn, () => closeMouseGrid());
+    _barH = bar.offsetHeight + 16;
     const a = px(current());
     box(_root2, {
       position: "absolute",
@@ -5466,41 +5514,6 @@
         _root2.appendChild(b);
       }
     }
-    const bar = box(_root2, {
-      position: "absolute",
-      left: "50%",
-      bottom: "8px",
-      transform: "translateX(-50%)",
-      display: "flex",
-      gap: "8px",
-      maxWidth: "100%",
-      flexWrap: "wrap",
-      justifyContent: "center",
-      zIndex: "1"
-    });
-    const mk = (label, fn) => {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.textContent = label;
-      Object.assign(b.style, {
-        minHeight: "44px",
-        padding: "0 14px",
-        border: `3px solid ${fg}`,
-        borderRadius: "8px",
-        background: bg,
-        color: fg,
-        font: "700 16px/1 sans-serif",
-        cursor: "pointer"
-      });
-      b.addEventListener("click", (e) => {
-        e.stopPropagation();
-        fn();
-      });
-      bar.appendChild(b);
-    };
-    mk(STRINGS.gridClickBtn, () => clickCurrent());
-    mk(STRINGS.gridBackBtn, () => goBack());
-    mk(STRINGS.gridCloseBtn, () => closeMouseGrid());
   }
   function levelText() {
     return canSubdivide(current()) ? `${STRINGS.gridLevelPre} ${_stack.length}. ${STRINGS.gridChoose}` : STRINGS.gridMin;
@@ -5606,6 +5619,8 @@
     _releaseTrap = null;
     _root2.remove();
     _root2 = null;
+    _barH = 0;
+    _barTop = false;
     _stack = [];
     const prev = _prevFocus2;
     _prevFocus2 = null;
@@ -5633,15 +5648,18 @@
       buttons
     });
     const Ptr = typeof window.PointerEvent === "function" ? window.PointerEvent : window.MouseEvent;
+    const ptr = { pointerType: "mouse", pointerId: 1, isPrimary: true };
+    target.dispatchEvent(new Ptr("pointerdown", { ...init(1), ...ptr }));
     target.dispatchEvent(
-      new Ptr("pointerdown", { ...init(1), pointerType: "mouse" })
+      new window.MouseEvent("mousedown", { ...init(1), detail: 1 })
     );
-    target.dispatchEvent(new window.MouseEvent("mousedown", init(1)));
+    target.dispatchEvent(new Ptr("pointerup", { ...init(0), ...ptr }));
     target.dispatchEvent(
-      new Ptr("pointerup", { ...init(0), pointerType: "mouse" })
+      new window.MouseEvent("mouseup", { ...init(0), detail: 1 })
     );
-    target.dispatchEvent(new window.MouseEvent("mouseup", init(0)));
-    target.dispatchEvent(new window.MouseEvent("click", init(0)));
+    target.dispatchEvent(
+      new window.MouseEvent("click", { ...init(0), detail: 1 })
+    );
     const focusable = (_a = target.closest) == null ? void 0 : _a.call(target, FOCUSABLE2);
     if (focusable && !focusable.disabled) (_b = focusable.focus) == null ? void 0 : _b.call(focusable);
     announce(STRINGS.gridClicked);
@@ -5994,22 +6012,7 @@
       "Backspace"
     ],
     ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "\xB4`", "[{"],
-    [
-      "Caps",
-      "a",
-      "s",
-      "d",
-      "f",
-      "g",
-      "h",
-      "j",
-      "k",
-      "l",
-      "\xE7",
-      "~^",
-      "]}",
-      "Enter"
-    ],
+    ["Caps", "a", "s", "d", "f", "g", "h", "j", "k", "l", "\xE7", "~^", "]}"],
     [
       "Shift",
       "\\|",
@@ -6026,7 +6029,7 @@
       "/?",
       "Shift"
     ],
-    ["Fechar", "Space"]
+    ["Fechar", "Space", "Enter"]
   ];
   var DEAD_NAMES = {
     "\xB4": STRINGS.vkDeadAcute,
@@ -6046,6 +6049,36 @@
       return TEXT_TYPES.includes(type) && !el2.readOnly && !el2.disabled;
     }
     return el2.getAttribute("contenteditable") !== null && isCE(el2);
+  }
+  var isNumber = (el2) => el2.tagName === "INPUT" && (el2.getAttribute("type") || "").toLowerCase() === "number";
+  var _num = null;
+  var NUM_OK = /^[0-9.,+\-eE]+$/;
+  function numBase(el2) {
+    return _num && _num.el === el2 && el2.value === _num.last ? _num.text : el2.value;
+  }
+  function numCommit(el2, candidate, inputType, data) {
+    const before = el2.value;
+    if (!fire(el2, "beforeinput", { inputType, data })) return false;
+    setValue(el2, candidate);
+    if (candidate !== "" && el2.value === "") {
+      setValue(el2, before);
+      _num = { el: el2, text: candidate, last: before };
+      updatePreview();
+      return true;
+    }
+    _num = null;
+    fire(el2, "input", { inputType, data });
+    updatePreview();
+    return true;
+  }
+  function numInsert(el2, text, inputType) {
+    if (!NUM_OK.test(text)) return false;
+    return numCommit(el2, numBase(el2) + text.replace(/,/g, "."), inputType, text);
+  }
+  function numDelete(el2) {
+    const base = numBase(el2);
+    if (base === "") return false;
+    return numCommit(el2, base.slice(0, -1), "deleteContentBackward", null);
   }
   var win = () => document.defaultView || window;
   function fire(el2, type, init = {}) {
@@ -6111,6 +6144,7 @@
       fire(el2, "input", { inputType, data: text });
       return true;
     }
+    if (isNumber(el2)) return numInsert(el2, text, inputType);
     const [s, e, val] = selection(el2);
     const max = el2.maxLength;
     if (max >= 0 && val.length - (e - s) + text.length > max) return false;
@@ -6137,6 +6171,7 @@
       fire(el2, "input", { inputType: "deleteContentBackward" });
       return true;
     }
+    if (isNumber(el2)) return numDelete(el2);
     let [s, e, val] = selection(el2);
     if (s === e) {
       if (s === 0) return false;
@@ -6150,8 +6185,33 @@
     fire(el2, "input", { inputType: "deleteContentBackward" });
     return true;
   }
+  var IMPLICIT = [
+    "text",
+    "search",
+    "url",
+    "tel",
+    "email",
+    "password",
+    "date",
+    "month",
+    "week",
+    "time",
+    "datetime-local",
+    "number"
+  ];
+  function enterSubmit(form) {
+    const els = [...form.elements];
+    const btn = els.find(
+      (e) => e.tagName === "BUTTON" && e.type === "submit" || e.tagName === "INPUT" && (e.type === "submit" || e.type === "image")
+    );
+    if (btn) return btn.disabled ? null : btn;
+    const fields = els.filter(
+      (e) => e.tagName === "INPUT" && IMPLICIT.includes((e.getAttribute("type") || "text").toLowerCase())
+    );
+    return fields.length === 1 ? true : null;
+  }
   function pressEnter(el2) {
-    var _a, _b;
+    var _a, _b, _c, _d;
     if (!el2) return false;
     if (el2.tagName !== "INPUT") return insertText(el2, "\n", "insertLineBreak");
     const W = win();
@@ -6165,7 +6225,11 @@
       cancelable: true
     };
     const go = el2.dispatchEvent(new K("keydown", init));
-    if (go) (_b = (_a = el2.form) == null ? void 0 : _a.requestSubmit) == null ? void 0 : _b.call(_a);
+    if (go && el2.form) {
+      const how = enterSubmit(el2.form);
+      if (how === true) (_b = (_a = el2.form).requestSubmit) == null ? void 0 : _b.call(_a);
+      else if (how) (_d = (_c = el2.form).requestSubmit) == null ? void 0 : _d.call(_c, how);
+    }
     el2.dispatchEvent(new K("keyup", init));
     return true;
   }
@@ -6180,6 +6244,7 @@
   var _bodyPad = null;
   var _basePad = 0;
   var _keys = [];
+  var _fab = null;
   var isTouchDevice = () => {
     var _a, _b, _c;
     return typeof navigator !== "undefined" && navigator.maxTouchPoints > 0 || !!((_c = (_b = (_a = win()).matchMedia) == null ? void 0 : _b.call(_a, "(pointer: coarse)")) == null ? void 0 : _c.matches);
@@ -6214,10 +6279,37 @@
     for (const [k, v] of Object.entries(styles))
       el2.style.setProperty(k, v, "important");
   }
+  function updatePreview() {
+    const p = _root3 == null ? void 0 : _root3.querySelector("[data-vk-preview]");
+    if (!p) return;
+    p.textContent = _num ? `${STRINGS.vkPendingPre} ${_num.text}` : "";
+    p.style.setProperty("display", _num ? "block" : "none", "important");
+    reserve();
+  }
+  function hideFab() {
+    var _a, _b;
+    const wrap = (_b = (_a = document.getElementById("ms-container")) == null ? void 0 : _a.shadowRoot) == null ? void 0 : _b.querySelector("[data-ms-fab-wrap]");
+    if (!wrap || _fab) return;
+    _fab = [
+      wrap,
+      wrap.style.getPropertyValue("display"),
+      wrap.style.getPropertyPriority("display")
+    ];
+    wrap.style.setProperty("display", "none", "important");
+  }
+  function restoreFab() {
+    if (!_fab) return;
+    const [wrap, v, p] = _fab;
+    if (v) wrap.style.setProperty("display", v, p);
+    else wrap.style.removeProperty("display");
+    _fab = null;
+  }
   function paint() {
     if (!_root3) return;
     const { color, background } = themeColors();
     setStyle(_root3, { background, color, "border-top": `3px solid ${color}` });
+    const hc = _root3.querySelector("[data-vk-hint-close]");
+    if (hc) setStyle(hc, { background, color, border: `2px solid ${color}` });
     for (const { btn, def } of _keys) {
       const pressed = def === "Shift" && _shift || def === "Caps" && _caps || _dead && def.length === 2 && DEAD_KEYS.includes(charOf(def)) && charOf(def) === _dead;
       btn.setAttribute("aria-pressed", String(!!pressed));
@@ -6263,7 +6355,8 @@
     if (!_root3) return;
     const has = !!_target;
     _root3.querySelector("[data-vk-hint]").style.setProperty("display", has ? "none" : "block", "important");
-    _root3.querySelector("[data-vk-keys]").style.setProperty("display", has ? "block" : "none", "important");
+    _root3.querySelector("[data-vk-hintrow]").style.setProperty("display", has ? "none" : "flex", "important");
+    _root3.querySelector("[data-vk-keys]").style.setProperty("display", has ? "flex" : "none", "important");
     paint();
     reserve();
   }
@@ -6280,6 +6373,8 @@
     _target = el2;
     _dead = null;
     _shift = false;
+    _num = null;
+    updatePreview();
     if (el2 && _touch) {
       _inputmodes.set(el2, el2.getAttribute("inputmode"));
       el2.setAttribute("inputmode", "none");
@@ -6329,6 +6424,51 @@
     }
     paint();
   }
+  var UNIT = "min(calc((100% - 40px) / 10), 56px)";
+  var basis = (w) => `calc(${w} * ${UNIT} + ${(w - 1) * 4}px)`;
+  var WEIGHT = {
+    Backspace: 2,
+    Caps: 2,
+    Shift: 2,
+    Fechar: 2,
+    Enter: 2,
+    Space: 6
+  };
+  function buildRow(row) {
+    const line = document.createElement("div");
+    setStyle(line, {
+      display: "flex",
+      "flex-wrap": "wrap",
+      gap: "4px",
+      margin: "0 0 4px"
+    });
+    for (const def of row) {
+      const w = WEIGHT[def] || 1;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.dataset.vk = def;
+      if (def !== "Fechar") btn.tabIndex = -1;
+      btn.textContent = SPECIAL.includes(def) ? labelOf2(def) : "";
+      setStyle(btn, {
+        flex: `${w} 1 ${basis(w)}`,
+        "min-width": "24px",
+        "min-height": "40px",
+        margin: "0",
+        padding: "0 2px",
+        font: "600 18px/1 system-ui, sans-serif",
+        "border-radius": "8px",
+        cursor: "pointer"
+      });
+      if (def === "Shift" || def === "Caps")
+        btn.setAttribute("aria-pressed", "false");
+      btn.addEventListener("pointerdown", (e) => e.preventDefault());
+      btn.addEventListener("mousedown", (e) => e.preventDefault());
+      btn.addEventListener("click", () => press(def));
+      line.append(btn);
+      _keys.push({ btn, def });
+    }
+    return line;
+  }
   function build2() {
     const root = document.createElement("div");
     root.id = KEYBOARD_ID;
@@ -6339,12 +6479,20 @@
       left: "0",
       right: "0",
       bottom: "0",
+      display: "flex",
+      "flex-direction": "column",
       "box-sizing": "border-box",
       padding: "8px",
       "z-index": "2147483644",
       font: "600 20px/1 system-ui, sans-serif",
-      "max-height": "70vh",
-      "overflow-y": "auto"
+      "max-height": "60vh"
+    });
+    const hintRow = document.createElement("div");
+    hintRow.dataset.vkHintrow = "";
+    setStyle(hintRow, {
+      "align-items": "center",
+      gap: "8px",
+      "justify-content": "space-between"
     });
     const hint = document.createElement("p");
     hint.dataset.vkHint = "";
@@ -6354,53 +6502,52 @@
       font: "600 18px/1.4 system-ui, sans-serif",
       color: "inherit"
     });
+    const hintClose = document.createElement("button");
+    hintClose.type = "button";
+    hintClose.dataset.vkHintClose = "";
+    hintClose.textContent = STRINGS.vkClose;
+    setStyle(hintClose, {
+      "min-width": "44px",
+      "min-height": "44px",
+      padding: "0 14px",
+      font: "600 18px/1 system-ui, sans-serif",
+      "border-radius": "8px",
+      cursor: "pointer"
+    });
+    hintClose.addEventListener("pointerdown", (e) => e.preventDefault());
+    hintClose.addEventListener("mousedown", (e) => e.preventDefault());
+    hintClose.addEventListener("click", () => closeVirtualKeyboard());
+    hintRow.append(hint, hintClose);
     const keys = document.createElement("div");
     keys.dataset.vkKeys = "";
-    keys.style.setProperty("max-width", "960px", "important");
-    keys.style.setProperty("margin", "0 auto", "important");
-    const wide = {
-      Backspace: 2,
-      Caps: 2,
-      Enter: 2,
-      Shift: 2,
-      Fechar: 2,
-      Space: 8
-    };
-    for (const row of ROWS) {
-      const line = document.createElement("div");
-      setStyle(line, {
-        display: "flex",
-        "flex-wrap": "wrap",
-        gap: "4px",
-        margin: "0 0 4px"
-      });
-      for (const def of row) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.dataset.vk = def;
-        if (def !== "Fechar") btn.tabIndex = -1;
-        btn.textContent = SPECIAL.includes(def) ? labelOf2(def) : "";
-        setStyle(btn, {
-          flex: `${wide[def] || 1} 0 ${(wide[def] || 1) * 44}px`,
-          "min-width": "44px",
-          "min-height": "48px",
-          margin: "0",
-          padding: "0 4px",
-          font: "inherit",
-          "border-radius": "8px",
-          cursor: "pointer"
-        });
-        if (def === "Shift" || def === "Caps")
-          btn.setAttribute("aria-pressed", "false");
-        btn.addEventListener("pointerdown", (e) => e.preventDefault());
-        btn.addEventListener("mousedown", (e) => e.preventDefault());
-        btn.addEventListener("click", () => press(def));
-        line.append(btn);
-        _keys.push({ btn, def });
-      }
-      keys.append(line);
-    }
-    root.append(hint, keys);
+    setStyle(keys, {
+      "flex-direction": "column",
+      "min-height": "0",
+      width: "100%",
+      "max-width": "1000px",
+      margin: "0 auto"
+    });
+    const preview = document.createElement("div");
+    preview.dataset.vkPreview = "";
+    setStyle(preview, {
+      display: "none",
+      margin: "0 0 6px",
+      font: "600 20px/1.3 system-ui, sans-serif"
+    });
+    const scroll = document.createElement("div");
+    scroll.dataset.vkScroll = "";
+    setStyle(scroll, {
+      "overflow-y": "auto",
+      "min-height": "0",
+      flex: "1 1 auto"
+    });
+    for (const row of ROWS.slice(0, -1)) scroll.append(buildRow(row));
+    const bottom = buildRow(ROWS[ROWS.length - 1]);
+    bottom.dataset.vkBottom = "";
+    bottom.style.setProperty("flex", "0 0 auto", "important");
+    bottom.style.setProperty("margin", "4px 0 0", "important");
+    keys.append(preview, scroll, bottom);
+    root.append(hintRow, keys);
     return root;
   }
   function openVirtualKeyboard({ touch } = {}) {
@@ -6412,10 +6559,11 @@
     _keys = [];
     _root3 = build2();
     document.documentElement.appendChild(_root3);
+    hideFab();
     const focus = (e) => {
       var _a;
       const t = e.target;
-      if ((_a = t == null ? void 0 : t.closest) == null ? void 0 : _a.call(t, `#${KEYBOARD_ID}`)) return;
+      if ((_a = t == null ? void 0 : t.closest) == null ? void 0 : _a.call(t, `#${KEYBOARD_ID}, #ms-mouse-grid, #ms-container`)) return;
       setTarget(isEditableField(t) ? t : null);
     };
     on2(document, "focusin", focus);
@@ -6445,6 +6593,8 @@
       else document.body.style.removeProperty("padding-bottom");
     }
     _bodyPad = null;
+    restoreFab();
+    _num = null;
     _root3.remove();
     _root3 = null;
     _target = null;

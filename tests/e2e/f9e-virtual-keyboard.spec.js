@@ -142,7 +142,7 @@ test.describe('F9e — Teclado virtual', () => {
     ).toBeLessThanOrEqual(16);
   });
 
-  test('o teclado não cobre o campo (rola para cima dele) e as teclas têm ≥ 44px', async ({
+  test('o teclado não cobre o campo (rola para cima dele) e as teclas têm tamanho mínimo', async ({
     site,
   }) => {
     const { page } = site;
@@ -170,15 +170,175 @@ test.describe('F9e — Teclado virtual', () => {
     });
     expect(m.fBottom).toBeLessThanOrEqual(m.kbTop);
     expect(m.fTop).toBeGreaterThanOrEqual(0);
-    expect(m.minW).toBeGreaterThanOrEqual(44);
-    expect(m.minH).toBeGreaterThanOrEqual(44);
+    expect(m.minW).toBeGreaterThanOrEqual(24); // WCAG 2.5.8 (mínimo)
+    expect(m.minH).toBeGreaterThanOrEqual(40);
   });
 
   test('"Desligar tudo" fecha o teclado', async ({ site }) => {
     const { page } = site;
     await open(page);
-    await openPanel(page);
+    await page.keyboard.press('Alt+Shift+A'); // o FAB está escondido: o atalho abre o painel
+    await expect(page.locator('#ms-a11y-panel')).toBeVisible();
     await page.locator('[data-action="reset-all"]').click();
     await expect(page.locator(KB)).toHaveCount(0);
+  });
+
+  test('QA H1: campo numérico aceita 1.5, -5 e 1,5 (vírgula vira ponto)', async ({
+    site,
+  }, info) => {
+    const { page } = site;
+    await open(page);
+    const num = page.locator('#num');
+    for (const [seq, out] of [
+      [['1!', '.>', '5%'], '1.5'],
+      [['-_', '5%'], '-5'],
+      [['1!', ',<', '5%'], '1.5'],
+    ]) {
+      await page.evaluate(() => (document.getElementById('num').value = ''));
+      await num.focus();
+      for (const k of seq) await press(page, info, k);
+      await expect(num).toHaveValue(out);
+    }
+    // texto intermediário aparece na linha "Digitando:"
+    await page.evaluate(() => (document.getElementById('num').value = ''));
+    await num.focus();
+    await typeKeys(page, info, ['1!', '.>']);
+    await expect(page.locator(`${KB} [data-vk-preview]`)).toHaveText(
+      'Digitando: 1.',
+    );
+    await press(page, info, '5%');
+    await expect(page.locator(`${KB} [data-vk-preview]`)).toBeHidden();
+    expect(await active(page)).toBe('num');
+  });
+
+  test('QA M1: a 390x844 o teclado inteiro cabe, sem rolagem interna, com a linha de baixo na tela', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.setViewportSize({ width: 390, height: 844 });
+    await open(page);
+    await page.locator('#t').focus();
+    await expect(page.locator(`${KB} [data-vk-keys]`)).toBeVisible();
+    const m = await page.evaluate(() => {
+      const sc = document.querySelector(
+        '#ms-virtual-keyboard [data-vk-scroll]',
+      );
+      const rects = [
+        ...document.querySelectorAll('#ms-virtual-keyboard [data-vk]'),
+      ].map((b) => b.getBoundingClientRect());
+      return {
+        overflow: sc.scrollHeight - sc.clientHeight,
+        top: Math.min(...rects.map((r) => r.top)),
+        bottom: Math.max(...rects.map((r) => r.bottom)),
+        right: Math.max(...rects.map((r) => r.right)),
+        vh: innerHeight,
+        vw: innerWidth,
+      };
+    });
+    expect(m.overflow).toBeLessThanOrEqual(1);
+    expect(m.top).toBeGreaterThanOrEqual(0);
+    expect(m.bottom).toBeLessThanOrEqual(m.vh);
+    expect(m.right).toBeLessThanOrEqual(m.vw);
+    for (const d of ['Space', 'Enter', 'Fechar']) {
+      await expect(page.locator(`${KB} [data-vk="${d}"]`)).toBeInViewport({
+        ratio: 1,
+      });
+    }
+  });
+
+  test('QA M1: a 390x600 as linhas rolam, a linha de baixo fica sempre visível e o campo aparece acima do teclado', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await page.setViewportSize({ width: 390, height: 600 });
+    await open(page);
+    await page.locator('#last').focus();
+    await expect(page.locator(`${KB} [data-vk-keys]`)).toBeVisible();
+    for (const d of ['Space', 'Enter', 'Fechar']) {
+      await expect(page.locator(`${KB} [data-vk="${d}"]`)).toBeInViewport({
+        ratio: 1,
+      });
+    }
+    const m = await page.evaluate(() => {
+      const kb = document
+        .getElementById('ms-virtual-keyboard')
+        .getBoundingClientRect();
+      const f = document.getElementById('last').getBoundingClientRect();
+      return {
+        kbTop: kb.top,
+        kbBottom: kb.bottom,
+        fBottom: f.bottom,
+        fTop: f.top,
+        vh: innerHeight,
+      };
+    });
+    expect(m.kbBottom).toBeLessThanOrEqual(m.vh);
+    expect(m.fBottom).toBeLessThanOrEqual(m.kbTop);
+    expect(m.fTop).toBeGreaterThanOrEqual(0);
+  });
+
+  test('QA M2: o botão flutuante some com o teclado aberto e volta ao fechar', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await open(page);
+    await expect(page.locator('#ms-fab')).toBeHidden();
+    // sem campo focado só a dica aparece: o Fechar dela fecha o teclado
+    await page.locator(`${KB} [data-vk-hint-close]`).click();
+    await expect(page.locator(KB)).toHaveCount(0);
+    await expect(page.locator('#ms-fab')).toBeVisible();
+  });
+
+  test('QA M3: com um campo focado, a grade de mouse abre e clica numa tecla do teclado: o caractere vai para o campo', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await open(page);
+    await page.locator('#t').focus();
+    await page.locator(`${KB} [data-vk="Fechar"]`).focus(); // foco na UI da lib: mantém o campo
+    await expect(page.locator(`${KB} [data-vk-keys]`)).toBeVisible();
+    await page.keyboard.press('Alt+Shift+G');
+    await expect(page.locator('#ms-mouse-grid')).toBeVisible();
+    await expect(page.locator(`${KB} [data-vk-keys]`)).toBeVisible();
+    const target = await page.locator(`${KB} [data-vk="Space"]`).boundingBox();
+    const cx = target.x + target.width / 2;
+    const cy = target.y + target.height / 2;
+    for (let i = 0; i < 12; i++) {
+      const cells = await page.$$eval('#ms-mouse-grid [data-cell]', (bs) =>
+        bs.map((b) => {
+          const r = b.getBoundingClientRect();
+          return {
+            n: b.dataset.cell,
+            l: r.left,
+            t: r.top,
+            r: r.right,
+            b: r.bottom,
+          };
+        }),
+      );
+      if (!cells.length) break;
+      const c = cells.find(
+        (k) => cx >= k.l && cx <= k.r && cy >= k.t && cy <= k.b,
+      );
+      expect(c, 'a tecla está dentro da grade').toBeTruthy();
+      await page.keyboard.press(`Digit${c.n}`);
+    }
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#ms-mouse-grid')).toHaveCount(0);
+    await expect(page.locator('#t')).toHaveValue(' ');
+  });
+
+  test('QA L3: Enter em formulário de vários campos sem botão de envio não envia (como o Enter nativo)', async ({
+    site,
+  }, info) => {
+    const { page } = site;
+    await open(page);
+    await page.locator('#m1').focus();
+    await typeKeys(page, info, ['a', 'Enter']);
+    expect(await page.evaluate(() => window.__multi)).toBe(0);
+    // o form de um campo só (+ botão) continua enviando
+    await page.locator('#q').focus();
+    await press(page, info, 'Enter');
+    expect(await page.evaluate(() => window.__submits)).toBe(1);
   });
 });

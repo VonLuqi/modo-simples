@@ -54,6 +54,14 @@
         value="somente leitura"
         aria-label="Somente leitura"
       />
+      <label for="num">Quantidade</label>
+      <input id="num" type="number" step="any" />
+      <form id="multi">
+        <label for="m1">Nome</label>
+        <input id="m1" type="text" />
+        <label for="m2">Cidade</label>
+        <input id="m2" type="text" />
+      </form>
       <div id="spacer"></div>
       <label for="last">Último campo</label>
       <input id="last" type="text" />
@@ -62,6 +70,7 @@
       // simula um framework (React): escuta "input" e guarda o que viu
       window.__log = [];
       window.__submits = 0;
+      window.__multi = 0;
       for (const id of ['q', 't', 'ta', 'ce', 'last']) {
         document.getElementById(id).addEventListener('input', (e) => {
           window.__log.push({
@@ -71,6 +80,10 @@
           });
         });
       }
+      document.getElementById('multi').addEventListener('submit', (e) => {
+        e.preventDefault();
+        window.__multi++;
+      });
       document.getElementById('f').addEventListener('submit', (e) => {
         e.preventDefault();
         window.__submits++;
