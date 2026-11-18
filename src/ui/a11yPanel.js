@@ -9,6 +9,7 @@ import { trapFocus } from '../utils/focus.js';
 import { STRINGS as S } from './strings.js';
 import { TYPO_LIMITS } from '../core/state.js';
 import { isFocusReaderSupported } from '../features/focusReader.js';
+import { createPageOutline } from '../features/pageOutline.js';
 import { PROFILES } from '../core/profiles.js';
 import { contrastRatio, effectiveColors } from '../utils/colorContrast.js';
 
@@ -293,6 +294,10 @@ const CONTROLS = {
       ),
     }),
   },
+  // F9c: ação de sessão (abre um diálogo), não é opção persistida
+  pageOutline: {
+    html: `<button type="button" class="ms-tile" data-action="page-outline" aria-haspopup="dialog"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M4 6h16"/><path d="M8 12h12"/><path d="M12 18h8"/>')}</span><span class="ms-tile-label">${S.panelPageOutline}</span></button>`,
+  },
   // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
   typography: {
     html: `
@@ -436,6 +441,7 @@ const SECTIONS = [
       'highlightControls',
       'enlargeTargets',
       'textMagnifier',
+      'pageOutline',
     ],
   },
   {
@@ -538,6 +544,7 @@ export function createA11yPanel({
   onResetFont,
   onSelectProfile,
   onMoveSide,
+  onOutlineJump,
   brand,
 }) {
   const texts = { ...DEFAULT_BRAND, ...brand };
@@ -698,6 +705,13 @@ export function createA11yPanel({
   panel
     .querySelector('[data-action="reset-font"]')
     .addEventListener('click', () => onResetFont?.());
+  const outline = createPageOutline({
+    container: panel,
+    onJump: (el) => onOutlineJump?.(el),
+  });
+  panel
+    .querySelector('[data-action="page-outline"]')
+    .addEventListener('click', (e) => outline.open(e.currentTarget));
 
   // F8b: faixa e rótulo falado de cada slider; teclado (setas/Home/End/PageUp/Down) é o nativo
   TYPO_KEYS.forEach((key) => {
@@ -985,6 +999,7 @@ export function createA11yPanel({
   }
 
   function close() {
+    outline.close({ restoreFocus: false });
     panel.hidden = true;
     if (_releaseFocus) {
       _releaseFocus();
@@ -994,5 +1009,12 @@ export function createA11yPanel({
 
   sync(state);
 
-  return { element: panel, open, close, sync, setSide };
+  return {
+    element: panel,
+    open,
+    close,
+    sync,
+    setSide,
+    closeOutline: () => outline.close({ restoreFocus: false }),
+  };
 }

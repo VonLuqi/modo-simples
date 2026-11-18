@@ -198,6 +198,7 @@ class ModoSimples {
     hideShortcutsCard();
     stopSpeaking();
     stopManualSelect();
+    this._panel?.closeOutline?.();
     this._setPageInert(false);
     revert();
     stopObserving();

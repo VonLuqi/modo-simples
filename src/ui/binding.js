@@ -22,6 +22,7 @@ import {
 } from '../features/tts.js';
 import { isManualSelectActive } from '../features/manualSelect.js';
 import { placeShortcutsCard } from '../features/shortcutsCard.js';
+import { jumpToElement } from '../features/pageOutline.js';
 import { STRINGS as S } from './strings.js';
 import { getProfile } from '../core/profiles.js';
 
@@ -116,6 +117,11 @@ export function buildUI(ms) {
       announce(S.announceResetFont); // depois dos anúncios por opção: é o que fica no aria-live
     },
     onMoveSide: () => ms._movePanelSide(),
+    // F9c: o painel é modal (página inert): fecha o painel antes de mover o foco para o alvo
+    onOutlineJump: (el) => {
+      ms._closePanel();
+      jumpToElement(el);
+    },
     brand: ms._config.brand,
   });
   ms._shadow.appendChild(ms._panel.element);
@@ -342,6 +348,7 @@ export function syncSpeaking(ms, speaking) {
 
 /** Desliga o Modo Simples e volta todas as opções ao padrão; o estado resultante é persistido. */
 export function resetAll(ms) {
+  ms._panel?.closeOutline?.();
   ms._reducedMotionUser = null; // volta a seguir o SO (padrão)
   // um anúncio só ("Tudo desligado"): sem os por opção nem o "Modo Simples desativado" (QA T152 L1)
   ms._applyingProfile = true;

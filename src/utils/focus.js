@@ -27,7 +27,8 @@ const FOCUSABLE_SELECTORS = [
  */
 export function getFocusable(container) {
   return Array.from(container.querySelectorAll(FOCUSABLE_SELECTORS)).filter(
-    (el) => !el.closest('[hidden]') && el.getBoundingClientRect().width > 0,
+    (el) =>
+      !el.closest('[hidden], [inert]') && el.getBoundingClientRect().width > 0,
   );
 }
 

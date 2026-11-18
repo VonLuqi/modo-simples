@@ -1507,7 +1507,8 @@
     }
 
     .ms-switch.ms-tile,
-    .ms-btn-ouvir.ms-tile {
+    .ms-btn-ouvir.ms-tile,
+    .ms-tile[data-action="page-outline"] {
       position: relative;
       display: flex;
       flex-direction: column;
@@ -1703,6 +1704,47 @@
       font-weight: 700;
     }
     .ms-profile-custom[hidden] { display: none; }
+    /* \u2500\u2500 F9c: Estrutura da p\xE1gina (di\xE1logo dentro do painel) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+    .ms-tile[data-action="page-outline"]:hover { background: #eef3fb; }
+    .ms-tile[data-action="page-outline"]:focus-visible,
+    .ms-outline-link:focus-visible { outline: 3px solid var(--ms-blue); outline-offset: 2px; }
+    .ms-outline {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      color: #1e293b;
+    }
+    .ms-outline-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: calc(0.5 * var(--ms-u));
+      padding: calc(0.75 * var(--ms-u));
+      border-bottom: 2px solid #e2e8f0;
+      flex-shrink: 0;
+    }
+    .ms-outline-title { margin: 0; font-size: calc(1.05 * var(--ms-u)); }
+    .ms-outline-close { flex: 0 0 auto; }
+    .ms-outline-body { flex: 1; overflow-y: auto; padding: calc(0.75 * var(--ms-u)); }
+    .ms-outline-group { margin: 0 0 calc(0.4 * var(--ms-u)); font-size: calc(0.9 * var(--ms-u)); color: var(--ms-blue); }
+    .ms-outline-list { list-style: none; margin: 0 0 calc(0.9 * var(--ms-u)); padding: 0; }
+    .ms-outline-link {
+      width: 100%;
+      min-height: 44px;
+      padding: calc(0.4 * var(--ms-u)) calc(0.6 * var(--ms-u));
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+    }
+    .ms-outline-link:hover { background: #eef3fb; }
+    .ms-outline-empty { margin: 0; font-size: calc(0.95 * var(--ms-u)); line-height: 1.4; }
     /* \u2500\u2500 F8c: cursor grande tamb\xE9m dentro do widget \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
        O host recebe data-ms-cursor (domMutator.applyOptions) e herda --ms-cur-arrow/--ms-cur-hand
        do <html> (definidas em page/85-cursor.css): as imagens n\xE3o s\xE3o duplicadas aqui. */
@@ -2605,6 +2647,22 @@
     panelHighlightControls: "Destacar bot\xF5es e campos",
     panelEnlargeTargets: "Ampliar bot\xF5es",
     panelTextMagnifier: "Lupa de texto",
+    panelPageOutline: "Estrutura da p\xE1gina",
+    outlineTitle: "Estrutura da p\xE1gina",
+    outlineClose: "Fechar",
+    outlineLandmarks: "\xC1reas da p\xE1gina",
+    outlineHeadings: "T\xEDtulos",
+    outlineEmpty: "Esta p\xE1gina n\xE3o tem t\xEDtulos nem \xE1reas para listar.",
+    outlineNoText: "(sem texto)",
+    outlineLevel: "n\xEDvel",
+    outlineLmMain: "Conte\xFAdo principal",
+    outlineLmNav: "Navega\xE7\xE3o",
+    outlineLmBanner: "Cabe\xE7alho do site",
+    outlineLmFooter: "Rodap\xE9 do site",
+    outlineLmAside: "Conte\xFAdo lateral",
+    outlineLmForm: "Formul\xE1rio",
+    outlineLmSearch: "Busca",
+    outlineLmRegion: "Regi\xE3o",
     panelTextSpacing: "Espa\xE7amento de texto",
     panelReducedMotion: "Reduzir movimento",
     panelHideImages: "Ocultar imagens",
@@ -2837,7 +2895,7 @@
   ].join(", ");
   function getFocusable(container) {
     return Array.from(container.querySelectorAll(FOCUSABLE_SELECTORS)).filter(
-      (el2) => !el2.closest("[hidden]") && el2.getBoundingClientRect().width > 0
+      (el2) => !el2.closest("[hidden], [inert]") && el2.getBoundingClientRect().width > 0
     );
   }
   function trapFocus(container) {
@@ -3243,6 +3301,210 @@
     _spoke = false;
   }
 
+  // src/features/pageOutline.js
+  var OUTLINE_ID = "ms-page-outline";
+  var OWN = "#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #ms-text-magnifier, [data-ms-live]";
+  var FOCUSABLE = 'a[href], button, input, select, textarea, summary, [contenteditable=""], [contenteditable="true"]';
+  var CANDIDATES = "h1, h2, h3, h4, h5, h6, [role], main, nav, header, footer, aside, form, section, search";
+  var clean2 = (s) => (s || "").replace(/\s+/g, " ").trim();
+  function isHidden(el2) {
+    for (let n = el2; n && n.nodeType === 1; n = n.parentElement) {
+      if (n.hidden || n.getAttribute("aria-hidden") === "true" || n.hasAttribute("data-ms-hidden")) {
+        return true;
+      }
+      const cs = getComputedStyle(n);
+      if (cs.display === "none") return true;
+      if (n === el2 && cs.visibility === "hidden") return true;
+    }
+    return false;
+  }
+  function accessibleName2(el2) {
+    const by = el2.getAttribute("aria-labelledby");
+    if (by) {
+      const t = clean2(
+        by.split(/\s+/).map((id) => {
+          var _a;
+          return ((_a = document.getElementById(id)) == null ? void 0 : _a.textContent) || "";
+        }).join(" ")
+      );
+      if (t) return t;
+    }
+    return clean2(el2.getAttribute("aria-label"));
+  }
+  var ROLE_MAP = {
+    main: "main",
+    navigation: "nav",
+    banner: "banner",
+    contentinfo: "footer",
+    complementary: "aside",
+    form: "form",
+    search: "search",
+    region: "region"
+  };
+  var TAG_MAP = {
+    main: "main",
+    nav: "nav",
+    aside: "aside",
+    search: "search",
+    form: "form",
+    section: "region"
+  };
+  function landmarkRole(el2) {
+    var _a;
+    const explicit = clean2(el2.getAttribute("role")).split(" ")[0].toLowerCase();
+    if (explicit) return ROLE_MAP[explicit] || "";
+    const tag = el2.tagName.toLowerCase();
+    if (TAG_MAP[tag]) return TAG_MAP[tag];
+    if (tag === "header" || tag === "footer") {
+      if ((_a = el2.parentElement) == null ? void 0 : _a.closest("article, aside, main, nav, section")) {
+        return "";
+      }
+      return tag === "header" ? "banner" : "footer";
+    }
+    return "";
+  }
+  var NAME_REQUIRED = /* @__PURE__ */ new Set(["form", "search", "region"]);
+  var ROLE_LABEL = {
+    main: STRINGS.outlineLmMain,
+    nav: STRINGS.outlineLmNav,
+    banner: STRINGS.outlineLmBanner,
+    footer: STRINGS.outlineLmFooter,
+    aside: STRINGS.outlineLmAside,
+    form: STRINGS.outlineLmForm,
+    search: STRINGS.outlineLmSearch,
+    region: STRINGS.outlineLmRegion
+  };
+  function headingLevel(el2) {
+    const m = /^H([1-6])$/.exec(el2.tagName);
+    if (m) return Number(m[1]);
+    if (clean2(el2.getAttribute("role")).split(" ")[0] !== "heading") return 0;
+    const n = parseInt(el2.getAttribute("aria-level"), 10);
+    return n >= 1 && n <= 6 ? n : 2;
+  }
+  function collectOutline(root = document) {
+    const headings = [];
+    const landmarks = [];
+    for (const el2 of root.querySelectorAll(CANDIDATES)) {
+      if (el2.closest(OWN) || isHidden(el2)) continue;
+      const level = headingLevel(el2);
+      if (level) {
+        const text = clean2(el2.textContent) || accessibleName2(el2) || STRINGS.outlineNoText;
+        headings.push({ el: el2, level, text });
+        continue;
+      }
+      const role = landmarkRole(el2);
+      if (!role) continue;
+      const name = accessibleName2(el2);
+      if (NAME_REQUIRED.has(role) && !name) continue;
+      const label = ROLE_LABEL[role];
+      landmarks.push({
+        el: el2,
+        role,
+        name,
+        text: name ? `${label}: ${name}` : label
+      });
+    }
+    return { headings, landmarks };
+  }
+  function jumpToElement(el2) {
+    var _a, _b;
+    if (!(el2 == null ? void 0 : el2.isConnected)) return;
+    (_a = el2.scrollIntoView) == null ? void 0 : _a.call(el2, { block: "start" });
+    if (!el2.hasAttribute("tabindex") && !el2.matches(FOCUSABLE)) {
+      el2.setAttribute("tabindex", "-1");
+      el2.addEventListener("blur", () => el2.removeAttribute("tabindex"), {
+        once: true
+      });
+    }
+    (_b = el2.focus) == null ? void 0 : _b.call(el2, { preventScroll: true });
+  }
+  function createPageOutline({ container, onJump }) {
+    let dlg = null;
+    let trigger = null;
+    const inerted = [];
+    const el2 = (tag, cls, text) => {
+      const n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text) n.textContent = text;
+      return n;
+    };
+    function item(list, text, level, target) {
+      const li = el2("li", "ms-outline-item");
+      if (level) li.style.paddingInlineStart = `${(level - 1) * 16}px`;
+      const b = el2("button", "ms-outline-link", text);
+      b.type = "button";
+      if (level) {
+        b.setAttribute("aria-label", `${STRINGS.outlineLevel} ${level}: ${text}`);
+      }
+      b.addEventListener("click", () => {
+        close({ restoreFocus: false });
+        onJump(target);
+      });
+      li.appendChild(b);
+      list.appendChild(li);
+    }
+    function group(parent, title, rows, levelOf) {
+      if (!rows.length) return;
+      const h = el2("h3", "ms-outline-group", title);
+      const ul = el2("ul", "ms-outline-list");
+      rows.forEach((r) => item(ul, r.text, levelOf == null ? void 0 : levelOf(r), r.el));
+      parent.append(h, ul);
+    }
+    function open(from) {
+      if (dlg) return;
+      trigger = from || null;
+      const { headings, landmarks } = collectOutline();
+      dlg = el2("div", "ms-outline");
+      dlg.id = OUTLINE_ID;
+      dlg.setAttribute("role", "dialog");
+      dlg.setAttribute("aria-modal", "true");
+      dlg.setAttribute("aria-labelledby", `${OUTLINE_ID}-title`);
+      const head = el2("div", "ms-outline-head");
+      const title = el2("h2", "ms-outline-title", STRINGS.outlineTitle);
+      title.id = `${OUTLINE_ID}-title`;
+      const closeBtn = el2(
+        "button",
+        "ms-a11y-action ms-outline-close",
+        STRINGS.outlineClose
+      );
+      closeBtn.type = "button";
+      closeBtn.addEventListener("click", () => close());
+      head.append(title, closeBtn);
+      const body = el2("div", "ms-outline-body");
+      if (!headings.length && !landmarks.length) {
+        body.appendChild(el2("p", "ms-outline-empty", STRINGS.outlineEmpty));
+      } else {
+        group(body, STRINGS.outlineLandmarks, landmarks);
+        group(body, STRINGS.outlineHeadings, headings, (r) => r.level);
+      }
+      dlg.append(head, body);
+      dlg.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape") return;
+        e.preventDefault();
+        e.stopPropagation();
+        close();
+      });
+      for (const n of container.children) {
+        if (!n.hasAttribute("inert")) {
+          n.setAttribute("inert", "");
+          inerted.push(n);
+        }
+      }
+      container.appendChild(dlg);
+      (dlg.querySelector(".ms-outline-link") || closeBtn).focus();
+    }
+    function close({ restoreFocus = true } = {}) {
+      if (!dlg) return;
+      dlg.remove();
+      dlg = null;
+      for (const n of inerted.splice(0)) n.removeAttribute("inert");
+      const t = trigger;
+      trigger = null;
+      if (restoreFocus && (t == null ? void 0 : t.isConnected)) t.focus();
+    }
+    return { open, close, isOpen: () => !!dlg };
+  }
+
   // src/utils/colorContrast.js
   var HEX = /^#[0-9a-f]{6}$/i;
   function luminance(hex) {
@@ -3528,6 +3790,10 @@
         )
       })
     },
+    // F9c: ação de sessão (abre um diálogo), não é opção persistida
+    pageOutline: {
+      html: `<button type="button" class="ms-tile" data-action="page-outline" aria-haspopup="dialog"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M4 6h16"/><path d="M8 12h12"/><path d="M12 18h8"/>')}</span><span class="ms-tile-label">${STRINGS.panelPageOutline}</span></button>`
+    },
     // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
     typography: {
       html: `
@@ -3665,7 +3931,8 @@
         "highlightHeadings",
         "highlightControls",
         "enlargeTargets",
-        "textMagnifier"
+        "textMagnifier",
+        "pageOutline"
       ]
     },
     {
@@ -3750,6 +4017,7 @@
     onResetFont,
     onSelectProfile,
     onMoveSide,
+    onOutlineJump,
     brand
   }) {
     const texts = { ...DEFAULT_BRAND, ...brand };
@@ -3888,6 +4156,11 @@
     );
     panel.querySelector('[data-action="reset-all"]').addEventListener("click", () => onResetAll == null ? void 0 : onResetAll());
     panel.querySelector('[data-action="reset-font"]').addEventListener("click", () => onResetFont == null ? void 0 : onResetFont());
+    const outline = createPageOutline({
+      container: panel,
+      onJump: (el2) => onOutlineJump == null ? void 0 : onOutlineJump(el2)
+    });
+    panel.querySelector('[data-action="page-outline"]').addEventListener("click", (e) => outline.open(e.currentTarget));
     TYPO_KEYS.forEach((key) => {
       const input = panel.querySelector(`[data-range="${key}"]`);
       input.max = String(typoIdx(key, TYPO_LIMITS[key].max));
@@ -4115,6 +4388,7 @@
       if (closeBtn) closeBtn.focus();
     }
     function close() {
+      outline.close({ restoreFocus: false });
       panel.hidden = true;
       if (_releaseFocus) {
         _releaseFocus();
@@ -4122,7 +4396,14 @@
       }
     }
     sync(state2);
-    return { element: panel, open, close, sync, setSide };
+    return {
+      element: panel,
+      open,
+      close,
+      sync,
+      setSide,
+      closeOutline: () => outline.close({ restoreFocus: false })
+    };
   }
 
   // src/ui/sessionChrome.js
@@ -5101,6 +5382,11 @@
         announce(STRINGS.announceResetFont);
       },
       onMoveSide: () => ms._movePanelSide(),
+      // F9c: o painel é modal (página inert): fecha o painel antes de mover o foco para o alvo
+      onOutlineJump: (el2) => {
+        ms._closePanel();
+        jumpToElement(el2);
+      },
       brand: ms._config.brand
     });
     ms._shadow.appendChild(ms._panel.element);
@@ -5263,6 +5549,8 @@
     if (ms._chrome) ms._chrome.sync(s, { speaking });
   }
   function resetAll(ms) {
+    var _a, _b;
+    (_b = (_a = ms._panel) == null ? void 0 : _a.closeOutline) == null ? void 0 : _b.call(_a);
     ms._reducedMotionUser = null;
     ms._applyingProfile = true;
     try {
@@ -6157,7 +6445,7 @@
   var MIN_FONT_PX = 32;
   var GAP = 12;
   var MAX_CHARS = 280;
-  var OWN = "#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #" + MAGNIFIER_ID;
+  var OWN2 = "#ms-container, #ms-shortcuts-card, #ms-simples-chrome, #ms-session-bar, #" + MAGNIFIER_ID;
   var BLOCK = "p, li, h1, h2, h3, h4, h5, h6, td, th, dt, dd, blockquote, figcaption, label, legend, caption, summary, button, a, pre";
   var _box = null;
   var _raf2 = null;
@@ -6165,7 +6453,7 @@
   var _escaped = false;
   var _last = "";
   var _listeners2 = [];
-  var clean2 = (s) => (s || "").replace(/\s+/g, " ").trim();
+  var clean3 = (s) => (s || "").replace(/\s+/g, " ").trim();
   function fieldText(el2) {
     var _a;
     const tag = el2.tagName;
@@ -6173,15 +6461,15 @@
       const type = (el2.getAttribute("type") || "text").toLowerCase();
       if (type === "password" || type === "hidden") return "";
       if (["checkbox", "radio", "file", "range", "color"].includes(type)) {
-        return clean2(labelOf(el2));
+        return clean3(labelOf(el2));
       }
-      if (["button", "submit", "reset"].includes(type)) return clean2(el2.value);
-      return clean2(`${labelOf(el2)} ${el2.value || ""}`);
+      if (["button", "submit", "reset"].includes(type)) return clean3(el2.value);
+      return clean3(`${labelOf(el2)} ${el2.value || ""}`);
     }
-    if (tag === "TEXTAREA") return clean2(`${labelOf(el2)} ${el2.value || ""}`);
+    if (tag === "TEXTAREA") return clean3(`${labelOf(el2)} ${el2.value || ""}`);
     if (tag === "SELECT") {
       const opt = (_a = el2.selectedOptions) == null ? void 0 : _a[0];
-      return clean2(`${labelOf(el2)} ${opt ? opt.textContent : ""}`);
+      return clean3(`${labelOf(el2)} ${opt ? opt.textContent : ""}`);
     }
     return "";
   }
@@ -6194,20 +6482,20 @@
   function magnifierTextFor(el2) {
     var _a, _b, _c;
     if (!el2 || el2.nodeType !== 1) return "";
-    if ((_a = el2.closest) == null ? void 0 : _a.call(el2, OWN)) return "";
+    if ((_a = el2.closest) == null ? void 0 : _a.call(el2, OWN2)) return "";
     const tag = el2.tagName;
     if (["INPUT", "TEXTAREA", "SELECT"].includes(tag))
       return fieldText(el2).slice(0, MAX_CHARS);
-    if (tag === "IMG") return clean2(el2.getAttribute("alt")).slice(0, MAX_CHARS);
+    if (tag === "IMG") return clean3(el2.getAttribute("alt")).slice(0, MAX_CHARS);
     for (let n = el2; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
-      if ((_b = n.closest) == null ? void 0 : _b.call(n, OWN)) return "";
+      if ((_b = n.closest) == null ? void 0 : _b.call(n, OWN2)) return "";
       if ((_c = n.matches) == null ? void 0 : _c.call(n, BLOCK)) {
-        const t = clean2(n.textContent);
+        const t = clean3(n.textContent);
         if (t) return t.slice(0, MAX_CHARS);
       }
     }
     const own = [...el2.childNodes].filter((c) => c.nodeType === 3).map((c) => c.textContent).join(" ");
-    return clean2(own).slice(0, MAX_CHARS);
+    return clean3(own).slice(0, MAX_CHARS);
   }
   function rgb(c) {
     const m = /rgba?\(([^)]+)\)/.exec(c || "");
@@ -6458,7 +6746,7 @@
       announce("Modo Simples continua ligado");
     }
     destroy() {
-      var _a;
+      var _a, _b, _c;
       if (!this._initialized) return;
       if (this._removeSpeakListener) {
         this._removeSpeakListener();
@@ -6472,6 +6760,7 @@
       hideShortcutsCard();
       stopSpeaking();
       stopManualSelect();
+      (_b = (_a = this._panel) == null ? void 0 : _a.closeOutline) == null ? void 0 : _b.call(_a);
       this._setPageInert(false);
       revert();
       stopObserving();
@@ -6499,7 +6788,7 @@
         this._chrome.destroy();
         this._chrome = null;
       }
-      if ((_a = this._host) == null ? void 0 : _a.parentNode) this._host.parentNode.removeChild(this._host);
+      if ((_c = this._host) == null ? void 0 : _c.parentNode) this._host.parentNode.removeChild(this._host);
       const pageStyle = document.getElementById("ms-page-styles");
       if (pageStyle == null ? void 0 : pageStyle.parentNode) pageStyle.parentNode.removeChild(pageStyle);
       const lexend = document.getElementById("ms-lexend-font");
