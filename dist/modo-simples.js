@@ -4011,9 +4011,8 @@
     });
     const out = [];
     byLang.forEach((g) => {
-      if (g.length <= max) return out.push(...g);
       const base = g.filter((v) => !v.name.includes("+"));
-      out.push(...(base.length >= 2 ? base : g).slice(0, max));
+      out.push(...(base.length ? base : g).slice(0, max));
     });
     return out;
   }
