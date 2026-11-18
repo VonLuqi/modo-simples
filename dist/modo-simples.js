@@ -6486,22 +6486,24 @@
     }
     paint();
   }
-  var UNIT = "min(calc((100% - 40px) / 10), 56px)";
-  var basis = (w) => `calc(${w} * ${UNIT} + ${(w - 1) * 4}px)`;
+  var GAP2 = 2;
   var WEIGHT = {
-    Backspace: 2,
-    Caps: 2,
-    Shift: 2,
-    Fechar: 2,
-    Enter: 2,
+    Fechar: 3,
+    AltGr: 2.5,
+    Enter: 3,
     Space: 5
   };
+  var GLYPH = { Backspace: "\u2190", Caps: "\u21EA", Shift: "\u21E7" };
+  var rowUnits = (row) => row.reduce((n, d) => n + (WEIGHT[d] || 1), 0);
+  var MAX_UNITS = Math.max(...ROWS.map(rowUnits));
+  var UNIT = `min(calc((100% - ${(MAX_UNITS - 1) * GAP2}px) / ${MAX_UNITS}), 56px)`;
+  var basis = (w) => `calc(${w} * ${UNIT} + ${(w - 1) * GAP2}px)`;
   function buildRow(row) {
     const line = document.createElement("div");
     setStyle(line, {
       display: "flex",
-      "flex-wrap": "wrap",
-      gap: "4px",
+      "flex-wrap": "nowrap",
+      gap: `${GAP2}px`,
       "justify-content": "center",
       margin: "0 0 4px"
     });
@@ -6511,14 +6513,15 @@
       btn.type = "button";
       btn.dataset.vk = def;
       if (def !== "Fechar") btn.tabIndex = -1;
-      btn.textContent = SPECIAL.includes(def) ? labelOf2(def) : "";
+      btn.textContent = GLYPH[def] || (SPECIAL.includes(def) ? labelOf2(def) : "");
+      if (GLYPH[def]) btn.setAttribute("aria-label", labelOf2(def));
       setStyle(btn, {
         flex: `0 0 ${basis(w)}`,
-        "min-width": "24px",
+        "min-width": "0",
         "min-height": "44px",
         margin: "0",
-        padding: "0 2px",
-        font: "600 18px/1 system-ui, sans-serif",
+        padding: "0",
+        font: `600 ${GLYPH[def] ? 12 : 18}px/1 system-ui, sans-serif`,
         "border-radius": "8px",
         cursor: "pointer"
       });
