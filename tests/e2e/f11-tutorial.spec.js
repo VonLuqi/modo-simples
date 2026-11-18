@@ -402,7 +402,7 @@ test('fluxo: Voltar do último passo volta a demonstrar; Back ao 1º restaura', 
   const before = await uiState(page);
   await iniciar(page);
   await avancar(page, 3);
-  await page.getByRole('button', { name: 'Voltar' }).focus();
+  await page.getByRole('button', { name: 'Voltar', exact: true }).focus();
   await page.keyboard.press('Enter');
   await expect(count(page)).toHaveText(`Passo 2 de ${STEPS}`);
   expect(await toolOn(page, (await getSteps(page))[1].tool)).toBe(true);

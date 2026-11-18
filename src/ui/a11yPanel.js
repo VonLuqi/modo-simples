@@ -9,6 +9,13 @@ import { trapFocus } from '../utils/focus.js';
 import { STRINGS as S } from './strings.js';
 import { TYPO_LIMITS } from '../core/state.js';
 import { isFocusReaderSupported } from '../features/focusReader.js';
+import {
+  VOICE_LIMITS,
+  isVoiceSupported,
+  listVoices,
+  onVoicesChanged,
+  previewVoice,
+} from '../features/voice.js';
 import { createPageOutline } from '../features/pageOutline.js';
 import { PROFILES } from '../core/profiles.js';
 import { contrastRatio, effectiveColors } from '../utils/colorContrast.js';
@@ -36,6 +43,28 @@ const typoText = (key, v) =>
   v > 0
     ? `${String(v).replace('.', ',')}${key === 'lineHeight' ? '' : ' em'}`
     : S.panelTypoDefault;
+
+/** Estúdio de Voz (F10b): sliders [chave em options, rótulo]. */
+const VOICE_SLIDERS = [
+  ['voiceRate', S.panelVoiceRateLabel],
+  ['voicePitch', S.panelVoicePitchLabel],
+  ['voiceVolume', S.panelVoiceVolumeLabel],
+];
+const VOICE_LIMIT_OF = {
+  voiceRate: 'rate',
+  voicePitch: 'pitch',
+  voiceVolume: 'volume',
+};
+const VOICE_DEFAULTS = {
+  voiceName: '',
+  voiceRate: 1,
+  voicePitch: 1,
+  voiceVolume: 1,
+};
+const voiceText = (key, v) =>
+  key === 'voiceVolume'
+    ? `${Math.round(v * 100)}%`
+    : `${v.toFixed(1).replace('.', ',')}${key === 'voiceRate' ? '×' : ''}`;
 
 const TEXT_SCALES = [
   { value: '100', label: '100%', title: S.scaleDefault },
@@ -326,6 +355,26 @@ const CONTROLS = {
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="reset-font" aria-label="${S.panelResetFontLabel}">${S.panelResetFont}</button>
         </div>`,
   },
+  // F10b: Estúdio de Voz (ocupa a linha inteira; prefs em options.voice*)
+  voiceStudio: {
+    html: `
+        <div class="ms-a11y-block--span" role="group" aria-labelledby="ms-label-voice">
+          <p id="ms-label-voice" class="ms-a11y-control-label">${S.panelVoiceStudioTitle}</p>
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-name">${S.panelVoiceSelectLabel}</label></div>
+            <select class="ms-range-input" id="ms-voice-name" data-voice="voiceName"></select>
+          </div>
+          ${VOICE_SLIDERS.map(
+            ([key, label]) => `<div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-${key}">${label}</label><span class="ms-a11y-control-state" data-state-for="${key}" aria-hidden="true"></span></div>
+            <input type="range" class="ms-range-input" id="ms-voice-${key}" data-voice="${key}">
+          </div>`,
+          ).join('')}
+          <p class="ms-a11y-control-state" data-voice-note hidden>${S.panelVoiceUnsupported}</p>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-test" aria-label="${S.panelVoiceTestLabel}">${S.panelVoiceTest}</button>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-reset" aria-label="${S.panelVoiceResetLabel}">${S.panelVoiceReset}</button>
+        </div>`,
+  },
   textSpacing: {
     html: switchTile({
       option: 'textSpacing',
@@ -419,6 +468,7 @@ const SECTIONS = [
       'readingRuler',
       'speak',
       'readFocus',
+      'voiceStudio',
       'typography',
     ],
   },
@@ -740,6 +790,63 @@ export function createA11yPanel({
       onSetOption(key, typoValue(key, Number(input.value))),
     );
   });
+  // F10b: Estúdio de Voz — escolha de voz + sliders (teclado nativo); prefs ficam em options.voice*
+  const voiceSel = panel.querySelector('[data-voice="voiceName"]');
+  const voiceSupported = isVoiceSupported();
+  const voiceInput = (key) => panel.querySelector(`[data-voice="${key}"]`);
+  const voiceFromDom = () => ({
+    voiceName: voiceSel.value,
+    voiceRate: Number(voiceInput('voiceRate').value),
+    voicePitch: Number(voiceInput('voicePitch').value),
+    voiceVolume: Number(voiceInput('voiceVolume').value),
+  });
+  voiceSel.style.minHeight = '44px';
+  VOICE_SLIDERS.forEach(([key]) => {
+    const input = voiceInput(key);
+    const lim = VOICE_LIMITS[VOICE_LIMIT_OF[key]];
+    input.min = String(lim.min);
+    input.max = String(lim.max);
+    input.step = String(lim.step);
+    input.value = String(VOICE_DEFAULTS[key]);
+    input.setAttribute('aria-valuetext', voiceText(key, VOICE_DEFAULTS[key]));
+    input.addEventListener('input', () =>
+      onSetOption(key, Number(input.value)),
+    );
+  });
+  voiceSel.addEventListener('change', () =>
+    onSetOption('voiceName', voiceSel.value),
+  );
+  let voiceName = ''; // última voz salva (sync); reaplicada quando a lista de vozes muda
+  const fillVoices = (selected) => {
+    let voices = [];
+    try {
+      voices = voiceSupported ? listVoices() : [];
+    } catch {
+      /* speechSynthesis parcial (sem getVoices): só a opção Automática */
+    }
+    voiceSel.textContent = '';
+    const auto = document.createElement('option');
+    auto.value = '';
+    auto.textContent = S.panelVoiceAuto;
+    voiceSel.appendChild(auto);
+    voices.forEach((v) => {
+      const o = document.createElement('option');
+      o.value = v.name;
+      o.textContent = `${v.name} (${v.lang})`;
+      voiceSel.appendChild(o);
+    });
+    voiceSel.value = selected || '';
+  };
+  fillVoices('');
+  if (voiceSupported) onVoicesChanged(() => fillVoices(voiceName));
+  panel
+    .querySelector('[data-action="voice-test"]')
+    .addEventListener('click', () => previewVoice(voiceFromDom()));
+  panel
+    .querySelector('[data-action="voice-reset"]')
+    .addEventListener('click', () =>
+      Object.entries(VOICE_DEFAULTS).forEach(([k, v]) => onSetOption(k, v)),
+    );
   panel
     .querySelector('[data-action="move-side"]')
     .addEventListener('click', () => onMoveSide?.());
@@ -964,6 +1071,33 @@ export function createA11yPanel({
         if (d) d.textContent = S.panelReadFocusUnsupported;
       }
     });
+
+    // F10b: Estúdio de Voz
+    voiceName = s.options?.voiceName || '';
+    fillVoices(voiceName);
+    VOICE_SLIDERS.forEach(([key]) => {
+      const lim = VOICE_LIMITS[VOICE_LIMIT_OF[key]];
+      const raw = Number(s.options?.[key]);
+      const v = Number.isFinite(raw)
+        ? Math.min(lim.max, Math.max(lim.min, raw))
+        : VOICE_DEFAULTS[key];
+      const input = voiceInput(key);
+      input.value = String(v);
+      input.setAttribute('aria-valuetext', voiceText(key, v));
+      panel.querySelector(`[data-state-for="${key}"]`).textContent = voiceText(
+        key,
+        v,
+      );
+    });
+    if (!voiceSupported) {
+      panel
+        .querySelectorAll('[data-voice], [data-action^="voice-"]')
+        .forEach((el) => {
+          el.disabled = true;
+          el.setAttribute('title', S.panelVoiceUnsupported);
+        });
+      panel.querySelector('[data-voice-note]').hidden = false;
+    }
 
     // Texto de estado dos radiogroups (valor atual); aria-hidden: aria-checked já o anuncia
     const setState = (key, text) => {

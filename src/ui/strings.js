@@ -47,6 +47,18 @@ export const STRINGS = Object.freeze({
   panelVoiceButton: 'Ouvir',
   panelVoiceStopButton: 'Parar',
   panelVoiceStopLabel: 'Parar leitura',
+  panelVoiceStudioTitle: 'Estúdio de Voz',
+  panelVoiceSelectLabel: 'Voz',
+  panelVoiceAuto: 'Automática (português)',
+  panelVoiceRateLabel: 'Velocidade',
+  panelVoicePitchLabel: 'Tom',
+  panelVoiceVolumeLabel: 'Volume',
+  panelVoiceTest: 'Testar voz',
+  panelVoiceTestLabel: 'Testar voz com estas configurações',
+  panelVoiceReset: 'Voltar ao padrão',
+  panelVoiceResetLabel: 'Voltar voz, velocidade, tom e volume ao padrão',
+  panelVoiceUnsupported:
+    'Este navegador não tem voz para ler. Tente outro navegador.',
   mediaOtherSiteNotice:
     'Este vídeo é de outro site. Não consigo tirar o som dele.',
   panelStrongFocusTitle: 'Foco bem visível',
