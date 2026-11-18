@@ -1,5 +1,1180 @@
 /*! modo-simples v2.0.0 | MIT | Script JavaScript injetável de acessibilidade web — Modo Simples */
 (() => {
+  var __defProp = Object.defineProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+
+  // src/i18n/pt.js
+  var pt_exports = {};
+  __export(pt_exports, {
+    SHORTCUTS: () => SHORTCUTS,
+    STRINGS: () => STRINGS,
+    VOICE_CMD_STRINGS: () => VOICE_CMD_STRINGS
+  });
+  var STRINGS = Object.freeze({
+    // fab.js
+    fabTip: "Acessibilidade & Modo Simples",
+    fabOpenLabel: "Abrir painel de acessibilidade",
+    fabCloseLabel: "Fechar painel de acessibilidade",
+    fabHideLabel: "Esconder bot\xE3o de acessibilidade nesta p\xE1gina",
+    announceWidgetHidden: "Bot\xE3o de acessibilidade escondido. Alt+Shift+A mostra de novo.",
+    announceResetAll: "Tudo desligado. P\xE1gina sem ajustes.",
+    announceStillOn: "Modo Simples continua ligado",
+    announceOn: "Modo Simples ativado",
+    announceOff: "Modo Simples desativado",
+    announcePanelOpen: "Painel de acessibilidade aberto",
+    announceReadStopped: "Leitura interrompida",
+    announceReadStart: "Lendo conte\xFAdo principal",
+    announceSideLeft: "Painel movido para a esquerda",
+    announceSideRight: "Painel movido para a direita",
+    panelResetLabel: "Desligar tudo",
+    panelMoveToLeft: "Mover para a esquerda",
+    panelMoveToRight: "Mover para a direita",
+    // a11yPanel.js
+    panelCloseLabel: "Fechar painel de acessibilidade",
+    panelSimpleTitle: "Modo Simples (Recomendado)",
+    panelSimpleDesc: "Oculta distra\xE7\xF5es visuais, aumenta bot\xF5es e resume conte\xFAdos essenciais.",
+    panelSimpleSwitchLabel: "Modo Simples",
+    panelTextSizeTitle: "Tamanho do texto",
+    panelTextSizeItemLabel: "Tamanho do texto",
+    panelThemeTitle: "Contraste e cores",
+    panelThemeItemLabel: "Tema",
+    panelDyslexiaTitle: "Fonte Acess\xEDvel (Lexend)",
+    panelDyslexiaDesc: "Desenvolvida para dislexia e agilidade visual",
+    panelDyslexiaLabel: "Fonte Acess\xEDvel Lexend",
+    panelRulerTitle: "R\xE9gua de Foco de Leitura",
+    panelRulerDesc: "Destaque linha a linha para guiar a aten\xE7\xE3o",
+    panelVoiceTitle: "Leitor de Tela por Voz",
+    panelVoiceDesc: "L\xEA os t\xEDtulos e textos em portugu\xEAs",
+    panelVoiceLabel: "Ouvir conte\xFAdo principal",
+    panelVoiceButton: "Ouvir",
+    panelVoiceStopButton: "Parar",
+    panelVoiceStopLabel: "Parar leitura",
+    panelLanguageTitle: "Idioma",
+    panelLanguageAuto: "Autom\xE1tico ({lang})",
+    panelVoiceStudioTitle: "Est\xFAdio de Voz",
+    panelVoiceSelectLabel: "Voz",
+    panelVoiceAuto: "Autom\xE1tica (portugu\xEAs)",
+    panelVoiceRateLabel: "Velocidade",
+    panelVoicePitchLabel: "Tom",
+    panelVoiceVolumeLabel: "Volume",
+    panelVoiceTest: "Testar voz",
+    panelVoiceTestLabel: "Testar voz com estas configura\xE7\xF5es",
+    panelVoiceReset: "Voltar ao padr\xE3o",
+    panelVoiceResetLabel: "Voltar ao padr\xE3o: voz, velocidade, tom e volume",
+    panelVoiceUnsupported: "Este navegador n\xE3o tem voz para ler. Tente outro navegador.",
+    // F10e — pausar/continuar e comandos de voz no painel
+    panelPause: "Pausar",
+    panelPauseLabel: "Pausar leitura",
+    panelResume: "Continuar",
+    panelResumeLabel: "Continuar leitura",
+    panelVcTitle: "Comandos de voz",
+    panelVcDesc: "Controle a leitura falando. Desligado at\xE9 voc\xEA ligar",
+    panelVcLabel: "Comandos de voz",
+    panelVcUnsupported: "Seu navegador n\xE3o entende comandos de voz. Use Chrome ou Edge.",
+    panelVcListening: "Ouvindo\u2026",
+    panelVcBlocked: "O microfone est\xE1 bloqueado. Libere nas configura\xE7\xF5es do navegador.",
+    panelSpeechFailed: "Seu navegador n\xE3o conseguiu ler em voz alta: n\xE3o h\xE1 voz instalada. No Brave, abra-o com a op\xE7\xE3o --enable-speech-dispatcher, ou use Chrome ou Edge.",
+    panelVoiceMoreHint: 'H\xE1 mais vozes parecidas. Use "Mostrar todas as vozes" para ver todas.',
+    panelVoiceAll: "Mostrar todas as vozes",
+    panelVcBrave: "O Brave n\xE3o permite comandos de voz. Use Chrome ou Edge.",
+    panelVcNoMic: "N\xE3o achei um microfone.",
+    panelVcError: "Os comandos de voz pararam. Tente ligar de novo.",
+    panelVcRevoke: "Parar de enviar minha voz",
+    panelVcRevokeLabel: "Parar de enviar minha voz e desligar comandos de voz",
+    panelVcShow: "Ver comandos",
+    panelVcHide: "Esconder comandos",
+    // lista separada por | (todas as chaves deste arquivo são texto)
+    panelVcCommands: "ler p\xE1gina|parar|pausar|continuar|mais r\xE1pido|mais devagar|descer|subir|ligar modo simples|desligar modo simples|abrir painel|fechar painel|ajuda",
+    panelVcDownloadTitle: "Baixar o portugu\xEAs",
+    panelVcDownloadText: "Para entender sua voz sem enviar nada para a internet, o navegador precisa baixar o portugu\xEAs uma vez. Baixar agora?",
+    panelVcDownloadNow: "Baixar",
+    panelVcDownloading: "Baixando\u2026",
+    panelVcDownloadFail: "N\xE3o deu para baixar.",
+    panelVcUseInternet: "Usar pela internet",
+    panelVcNotNow: "Agora n\xE3o",
+    panelVcCloudTitle: "Enviar minha voz?",
+    panelVcCloudText: "Neste navegador, o que voc\xEA fala \xE9 enviado para a empresa do navegador (Google no Chrome, Microsoft no Edge) para ser entendido. O Modo Simples n\xE3o guarda nada. Quer ligar mesmo assim?",
+    panelVcCloudYes: "Ligar e enviar minha voz",
+    panelVcCloudNo: "N\xE3o ligar",
+    mediaOtherSiteNotice: "Este v\xEDdeo \xE9 de outro site. N\xE3o consigo tirar o som dele.",
+    panelStrongFocusTitle: "Foco bem vis\xEDvel",
+    panelStrongFocusDesc: "Contorno grosso e de duas cores no item em que voc\xEA est\xE1, em qualquer fundo",
+    panelShortcutsTitle: "Mostrar atalhos do teclado",
+    panelShortcutsDesc: "Um cart\xE3o na tela lista as teclas que voc\xEA pode usar",
+    shortcutsTitle: "Atalhos do teclado",
+    shortcutsClose: "Fechar",
+    shortcutAccessKeyPrefix: "Alt+",
+    panelBlockFlashingTitle: "Bloquear anima\xE7\xF5es e GIFs",
+    panelBlockFlashingDesc: "Para anima\xE7\xF5es, textos que correm e v\xEDdeos que come\xE7am sozinhos. GIFs ficam parados at\xE9 voc\xEA clicar",
+    gifShowLabel: "Mostrar anima\xE7\xE3o",
+    panelMuteMediaTitle: "Pausar e mutar tudo",
+    panelMuteMediaDesc: "Pausa e silencia v\xEDdeos e sons da p\xE1gina, inclusive os que come\xE7am sozinhos",
+    panelReadFocusTitle: "Ler o que eu seleciono",
+    panelReadFocusDesc: "A voz l\xEA o bot\xE3o, link, campo ou texto em que voc\xEA clicar ou parar com a tecla Tab. Se voc\xEA usa leitor de tela, pode ouvir duas vezes",
+    panelReadFocusUnsupported: "Este navegador n\xE3o tem voz para ler em voz alta",
+    panelReadFocusUnsupportedState: "Sem voz",
+    stateOn: "Ligado",
+    stateOff: "Desligado",
+    sectionTextTitle: "Texto e leitura",
+    sectionColorsTitle: "Cores e destaque",
+    sectionKeyboardTitle: "Teclado e foco",
+    sectionMotionTitle: "Movimento e imagens",
+    panelHighlightLinks: "Destacar links",
+    sectionPageToolsTitle: "Ferramentas de p\xE1gina",
+    panelHighlightHeadings: "Destacar cabe\xE7alhos",
+    panelHighlightControls: "Destacar bot\xF5es e campos",
+    panelEnlargeTargets: "Ampliar bot\xF5es",
+    panelTextMagnifier: "Lupa de texto",
+    panelPageOutline: "Estrutura da p\xE1gina",
+    panelMouseGrid: "Grade de mouse",
+    panelVirtualKeyboard: "Teclado virtual",
+    vkLabel: "Teclado virtual",
+    vkHint: "Toque num campo de texto",
+    vkOpened: "Teclado virtual aberto. Toque num campo de texto.",
+    vkClosed: "Teclado virtual fechado.",
+    vkClose: "Fechar",
+    vkPendingPre: "Digitando:",
+    vkBackspace: "Apagar",
+    vkEnter: "Enter",
+    vkShift: "Shift",
+    vkCaps: "Caps",
+    vkAltGr: "AltGr",
+    vkSpace: "Espa\xE7o",
+    vkDeadAcute: "Acento agudo",
+    vkDeadGrave: "Acento grave",
+    vkDeadTilde: "Til",
+    vkDeadCircumflex: "Acento circunflexo",
+    vkDeadDiaeresis: "Trema",
+    gridDialogLabel: "Grade de mouse",
+    gridOpen: "Grade aberta. Escolha de 1 a 9.",
+    gridLevelPre: "N\xEDvel",
+    gridChoose: "Escolha de 1 a 9.",
+    gridMin: "\xC1rea m\xEDnima. Aperte Enter para clicar.",
+    gridTop: "Voc\xEA j\xE1 est\xE1 no primeiro n\xEDvel.",
+    gridClosed: "Grade fechada.",
+    gridClicked: "Clique feito.",
+    gridCellLabel: "C\xE9lula",
+    gridClickBtn: "Clicar aqui (Enter)",
+    gridBackBtn: "Voltar (Backspace)",
+    gridCloseBtn: "Fechar (Esc)",
+    gridClickShort: "Clicar",
+    gridBackShort: "Voltar",
+    gridCloseShort: "Fechar",
+    outlineTitle: "Estrutura da p\xE1gina",
+    outlineClose: "Fechar",
+    outlineLandmarks: "\xC1reas da p\xE1gina",
+    outlineHeadings: "T\xEDtulos",
+    outlineEmpty: "Esta p\xE1gina n\xE3o tem t\xEDtulos nem \xE1reas para listar.",
+    outlineNoText: "(sem texto)",
+    outlineLevel: "n\xEDvel",
+    outlineLmMain: "Conte\xFAdo principal",
+    outlineLmNav: "Navega\xE7\xE3o",
+    outlineLmBanner: "Cabe\xE7alho do site",
+    outlineLmFooter: "Rodap\xE9 do site",
+    outlineLmAside: "Conte\xFAdo lateral",
+    outlineLmForm: "Formul\xE1rio",
+    outlineLmSearch: "Busca",
+    outlineLmRegion: "Regi\xE3o",
+    panelTextSpacing: "Espa\xE7amento de texto",
+    panelReducedMotion: "Reduzir movimento",
+    panelHideImages: "Ocultar imagens",
+    panelHideImagesHint: "No Modo Simples, imagens somem por padr\xE3o \u2014 desligue para manter",
+    panelDefaultTitle: "Acessibilidade Digital",
+    panelDefaultFooter: "Prefer\xEAncias salvas neste navegador",
+    scaleDefault: "Padr\xE3o",
+    scaleLarge: "Grande",
+    scaleLarger: "Maior",
+    scaleMax: "M\xE1ximo",
+    themeSite: "Cores do site",
+    themeSiteSub: "Padr\xE3o",
+    themeYellowBlack: "Amarelo e Preto",
+    themeYellowBlackSub: "Alto contraste",
+    themeDarkHigh: "Modo Escuro Alto",
+    themeDarkHighSub: "Fundo escuro",
+    themeSoft: "Descanso / Suave",
+    themeSoftSub: "Baixa intensidade",
+    themeMono: "Monocrom\xE1tico",
+    themeMonoSub: "Tons de cinza",
+    themeLightHigh: "Claro Alto Contraste",
+    themeLightHighSub: "Fundo branco",
+    panelTypoGroupLabel: "Ajuste fino da tipografia",
+    panelLineHeightTitle: "Altura da linha",
+    panelWordSpacingTitle: "Espa\xE7o entre palavras",
+    panelLetterSpacingTitle: "Espa\xE7o entre letras",
+    panelTypoDefault: "Padr\xE3o do site",
+    panelResetFont: "Redefinir fonte",
+    announceResetFont: "Fonte redefinida: tamanho, fonte acess\xEDvel e espa\xE7amentos voltaram ao padr\xE3o.",
+    panelCursorTitle: "Cursor do mouse",
+    panelCursorDefault: "Padr\xE3o",
+    panelCursorBigWhite: "Grande branco",
+    panelCursorBigBlack: "Grande preto",
+    panelResetFontLabel: "Redefinir fonte: tamanho, fonte acess\xEDvel e espa\xE7amentos",
+    panelSaturationTitle: "Satura\xE7\xE3o das cores",
+    panelSaturationLow: "Baixa",
+    panelSaturationNormal: "Normal",
+    panelSaturationHigh: "Alta",
+    panelCustomTextTitle: "Cor do texto",
+    panelCustomHeadingTitle: "Cor dos t\xEDtulos",
+    panelCustomBgTitle: "Cor do fundo",
+    panelCustomNone: "Padr\xE3o do site",
+    panelCustomSwatchLabel: "Usar cor",
+    panelCustomPickerLabel: "Escolher outra cor para",
+    panelCustomOther: "Personalizada",
+    panelAutoBgTitle: "Fundo autom\xE1tico",
+    panelContrastWarn: "Aten\xE7\xE3o: contraste baixo (recomendado 4,5:1 ou mais) em",
+    // sessionChrome.js
+    sessionOpenPanelLabel: "Abrir painel de acessibilidade",
+    sessionOpenPanelTitle: "Acessibilidade",
+    sessionBrand: "SIMPLES",
+    sessionSubOff: "Acessibilidade Cognitiva",
+    sessionSubOn: "Interface Simplificada",
+    sessionSwitchLabel: "Modo Simples",
+    sessionBarLabel: "Modo Simples",
+    sessionOffPrompt: "Quer uma navega\xE7\xE3o mais calma, direta e sem excesso de informa\xE7\xE3o?",
+    sessionActivate: "Ativar Modo Simples",
+    sessionOnTitle: "Modo Simples",
+    sessionOnSrSuffix: " ativado",
+    sessionBadge: "Foco na Navega\xE7\xE3o",
+    sessionDescSimple: "Exibindo explica\xE7\xF5es em palavras f\xE1ceis, sem termos complicados.",
+    sessionDescCalm: "Navega\xE7\xE3o mais calma, com bot\xF5es claros e menos distra\xE7\xF5es.",
+    sessionSpeakLabel: "Ouvir p\xE1gina",
+    sessionSpeakText: "Ouvir P\xE1gina",
+    sessionStopLabel: "Parar leitura da p\xE1gina",
+    sessionStopText: "Parar Voz",
+    sessionLangPre: "Linguagem ",
+    sessionLangMain: "Simples",
+    sessionLangOn: "LIGADA",
+    sessionLangOff: "DESLIGADA",
+    sessionLangUnavailable: "Indispon\xEDvel nesta p\xE1gina",
+    sessionImages: "Imagens",
+    sessionImagesHidden: "OCULTAS",
+    sessionImagesVisible: "VIS\xCDVEIS",
+    sessionExit: "Voltar",
+    sessionExitPost: " ao site normal",
+    // F7f — perfis (ui/a11yPanel.js; dados em core/profiles.js)
+    profilesTitle: "Perfis prontos",
+    profilesHint: "Escolha um e a p\xE1gina se ajusta. Um de cada vez.",
+    profileSimpleName: "Modo Simples",
+    profileSimpleDesc: "P\xE1gina mais limpa e f\xE1cil de ler",
+    profileLowVisionName: "Baixa vis\xE3o",
+    profileLowVisionDesc: "Texto maior, cores fortes e cursor grande",
+    profileDyslexiaName: "Dislexia",
+    profileDyslexiaDesc: "Fonte pr\xF3pria, mais espa\xE7o entre letras e r\xE9gua de leitura",
+    profileAdhdName: "TDAH",
+    profileAdhdDesc: "Menos distra\xE7\xE3o: sem som, sem movimento e a voz l\xEA o que voc\xEA seleciona",
+    profileEpilepsyName: "Epilepsia",
+    profileEpilepsyDesc: "Sem anima\xE7\xF5es, sem v\xEDdeo tocando sozinho e sem som",
+    profileKeyboardName: "Teclado",
+    profileKeyboardDesc: "Foco bem vis\xEDvel, atalhos na tela e a voz l\xEA o que voc\xEA seleciona",
+    profileCustom: "Personalizado",
+    profileOnPre: "Perfil ",
+    profileOnPost: " ativado",
+    profileOff: "Perfil desligado. P\xE1gina sem ajustes.",
+    // features/focusReader.js (papéis e estados falados)
+    roleButton: "bot\xE3o",
+    roleLink: "link",
+    roleHeading: "t\xEDtulo",
+    roleField: "campo",
+    roleCheckbox: "caixa de sele\xE7\xE3o",
+    roleRadio: "op\xE7\xE3o",
+    roleSwitch: "interruptor",
+    roleSelect: "lista de op\xE7\xF5es",
+    focusSubmitName: "Enviar",
+    focusSwitchOn: "ligado",
+    focusSwitchOff: "desligado",
+    focusChecked: "marcado",
+    focusUnchecked: "desmarcado",
+    // features/manualSelect.js (linguagem simples, U-02 / UX-21)
+    lowConfNotice: "N\xE3o achei o conte\xFAdo principal, quer escolher?",
+    lowConfChoose: "Escolher o conte\xFAdo",
+    lowConfClose: "Fechar",
+    manualInstruction: "Clique ou toque no que voc\xEA quer ler. No teclado: Tab muda de bloco, setas aumentam ou diminuem a \xE1rea, Enter confirma, Esc volta.",
+    manualCurrent: "Voc\xEA escolheu:",
+    manualChosen: "Conte\xFAdo principal definido",
+    manualCancelled: "Sele\xE7\xE3o manual cancelada",
+    manualCancel: "Voltar",
+    manualCancelLabel: "Voltar sem escolher",
+    // voice.js / simpleNav.js
+    voiceSample: "Esta \xE9 a voz que vai ler para voc\xEA.",
+    simpleNavLabel: "Navega\xE7\xE3o do Modo Simples",
+    // core/announcements.js
+    annDyslexiaFontOn: "Fonte Lexend ativada",
+    annDyslexiaFontOff: "Fonte Lexend desativada",
+    annHighlightLinksOn: "Destaque de links ativado",
+    annHighlightLinksOff: "Destaque de links desativado",
+    annHighlightHeadingsOn: "Destaque de cabe\xE7alhos ativado",
+    annHighlightHeadingsOff: "Destaque de cabe\xE7alhos desativado",
+    annHighlightControlsOn: "Destaque de bot\xF5es e campos ativado",
+    annHighlightControlsOff: "Destaque de bot\xF5es e campos desativado",
+    annTextMagnifierOn: "Lupa de texto ligada",
+    annTextMagnifierOff: "Lupa de texto desligada",
+    annEnlargeTargetsOn: "Bot\xF5es ampliados",
+    annEnlargeTargetsOff: "Bot\xF5es com tamanho normal",
+    annTextSpacingOn: "Espa\xE7amento de texto ativado",
+    annTextSpacingOff: "Espa\xE7amento de texto desativado",
+    annHideImagesOn: "Imagens ocultadas",
+    annHideImagesOff: "Imagens vis\xEDveis",
+    annReducedMotionOn: "Movimento reduzido ativado",
+    annReducedMotionOff: "Movimento reduzido desativado",
+    annSimpleLanguageOn: "Linguagem simples ligada",
+    annSimpleLanguageOff: "Linguagem simples desligada",
+    annReadFocusOn: "Leitura do foco ligada",
+    annReadFocusOff: "Leitura do foco desligada",
+    annMuteMediaOn: "V\xEDdeos e sons silenciados",
+    annMuteMediaOff: "V\xEDdeos e sons liberados",
+    annStrongFocusOn: "Foco refor\xE7ado ligado",
+    annStrongFocusOff: "Foco refor\xE7ado desligado",
+    annShowShortcutsOn: "Atalhos do teclado vis\xEDveis",
+    annShowShortcutsOff: "Atalhos do teclado ocultos",
+    annBlockFlashingOn: "Bloqueio de anima\xE7\xF5es e GIFs ligado",
+    annBlockFlashingOff: "Bloqueio de anima\xE7\xF5es e GIFs desligado",
+    annRulerOn: "R\xE9gua de leitura ativada",
+    annRulerOff: "R\xE9gua de leitura desativada",
+    annTextSize: "Tamanho do texto {value}%",
+    annTheme: "Tema {value}",
+    annThemeSenac: "Cores do site",
+    annThemeYellowBlack: "Amarelo e Preto",
+    annThemeDarkHigh: "Modo Escuro Alto",
+    annThemeSoft: "Descanso Suave",
+    annThemeMono: "Monocrom\xE1tico",
+    annThemeLightHigh: "Claro Alto Contraste",
+    annSaturation: "Satura\xE7\xE3o {value}",
+    annSaturationLow: "baixa",
+    annSaturationNormal: "normal",
+    annSaturationHigh: "alta",
+    annCursor: "Cursor {value}",
+    annCursorDefault: "padr\xE3o",
+    annCursorBigWhite: "grande branco",
+    annCursorBigBlack: "grande preto",
+    annCustomColor: "Cor personalizada de {label} {value}",
+    annCustomColorRemoved: "Cor personalizada de {label} removida",
+    annCustomText: "texto",
+    annCustomHeading: "t\xEDtulos",
+    annCustomBg: "fundo"
+  });
+  var SHORTCUTS = Object.freeze([
+    { keys: "Alt+Shift+A", text: "Abrir o painel de acessibilidade" },
+    {
+      keys: "Alt+Shift+G",
+      text: "Abrir a grade de mouse (1 a 9 escolhe, Enter clica)"
+    },
+    { keys: "Esc", text: "Fechar o painel ou sair da escolha de conte\xFAdo" },
+    { keys: "Tab", text: "Ir ao pr\xF3ximo item" },
+    { keys: "Shift+Tab", text: "Voltar ao item anterior" },
+    { keys: "Enter", text: "Ativar o bot\xE3o ou link" },
+    { keys: "Espa\xE7o", text: "Ligar ou desligar um interruptor" }
+  ]);
+  var VOICE_CMD_STRINGS = Object.freeze({
+    status_listening: "Comandos de voz ligados. Pode falar.",
+    status_stopped: "Comandos de voz desligados.",
+    status_blocked: "O navegador n\xE3o deixou usar o microfone. Libere o microfone para o site e ligue de novo.",
+    "status_needs-consent": "Para usar comandos de voz, \xE9 preciso aceitar que sua voz v\xE1 para o servidor do navegador, por exemplo o Google.",
+    "status_needs-model": "Falta baixar o reconhecimento de voz no seu aparelho para usar comandos de voz.",
+    status_unsupported: "Este navegador ou esta p\xE1gina n\xE3o aceita comandos de voz.",
+    status_error: "Os comandos de voz pararam. Ligue de novo para tentar.",
+    "status_no-mic": "N\xE3o encontrei um microfone. Conecte um microfone e ligue os comandos de voz de novo.",
+    helpSpoken: "Voc\xEA pode dizer: ler p\xE1gina, parar, pausar, continuar, mais r\xE1pido, mais devagar, descer, subir, ligar modo simples, desligar modo simples, abrir painel, fechar painel e ajuda."
+  });
+
+  // src/i18n/en.js
+  var en_exports = {};
+  __export(en_exports, {
+    SHORTCUTS: () => SHORTCUTS2,
+    STRINGS: () => STRINGS2,
+    VOICE_CMD_STRINGS: () => VOICE_CMD_STRINGS2
+  });
+  var STRINGS2 = Object.freeze({
+    // fab.js
+    fabTip: "Accessibility & Simple Mode",
+    fabOpenLabel: "Open accessibility panel",
+    fabCloseLabel: "Close accessibility panel",
+    fabHideLabel: "Hide the accessibility button on this page",
+    announceWidgetHidden: "Accessibility button hidden. Alt+Shift+A shows it again.",
+    announceResetAll: "Everything is off. Page without adjustments.",
+    announceStillOn: "Simple Mode is still on",
+    announceOn: "Simple Mode turned on",
+    announceOff: "Simple Mode turned off",
+    announcePanelOpen: "Accessibility panel open",
+    announceReadStopped: "Reading stopped",
+    announceReadStart: "Reading the main content",
+    announceSideLeft: "Panel moved to the left",
+    announceSideRight: "Panel moved to the right",
+    panelResetLabel: "Turn everything off",
+    panelMoveToLeft: "Move to the left",
+    panelMoveToRight: "Move to the right",
+    // a11yPanel.js
+    panelCloseLabel: "Close accessibility panel",
+    panelSimpleTitle: "Simple Mode (Recommended)",
+    panelSimpleDesc: "Hides visual distractions, enlarges buttons and sums up the essential content.",
+    panelSimpleSwitchLabel: "Simple Mode",
+    panelTextSizeTitle: "Text size",
+    panelTextSizeItemLabel: "Text size",
+    panelThemeTitle: "Contrast and colors",
+    panelThemeItemLabel: "Theme",
+    panelDyslexiaTitle: "Accessible Font (Lexend)",
+    panelDyslexiaDesc: "Designed for dyslexia and visual fluency",
+    panelDyslexiaLabel: "Accessible Lexend font",
+    panelRulerTitle: "Reading Focus Ruler",
+    panelRulerDesc: "Line-by-line highlight to guide your attention",
+    panelVoiceTitle: "Voice Screen Reader",
+    panelVoiceDesc: "Reads headings and text aloud in English",
+    panelVoiceLabel: "Listen to the main content",
+    panelVoiceButton: "Listen",
+    panelVoiceStopButton: "Stop",
+    panelVoiceStopLabel: "Stop reading",
+    panelLanguageTitle: "Language",
+    panelLanguageAuto: "Automatic ({lang})",
+    panelVoiceStudioTitle: "Voice Studio",
+    panelVoiceSelectLabel: "Voice",
+    panelVoiceAuto: "Automatic (English)",
+    panelVoiceRateLabel: "Speed",
+    panelVoicePitchLabel: "Pitch",
+    panelVoiceVolumeLabel: "Volume",
+    panelVoiceTest: "Test voice",
+    panelVoiceTestLabel: "Test the voice with these settings",
+    panelVoiceReset: "Back to default",
+    panelVoiceResetLabel: "Back to default: voice, speed, pitch and volume",
+    panelVoiceUnsupported: "This browser has no voice to read aloud. Try another browser.",
+    // F10e — pause/resume and voice commands in the panel
+    panelPause: "Pause",
+    panelPauseLabel: "Pause reading",
+    panelResume: "Resume",
+    panelResumeLabel: "Resume reading",
+    panelVcTitle: "Voice commands",
+    panelVcDesc: "Control reading by speaking. Off until you turn it on",
+    panelVcLabel: "Voice commands",
+    panelVcUnsupported: "Your browser doesn't understand voice commands. Use Chrome or Edge.",
+    panelVcListening: "Listening\u2026",
+    panelVcBlocked: "The microphone is blocked. Allow it in your browser settings.",
+    panelSpeechFailed: "Your browser couldn't read aloud: no voice is installed. In Brave, open it with the --enable-speech-dispatcher option, or use Chrome or Edge.",
+    panelVoiceMoreHint: 'There are more similar voices. Use "Show all voices" to see them all.',
+    panelVoiceAll: "Show all voices",
+    panelVcBrave: "Brave doesn't allow voice commands. Use Chrome or Edge.",
+    panelVcNoMic: "I couldn't find a microphone.",
+    panelVcError: "Voice commands stopped. Try turning them on again.",
+    panelVcRevoke: "Stop sending my voice",
+    panelVcRevokeLabel: "Stop sending my voice and turn off voice commands",
+    panelVcShow: "Show commands",
+    panelVcHide: "Hide commands",
+    // list separated by | (every key in this file is text)
+    panelVcCommands: "read page|stop|pause|resume|faster|slower|scroll down|scroll up|turn on simple mode|turn off simple mode|open panel|close panel|help",
+    panelVcDownloadTitle: "Download English",
+    panelVcDownloadText: "To understand your voice without sending anything to the internet, the browser needs to download English once. Download now?",
+    panelVcDownloadNow: "Download",
+    panelVcDownloading: "Downloading\u2026",
+    panelVcDownloadFail: "Couldn't download it.",
+    panelVcUseInternet: "Use the internet",
+    panelVcNotNow: "Not now",
+    panelVcCloudTitle: "Send my voice?",
+    panelVcCloudText: "In this browser, what you say is sent to the browser company (Google in Chrome, Microsoft in Edge) to be understood. Simple Mode stores nothing. Turn it on anyway?",
+    panelVcCloudYes: "Turn on and send my voice",
+    panelVcCloudNo: "Don't turn on",
+    mediaOtherSiteNotice: "This video is from another site. I can't turn its sound off.",
+    panelStrongFocusTitle: "Very visible focus",
+    panelStrongFocusDesc: "A thick two-color outline on the item you are on, on any background",
+    panelShortcutsTitle: "Show keyboard shortcuts",
+    panelShortcutsDesc: "An on-screen card lists the keys you can use",
+    shortcutsTitle: "Keyboard shortcuts",
+    shortcutsClose: "Close",
+    shortcutAccessKeyPrefix: "Alt+",
+    panelBlockFlashingTitle: "Block animations and GIFs",
+    panelBlockFlashingDesc: "For animations, scrolling text and videos that start on their own. GIFs stay still until you click",
+    gifShowLabel: "Show animation",
+    panelMuteMediaTitle: "Pause and mute everything",
+    panelMuteMediaDesc: "Pauses and silences videos and sounds on the page, including those that start on their own",
+    panelReadFocusTitle: "Read what I select",
+    panelReadFocusDesc: "The voice reads the button, link, field or text you click or stop on with the Tab key. If you use a screen reader, you may hear it twice",
+    panelReadFocusUnsupported: "This browser has no voice to read aloud",
+    panelReadFocusUnsupportedState: "No voice",
+    stateOn: "On",
+    stateOff: "Off",
+    sectionTextTitle: "Text and reading",
+    sectionColorsTitle: "Colors and highlights",
+    sectionKeyboardTitle: "Keyboard and focus",
+    sectionMotionTitle: "Motion and images",
+    panelHighlightLinks: "Highlight links",
+    sectionPageToolsTitle: "Page tools",
+    panelHighlightHeadings: "Highlight headings",
+    panelHighlightControls: "Highlight buttons and fields",
+    panelEnlargeTargets: "Enlarge buttons",
+    panelTextMagnifier: "Text magnifier",
+    panelPageOutline: "Page structure",
+    panelMouseGrid: "Mouse grid",
+    panelVirtualKeyboard: "Virtual keyboard",
+    vkLabel: "Virtual keyboard",
+    vkHint: "Tap a text field",
+    vkOpened: "Virtual keyboard open. Tap a text field.",
+    vkClosed: "Virtual keyboard closed.",
+    vkClose: "Close",
+    vkPendingPre: "Typing:",
+    vkBackspace: "Delete",
+    vkEnter: "Enter",
+    vkShift: "Shift",
+    vkCaps: "Caps",
+    vkAltGr: "AltGr",
+    vkSpace: "Space",
+    vkDeadAcute: "Acute accent",
+    vkDeadGrave: "Grave accent",
+    vkDeadTilde: "Tilde",
+    vkDeadCircumflex: "Circumflex accent",
+    vkDeadDiaeresis: "Diaeresis",
+    gridDialogLabel: "Mouse grid",
+    gridOpen: "Grid open. Choose from 1 to 9.",
+    gridLevelPre: "Level",
+    gridChoose: "Choose from 1 to 9.",
+    gridMin: "Smallest area. Press Enter to click.",
+    gridTop: "You're already on the first level.",
+    gridClosed: "Grid closed.",
+    gridClicked: "Click done.",
+    gridCellLabel: "Cell",
+    gridClickBtn: "Click here (Enter)",
+    gridBackBtn: "Back (Backspace)",
+    gridCloseBtn: "Close (Esc)",
+    gridClickShort: "Click",
+    gridBackShort: "Back",
+    gridCloseShort: "Close",
+    outlineTitle: "Page structure",
+    outlineClose: "Close",
+    outlineLandmarks: "Page areas",
+    outlineHeadings: "Headings",
+    outlineEmpty: "This page has no headings or areas to list.",
+    outlineNoText: "(no text)",
+    outlineLevel: "level",
+    outlineLmMain: "Main content",
+    outlineLmNav: "Navigation",
+    outlineLmBanner: "Site header",
+    outlineLmFooter: "Site footer",
+    outlineLmAside: "Side content",
+    outlineLmForm: "Form",
+    outlineLmSearch: "Search",
+    outlineLmRegion: "Region",
+    panelTextSpacing: "Text spacing",
+    panelReducedMotion: "Reduce motion",
+    panelHideImages: "Hide images",
+    panelHideImagesHint: "In Simple Mode, images are hidden by default \u2014 turn off to keep them",
+    panelDefaultTitle: "Digital Accessibility",
+    panelDefaultFooter: "Preferences saved in this browser",
+    scaleDefault: "Default",
+    scaleLarge: "Large",
+    scaleLarger: "Larger",
+    scaleMax: "Maximum",
+    themeSite: "Site colors",
+    themeSiteSub: "Default",
+    themeYellowBlack: "Yellow and Black",
+    themeYellowBlackSub: "High contrast",
+    themeDarkHigh: "High Dark Mode",
+    themeDarkHighSub: "Dark background",
+    themeSoft: "Rest / Soft",
+    themeSoftSub: "Low intensity",
+    themeMono: "Monochrome",
+    themeMonoSub: "Shades of gray",
+    themeLightHigh: "Light High Contrast",
+    themeLightHighSub: "White background",
+    panelTypoGroupLabel: "Fine typography adjustments",
+    panelLineHeightTitle: "Line height",
+    panelWordSpacingTitle: "Word spacing",
+    panelLetterSpacingTitle: "Letter spacing",
+    panelTypoDefault: "Site default",
+    panelResetFont: "Reset font",
+    announceResetFont: "Font reset: size, accessible font and spacing are back to default.",
+    panelCursorTitle: "Mouse cursor",
+    panelCursorDefault: "Default",
+    panelCursorBigWhite: "Large white",
+    panelCursorBigBlack: "Large black",
+    panelResetFontLabel: "Reset font: size, accessible font and spacing",
+    panelSaturationTitle: "Color saturation",
+    panelSaturationLow: "Low",
+    panelSaturationNormal: "Normal",
+    panelSaturationHigh: "High",
+    panelCustomTextTitle: "Text color",
+    panelCustomHeadingTitle: "Heading color",
+    panelCustomBgTitle: "Background color",
+    panelCustomNone: "Site default",
+    panelCustomSwatchLabel: "Use color",
+    panelCustomPickerLabel: "Pick another color for",
+    panelCustomOther: "Custom",
+    panelAutoBgTitle: "Automatic background",
+    panelContrastWarn: "Warning: low contrast (4.5:1 or more recommended) in",
+    // sessionChrome.js
+    sessionOpenPanelLabel: "Open accessibility panel",
+    sessionOpenPanelTitle: "Accessibility",
+    sessionBrand: "SIMPLE",
+    sessionSubOff: "Cognitive Accessibility",
+    sessionSubOn: "Simplified Interface",
+    sessionSwitchLabel: "Simple Mode",
+    sessionBarLabel: "Simple Mode",
+    sessionOffPrompt: "Want calmer, more direct browsing without information overload?",
+    sessionActivate: "Turn on Simple Mode",
+    sessionOnTitle: "Simple Mode",
+    sessionOnSrSuffix: " on",
+    sessionBadge: "Browsing Focus",
+    sessionDescSimple: "Showing explanations in easy words, without hard terms.",
+    sessionDescCalm: "Calmer browsing, with clear buttons and fewer distractions.",
+    sessionSpeakLabel: "Listen to page",
+    sessionSpeakText: "Listen to Page",
+    sessionStopLabel: "Stop reading the page",
+    sessionStopText: "Stop Voice",
+    sessionLangPre: "Plain ",
+    sessionLangMain: "Language",
+    sessionLangOn: "ON",
+    sessionLangOff: "OFF",
+    sessionLangUnavailable: "Not available on this page",
+    sessionImages: "Images",
+    sessionImagesHidden: "HIDDEN",
+    sessionImagesVisible: "VISIBLE",
+    sessionExit: "Return",
+    sessionExitPost: " to the normal site",
+    // F7f — profiles (ui/a11yPanel.js; data in core/profiles.js)
+    profilesTitle: "Ready-made profiles",
+    profilesHint: "Pick one and the page adjusts. One at a time.",
+    profileSimpleName: "Simple Mode",
+    profileSimpleDesc: "A cleaner page that is easier to read",
+    profileLowVisionName: "Low vision",
+    profileLowVisionDesc: "Larger text, strong colors and a big cursor",
+    profileDyslexiaName: "Dyslexia",
+    profileDyslexiaDesc: "Its own font, more space between letters and a reading ruler",
+    profileAdhdName: "ADHD",
+    profileAdhdDesc: "Fewer distractions: no sound, no motion and the voice reads what you select",
+    profileEpilepsyName: "Epilepsy",
+    profileEpilepsyDesc: "No animations, no self-playing video and no sound",
+    profileKeyboardName: "Keyboard",
+    profileKeyboardDesc: "Very visible focus, on-screen shortcuts and the voice reads what you select",
+    profileCustom: "Custom",
+    profileOnPre: "Profile ",
+    profileOnPost: " turned on",
+    profileOff: "Profile turned off. Page without adjustments.",
+    // features/focusReader.js (spoken roles and states)
+    roleButton: "button",
+    roleLink: "link",
+    roleHeading: "heading",
+    roleField: "field",
+    roleCheckbox: "checkbox",
+    roleRadio: "option",
+    roleSwitch: "switch",
+    roleSelect: "dropdown list",
+    focusSubmitName: "Submit",
+    focusSwitchOn: "on",
+    focusSwitchOff: "off",
+    focusChecked: "checked",
+    focusUnchecked: "unchecked",
+    // features/manualSelect.js (plain language, U-02 / UX-21)
+    lowConfNotice: "I couldn't find the main content. Want to choose it?",
+    lowConfChoose: "Choose the content",
+    lowConfClose: "Close",
+    manualInstruction: "Click or tap what you want to read. On the keyboard: Tab changes block, arrow keys grow or shrink the area, Enter confirms, Esc goes back.",
+    manualCurrent: "You chose:",
+    manualChosen: "Main content set",
+    manualCancelled: "Manual selection cancelled",
+    manualCancel: "Back",
+    manualCancelLabel: "Go back without choosing",
+    // voice.js / simpleNav.js
+    voiceSample: "This is the voice that will read to you.",
+    simpleNavLabel: "Simple Mode navigation",
+    // core/announcements.js
+    annDyslexiaFontOn: "Lexend font on",
+    annDyslexiaFontOff: "Lexend font off",
+    annHighlightLinksOn: "Link highlight on",
+    annHighlightLinksOff: "Link highlight off",
+    annHighlightHeadingsOn: "Heading highlight on",
+    annHighlightHeadingsOff: "Heading highlight off",
+    annHighlightControlsOn: "Button and field highlight on",
+    annHighlightControlsOff: "Button and field highlight off",
+    annTextMagnifierOn: "Text magnifier on",
+    annTextMagnifierOff: "Text magnifier off",
+    annEnlargeTargetsOn: "Buttons enlarged",
+    annEnlargeTargetsOff: "Buttons at normal size",
+    annTextSpacingOn: "Text spacing on",
+    annTextSpacingOff: "Text spacing off",
+    annHideImagesOn: "Images hidden",
+    annHideImagesOff: "Images visible",
+    annReducedMotionOn: "Reduced motion on",
+    annReducedMotionOff: "Reduced motion off",
+    annSimpleLanguageOn: "Plain language on",
+    annSimpleLanguageOff: "Plain language off",
+    annReadFocusOn: "Focus reading on",
+    annReadFocusOff: "Focus reading off",
+    annMuteMediaOn: "Videos and sounds muted",
+    annMuteMediaOff: "Videos and sounds released",
+    annStrongFocusOn: "Strong focus on",
+    annStrongFocusOff: "Strong focus off",
+    annShowShortcutsOn: "Keyboard shortcuts visible",
+    annShowShortcutsOff: "Keyboard shortcuts hidden",
+    annBlockFlashingOn: "Animation and GIF blocking on",
+    annBlockFlashingOff: "Animation and GIF blocking off",
+    annRulerOn: "Reading ruler on",
+    annRulerOff: "Reading ruler off",
+    annTextSize: "Text size {value}%",
+    annTheme: "Theme {value}",
+    annThemeSenac: "Site colors",
+    annThemeYellowBlack: "Yellow and Black",
+    annThemeDarkHigh: "High Dark Mode",
+    annThemeSoft: "Soft Rest",
+    annThemeMono: "Monochrome",
+    annThemeLightHigh: "Light High Contrast",
+    annSaturation: "Saturation {value}",
+    annSaturationLow: "low",
+    annSaturationNormal: "normal",
+    annSaturationHigh: "high",
+    annCursor: "Cursor {value}",
+    annCursorDefault: "default",
+    annCursorBigWhite: "large white",
+    annCursorBigBlack: "large black",
+    annCustomColor: "Custom {label} color {value}",
+    annCustomColorRemoved: "Custom {label} color removed",
+    annCustomText: "text",
+    annCustomHeading: "heading",
+    annCustomBg: "background"
+  });
+  var SHORTCUTS2 = Object.freeze([
+    { keys: "Alt+Shift+A", text: "Open the accessibility panel" },
+    {
+      keys: "Alt+Shift+G",
+      text: "Open the mouse grid (1 to 9 picks, Enter clicks)"
+    },
+    { keys: "Esc", text: "Close the panel or leave content selection" },
+    { keys: "Tab", text: "Go to the next item" },
+    { keys: "Shift+Tab", text: "Go back to the previous item" },
+    { keys: "Enter", text: "Activate the button or link" },
+    { keys: "Space", text: "Turn a switch on or off" }
+  ]);
+  var VOICE_CMD_STRINGS2 = Object.freeze({
+    status_listening: "Voice commands on. You can speak.",
+    status_stopped: "Voice commands off.",
+    status_blocked: "The browser didn't allow microphone use. Allow the microphone for this site and turn it on again.",
+    "status_needs-consent": "To use voice commands, you must accept that your voice goes to the browser's server, for example Google.",
+    "status_needs-model": "Speech recognition must be downloaded to your device to use voice commands.",
+    status_unsupported: "This browser or this page does not support voice commands.",
+    status_error: "Voice commands stopped. Turn them on again to retry.",
+    "status_no-mic": "I couldn't find a microphone. Connect a microphone and turn voice commands on again.",
+    helpSpoken: "You can say: read page, stop, pause, resume, faster, slower, scroll down, scroll up, turn on simple mode, turn off simple mode, open panel, close panel and help."
+  });
+
+  // src/i18n/es.js
+  var es_exports = {};
+  __export(es_exports, {
+    SHORTCUTS: () => SHORTCUTS3,
+    STRINGS: () => STRINGS3,
+    VOICE_CMD_STRINGS: () => VOICE_CMD_STRINGS3
+  });
+  var STRINGS3 = Object.freeze({
+    // fab.js
+    fabTip: "Accesibilidad y Modo Simple",
+    fabOpenLabel: "Abrir el panel de accesibilidad",
+    fabCloseLabel: "Cerrar el panel de accesibilidad",
+    fabHideLabel: "Ocultar el bot\xF3n de accesibilidad en esta p\xE1gina",
+    announceWidgetHidden: "Bot\xF3n de accesibilidad oculto. Alt+Shift+A lo muestra de nuevo.",
+    announceResetAll: "Todo desactivado. P\xE1gina sin ajustes.",
+    announceStillOn: "El Modo Simple sigue activado",
+    announceOn: "Modo Simple activado",
+    announceOff: "Modo Simple desactivado",
+    announcePanelOpen: "Panel de accesibilidad abierto",
+    announceReadStopped: "Lectura interrumpida",
+    announceReadStart: "Leyendo el contenido principal",
+    announceSideLeft: "Panel movido a la izquierda",
+    announceSideRight: "Panel movido a la derecha",
+    panelResetLabel: "Desactivar todo",
+    panelMoveToLeft: "Mover a la izquierda",
+    panelMoveToRight: "Mover a la derecha",
+    // a11yPanel.js
+    panelCloseLabel: "Cerrar el panel de accesibilidad",
+    panelSimpleTitle: "Modo Simple (Recomendado)",
+    panelSimpleDesc: "Oculta distracciones visuales, agranda los botones y resume los contenidos esenciales.",
+    panelSimpleSwitchLabel: "Modo Simple",
+    panelTextSizeTitle: "Tama\xF1o del texto",
+    panelTextSizeItemLabel: "Tama\xF1o del texto",
+    panelThemeTitle: "Contraste y colores",
+    panelThemeItemLabel: "Tema",
+    panelDyslexiaTitle: "Fuente Accesible (Lexend)",
+    panelDyslexiaDesc: "Dise\xF1ada para la dislexia y la agilidad visual",
+    panelDyslexiaLabel: "Fuente Accesible Lexend",
+    panelRulerTitle: "Regla de Enfoque de Lectura",
+    panelRulerDesc: "Resalta l\xEDnea por l\xEDnea para guiar la atenci\xF3n",
+    panelVoiceTitle: "Lector de Pantalla por Voz",
+    panelVoiceDesc: "Lee en voz alta los t\xEDtulos y textos en espa\xF1ol",
+    panelVoiceLabel: "Escuchar el contenido principal",
+    panelVoiceButton: "Escuchar",
+    panelVoiceStopButton: "Parar",
+    panelVoiceStopLabel: "Parar la lectura",
+    panelLanguageTitle: "Idioma",
+    panelLanguageAuto: "Autom\xE1tico ({lang})",
+    panelVoiceStudioTitle: "Estudio de Voz",
+    panelVoiceSelectLabel: "Voz",
+    panelVoiceAuto: "Autom\xE1tica (espa\xF1ol)",
+    panelVoiceRateLabel: "Velocidad",
+    panelVoicePitchLabel: "Tono",
+    panelVoiceVolumeLabel: "Volumen",
+    panelVoiceTest: "Probar voz",
+    panelVoiceTestLabel: "Probar la voz con estos ajustes",
+    panelVoiceReset: "Volver al valor predeterminado",
+    panelVoiceResetLabel: "Volver al valor predeterminado: voz, velocidad, tono y volumen",
+    panelVoiceUnsupported: "Este navegador no tiene voz para leer en voz alta. Prueba con otro navegador.",
+    // F10e — pausar/continuar y comandos de voz en el panel
+    panelPause: "Pausar",
+    panelPauseLabel: "Pausar la lectura",
+    panelResume: "Continuar",
+    panelResumeLabel: "Continuar la lectura",
+    panelVcTitle: "Comandos de voz",
+    panelVcDesc: "Controla la lectura hablando. Desactivado hasta que lo actives",
+    panelVcLabel: "Comandos de voz",
+    panelVcUnsupported: "Tu navegador no entiende comandos de voz. Usa Chrome o Edge.",
+    panelVcListening: "Escuchando\u2026",
+    panelVcBlocked: "El micr\xF3fono est\xE1 bloqueado. Perm\xEDtelo en los ajustes del navegador.",
+    panelSpeechFailed: "Tu navegador no pudo leer en voz alta: no hay ninguna voz instalada. En Brave, \xE1brelo con la opci\xF3n --enable-speech-dispatcher, o usa Chrome o Edge.",
+    panelVoiceMoreHint: 'Hay m\xE1s voces parecidas. Usa "Mostrar todas las voces" para verlas todas.',
+    panelVoiceAll: "Mostrar todas las voces",
+    panelVcBrave: "Brave no permite comandos de voz. Usa Chrome o Edge.",
+    panelVcNoMic: "No encontr\xE9 un micr\xF3fono.",
+    panelVcError: "Los comandos de voz se detuvieron. Intenta activarlos de nuevo.",
+    panelVcRevoke: "Dejar de enviar mi voz",
+    panelVcRevokeLabel: "Dejar de enviar mi voz y desactivar los comandos de voz",
+    panelVcShow: "Ver comandos",
+    panelVcHide: "Ocultar comandos",
+    // lista separada por | (todas las claves de este archivo son texto)
+    panelVcCommands: "leer p\xE1gina|parar|pausar|continuar|m\xE1s r\xE1pido|m\xE1s lento|bajar|subir|activar modo simple|desactivar modo simple|abrir panel|cerrar panel|ayuda",
+    panelVcDownloadTitle: "Descargar el espa\xF1ol",
+    panelVcDownloadText: "Para entender tu voz sin enviar nada a internet, el navegador necesita descargar el espa\xF1ol una vez. \xBFDescargar ahora?",
+    panelVcDownloadNow: "Descargar",
+    panelVcDownloading: "Descargando\u2026",
+    panelVcDownloadFail: "No se pudo descargar.",
+    panelVcUseInternet: "Usar por internet",
+    panelVcNotNow: "Ahora no",
+    panelVcCloudTitle: "\xBFEnviar mi voz?",
+    panelVcCloudText: "En este navegador, lo que dices se env\xEDa a la empresa del navegador (Google en Chrome, Microsoft en Edge) para ser entendido. El Modo Simple no guarda nada. \xBFQuieres activarlo de todos modos?",
+    panelVcCloudYes: "Activar y enviar mi voz",
+    panelVcCloudNo: "No activar",
+    mediaOtherSiteNotice: "Este video es de otro sitio. No puedo quitarle el sonido.",
+    panelStrongFocusTitle: "Foco muy visible",
+    panelStrongFocusDesc: "Contorno grueso y de dos colores en el elemento donde est\xE1s, sobre cualquier fondo",
+    panelShortcutsTitle: "Mostrar atajos del teclado",
+    panelShortcutsDesc: "Una tarjeta en pantalla lista las teclas que puedes usar",
+    shortcutsTitle: "Atajos del teclado",
+    shortcutsClose: "Cerrar",
+    shortcutAccessKeyPrefix: "Alt+",
+    panelBlockFlashingTitle: "Bloquear animaciones y GIF",
+    panelBlockFlashingDesc: "Para animaciones, textos que se desplazan y videos que empiezan solos. Los GIF se quedan quietos hasta que hagas clic",
+    gifShowLabel: "Mostrar animaci\xF3n",
+    panelMuteMediaTitle: "Pausar y silenciar todo",
+    panelMuteMediaDesc: "Pausa y silencia los videos y sonidos de la p\xE1gina, incluso los que empiezan solos",
+    panelReadFocusTitle: "Leer lo que selecciono",
+    panelReadFocusDesc: "La voz lee el bot\xF3n, enlace, campo o texto en el que hagas clic o te detengas con la tecla Tab. Si usas un lector de pantalla, puede que lo oigas dos veces",
+    panelReadFocusUnsupported: "Este navegador no tiene voz para leer en voz alta",
+    panelReadFocusUnsupportedState: "Sin voz",
+    stateOn: "Activado",
+    stateOff: "Desactivado",
+    sectionTextTitle: "Texto y lectura",
+    sectionColorsTitle: "Colores y resaltado",
+    sectionKeyboardTitle: "Teclado y foco",
+    sectionMotionTitle: "Movimiento e im\xE1genes",
+    panelHighlightLinks: "Resaltar enlaces",
+    sectionPageToolsTitle: "Herramientas de la p\xE1gina",
+    panelHighlightHeadings: "Resaltar encabezados",
+    panelHighlightControls: "Resaltar botones y campos",
+    panelEnlargeTargets: "Agrandar botones",
+    panelTextMagnifier: "Lupa de texto",
+    panelPageOutline: "Estructura de la p\xE1gina",
+    panelMouseGrid: "Cuadr\xEDcula del rat\xF3n",
+    panelVirtualKeyboard: "Teclado virtual",
+    vkLabel: "Teclado virtual",
+    vkHint: "Toca un campo de texto",
+    vkOpened: "Teclado virtual abierto. Toca un campo de texto.",
+    vkClosed: "Teclado virtual cerrado.",
+    vkClose: "Cerrar",
+    vkPendingPre: "Escribiendo:",
+    vkBackspace: "Borrar",
+    vkEnter: "Intro",
+    vkShift: "May\xFAs",
+    vkCaps: "Bloq May\xFAs",
+    vkAltGr: "AltGr",
+    vkSpace: "Espacio",
+    vkDeadAcute: "Acento agudo",
+    vkDeadGrave: "Acento grave",
+    vkDeadTilde: "Tilde",
+    vkDeadCircumflex: "Acento circunflejo",
+    vkDeadDiaeresis: "Di\xE9resis",
+    gridDialogLabel: "Cuadr\xEDcula del rat\xF3n",
+    gridOpen: "Cuadr\xEDcula abierta. Elige de 1 a 9.",
+    gridLevelPre: "Nivel",
+    gridChoose: "Elige de 1 a 9.",
+    gridMin: "\xC1rea m\xEDnima. Pulsa Intro para hacer clic.",
+    gridTop: "Ya est\xE1s en el primer nivel.",
+    gridClosed: "Cuadr\xEDcula cerrada.",
+    gridClicked: "Clic hecho.",
+    gridCellLabel: "Celda",
+    gridClickBtn: "Hacer clic aqu\xED (Intro)",
+    gridBackBtn: "Volver (Retroceso)",
+    gridCloseBtn: "Cerrar (Esc)",
+    gridClickShort: "Clic",
+    gridBackShort: "Volver",
+    gridCloseShort: "Cerrar",
+    outlineTitle: "Estructura de la p\xE1gina",
+    outlineClose: "Cerrar",
+    outlineLandmarks: "\xC1reas de la p\xE1gina",
+    outlineHeadings: "T\xEDtulos",
+    outlineEmpty: "Esta p\xE1gina no tiene t\xEDtulos ni \xE1reas para listar.",
+    outlineNoText: "(sin texto)",
+    outlineLevel: "nivel",
+    outlineLmMain: "Contenido principal",
+    outlineLmNav: "Navegaci\xF3n",
+    outlineLmBanner: "Encabezado del sitio",
+    outlineLmFooter: "Pie del sitio",
+    outlineLmAside: "Contenido lateral",
+    outlineLmForm: "Formulario",
+    outlineLmSearch: "B\xFAsqueda",
+    outlineLmRegion: "Regi\xF3n",
+    panelTextSpacing: "Espaciado del texto",
+    panelReducedMotion: "Reducir movimiento",
+    panelHideImages: "Ocultar im\xE1genes",
+    panelHideImagesHint: "En el Modo Simple, las im\xE1genes se ocultan por defecto \u2014 desactiva para mantenerlas",
+    panelDefaultTitle: "Accesibilidad Digital",
+    panelDefaultFooter: "Preferencias guardadas en este navegador",
+    scaleDefault: "Predeterminado",
+    scaleLarge: "Grande",
+    scaleLarger: "M\xE1s grande",
+    scaleMax: "M\xE1ximo",
+    themeSite: "Colores del sitio",
+    themeSiteSub: "Predeterminado",
+    themeYellowBlack: "Amarillo y Negro",
+    themeYellowBlackSub: "Alto contraste",
+    themeDarkHigh: "Modo Oscuro Alto",
+    themeDarkHighSub: "Fondo oscuro",
+    themeSoft: "Descanso / Suave",
+    themeSoftSub: "Baja intensidad",
+    themeMono: "Monocrom\xE1tico",
+    themeMonoSub: "Tonos de gris",
+    themeLightHigh: "Claro Alto Contraste",
+    themeLightHighSub: "Fondo blanco",
+    panelTypoGroupLabel: "Ajuste fino de la tipograf\xEDa",
+    panelLineHeightTitle: "Altura de l\xEDnea",
+    panelWordSpacingTitle: "Espacio entre palabras",
+    panelLetterSpacingTitle: "Espacio entre letras",
+    panelTypoDefault: "Predeterminado del sitio",
+    panelResetFont: "Restablecer fuente",
+    announceResetFont: "Fuente restablecida: tama\xF1o, fuente accesible y espaciados vuelven al valor predeterminado.",
+    panelCursorTitle: "Cursor del rat\xF3n",
+    panelCursorDefault: "Predeterminado",
+    panelCursorBigWhite: "Grande blanco",
+    panelCursorBigBlack: "Grande negro",
+    panelResetFontLabel: "Restablecer fuente: tama\xF1o, fuente accesible y espaciados",
+    panelSaturationTitle: "Saturaci\xF3n de los colores",
+    panelSaturationLow: "Baja",
+    panelSaturationNormal: "Normal",
+    panelSaturationHigh: "Alta",
+    panelCustomTextTitle: "Color del texto",
+    panelCustomHeadingTitle: "Color de los t\xEDtulos",
+    panelCustomBgTitle: "Color del fondo",
+    panelCustomNone: "Predeterminado del sitio",
+    panelCustomSwatchLabel: "Usar color",
+    panelCustomPickerLabel: "Elegir otro color para",
+    panelCustomOther: "Personalizado",
+    panelAutoBgTitle: "Fondo autom\xE1tico",
+    panelContrastWarn: "Atenci\xF3n: contraste bajo (se recomienda 4,5:1 o m\xE1s) en",
+    // sessionChrome.js
+    sessionOpenPanelLabel: "Abrir el panel de accesibilidad",
+    sessionOpenPanelTitle: "Accesibilidad",
+    sessionBrand: "SIMPLE",
+    sessionSubOff: "Accesibilidad Cognitiva",
+    sessionSubOn: "Interfaz Simplificada",
+    sessionSwitchLabel: "Modo Simple",
+    sessionBarLabel: "Modo Simple",
+    sessionOffPrompt: "\xBFQuieres una navegaci\xF3n m\xE1s tranquila, directa y sin exceso de informaci\xF3n?",
+    sessionActivate: "Activar Modo Simple",
+    sessionOnTitle: "Modo Simple",
+    sessionOnSrSuffix: " activado",
+    sessionBadge: "Enfoque en la Navegaci\xF3n",
+    sessionDescSimple: "Mostrando explicaciones con palabras f\xE1ciles, sin t\xE9rminos complicados.",
+    sessionDescCalm: "Navegaci\xF3n m\xE1s tranquila, con botones claros y menos distracciones.",
+    sessionSpeakLabel: "Escuchar la p\xE1gina",
+    sessionSpeakText: "Escuchar P\xE1gina",
+    sessionStopLabel: "Parar la lectura de la p\xE1gina",
+    sessionStopText: "Parar Voz",
+    sessionLangPre: "Lenguaje ",
+    sessionLangMain: "Sencillo",
+    sessionLangOn: "ACTIVADO",
+    sessionLangOff: "DESACTIVADO",
+    sessionLangUnavailable: "No disponible en esta p\xE1gina",
+    sessionImages: "Im\xE1genes",
+    sessionImagesHidden: "OCULTAS",
+    sessionImagesVisible: "VISIBLES",
+    sessionExit: "Volver",
+    sessionExitPost: " al sitio normal",
+    // F7f — perfiles (ui/a11yPanel.js; datos en core/profiles.js)
+    profilesTitle: "Perfiles listos",
+    profilesHint: "Elige uno y la p\xE1gina se ajusta. Uno a la vez.",
+    profileSimpleName: "Modo Simple",
+    profileSimpleDesc: "P\xE1gina m\xE1s limpia y f\xE1cil de leer",
+    profileLowVisionName: "Baja visi\xF3n",
+    profileLowVisionDesc: "Texto m\xE1s grande, colores fuertes y cursor grande",
+    profileDyslexiaName: "Dislexia",
+    profileDyslexiaDesc: "Fuente propia, m\xE1s espacio entre letras y regla de lectura",
+    profileAdhdName: "TDAH",
+    profileAdhdDesc: "Menos distracciones: sin sonido, sin movimiento y la voz lee lo que seleccionas",
+    profileEpilepsyName: "Epilepsia",
+    profileEpilepsyDesc: "Sin animaciones, sin video que se reproduce solo y sin sonido",
+    profileKeyboardName: "Teclado",
+    profileKeyboardDesc: "Foco muy visible, atajos en pantalla y la voz lee lo que seleccionas",
+    profileCustom: "Personalizado",
+    profileOnPre: "Perfil ",
+    profileOnPost: " activado",
+    profileOff: "Perfil desactivado. P\xE1gina sin ajustes.",
+    // features/focusReader.js (roles y estados hablados)
+    roleButton: "bot\xF3n",
+    roleLink: "enlace",
+    roleHeading: "t\xEDtulo",
+    roleField: "campo",
+    roleCheckbox: "casilla de verificaci\xF3n",
+    roleRadio: "opci\xF3n",
+    roleSwitch: "interruptor",
+    roleSelect: "lista de opciones",
+    focusSubmitName: "Enviar",
+    focusSwitchOn: "activado",
+    focusSwitchOff: "desactivado",
+    focusChecked: "marcado",
+    focusUnchecked: "sin marcar",
+    // features/manualSelect.js (lenguaje sencillo, U-02 / UX-21)
+    lowConfNotice: "No encontr\xE9 el contenido principal, \xBFquieres elegirlo?",
+    lowConfChoose: "Elegir el contenido",
+    lowConfClose: "Cerrar",
+    manualInstruction: "Haz clic o toca lo que quieres leer. Con el teclado: Tab cambia de bloque, las flechas agrandan o reducen el \xE1rea, Intro confirma, Esc vuelve.",
+    manualCurrent: "Elegiste:",
+    manualChosen: "Contenido principal definido",
+    manualCancelled: "Selecci\xF3n manual cancelada",
+    manualCancel: "Volver",
+    manualCancelLabel: "Volver sin elegir",
+    // voice.js / simpleNav.js
+    voiceSample: "Esta es la voz que va a leer para ti.",
+    simpleNavLabel: "Navegaci\xF3n del Modo Simple",
+    // core/announcements.js
+    annDyslexiaFontOn: "Fuente Lexend activada",
+    annDyslexiaFontOff: "Fuente Lexend desactivada",
+    annHighlightLinksOn: "Resaltado de enlaces activado",
+    annHighlightLinksOff: "Resaltado de enlaces desactivado",
+    annHighlightHeadingsOn: "Resaltado de encabezados activado",
+    annHighlightHeadingsOff: "Resaltado de encabezados desactivado",
+    annHighlightControlsOn: "Resaltado de botones y campos activado",
+    annHighlightControlsOff: "Resaltado de botones y campos desactivado",
+    annTextMagnifierOn: "Lupa de texto activada",
+    annTextMagnifierOff: "Lupa de texto desactivada",
+    annEnlargeTargetsOn: "Botones agrandados",
+    annEnlargeTargetsOff: "Botones con tama\xF1o normal",
+    annTextSpacingOn: "Espaciado del texto activado",
+    annTextSpacingOff: "Espaciado del texto desactivado",
+    annHideImagesOn: "Im\xE1genes ocultas",
+    annHideImagesOff: "Im\xE1genes visibles",
+    annReducedMotionOn: "Movimiento reducido activado",
+    annReducedMotionOff: "Movimiento reducido desactivado",
+    annSimpleLanguageOn: "Lenguaje sencillo activado",
+    annSimpleLanguageOff: "Lenguaje sencillo desactivado",
+    annReadFocusOn: "Lectura del foco activada",
+    annReadFocusOff: "Lectura del foco desactivada",
+    annMuteMediaOn: "Videos y sonidos silenciados",
+    annMuteMediaOff: "Videos y sonidos liberados",
+    annStrongFocusOn: "Foco reforzado activado",
+    annStrongFocusOff: "Foco reforzado desactivado",
+    annShowShortcutsOn: "Atajos del teclado visibles",
+    annShowShortcutsOff: "Atajos del teclado ocultos",
+    annBlockFlashingOn: "Bloqueo de animaciones y GIF activado",
+    annBlockFlashingOff: "Bloqueo de animaciones y GIF desactivado",
+    annRulerOn: "Regla de lectura activada",
+    annRulerOff: "Regla de lectura desactivada",
+    annTextSize: "Tama\xF1o del texto {value}%",
+    annTheme: "Tema {value}",
+    annThemeSenac: "Colores del sitio",
+    annThemeYellowBlack: "Amarillo y Negro",
+    annThemeDarkHigh: "Modo Oscuro Alto",
+    annThemeSoft: "Descanso Suave",
+    annThemeMono: "Monocrom\xE1tico",
+    annThemeLightHigh: "Claro Alto Contraste",
+    annSaturation: "Saturaci\xF3n {value}",
+    annSaturationLow: "baja",
+    annSaturationNormal: "normal",
+    annSaturationHigh: "alta",
+    annCursor: "Cursor {value}",
+    annCursorDefault: "predeterminado",
+    annCursorBigWhite: "grande blanco",
+    annCursorBigBlack: "grande negro",
+    annCustomColor: "Color personalizado de {label} {value}",
+    annCustomColorRemoved: "Color personalizado de {label} eliminado",
+    annCustomText: "texto",
+    annCustomHeading: "t\xEDtulos",
+    annCustomBg: "fondo"
+  });
+  var SHORTCUTS3 = Object.freeze([
+    { keys: "Alt+Shift+A", text: "Abrir el panel de accesibilidad" },
+    {
+      keys: "Alt+Shift+G",
+      text: "Abrir la cuadr\xEDcula del rat\xF3n (1 a 9 elige, Intro hace clic)"
+    },
+    { keys: "Esc", text: "Cerrar el panel o salir de la elecci\xF3n de contenido" },
+    { keys: "Tab", text: "Ir al siguiente elemento" },
+    { keys: "Shift+Tab", text: "Volver al elemento anterior" },
+    { keys: "Enter", text: "Activar el bot\xF3n o enlace" },
+    { keys: "Espacio", text: "Activar o desactivar un interruptor" }
+  ]);
+  var VOICE_CMD_STRINGS3 = Object.freeze({
+    status_listening: "Comandos de voz activados. Puedes hablar.",
+    status_stopped: "Comandos de voz desactivados.",
+    status_blocked: "El navegador no permiti\xF3 usar el micr\xF3fono. Permite el micr\xF3fono para el sitio y act\xEDvalo de nuevo.",
+    "status_needs-consent": "Para usar comandos de voz, hay que aceptar que tu voz vaya al servidor del navegador, por ejemplo Google.",
+    "status_needs-model": "Falta descargar el reconocimiento de voz en tu dispositivo para usar comandos de voz.",
+    status_unsupported: "Este navegador o esta p\xE1gina no admite comandos de voz.",
+    status_error: "Los comandos de voz se detuvieron. Act\xEDvalos de nuevo para intentarlo.",
+    "status_no-mic": "No encontr\xE9 un micr\xF3fono. Conecta un micr\xF3fono y activa los comandos de voz de nuevo.",
+    helpSpoken: "Puedes decir: leer p\xE1gina, parar, pausar, continuar, m\xE1s r\xE1pido, m\xE1s lento, bajar, subir, activar modo simple, desactivar modo simple, abrir panel, cerrar panel y ayuda."
+  });
+
+  // src/i18n/index.js
+  var SUPPORTED = Object.freeze(["pt", "en", "es"]);
+  var BCP47 = Object.freeze({ pt: "pt-BR", en: "en-US", es: "es-ES" });
+  var LOCALES = { pt: pt_exports, en: en_exports, es: es_exports };
+  var current = "pt";
+  function toSupported(tag) {
+    const primary = String(tag || "").toLowerCase().split(/[-_]/)[0];
+    return SUPPORTED.includes(primary) ? primary : null;
+  }
+  function resolveLocale(pref = "auto") {
+    if (SUPPORTED.includes(pref)) return pref;
+    const htmlLang = typeof document !== "undefined" && document.documentElement ? document.documentElement.getAttribute("lang") : null;
+    const navLang = typeof navigator !== "undefined" ? navigator.language : null;
+    return toSupported(htmlLang) || toSupported(navLang) || "pt";
+  }
+  function getLocale() {
+    return current;
+  }
+  function setLocale(pref = "auto") {
+    var _a, _b;
+    current = resolveLocale(pref);
+    if (typeof document !== "undefined") {
+      const Ev = (_b = (_a = document.defaultView) == null ? void 0 : _a.CustomEvent) != null ? _b : CustomEvent;
+      document.dispatchEvent(
+        new Ev("ms:localechange", {
+          detail: { locale: current, preference: pref }
+        })
+      );
+    }
+    return current;
+  }
+  var lookup = (locale, key) => {
+    var _a;
+    return (_a = LOCALES[locale].STRINGS[key]) != null ? _a : LOCALES[locale].VOICE_CMD_STRINGS[key];
+  };
+  function t(key, vars) {
+    var _a, _b;
+    let text = (_b = (_a = lookup(current, key)) != null ? _a : lookup("pt", key)) != null ? _b : key;
+    if (vars) {
+      text = text.replace(
+        /\{(\w+)\}/g,
+        (m, name) => name in vars ? String(vars[name]) : m
+      );
+    }
+    return text;
+  }
+  function getShortcuts() {
+    return LOCALES[current].SHORTCUTS;
+  }
+
   // src/config/defaults.js
   var defaults = {
     /**
@@ -117,9 +1292,14 @@
      * @type {{ title: string, subtitle: string, footer: string }}
      */
     brand: {
-      title: "Acessibilidade Digital",
+      // getters: o texto segue o idioma atual no momento em que o painel é montado (spread lê)
+      get title() {
+        return t("panelDefaultTitle");
+      },
       subtitle: "",
-      footer: "Prefer\xEAncias salvas neste navegador"
+      get footer() {
+        return t("panelDefaultFooter");
+      }
     },
     /**
      * Optional simple-mode nav pills for host pages without markup.
@@ -257,18 +1437,19 @@
       voiceCloudConsent: false,
       voiceRate: 1,
       voicePitch: 1,
-      voiceVolume: 1
+      voiceVolume: 1,
+      language: "auto"
     }
   };
   function cloneState(s) {
     return { ...s, options: { ...s.options } };
   }
   function createState(initial) {
-    let current2 = cloneState(initial);
+    let current3 = cloneState(initial);
     return {
       /** Returns a snapshot — never a direct reference to internal state. */
       get() {
-        return cloneState(current2);
+        return cloneState(current3);
       },
       /**
        * Merge a patch into current state and emit 'stateChange'.
@@ -279,17 +1460,17 @@
        * @param {Object} patch
        */
       set(patch) {
-        const prev = cloneState(current2);
+        const prev = cloneState(current3);
         if (patch.options) {
-          current2 = {
-            ...current2,
+          current3 = {
+            ...current3,
             ...patch,
-            options: { ...current2.options, ...patch.options }
+            options: { ...current3.options, ...patch.options }
           };
         } else {
-          current2 = { ...current2, ...patch };
+          current3 = { ...current3, ...patch };
         }
-        eventBus_default.emit("stateChange", { prev, next: cloneState(current2) });
+        eventBus_default.emit("stateChange", { prev, next: cloneState(current3) });
       },
       /** Reset state to initial values (e.g. on destroy). */
       reset() {
@@ -301,90 +1482,67 @@
   var state_default = state;
 
   // src/core/announcements.js
-  var TOGGLE_ANNOUNCEMENTS = {
-    dyslexiaFont: ["Fonte Lexend ativada", "Fonte Lexend desativada"],
-    highlightLinks: ["Destaque de links ativado", "Destaque de links desativado"],
-    highlightHeadings: [
-      "Destaque de cabe\xE7alhos ativado",
-      "Destaque de cabe\xE7alhos desativado"
-    ],
-    highlightControls: [
-      "Destaque de bot\xF5es e campos ativado",
-      "Destaque de bot\xF5es e campos desativado"
-    ],
-    textMagnifier: ["Lupa de texto ligada", "Lupa de texto desligada"],
-    enlargeTargets: ["Bot\xF5es ampliados", "Bot\xF5es com tamanho normal"],
-    textSpacing: [
-      "Espa\xE7amento de texto ativado",
-      "Espa\xE7amento de texto desativado"
-    ],
-    hideImages: ["Imagens ocultadas", "Imagens vis\xEDveis"],
-    reducedMotion: [
-      "Movimento reduzido ativado",
-      "Movimento reduzido desativado"
-    ],
-    simpleLanguage: ["Linguagem simples ligada", "Linguagem simples desligada"],
-    readFocus: ["Leitura do foco ligada", "Leitura do foco desligada"],
-    muteMedia: ["V\xEDdeos e sons silenciados", "V\xEDdeos e sons liberados"],
-    strongFocus: ["Foco refor\xE7ado ligado", "Foco refor\xE7ado desligado"],
-    showShortcuts: ["Atalhos do teclado vis\xEDveis", "Atalhos do teclado ocultos"],
-    blockFlashing: [
-      "Bloqueio de anima\xE7\xF5es e GIFs ligado",
-      "Bloqueio de anima\xE7\xF5es e GIFs desligado"
-    ]
+  var TOGGLES = {
+    dyslexiaFont: "DyslexiaFont",
+    highlightLinks: "HighlightLinks",
+    highlightHeadings: "HighlightHeadings",
+    highlightControls: "HighlightControls",
+    textMagnifier: "TextMagnifier",
+    enlargeTargets: "EnlargeTargets",
+    textSpacing: "TextSpacing",
+    hideImages: "HideImages",
+    reducedMotion: "ReducedMotion",
+    simpleLanguage: "SimpleLanguage",
+    readFocus: "ReadFocus",
+    muteMedia: "MuteMedia",
+    strongFocus: "StrongFocus",
+    showShortcuts: "ShowShortcuts",
+    blockFlashing: "BlockFlashing"
   };
-  var THEME_LABELS = {
-    senac: "Cores do site",
-    yellowBlack: "Amarelo e Preto",
-    darkHigh: "Modo Escuro Alto",
-    soft: "Descanso Suave",
-    mono: "Monocrom\xE1tico",
-    lightHigh: "Claro Alto Contraste"
+  var CUSTOM_COLORS = {
+    customText: "annCustomText",
+    customHeading: "annCustomHeading",
+    customBg: "annCustomBg"
   };
-  var SATURATION_LABELS = { low: "baixa", normal: "normal", high: "alta" };
-  var CURSOR_LABELS = {
-    default: "padr\xE3o",
-    bigWhite: "grande branco",
-    bigBlack: "grande preto"
-  };
-  var CUSTOM_LABELS = {
-    customText: "texto",
-    customHeading: "t\xEDtulos",
-    customBg: "fundo"
-  };
+  var cap = (s) => s[0].toUpperCase() + s.slice(1);
+  function label(prefix, value) {
+    const key = prefix + cap(String(value));
+    const text = t(key);
+    return text === key ? value : text;
+  }
   function diffStateAnnouncements(prev, next) {
     const out = [];
     if (prev.options.readingRuler !== next.options.readingRuler) {
-      out.push(
-        next.options.readingRuler ? "R\xE9gua de leitura ativada" : "R\xE9gua de leitura desativada"
-      );
+      out.push(t(next.options.readingRuler ? "annRulerOn" : "annRulerOff"));
     }
-    Object.entries(TOGGLE_ANNOUNCEMENTS).forEach(([k, [on3, off]]) => {
+    Object.entries(TOGGLES).forEach(([k, name]) => {
       if (prev.options[k] !== next.options[k])
-        out.push(next.options[k] ? on3 : off);
+        out.push(t(`ann${name}${next.options[k] ? "On" : "Off"}`));
     });
     if (prev.options.textScale !== next.options.textScale) {
-      out.push(`Tamanho do texto ${next.options.textScale}%`);
+      out.push(t("annTextSize", { value: next.options.textScale }));
     }
     if (prev.options.colorTheme !== next.options.colorTheme) {
       out.push(
-        `Tema ${THEME_LABELS[next.options.colorTheme] || next.options.colorTheme}`
+        t("annTheme", { value: label("annTheme", next.options.colorTheme) })
       );
     }
     if (prev.options.colorSaturation !== next.options.colorSaturation) {
       out.push(
-        `Satura\xE7\xE3o ${SATURATION_LABELS[next.options.colorSaturation] || next.options.colorSaturation}`
+        t("annSaturation", {
+          value: label("annSaturation", next.options.colorSaturation)
+        })
       );
     }
     if (prev.options.cursorStyle !== next.options.cursorStyle) {
       out.push(
-        `Cursor ${CURSOR_LABELS[next.options.cursorStyle] || next.options.cursorStyle}`
+        t("annCursor", { value: label("annCursor", next.options.cursorStyle) })
       );
     }
-    Object.entries(CUSTOM_LABELS).forEach(([k, label]) => {
+    Object.entries(CUSTOM_COLORS).forEach(([k, labelKey]) => {
       if (prev.options[k] !== next.options[k])
         out.push(
-          next.options[k] ? `Cor personalizada de ${label} ${next.options[k]}` : `Cor personalizada de ${label} removida`
+          next.options[k] ? t("annCustomColor", { label: t(labelKey), value: next.options[k] }) : t("annCustomColorRemoved", { label: t(labelKey) })
         );
     });
     return out;
@@ -556,8 +1714,6 @@
     volume: { min: 0.1, max: 1, step: 0.1 }
     // 0 = leitura muda: não oferecer
   };
-  var LANG = "pt-BR";
-  var SAMPLE = "Esta \xE9 a voz que vai ler para voc\xEA.";
   function clampVoice(key, value) {
     const lim = VOICE_LIMITS[key];
     const n = Number(value);
@@ -567,12 +1723,12 @@
   function isVoiceSupported() {
     return typeof speechSynthesis !== "undefined" && typeof SpeechSynthesisUtterance !== "undefined";
   }
-  var isPt = (v) => /^pt([-_]|$)/i.test(v.lang || "");
-  var isPtBR = (v) => /^pt[-_]br$/i.test(v.lang || "");
+  var isLang = (v) => (v.lang || "").toLowerCase().split(/[-_]/)[0] === getLocale();
+  var isExact = (v) => (v.lang || "").toLowerCase().replace("_", "-") === BCP47[getLocale()].toLowerCase();
   function listVoices() {
     var _a;
     if (!isVoiceSupported()) return [];
-    const rank = (v) => isPtBR(v) ? 0 : isPt(v) ? 1 : 2;
+    const rank = (v) => isExact(v) ? 0 : isLang(v) ? 1 : 2;
     return [...((_a = speechSynthesis.getVoices) == null ? void 0 : _a.call(speechSynthesis)) || []].sort(
       (a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name)
     );
@@ -608,15 +1764,15 @@
     return () => speechSynthesis.removeEventListener("voiceschanged", cb);
   }
   function applyVoice(utt, prefs = {}) {
-    utt.lang = LANG;
+    utt.lang = BCP47[getLocale()];
     const voices = listVoices();
-    const chosen = prefs.voiceName && voices.find((v) => v.name === prefs.voiceName) || voices.find(isPtBR) || voices.find(isPt);
+    const chosen = prefs.voiceName && voices.find((v) => v.name === prefs.voiceName) || voices.find(isExact) || voices.find(isLang);
     if (chosen) utt.voice = chosen;
     utt.rate = clampVoice("rate", prefs.voiceRate);
     utt.pitch = clampVoice("pitch", prefs.voicePitch);
     utt.volume = clampVoice("volume", prefs.voiceVolume);
   }
-  function previewVoice(prefs, text = SAMPLE) {
+  function previewVoice(prefs, text = t("voiceSample")) {
     if (!isVoiceSupported()) return;
     speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance(text);
@@ -682,6 +1838,7 @@
         voiceRate: clampVoice("rate", opts.voiceRate),
         voicePitch: clampVoice("pitch", opts.voicePitch),
         voiceVolume: clampVoice("volume", opts.voiceVolume),
+        language: ["auto", "pt", "en", "es"].includes(opts.language) ? opts.language : "auto",
         // Linguagem simples é acoplada ao MS; sem MS não reativa “órfã”
         simpleLanguage: modoSimples ? Boolean(opts.simpleLanguage) : false
       }
@@ -2701,312 +3858,10 @@
   }
 
   // src/ui/strings.js
-  var STRINGS = Object.freeze({
-    // fab.js
-    fabTip: "Acessibilidade & Modo Simples",
-    fabOpenLabel: "Abrir painel de acessibilidade",
-    fabCloseLabel: "Fechar painel de acessibilidade",
-    fabHideLabel: "Esconder bot\xE3o de acessibilidade nesta p\xE1gina",
-    announceWidgetHidden: "Bot\xE3o de acessibilidade escondido. Alt+Shift+A mostra de novo.",
-    announceResetAll: "Tudo desligado. P\xE1gina sem ajustes.",
-    announceStillOn: "Modo Simples continua ligado",
-    announceOn: "Modo Simples ativado",
-    announceOff: "Modo Simples desativado",
-    announcePanelOpen: "Painel de acessibilidade aberto",
-    announceReadStopped: "Leitura interrompida",
-    announceReadStart: "Lendo conte\xFAdo principal",
-    announceSideLeft: "Painel movido para a esquerda",
-    announceSideRight: "Painel movido para a direita",
-    panelResetLabel: "Desligar tudo",
-    panelMoveToLeft: "Mover para a esquerda",
-    panelMoveToRight: "Mover para a direita",
-    // a11yPanel.js
-    panelCloseLabel: "Fechar painel de acessibilidade",
-    panelSimpleTitle: "Modo Simples (Recomendado)",
-    panelSimpleDesc: "Oculta distra\xE7\xF5es visuais, aumenta bot\xF5es e resume conte\xFAdos essenciais.",
-    panelSimpleSwitchLabel: "Modo Simples",
-    panelTextSizeTitle: "Tamanho do texto",
-    panelTextSizeItemLabel: "Tamanho do texto",
-    panelThemeTitle: "Contraste e cores",
-    panelThemeItemLabel: "Tema",
-    panelDyslexiaTitle: "Fonte Acess\xEDvel (Lexend)",
-    panelDyslexiaDesc: "Desenvolvida para dislexia e agilidade visual",
-    panelDyslexiaLabel: "Fonte Acess\xEDvel Lexend",
-    panelRulerTitle: "R\xE9gua de Foco de Leitura",
-    panelRulerDesc: "Destaque linha a linha para guiar a aten\xE7\xE3o",
-    panelVoiceTitle: "Leitor de Tela por Voz",
-    panelVoiceDesc: "L\xEA os t\xEDtulos e textos em portugu\xEAs",
-    panelVoiceLabel: "Ouvir conte\xFAdo principal",
-    panelVoiceButton: "Ouvir",
-    panelVoiceStopButton: "Parar",
-    panelVoiceStopLabel: "Parar leitura",
-    panelVoiceStudioTitle: "Est\xFAdio de Voz",
-    panelVoiceSelectLabel: "Voz",
-    panelVoiceAuto: "Autom\xE1tica (portugu\xEAs)",
-    panelVoiceRateLabel: "Velocidade",
-    panelVoicePitchLabel: "Tom",
-    panelVoiceVolumeLabel: "Volume",
-    panelVoiceTest: "Testar voz",
-    panelVoiceTestLabel: "Testar voz com estas configura\xE7\xF5es",
-    panelVoiceReset: "Voltar ao padr\xE3o",
-    panelVoiceResetLabel: "Voltar ao padr\xE3o: voz, velocidade, tom e volume",
-    panelVoiceUnsupported: "Este navegador n\xE3o tem voz para ler. Tente outro navegador.",
-    // F10e — pausar/continuar e comandos de voz no painel
-    panelPause: "Pausar",
-    panelPauseLabel: "Pausar leitura",
-    panelResume: "Continuar",
-    panelResumeLabel: "Continuar leitura",
-    panelVcTitle: "Comandos de voz",
-    panelVcDesc: "Controle a leitura falando. Desligado at\xE9 voc\xEA ligar",
-    panelVcLabel: "Comandos de voz",
-    panelVcUnsupported: "Seu navegador n\xE3o entende comandos de voz. Use Chrome ou Edge.",
-    panelVcListening: "Ouvindo\u2026",
-    panelVcBlocked: "O microfone est\xE1 bloqueado. Libere nas configura\xE7\xF5es do navegador.",
-    panelSpeechFailed: "Seu navegador n\xE3o conseguiu ler em voz alta: n\xE3o h\xE1 voz instalada. No Brave, abra-o com a op\xE7\xE3o --enable-speech-dispatcher, ou use Chrome ou Edge.",
-    panelVoiceMoreHint: 'H\xE1 mais vozes parecidas. Use "Mostrar todas as vozes" para ver todas.',
-    panelVoiceAll: "Mostrar todas as vozes",
-    panelVcBrave: "O Brave n\xE3o permite comandos de voz. Use Chrome ou Edge.",
-    panelVcNoMic: "N\xE3o achei um microfone.",
-    panelVcError: "Os comandos de voz pararam. Tente ligar de novo.",
-    panelVcRevoke: "Parar de enviar minha voz",
-    panelVcRevokeLabel: "Parar de enviar minha voz e desligar comandos de voz",
-    panelVcShow: "Ver comandos",
-    panelVcHide: "Esconder comandos",
-    // lista separada por | (todas as chaves deste arquivo são texto)
-    panelVcCommands: "ler p\xE1gina|parar|pausar|continuar|mais r\xE1pido|mais devagar|descer|subir|ligar modo simples|desligar modo simples|abrir painel|fechar painel|ajuda",
-    panelVcDownloadTitle: "Baixar o portugu\xEAs",
-    panelVcDownloadText: "Para entender sua voz sem enviar nada para a internet, o navegador precisa baixar o portugu\xEAs uma vez. Baixar agora?",
-    panelVcDownloadNow: "Baixar",
-    panelVcDownloading: "Baixando\u2026",
-    panelVcDownloadFail: "N\xE3o deu para baixar.",
-    panelVcUseInternet: "Usar pela internet",
-    panelVcNotNow: "Agora n\xE3o",
-    panelVcCloudTitle: "Enviar minha voz?",
-    panelVcCloudText: "Neste navegador, o que voc\xEA fala \xE9 enviado para a empresa do navegador (Google no Chrome, Microsoft no Edge) para ser entendido. O Modo Simples n\xE3o guarda nada. Quer ligar mesmo assim?",
-    panelVcCloudYes: "Ligar e enviar minha voz",
-    panelVcCloudNo: "N\xE3o ligar",
-    mediaOtherSiteNotice: "Este v\xEDdeo \xE9 de outro site. N\xE3o consigo tirar o som dele.",
-    panelStrongFocusTitle: "Foco bem vis\xEDvel",
-    panelStrongFocusDesc: "Contorno grosso e de duas cores no item em que voc\xEA est\xE1, em qualquer fundo",
-    panelShortcutsTitle: "Mostrar atalhos do teclado",
-    panelShortcutsDesc: "Um cart\xE3o na tela lista as teclas que voc\xEA pode usar",
-    shortcutsTitle: "Atalhos do teclado",
-    shortcutsClose: "Fechar",
-    shortcutAccessKeyPrefix: "Alt+",
-    panelBlockFlashingTitle: "Bloquear anima\xE7\xF5es e GIFs",
-    panelBlockFlashingDesc: "Para anima\xE7\xF5es, textos que correm e v\xEDdeos que come\xE7am sozinhos. GIFs ficam parados at\xE9 voc\xEA clicar",
-    gifShowLabel: "Mostrar anima\xE7\xE3o",
-    panelMuteMediaTitle: "Pausar e mutar tudo",
-    panelMuteMediaDesc: "Pausa e silencia v\xEDdeos e sons da p\xE1gina, inclusive os que come\xE7am sozinhos",
-    panelReadFocusTitle: "Ler o que eu seleciono",
-    panelReadFocusDesc: "A voz l\xEA o bot\xE3o, link, campo ou texto em que voc\xEA clicar ou parar com a tecla Tab. Se voc\xEA usa leitor de tela, pode ouvir duas vezes",
-    panelReadFocusUnsupported: "Este navegador n\xE3o tem voz para ler em voz alta",
-    panelReadFocusUnsupportedState: "Sem voz",
-    stateOn: "Ligado",
-    stateOff: "Desligado",
-    sectionTextTitle: "Texto e leitura",
-    sectionColorsTitle: "Cores e destaque",
-    sectionKeyboardTitle: "Teclado e foco",
-    sectionMotionTitle: "Movimento e imagens",
-    panelHighlightLinks: "Destacar links",
-    sectionPageToolsTitle: "Ferramentas de p\xE1gina",
-    panelHighlightHeadings: "Destacar cabe\xE7alhos",
-    panelHighlightControls: "Destacar bot\xF5es e campos",
-    panelEnlargeTargets: "Ampliar bot\xF5es",
-    panelTextMagnifier: "Lupa de texto",
-    panelPageOutline: "Estrutura da p\xE1gina",
-    panelMouseGrid: "Grade de mouse",
-    panelVirtualKeyboard: "Teclado virtual",
-    vkLabel: "Teclado virtual",
-    vkHint: "Toque num campo de texto",
-    vkOpened: "Teclado virtual aberto. Toque num campo de texto.",
-    vkClosed: "Teclado virtual fechado.",
-    vkClose: "Fechar",
-    vkPendingPre: "Digitando:",
-    vkBackspace: "Apagar",
-    vkEnter: "Enter",
-    vkShift: "Shift",
-    vkCaps: "Caps",
-    vkAltGr: "AltGr",
-    vkSpace: "Espa\xE7o",
-    vkDeadAcute: "Acento agudo",
-    vkDeadGrave: "Acento grave",
-    vkDeadTilde: "Til",
-    vkDeadCircumflex: "Acento circunflexo",
-    vkDeadDiaeresis: "Trema",
-    gridDialogLabel: "Grade de mouse",
-    gridOpen: "Grade aberta. Escolha de 1 a 9.",
-    gridLevelPre: "N\xEDvel",
-    gridChoose: "Escolha de 1 a 9.",
-    gridMin: "\xC1rea m\xEDnima. Aperte Enter para clicar.",
-    gridTop: "Voc\xEA j\xE1 est\xE1 no primeiro n\xEDvel.",
-    gridClosed: "Grade fechada.",
-    gridClicked: "Clique feito.",
-    gridCellLabel: "C\xE9lula",
-    gridClickBtn: "Clicar aqui (Enter)",
-    gridBackBtn: "Voltar (Backspace)",
-    gridCloseBtn: "Fechar (Esc)",
-    gridClickShort: "Clicar",
-    gridBackShort: "Voltar",
-    gridCloseShort: "Fechar",
-    outlineTitle: "Estrutura da p\xE1gina",
-    outlineClose: "Fechar",
-    outlineLandmarks: "\xC1reas da p\xE1gina",
-    outlineHeadings: "T\xEDtulos",
-    outlineEmpty: "Esta p\xE1gina n\xE3o tem t\xEDtulos nem \xE1reas para listar.",
-    outlineNoText: "(sem texto)",
-    outlineLevel: "n\xEDvel",
-    outlineLmMain: "Conte\xFAdo principal",
-    outlineLmNav: "Navega\xE7\xE3o",
-    outlineLmBanner: "Cabe\xE7alho do site",
-    outlineLmFooter: "Rodap\xE9 do site",
-    outlineLmAside: "Conte\xFAdo lateral",
-    outlineLmForm: "Formul\xE1rio",
-    outlineLmSearch: "Busca",
-    outlineLmRegion: "Regi\xE3o",
-    panelTextSpacing: "Espa\xE7amento de texto",
-    panelReducedMotion: "Reduzir movimento",
-    panelHideImages: "Ocultar imagens",
-    panelHideImagesHint: "No Modo Simples, imagens somem por padr\xE3o \u2014 desligue para manter",
-    panelDefaultTitle: "Acessibilidade Digital",
-    panelDefaultFooter: "Prefer\xEAncias salvas neste navegador",
-    scaleDefault: "Padr\xE3o",
-    scaleLarge: "Grande",
-    scaleLarger: "Maior",
-    scaleMax: "M\xE1ximo",
-    themeSite: "Cores do site",
-    themeSiteSub: "Padr\xE3o",
-    themeYellowBlack: "Amarelo e Preto",
-    themeYellowBlackSub: "Alto contraste",
-    themeDarkHigh: "Modo Escuro Alto",
-    themeDarkHighSub: "Fundo escuro",
-    themeSoft: "Descanso / Suave",
-    themeSoftSub: "Baixa intensidade",
-    themeMono: "Monocrom\xE1tico",
-    themeMonoSub: "Tons de cinza",
-    themeLightHigh: "Claro Alto Contraste",
-    themeLightHighSub: "Fundo branco",
-    panelTypoGroupLabel: "Ajuste fino da tipografia",
-    panelLineHeightTitle: "Altura da linha",
-    panelWordSpacingTitle: "Espa\xE7o entre palavras",
-    panelLetterSpacingTitle: "Espa\xE7o entre letras",
-    panelTypoDefault: "Padr\xE3o do site",
-    panelResetFont: "Redefinir fonte",
-    announceResetFont: "Fonte redefinida: tamanho, fonte acess\xEDvel e espa\xE7amentos voltaram ao padr\xE3o.",
-    panelCursorTitle: "Cursor do mouse",
-    panelCursorDefault: "Padr\xE3o",
-    panelCursorBigWhite: "Grande branco",
-    panelCursorBigBlack: "Grande preto",
-    panelResetFontLabel: "Redefinir fonte: tamanho, fonte acess\xEDvel e espa\xE7amentos",
-    panelSaturationTitle: "Satura\xE7\xE3o das cores",
-    panelSaturationLow: "Baixa",
-    panelSaturationNormal: "Normal",
-    panelSaturationHigh: "Alta",
-    panelCustomTextTitle: "Cor do texto",
-    panelCustomHeadingTitle: "Cor dos t\xEDtulos",
-    panelCustomBgTitle: "Cor do fundo",
-    panelCustomNone: "Padr\xE3o do site",
-    panelCustomSwatchLabel: "Usar cor",
-    panelCustomPickerLabel: "Escolher outra cor para",
-    panelCustomOther: "Personalizada",
-    panelAutoBgTitle: "Fundo autom\xE1tico",
-    panelContrastWarn: "Aten\xE7\xE3o: contraste baixo (recomendado 4,5:1 ou mais) em",
-    // sessionChrome.js
-    sessionOpenPanelLabel: "Abrir painel de acessibilidade",
-    sessionOpenPanelTitle: "Acessibilidade",
-    sessionBrand: "SIMPLES",
-    sessionSubOff: "Acessibilidade Cognitiva",
-    sessionSubOn: "Interface Simplificada",
-    sessionSwitchLabel: "Modo Simples",
-    sessionBarLabel: "Modo Simples",
-    sessionOffPrompt: "Quer uma navega\xE7\xE3o mais calma, direta e sem excesso de informa\xE7\xE3o?",
-    sessionActivate: "Ativar Modo Simples",
-    sessionOnTitle: "Modo Simples",
-    sessionOnSrSuffix: " ativado",
-    sessionBadge: "Foco na Navega\xE7\xE3o",
-    sessionDescSimple: "Exibindo explica\xE7\xF5es em palavras f\xE1ceis, sem termos complicados.",
-    sessionDescCalm: "Navega\xE7\xE3o mais calma, com bot\xF5es claros e menos distra\xE7\xF5es.",
-    sessionSpeakLabel: "Ouvir p\xE1gina",
-    sessionSpeakText: "Ouvir P\xE1gina",
-    sessionStopLabel: "Parar leitura da p\xE1gina",
-    sessionStopText: "Parar Voz",
-    sessionLangPre: "Linguagem ",
-    sessionLangMain: "Simples",
-    sessionLangOn: "LIGADA",
-    sessionLangOff: "DESLIGADA",
-    sessionLangUnavailable: "Indispon\xEDvel nesta p\xE1gina",
-    sessionImages: "Imagens",
-    sessionImagesHidden: "OCULTAS",
-    sessionImagesVisible: "VIS\xCDVEIS",
-    sessionExit: "Voltar",
-    sessionExitPost: " ao site normal",
-    // F7f — perfis (ui/a11yPanel.js; dados em core/profiles.js)
-    profilesTitle: "Perfis prontos",
-    profilesHint: "Escolha um e a p\xE1gina se ajusta. Um de cada vez.",
-    profileSimpleName: "Modo Simples",
-    profileSimpleDesc: "P\xE1gina mais limpa e f\xE1cil de ler",
-    profileLowVisionName: "Baixa vis\xE3o",
-    profileLowVisionDesc: "Texto maior, cores fortes e cursor grande",
-    profileDyslexiaName: "Dislexia",
-    profileDyslexiaDesc: "Fonte pr\xF3pria, mais espa\xE7o entre letras e r\xE9gua de leitura",
-    profileAdhdName: "TDAH",
-    profileAdhdDesc: "Menos distra\xE7\xE3o: sem som, sem movimento e a voz l\xEA o que voc\xEA seleciona",
-    profileEpilepsyName: "Epilepsia",
-    profileEpilepsyDesc: "Sem anima\xE7\xF5es, sem v\xEDdeo tocando sozinho e sem som",
-    profileKeyboardName: "Teclado",
-    profileKeyboardDesc: "Foco bem vis\xEDvel, atalhos na tela e a voz l\xEA o que voc\xEA seleciona",
-    profileCustom: "Personalizado",
-    profileOnPre: "Perfil ",
-    profileOnPost: " ativado",
-    profileOff: "Perfil desligado. P\xE1gina sem ajustes.",
-    // features/focusReader.js (papéis e estados falados)
-    roleButton: "bot\xE3o",
-    roleLink: "link",
-    roleHeading: "t\xEDtulo",
-    roleField: "campo",
-    roleCheckbox: "caixa de sele\xE7\xE3o",
-    roleRadio: "op\xE7\xE3o",
-    roleSwitch: "interruptor",
-    roleSelect: "lista de op\xE7\xF5es",
-    focusSubmitName: "Enviar",
-    focusSwitchOn: "ligado",
-    focusSwitchOff: "desligado",
-    focusChecked: "marcado",
-    focusUnchecked: "desmarcado",
-    // features/manualSelect.js (linguagem simples, U-02 / UX-21)
-    lowConfNotice: "N\xE3o achei o conte\xFAdo principal, quer escolher?",
-    lowConfChoose: "Escolher o conte\xFAdo",
-    lowConfClose: "Fechar",
-    manualInstruction: "Clique ou toque no que voc\xEA quer ler. No teclado: Tab muda de bloco, setas aumentam ou diminuem a \xE1rea, Enter confirma, Esc volta.",
-    manualCurrent: "Voc\xEA escolheu:",
-    manualChosen: "Conte\xFAdo principal definido",
-    manualCancelled: "Sele\xE7\xE3o manual cancelada",
-    manualCancel: "Voltar",
-    manualCancelLabel: "Voltar sem escolher"
-  });
-  var SHORTCUTS = Object.freeze([
-    { keys: "Alt+Shift+A", text: "Abrir o painel de acessibilidade" },
-    {
-      keys: "Alt+Shift+G",
-      text: "Abrir a grade de mouse (1 a 9 escolhe, Enter clica)"
-    },
-    { keys: "Esc", text: "Fechar o painel ou sair da escolha de conte\xFAdo" },
-    { keys: "Tab", text: "Ir ao pr\xF3ximo item" },
-    { keys: "Shift+Tab", text: "Voltar ao item anterior" },
-    { keys: "Enter", text: "Ativar o bot\xE3o ou link" },
-    { keys: "Espa\xE7o", text: "Ligar ou desligar um interruptor" }
-  ]);
-  var VOICE_CMD_STRINGS = Object.freeze({
-    status_listening: "Comandos de voz ligados. Pode falar.",
-    status_stopped: "Comandos de voz desligados.",
-    status_blocked: "O navegador n\xE3o deixou usar o microfone. Libere o microfone para o site e ligue de novo.",
-    "status_needs-consent": "Para usar comandos de voz, \xE9 preciso aceitar que sua voz v\xE1 para o servidor do navegador, por exemplo o Google.",
-    "status_needs-model": "Falta baixar o reconhecimento de voz no seu aparelho para usar comandos de voz.",
-    status_unsupported: "Este navegador ou esta p\xE1gina n\xE3o aceita comandos de voz.",
-    status_error: "Os comandos de voz pararam. Ligue de novo para tentar.",
-    "status_no-mic": "N\xE3o encontrei um microfone. Conecte um microfone e ligue os comandos de voz de novo.",
-    helpSpoken: "Voc\xEA pode dizer: ler p\xE1gina, parar, pausar, continuar, mais r\xE1pido, mais devagar, descer, subir, ligar modo simples, desligar modo simples, abrir painel, fechar painel e ajuda."
-  });
+  var STRINGS_T = new Proxy(
+    {},
+    { get: (_, k) => typeof k === "string" ? t(k) : void 0 }
+  );
 
   // src/ui/fab.js
   var TIP_SEEN_KEY = "fabTipSeen";
@@ -3017,7 +3872,7 @@
     const tip = document.createElement("span");
     tip.className = "ms-fab-tip";
     tip.id = "ms-fab-tip";
-    tip.textContent = STRINGS.fabTip;
+    tip.textContent = STRINGS_T.fabTip;
     tip.setAttribute("aria-hidden", "true");
     function dismissTip() {
       tip.hidden = true;
@@ -3035,7 +3890,7 @@
     btn.setAttribute("aria-expanded", "false");
     btn.setAttribute("aria-controls", "ms-a11y-panel");
     btn.setAttribute("aria-haspopup", "dialog");
-    btn.setAttribute("aria-label", STRINGS.fabOpenLabel);
+    btn.setAttribute("aria-label", STRINGS_T.fabOpenLabel);
     const iconOpen = `
     <svg class="ms-fab-icon ms-fab-icon--open" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" focusable="false">
       <line x1="4" y1="6" x2="20" y2="6"/>
@@ -3057,7 +3912,7 @@
     const hideBtn = document.createElement("button");
     hideBtn.type = "button";
     hideBtn.className = "ms-fab-hide";
-    hideBtn.setAttribute("aria-label", STRINGS.fabHideLabel);
+    hideBtn.setAttribute("aria-label", STRINGS_T.fabHideLabel);
     hideBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" focusable="false"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
     hideBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -3073,7 +3928,7 @@
       btn.setAttribute("aria-expanded", String(panelOpen));
       btn.setAttribute(
         "aria-label",
-        panelOpen ? STRINGS.fabCloseLabel : STRINGS.fabOpenLabel
+        panelOpen ? STRINGS_T.fabCloseLabel : STRINGS_T.fabOpenLabel
       );
       btn.classList.toggle("ms-fab--open", panelOpen);
       wrap.classList.toggle("ms-fab-wrap--open", panelOpen);
@@ -3268,8 +4123,8 @@
     const chunks = [];
     let cur = "";
     const flush = () => {
-      const t = cur.trim();
-      if (t) chunks.push(t);
+      const t2 = cur.trim();
+      if (t2) chunks.push(t2);
       cur = "";
     };
     const sentences = text.match(/[\s\S]+?(?:[.!?…]+(?=\s|$)|$)\s*/g) || [text];
@@ -3453,8 +4308,8 @@
   function isFocusReaderSupported() {
     return typeof speechSynthesis !== "undefined" && typeof SpeechSynthesisUtterance !== "undefined";
   }
-  var clean = (t) => (t || "").replace(/\s+/g, " ").trim();
-  var cap = (t) => t.length > MAX_TEXT ? t.slice(0, MAX_TEXT).trim() : t;
+  var clean = (t2) => (t2 || "").replace(/\s+/g, " ").trim();
+  var cap2 = (t2) => t2.length > MAX_TEXT ? t2.slice(0, MAX_TEXT).trim() : t2;
   function accessibleName(el2) {
     var _a, _b, _c;
     const ids = el2.getAttribute("aria-labelledby");
@@ -3466,61 +4321,61 @@
           return ((_b2 = (_a2 = root.getElementById) == null ? void 0 : _a2.call(root, id)) == null ? void 0 : _b2.textContent) || "";
         }).join(" ")
       );
-      if (text) return cap(text);
+      if (text) return cap2(text);
     }
     const aria = clean(el2.getAttribute("aria-label"));
-    if (aria) return cap(aria);
+    if (aria) return cap2(aria);
     const tag = el2.tagName.toLowerCase();
-    let label = "";
+    let label2 = "";
     if (el2.labels && el2.labels.length) {
-      label = clean(
+      label2 = clean(
         Array.from(el2.labels).map((l) => l.textContent).join(" ")
       );
     } else if (["input", "select", "textarea"].includes(tag)) {
-      label = clean((_c = (_b = el2.closest) == null ? void 0 : _b.call(el2, "label")) == null ? void 0 : _c.textContent);
+      label2 = clean((_c = (_b = el2.closest) == null ? void 0 : _b.call(el2, "label")) == null ? void 0 : _c.textContent);
     }
-    if (label) return cap(label);
+    if (label2) return cap2(label2);
     const alt = clean(el2.getAttribute("alt"));
-    if (alt) return cap(alt);
+    if (alt) return cap2(alt);
     const title = clean(el2.getAttribute("title"));
-    if (title) return cap(title);
+    if (title) return cap2(title);
     const type = (el2.getAttribute("type") || "").toLowerCase();
     if (tag === "input") {
       if (["button", "submit", "reset"].includes(type)) {
-        return cap(
-          clean(el2.value) || (type === "submit" ? STRINGS.focusSubmitName : "")
+        return cap2(
+          clean(el2.value) || (type === "submit" ? t("focusSubmitName") : "")
         );
       }
-      return cap(clean(el2.getAttribute("placeholder")));
+      return cap2(clean(el2.getAttribute("placeholder")));
     }
     if (["select", "textarea"].includes(tag)) return "";
-    return cap(clean(el2.textContent));
+    return cap2(clean(el2.textContent));
   }
   function roleWord(el2) {
     const tag = el2.tagName.toLowerCase();
     const role = (el2.getAttribute("role") || "").toLowerCase();
     const type = (el2.getAttribute("type") || "").toLowerCase();
-    if (role === "switch") return STRINGS.roleSwitch;
-    if (role === "checkbox") return STRINGS.roleCheckbox;
-    if (role === "radio") return STRINGS.roleRadio;
-    if (role === "button") return STRINGS.roleButton;
-    if (role === "link") return STRINGS.roleLink;
-    if (role === "heading") return STRINGS.roleHeading;
-    if (role === "textbox" || role === "searchbox") return STRINGS.roleField;
-    if (role === "combobox" || role === "listbox") return STRINGS.roleSelect;
-    if (tag === "button") return STRINGS.roleButton;
-    if (tag === "a") return STRINGS.roleLink;
-    if (/^h[1-6]$/.test(tag)) return STRINGS.roleHeading;
-    if (tag === "select") return STRINGS.roleSelect;
-    if (tag === "textarea") return STRINGS.roleField;
+    if (role === "switch") return t("roleSwitch");
+    if (role === "checkbox") return t("roleCheckbox");
+    if (role === "radio") return t("roleRadio");
+    if (role === "button") return t("roleButton");
+    if (role === "link") return t("roleLink");
+    if (role === "heading") return t("roleHeading");
+    if (role === "textbox" || role === "searchbox") return t("roleField");
+    if (role === "combobox" || role === "listbox") return t("roleSelect");
+    if (tag === "button") return t("roleButton");
+    if (tag === "a") return t("roleLink");
+    if (/^h[1-6]$/.test(tag)) return t("roleHeading");
+    if (tag === "select") return t("roleSelect");
+    if (tag === "textarea") return t("roleField");
     if (tag === "input") {
       if (["button", "submit", "reset", "image"].includes(type))
-        return STRINGS.roleButton;
-      if (type === "checkbox") return STRINGS.roleCheckbox;
-      if (type === "radio") return STRINGS.roleRadio;
-      return STRINGS.roleField;
+        return t("roleButton");
+      if (type === "checkbox") return t("roleCheckbox");
+      if (type === "radio") return t("roleRadio");
+      return t("roleField");
     }
-    if (el2.isContentEditable) return STRINGS.roleField;
+    if (el2.isContentEditable) return t("roleField");
     return "";
   }
   function stateWord(el2) {
@@ -3530,8 +4385,8 @@
     const nativo = el2.tagName === "INPUT" && ["checkbox", "radio"].includes(type);
     if (checked === null && !nativo) return "";
     const on3 = checked !== null ? checked === "true" : el2.checked;
-    if (isSwitch) return on3 ? STRINGS.focusSwitchOn : STRINGS.focusSwitchOff;
-    return on3 ? STRINGS.focusChecked : STRINGS.focusUnchecked;
+    if (isSwitch) return on3 ? t("focusSwitchOn") : t("focusSwitchOff");
+    return on3 ? t("focusChecked") : t("focusUnchecked");
   }
   function describeFocus(el2) {
     if (!el2 || el2.nodeType !== 1) return "";
@@ -3583,7 +4438,7 @@
   }
 
   // src/features/voiceCommands.js
-  var LANG2 = "pt-BR";
+  var lang = () => BCP47[getLocale()];
   var MAX_WORDS = 5;
   var MAX_RESTARTS = 5;
   var RESTART_WINDOW_MS = 1e4;
@@ -3606,7 +4461,7 @@
     const headless = /HeadlessChrome/.test(((_a = globalThis.navigator) == null ? void 0 : _a.userAgent) || "");
     if (!headless && typeof Ctor.available === "function") {
       try {
-        const r = await Ctor.available({ langs: [LANG2], processLocally: true });
+        const r = await Ctor.available({ langs: [lang()], processLocally: true });
         if (r === "available") return "local";
         if (r === "downloadable" || r === "downloading") return "download";
       } catch (_) {
@@ -3618,31 +4473,67 @@
     const Ctor = getCtor();
     if (!Ctor || typeof Ctor.install !== "function") return false;
     try {
-      return Boolean(await Ctor.install({ langs: [LANG2], processLocally: true }));
+      return Boolean(
+        await Ctor.install({ langs: [lang()], processLocally: true })
+      );
     } catch (_) {
       return false;
     }
   }
   var norm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
-  var TABLE = [
-    ["msOff", /\bdesligar\b.*\bmodo simples\b/],
-    ["msOn", /\bligar\b.*\bmodo simples\b/],
-    ["panelOpen", /\babrir\b.*\bpainel\b/],
-    ["panelClose", /\bfechar\b.*\bpainel\b/],
-    ["faster", /\bmais rapido\b/],
-    ["slower", /\bmais devagar\b/],
-    ["scrollDown", /\bdescer\b/],
-    ["scrollUp", /\bsubir\b/],
-    ["pause", /\bpausar\b|\bpausa\b/],
-    ["resume", /\bcontinuar\b|\bcontinue\b/],
-    ["stop", /^(parar|pare|para)$/],
-    ["help", /\bajuda\b|\bcomandos\b/],
-    ["read", /\bler\b|\bleia\b/]
-  ];
+  var TABLES = {
+    pt: [
+      ["msOff", /\bdesligar\b.*\bmodo simples\b/],
+      ["msOn", /\bligar\b.*\bmodo simples\b/],
+      ["panelOpen", /\babrir\b.*\bpainel\b/],
+      ["panelClose", /\bfechar\b.*\bpainel\b/],
+      ["faster", /\bmais rapido\b/],
+      ["slower", /\bmais devagar\b/],
+      ["scrollDown", /\bdescer\b/],
+      ["scrollUp", /\bsubir\b/],
+      ["pause", /\bpausar\b|\bpausa\b/],
+      ["resume", /\bcontinuar\b|\bcontinue\b/],
+      ["stop", /^(parar|pare|para)$/],
+      ["help", /\bajuda\b|\bcomandos\b/],
+      ["read", /\bler\b|\bleia\b/]
+    ],
+    en: [
+      ["msOff", /\b(turn|switch) off\b.*\bsimple mode\b/],
+      ["msOn", /\b(turn|switch) on\b.*\bsimple mode\b/],
+      ["panelOpen", /\bopen\b.*\bpanel\b/],
+      ["panelClose", /\bclose\b.*\bpanel\b/],
+      ["faster", /\bfaster\b|\bspeed up\b/],
+      ["slower", /\bslower\b|\bslow down\b/],
+      ["scrollDown", /\bscroll down\b|^down$/],
+      ["scrollUp", /\bscroll up\b|^up$/],
+      ["pause", /\bpause\b/],
+      ["resume", /\bresume\b|\bcontinue\b/],
+      ["stop", /^(stop)$/],
+      ["help", /\bhelp\b|\bcommands\b/],
+      ["read", /\bread\b/]
+    ],
+    es: [
+      ["msOff", /\b(desactivar|apagar)\b.*\bmodo simple\b/],
+      ["msOn", /\b(activar|encender)\b.*\bmodo simple\b/],
+      ["panelOpen", /\babrir\b.*\bpanel\b/],
+      ["panelClose", /\bcerrar\b.*\bpanel\b/],
+      ["faster", /\bmas rapido\b/],
+      ["slower", /\bmas lento\b|\bmas despacio\b/],
+      ["scrollDown", /\bbajar\b/],
+      ["scrollUp", /\bsubir\b/],
+      ["pause", /\bpausar\b|\bpausa\b/],
+      ["resume", /\bcontinuar\b|\bcontinua\b/],
+      ["stop", /^(parar|para|detener)$/],
+      ["help", /\bayuda\b|\bcomandos\b/],
+      ["read", /\bleer\b|\blee\b/]
+    ]
+  };
   function parseCommand(text) {
-    const t = norm(text);
-    if (!t || t.split(" ").length > MAX_WORDS) return null;
-    for (const [action, re] of TABLE) if (re.test(t)) return { action };
+    const t2 = norm(text);
+    if (!t2 || t2.split(" ").length > MAX_WORDS) return null;
+    for (const [action, re] of TABLES[getLocale()]) {
+      if (re.test(t2)) return { action };
+    }
     return null;
   }
   var _rec = null;
@@ -3686,7 +4577,7 @@
     teardown();
     _restarts = [];
     const rec = new Ctor();
-    rec.lang = LANG2;
+    rec.lang = lang();
     rec.continuous = true;
     rec.interimResults = false;
     if (mode === "local") rec.processLocally = true;
@@ -3717,7 +4608,7 @@
     rec.onend = () => {
       if (!_enabled || _rec !== rec) return;
       const now = Date.now();
-      _restarts = _restarts.filter((t) => now - t < RESTART_WINDOW_MS);
+      _restarts = _restarts.filter((t2) => now - t2 < RESTART_WINDOW_MS);
       _restarts.push(now);
       if (_restarts.length > MAX_RESTARTS) {
         teardown();
@@ -3778,13 +4669,13 @@
   function accessibleName2(el2) {
     const by = el2.getAttribute("aria-labelledby");
     if (by) {
-      const t = clean2(
+      const t2 = clean2(
         by.split(/\s+/).map((id) => {
           var _a;
           return ((_a = document.getElementById(id)) == null ? void 0 : _a.textContent) || "";
         }).join(" ")
       );
-      if (t) return t;
+      if (t2) return t2;
     }
     return clean2(el2.getAttribute("aria-label"));
   }
@@ -3822,14 +4713,14 @@
   }
   var NAME_REQUIRED = /* @__PURE__ */ new Set(["form", "search", "region"]);
   var ROLE_LABEL = {
-    main: STRINGS.outlineLmMain,
-    nav: STRINGS.outlineLmNav,
-    banner: STRINGS.outlineLmBanner,
-    footer: STRINGS.outlineLmFooter,
-    aside: STRINGS.outlineLmAside,
-    form: STRINGS.outlineLmForm,
-    search: STRINGS.outlineLmSearch,
-    region: STRINGS.outlineLmRegion
+    main: t("outlineLmMain"),
+    nav: t("outlineLmNav"),
+    banner: t("outlineLmBanner"),
+    footer: t("outlineLmFooter"),
+    aside: t("outlineLmAside"),
+    form: t("outlineLmForm"),
+    search: t("outlineLmSearch"),
+    region: t("outlineLmRegion")
   };
   function headingLevel(el2) {
     const m = /^H([1-6])$/.exec(el2.tagName);
@@ -3845,7 +4736,7 @@
       if (el2.closest(OWN) || isHidden(el2)) continue;
       const level = headingLevel(el2);
       if (level) {
-        const text = clean2(el2.textContent) || accessibleName2(el2) || STRINGS.outlineNoText;
+        const text = clean2(el2.textContent) || accessibleName2(el2) || t("outlineNoText");
         headings.push({ el: el2, level, text });
         continue;
       }
@@ -3853,12 +4744,12 @@
       if (!role) continue;
       const name = accessibleName2(el2);
       if (NAME_REQUIRED.has(role) && !name) continue;
-      const label = ROLE_LABEL[role];
+      const label2 = ROLE_LABEL[role];
       landmarks.push({
         el: el2,
         role,
         name,
-        text: name ? `${label}: ${name}` : label
+        text: name ? `${label2}: ${name}` : label2
       });
     }
     return { headings, landmarks };
@@ -3891,7 +4782,7 @@
       const b = el2("button", "ms-outline-link", text);
       b.type = "button";
       if (level) {
-        b.setAttribute("aria-label", `${STRINGS.outlineLevel} ${level}: ${text}`);
+        b.setAttribute("aria-label", `${t("outlineLevel")} ${level}: ${text}`);
       }
       b.addEventListener("click", () => {
         close({ restoreFocus: false });
@@ -3917,22 +4808,22 @@
       dlg.setAttribute("aria-modal", "true");
       dlg.setAttribute("aria-labelledby", `${OUTLINE_ID}-title`);
       const head = el2("div", "ms-outline-head");
-      const title = el2("h2", "ms-outline-title", STRINGS.outlineTitle);
+      const title = el2("h2", "ms-outline-title", t("outlineTitle"));
       title.id = `${OUTLINE_ID}-title`;
       const closeBtn = el2(
         "button",
         "ms-a11y-action ms-outline-close",
-        STRINGS.outlineClose
+        t("outlineClose")
       );
       closeBtn.type = "button";
       closeBtn.addEventListener("click", () => close());
       head.append(title, closeBtn);
       const body = el2("div", "ms-outline-body");
       if (!headings.length && !landmarks.length) {
-        body.appendChild(el2("p", "ms-outline-empty", STRINGS.outlineEmpty));
+        body.appendChild(el2("p", "ms-outline-empty", t("outlineEmpty")));
       } else {
-        group(body, STRINGS.outlineLandmarks, landmarks);
-        group(body, STRINGS.outlineHeadings, headings, (r) => r.level);
+        group(body, t("outlineLandmarks"), landmarks);
+        group(body, t("outlineHeadings"), headings, (r) => r.level);
       }
       dlg.append(head, body);
       dlg.addEventListener("keydown", (e) => {
@@ -3955,9 +4846,9 @@
       dlg.remove();
       dlg = null;
       for (const n of inerted.splice(0)) n.removeAttribute("inert");
-      const t = trigger;
+      const t2 = trigger;
       trigger = null;
-      if (restoreFocus && (t == null ? void 0 : t.isConnected)) t.focus();
+      if (restoreFocus && (t2 == null ? void 0 : t2.isConnected)) t2.focus();
     }
     return { open, close, isOpen: () => !!dlg };
   }
@@ -3982,25 +4873,26 @@
     )[0];
     return contrastRatio(best, bg) >= 4.5 ? best : readableOn(bg);
   }
-  function autoBg(t, h) {
-    const refs = [t, h].filter(Boolean);
+  function autoBg(t2, h) {
+    const refs = [t2, h].filter(Boolean);
     if (!refs.length) return "";
     const score = (c) => Math.min(...refs.map((r) => contrastRatio(r, c)));
     const [black, white] = [score("#000000"), score("#ffffff")];
-    if (Math.abs(black - white) < 0.01) return readableOn(t || h);
+    if (Math.abs(black - white) < 0.01) return readableOn(t2 || h);
     return black > white ? "#000000" : "#ffffff";
   }
   function effectiveColors({ customText, customHeading, customBg }) {
     const ok = (v) => HEX.test(v || "") ? v : "";
-    const t = ok(customText);
+    const t2 = ok(customText);
     const h = ok(customHeading);
     const b = ok(customBg);
-    const bg = b || autoBg(t, h);
-    const text = t || (bg ? readableOn(bg) : "");
+    const bg = b || autoBg(t2, h);
+    const text = t2 || (bg ? readableOn(bg) : "");
     return { text, heading: h, bg, link: bg ? linkOn(bg) : "" };
   }
 
   // src/ui/a11yPanel.js
+  var LANG_NAMES = { pt: "Portugu\xEAs", en: "English", es: "Espa\xF1ol" };
   var TYPO_KEYS = ["lineHeight", "wordSpacing", "letterSpacing"];
   var round2 = (n) => Math.round(n * 100) / 100;
   var typoValue = (key, idx) => idx <= 0 ? 0 : key === "lineHeight" ? round2(
@@ -4009,7 +4901,7 @@
   var typoIdx = (key, v) => !(v > 0) ? 0 : key === "lineHeight" ? Math.round(
     (v - TYPO_LIMITS.lineHeight.min) / TYPO_LIMITS.lineHeight.step
   ) + 1 : Math.round(v / TYPO_LIMITS[key].step);
-  var typoText = (key, v) => v > 0 ? `${String(v).replace(".", ",")}${key === "lineHeight" ? "" : " em"}` : STRINGS.panelTypoDefault;
+  var typoText = (key, v) => v > 0 ? `${String(v).replace(".", ",")}${key === "lineHeight" ? "" : " em"}` : STRINGS_T.panelTypoDefault;
   var VOICES_PER_LANG = 6;
   function collapseVoices(list, max = VOICES_PER_LANG) {
     const byLang = /* @__PURE__ */ new Map();
@@ -4032,10 +4924,11 @@
       if (!byLang.has(k)) byLang.set(k, []);
       byLang.get(k).push(v);
     });
-    const rank = (k) => /^pt[-_]br$/i.test(k) ? 0 : /^pt([-_]|$)/i.test(k) ? 1 : 2;
+    const loc = getLocale();
+    const rank = (k) => k.toLowerCase() === BCP47[loc].toLowerCase() ? 0 : new RegExp(`^${loc}([-_]|$)`, "i").test(k) ? 1 : 2;
     let names = null;
     try {
-      names = new Intl.DisplayNames(["pt-BR"], { type: "language" });
+      names = new Intl.DisplayNames([BCP47[getLocale()]], { type: "language" });
     } catch (e) {
     }
     return [...byLang.keys()].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b)).map((k) => {
@@ -4050,11 +4943,15 @@
       };
     });
   }
-  var VOICE_SLIDERS = [
-    ["voiceRate", STRINGS.panelVoiceRateLabel],
-    ["voicePitch", STRINGS.panelVoicePitchLabel],
-    ["voiceVolume", STRINGS.panelVoiceVolumeLabel]
-  ];
+  var VOICE_SLIDERS;
+  var TEXT_SCALES;
+  var DEFAULT_BRAND;
+  var COLOR_THEMES;
+  var SATURATIONS;
+  var CURSORS;
+  var CUSTOM_COLORS2;
+  var CONTROLS;
+  var SECTIONS;
   var VOICE_LIMIT_OF = {
     voiceRate: "rate",
     voicePitch: "pitch",
@@ -4067,478 +4964,496 @@
     voiceVolume: 1
   };
   var voiceText = (key, v) => key === "voiceVolume" ? `${Math.round(v * 100)}%` : `${v.toFixed(1).replace(".", ",")}${key === "voiceRate" ? "\xD7" : ""}`;
-  var TEXT_SCALES = [
-    { value: "100", label: "100%", title: STRINGS.scaleDefault },
-    { value: "125", label: "125%", title: STRINGS.scaleLarge },
-    { value: "150", label: "150%", title: STRINGS.scaleLarger },
-    { value: "175", label: "175%", title: STRINGS.scaleMax }
-  ];
-  var DEFAULT_BRAND = {
-    title: STRINGS.panelDefaultTitle,
-    subtitle: "",
-    footer: STRINGS.panelDefaultFooter
-  };
-  var COLOR_THEMES = [
-    { value: "senac", label: STRINGS.themeSite, sub: STRINGS.themeSiteSub },
-    {
-      value: "yellowBlack",
-      label: STRINGS.themeYellowBlack,
-      sub: STRINGS.themeYellowBlackSub
-    },
-    { value: "darkHigh", label: STRINGS.themeDarkHigh, sub: STRINGS.themeDarkHighSub },
-    { value: "soft", label: STRINGS.themeSoft, sub: STRINGS.themeSoftSub },
-    { value: "mono", label: STRINGS.themeMono, sub: STRINGS.themeMonoSub },
-    { value: "lightHigh", label: STRINGS.themeLightHigh, sub: STRINGS.themeLightHighSub }
-  ];
-  var SATURATIONS = [
-    { value: "low", label: STRINGS.panelSaturationLow },
-    { value: "normal", label: STRINGS.panelSaturationNormal },
-    { value: "high", label: STRINGS.panelSaturationHigh }
-  ];
-  var CURSORS = [
-    { value: "default", label: STRINGS.panelCursorDefault },
-    { value: "bigWhite", label: STRINGS.panelCursorBigWhite },
-    { value: "bigBlack", label: STRINGS.panelCursorBigBlack }
-  ];
-  var CUSTOM_COLORS = {
-    customText: {
-      labelId: "ms-label-ctext",
-      title: STRINGS.panelCustomTextTitle,
-      presets: [
-        "#000000",
-        "#1a1a1a",
-        "#0b2c5f",
-        "#14532d",
-        "#7f1d1d",
-        "#ffffff",
-        "#fef08a",
-        "#bae6fd"
-      ]
-    },
-    customHeading: {
-      labelId: "ms-label-cheading",
-      title: STRINGS.panelCustomHeadingTitle,
-      presets: [
-        "#000000",
-        "#0b2c5f",
-        "#7f1d1d",
-        "#14532d",
-        "#4a148c",
-        "#ffffff",
-        "#fde047",
-        "#93c5fd"
-      ]
-    },
-    customBg: {
-      labelId: "ms-label-cbg",
-      title: STRINGS.panelCustomBgTitle,
-      presets: [
-        "#ffffff",
-        "#fffbe6",
-        "#f5efe0",
-        "#e6f0ff",
-        "#e8f5e9",
-        "#000000",
-        "#0f172a",
-        "#1a1a1a"
-      ]
-    }
-  };
   var svgIcon = (inner) => `<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${inner}</svg>`;
   var CHEVRON = svgIcon('<path d="m6 9 6 6 6-6"/>');
   var CHECK = svgIcon('<path d="m5 12.5 4.5 4.5L19 7.5"/>');
-  var switchTile = ({ option, title, label, desc, icon }) => `<button type="button" class="ms-switch ms-tile" role="switch" aria-checked="false" data-option="${option}" aria-label="${label}"${desc ? ` aria-describedby="ms-desc-${option}"` : ""}><span class="ms-tile-icon" aria-hidden="true">${icon}</span><span class="ms-tile-label">${title}</span><span class="ms-tile-state" data-state aria-hidden="true">${STRINGS.stateOff}</span><span class="ms-tile-check" aria-hidden="true">${CHECK}</span>${desc ? `<span id="ms-desc-${option}" hidden>${desc}</span>` : ""}</button>`;
+  var switchTile = ({ option, title, label: label2, desc, icon }) => `<button type="button" class="ms-switch ms-tile" role="switch" aria-checked="false" data-option="${option}" aria-label="${label2}"${desc ? ` aria-describedby="ms-desc-${option}"` : ""}><span class="ms-tile-icon" aria-hidden="true">${icon}</span><span class="ms-tile-label">${title}</span><span class="ms-tile-state" data-state aria-hidden="true">${STRINGS_T.stateOff}</span><span class="ms-tile-check" aria-hidden="true">${CHECK}</span>${desc ? `<span id="ms-desc-${option}" hidden>${desc}</span>` : ""}</button>`;
   var radioHead = (id, title, option) => `<div class="ms-a11y-control-head"><p id="${id}" class="ms-a11y-control-label">${title}</p><span class="ms-a11y-control-state" data-state-for="${option}" aria-hidden="true"></span></div>`;
-  var CONTROLS = {
-    textScale: {
-      wide: true,
-      html: `
-        ${radioHead("ms-label-text", STRINGS.panelTextSizeTitle, "textScale")}
+  function refreshTexts() {
+    VOICE_SLIDERS = [
+      ["voiceRate", STRINGS_T.panelVoiceRateLabel],
+      ["voicePitch", STRINGS_T.panelVoicePitchLabel],
+      ["voiceVolume", STRINGS_T.panelVoiceVolumeLabel]
+    ];
+    TEXT_SCALES = [
+      { value: "100", label: "100%", title: STRINGS_T.scaleDefault },
+      { value: "125", label: "125%", title: STRINGS_T.scaleLarge },
+      { value: "150", label: "150%", title: STRINGS_T.scaleLarger },
+      { value: "175", label: "175%", title: STRINGS_T.scaleMax }
+    ];
+    DEFAULT_BRAND = {
+      title: STRINGS_T.panelDefaultTitle,
+      subtitle: "",
+      footer: STRINGS_T.panelDefaultFooter
+    };
+    COLOR_THEMES = [
+      { value: "senac", label: STRINGS_T.themeSite, sub: STRINGS_T.themeSiteSub },
+      {
+        value: "yellowBlack",
+        label: STRINGS_T.themeYellowBlack,
+        sub: STRINGS_T.themeYellowBlackSub
+      },
+      { value: "darkHigh", label: STRINGS_T.themeDarkHigh, sub: STRINGS_T.themeDarkHighSub },
+      { value: "soft", label: STRINGS_T.themeSoft, sub: STRINGS_T.themeSoftSub },
+      { value: "mono", label: STRINGS_T.themeMono, sub: STRINGS_T.themeMonoSub },
+      { value: "lightHigh", label: STRINGS_T.themeLightHigh, sub: STRINGS_T.themeLightHighSub }
+    ];
+    SATURATIONS = [
+      { value: "low", label: STRINGS_T.panelSaturationLow },
+      { value: "normal", label: STRINGS_T.panelSaturationNormal },
+      { value: "high", label: STRINGS_T.panelSaturationHigh }
+    ];
+    CURSORS = [
+      { value: "default", label: STRINGS_T.panelCursorDefault },
+      { value: "bigWhite", label: STRINGS_T.panelCursorBigWhite },
+      { value: "bigBlack", label: STRINGS_T.panelCursorBigBlack }
+    ];
+    CUSTOM_COLORS2 = {
+      customText: {
+        labelId: "ms-label-ctext",
+        title: STRINGS_T.panelCustomTextTitle,
+        presets: [
+          "#000000",
+          "#1a1a1a",
+          "#0b2c5f",
+          "#14532d",
+          "#7f1d1d",
+          "#ffffff",
+          "#fef08a",
+          "#bae6fd"
+        ]
+      },
+      customHeading: {
+        labelId: "ms-label-cheading",
+        title: STRINGS_T.panelCustomHeadingTitle,
+        presets: [
+          "#000000",
+          "#0b2c5f",
+          "#7f1d1d",
+          "#14532d",
+          "#4a148c",
+          "#ffffff",
+          "#fde047",
+          "#93c5fd"
+        ]
+      },
+      customBg: {
+        labelId: "ms-label-cbg",
+        title: STRINGS_T.panelCustomBgTitle,
+        presets: [
+          "#ffffff",
+          "#fffbe6",
+          "#f5efe0",
+          "#e6f0ff",
+          "#e8f5e9",
+          "#000000",
+          "#0f172a",
+          "#1a1a1a"
+        ]
+      }
+    };
+    CONTROLS = {
+      // Idioma da UI (auto | pt | en | es); opções preenchidas por DOM, cada uma no próprio idioma
+      language: {
+        html: `
+        <div class="ms-a11y-block--span">
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-language">${STRINGS_T.panelLanguageTitle}</label></div>
+            <select class="ms-range-input" id="ms-language" data-language></select>
+          </div>
+        </div>`
+      },
+      textScale: {
+        wide: true,
+        html: `
+        ${radioHead("ms-label-text", STRINGS_T.panelTextSizeTitle, "textScale")}
         <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-text" data-option="textScale">
           ${TEXT_SCALES.map(
-        (s) => `
+          (s) => `
             <button type="button" role="radio" class="ms-segment"
               data-value="${s.value}" aria-checked="false"
-              aria-label="${STRINGS.panelTextSizeItemLabel} ${s.label} \u2014 ${s.title}" title="${s.title}">
+              aria-label="${STRINGS_T.panelTextSizeItemLabel} ${s.label} \u2014 ${s.title}" title="${s.title}">
               ${s.label}
             </button>`
-      ).join("")}
+        ).join("")}
         </div>`
-    },
-    colorTheme: {
-      wide: true,
-      html: `
-        ${radioHead("ms-label-theme", STRINGS.panelThemeTitle, "colorTheme")}
+      },
+      colorTheme: {
+        wide: true,
+        html: `
+        ${radioHead("ms-label-theme", STRINGS_T.panelThemeTitle, "colorTheme")}
         <div class="ms-theme-grid" role="radiogroup" aria-labelledby="ms-label-theme" data-option="colorTheme">
           ${COLOR_THEMES.map(
-        (t) => `
-            <button type="button" role="radio" class="ms-theme-btn ms-theme-btn--${t.value}"
-              data-value="${t.value}" aria-checked="false"
-              aria-label="${STRINGS.panelThemeItemLabel} ${t.label} \u2014 ${t.sub}">
+          (t2) => `
+            <button type="button" role="radio" class="ms-theme-btn ms-theme-btn--${t2.value}"
+              data-value="${t2.value}" aria-checked="false"
+              aria-label="${STRINGS_T.panelThemeItemLabel} ${t2.label} \u2014 ${t2.sub}">
               <span class="ms-theme-swatch" aria-hidden="true"></span>
-              <span class="ms-theme-label">${t.label}</span>
-              <span class="ms-theme-sub">${t.sub}</span>
+              <span class="ms-theme-label">${t2.label}</span>
+              <span class="ms-theme-sub">${t2.sub}</span>
             </button>`
-      ).join("")}
+        ).join("")}
         </div>`
-    },
-    // Segmentos preenchidos em createA11yPanel (DOM, sem interpolação no template)
-    colorSaturation: {
-      wide: true,
-      html: `
-        ${radioHead("ms-label-sat", STRINGS.panelSaturationTitle, "colorSaturation")}
+      },
+      // Segmentos preenchidos em createA11yPanel (DOM, sem interpolação no template)
+      colorSaturation: {
+        wide: true,
+        html: `
+        ${radioHead("ms-label-sat", STRINGS_T.panelSaturationTitle, "colorSaturation")}
         <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-sat" data-option="colorSaturation"></div>`
-    },
-    // Segmentos preenchidos em createA11yPanel. Em tela de toque não há cursor: o controle fica e é inofensivo
-    cursorStyle: {
-      wide: true,
-      html: `
-        ${radioHead("ms-label-cursor", STRINGS.panelCursorTitle, "cursorStyle")}
+      },
+      // Segmentos preenchidos em createA11yPanel. Em tela de toque não há cursor: o controle fica e é inofensivo
+      cursorStyle: {
+        wide: true,
+        html: `
+        ${radioHead("ms-label-cursor", STRINGS_T.panelCursorTitle, "cursorStyle")}
         <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-cursor" data-option="cursorStyle"></div>`
-    },
-    customText: {
-      wide: true,
-      html: `
-        ${radioHead("ms-label-ctext", STRINGS.panelCustomTextTitle, "customText")}
+      },
+      customText: {
+        wide: true,
+        html: `
+        ${radioHead("ms-label-ctext", STRINGS_T.panelCustomTextTitle, "customText")}
         <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-ctext" data-option="customText"></div>
         <input type="color" class="ms-color-input" data-picker="customText">`
-    },
-    customHeading: {
-      wide: true,
-      html: `
-        ${radioHead("ms-label-cheading", STRINGS.panelCustomHeadingTitle, "customHeading")}
+      },
+      customHeading: {
+        wide: true,
+        html: `
+        ${radioHead("ms-label-cheading", STRINGS_T.panelCustomHeadingTitle, "customHeading")}
         <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-cheading" data-option="customHeading"></div>
         <input type="color" class="ms-color-input" data-picker="customHeading">`
-    },
-    customBg: {
-      wide: true,
-      html: `
-        ${radioHead("ms-label-cbg", STRINGS.panelCustomBgTitle, "customBg")}
+      },
+      customBg: {
+        wide: true,
+        html: `
+        ${radioHead("ms-label-cbg", STRINGS_T.panelCustomBgTitle, "customBg")}
         <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-cbg" data-option="customBg"></div>
         <input type="color" class="ms-color-input" data-picker="customBg">
         <p class="ms-a11y-warn" role="status" aria-atomic="true" data-contrast-warn></p>`
-    },
-    dyslexiaFont: {
-      html: switchTile({
-        option: "dyslexiaFont",
-        title: STRINGS.panelDyslexiaTitle,
-        label: STRINGS.panelDyslexiaLabel,
-        desc: STRINGS.panelDyslexiaDesc,
-        icon: svgIcon(
-          '<path d="M4 19 10 5l6 14"/><path d="M6.5 14h7"/><path d="M19 9v10"/>'
-        )
-      })
-    },
-    readingRuler: {
-      html: switchTile({
-        option: "readingRuler",
-        title: STRINGS.panelRulerTitle,
-        label: STRINGS.panelRulerTitle,
-        desc: STRINGS.panelRulerDesc,
-        icon: svgIcon(
-          '<path d="M4 8h16"/><rect x="4" y="11" width="16" height="3" rx="1" fill="currentColor"/><path d="M4 18h16"/>'
-        )
-      })
-    },
-    speak: {
-      html: `<button type="button" class="ms-btn-ouvir ms-tile" data-action="speak" aria-label="${STRINGS.panelVoiceLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>')}</span><span class="ms-tile-label" data-speak-text>${STRINGS.panelVoiceButton}</span></button>`
-    },
-    // F10e: aparece só enquanto o "Ouvir" lê; alterna Pausar/Continuar (display:none via JS: .ms-tile é flex)
-    pause: {
-      html: `<button type="button" class="ms-tile" data-action="pause" hidden style="display:none" aria-label="${STRINGS.panelPauseLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M8 5v14"/><path d="M16 5v14"/>')}</span><span class="ms-tile-label" data-pause-text>${STRINGS.panelPause}</span></button>`
-    },
-    // T211: aviso quando a leitura falha / não há voz (região viva sempre presente; o texto entra e sai)
-    speechNotice: {
-      html: `<p class="ms-a11y-block--span ms-a11y-control-state" data-speech-notice role="status" aria-live="polite" style="margin:0"></p>`
-    },
-    readFocus: {
-      html: switchTile({
-        option: "readFocus",
-        title: STRINGS.panelReadFocusTitle,
-        label: STRINGS.panelReadFocusTitle,
-        desc: STRINGS.panelReadFocusDesc,
-        icon: svgIcon(
-          '<path d="M5 4v14l4-3.5 2.5 5 2.5-1-2.5-5H16z"/><path d="M17.5 5.5a4 4 0 0 1 0 5"/>'
-        )
-      })
-    },
-    highlightLinks: {
-      html: switchTile({
-        option: "highlightLinks",
-        title: STRINGS.panelHighlightLinks,
-        label: STRINGS.panelHighlightLinks,
-        icon: svgIcon(
-          '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'
-        )
-      })
-    },
-    highlightHeadings: {
-      html: switchTile({
-        option: "highlightHeadings",
-        title: STRINGS.panelHighlightHeadings,
-        label: STRINGS.panelHighlightHeadings,
-        icon: svgIcon(
-          '<path d="M6 4v16"/><path d="M18 4v16"/><path d="M6 12h12"/>'
-        )
-      })
-    },
-    highlightControls: {
-      html: switchTile({
-        option: "highlightControls",
-        title: STRINGS.panelHighlightControls,
-        label: STRINGS.panelHighlightControls,
-        icon: svgIcon(
-          '<rect x="3" y="7" width="18" height="10" rx="2"/><path d="M8 12h8"/>'
-        )
-      })
-    },
-    enlargeTargets: {
-      html: switchTile({
-        option: "enlargeTargets",
-        title: STRINGS.panelEnlargeTargets,
-        label: STRINGS.panelEnlargeTargets,
-        icon: svgIcon(
-          '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 15l6-6"/><path d="M10 9h5v5"/>'
-        )
-      })
-    },
-    textMagnifier: {
-      html: switchTile({
-        option: "textMagnifier",
-        title: STRINGS.panelTextMagnifier,
-        label: STRINGS.panelTextMagnifier,
-        icon: svgIcon(
-          '<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/><path d="M8 10h4"/>'
-        )
-      })
-    },
-    // F9c: ação de sessão (abre um diálogo), não é opção persistida
-    pageOutline: {
-      html: `<button type="button" class="ms-tile" data-action="page-outline" aria-haspopup="dialog"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M4 6h16"/><path d="M8 12h12"/><path d="M12 18h8"/>')}</span><span class="ms-tile-label">${STRINGS.panelPageOutline}</span></button>`
-    },
-    // F9d: ação de sessão (fecha o painel e abre a grade), não é opção persistida
-    mouseGrid: {
-      html: `<button type="button" class="ms-tile" data-action="mouse-grid"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/>')}</span><span class="ms-tile-label">${STRINGS.panelMouseGrid}</span></button>`
-    },
-    // F9e: ação de sessão (fecha o painel e abre o teclado), não é opção persistida
-    virtualKeyboard: {
-      html: `<button type="button" class="ms-tile" data-action="virtual-keyboard"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>')}</span><span class="ms-tile-label">${STRINGS.panelVirtualKeyboard}</span></button>`
-    },
-    // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
-    typography: {
-      html: `
+      },
+      dyslexiaFont: {
+        html: switchTile({
+          option: "dyslexiaFont",
+          title: STRINGS_T.panelDyslexiaTitle,
+          label: STRINGS_T.panelDyslexiaLabel,
+          desc: STRINGS_T.panelDyslexiaDesc,
+          icon: svgIcon(
+            '<path d="M4 19 10 5l6 14"/><path d="M6.5 14h7"/><path d="M19 9v10"/>'
+          )
+        })
+      },
+      readingRuler: {
+        html: switchTile({
+          option: "readingRuler",
+          title: STRINGS_T.panelRulerTitle,
+          label: STRINGS_T.panelRulerTitle,
+          desc: STRINGS_T.panelRulerDesc,
+          icon: svgIcon(
+            '<path d="M4 8h16"/><rect x="4" y="11" width="16" height="3" rx="1" fill="currentColor"/><path d="M4 18h16"/>'
+          )
+        })
+      },
+      speak: {
+        html: `<button type="button" class="ms-btn-ouvir ms-tile" data-action="speak" aria-label="${STRINGS_T.panelVoiceLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>')}</span><span class="ms-tile-label" data-speak-text>${STRINGS_T.panelVoiceButton}</span></button>`
+      },
+      // F10e: aparece só enquanto o "Ouvir" lê; alterna Pausar/Continuar (display:none via JS: .ms-tile é flex)
+      pause: {
+        html: `<button type="button" class="ms-tile" data-action="pause" hidden style="display:none" aria-label="${STRINGS_T.panelPauseLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M8 5v14"/><path d="M16 5v14"/>')}</span><span class="ms-tile-label" data-pause-text>${STRINGS_T.panelPause}</span></button>`
+      },
+      // T211: aviso quando a leitura falha / não há voz (região viva sempre presente; o texto entra e sai)
+      speechNotice: {
+        html: `<p class="ms-a11y-block--span ms-a11y-control-state" data-speech-notice role="status" aria-live="polite" style="margin:0"></p>`
+      },
+      readFocus: {
+        html: switchTile({
+          option: "readFocus",
+          title: STRINGS_T.panelReadFocusTitle,
+          label: STRINGS_T.panelReadFocusTitle,
+          desc: STRINGS_T.panelReadFocusDesc,
+          icon: svgIcon(
+            '<path d="M5 4v14l4-3.5 2.5 5 2.5-1-2.5-5H16z"/><path d="M17.5 5.5a4 4 0 0 1 0 5"/>'
+          )
+        })
+      },
+      highlightLinks: {
+        html: switchTile({
+          option: "highlightLinks",
+          title: STRINGS_T.panelHighlightLinks,
+          label: STRINGS_T.panelHighlightLinks,
+          icon: svgIcon(
+            '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'
+          )
+        })
+      },
+      highlightHeadings: {
+        html: switchTile({
+          option: "highlightHeadings",
+          title: STRINGS_T.panelHighlightHeadings,
+          label: STRINGS_T.panelHighlightHeadings,
+          icon: svgIcon(
+            '<path d="M6 4v16"/><path d="M18 4v16"/><path d="M6 12h12"/>'
+          )
+        })
+      },
+      highlightControls: {
+        html: switchTile({
+          option: "highlightControls",
+          title: STRINGS_T.panelHighlightControls,
+          label: STRINGS_T.panelHighlightControls,
+          icon: svgIcon(
+            '<rect x="3" y="7" width="18" height="10" rx="2"/><path d="M8 12h8"/>'
+          )
+        })
+      },
+      enlargeTargets: {
+        html: switchTile({
+          option: "enlargeTargets",
+          title: STRINGS_T.panelEnlargeTargets,
+          label: STRINGS_T.panelEnlargeTargets,
+          icon: svgIcon(
+            '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 15l6-6"/><path d="M10 9h5v5"/>'
+          )
+        })
+      },
+      textMagnifier: {
+        html: switchTile({
+          option: "textMagnifier",
+          title: STRINGS_T.panelTextMagnifier,
+          label: STRINGS_T.panelTextMagnifier,
+          icon: svgIcon(
+            '<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/><path d="M8 10h4"/>'
+          )
+        })
+      },
+      // F9c: ação de sessão (abre um diálogo), não é opção persistida
+      pageOutline: {
+        html: `<button type="button" class="ms-tile" data-action="page-outline" aria-haspopup="dialog"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M4 6h16"/><path d="M8 12h12"/><path d="M12 18h8"/>')}</span><span class="ms-tile-label">${STRINGS_T.panelPageOutline}</span></button>`
+      },
+      // F9d: ação de sessão (fecha o painel e abre a grade), não é opção persistida
+      mouseGrid: {
+        html: `<button type="button" class="ms-tile" data-action="mouse-grid"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/>')}</span><span class="ms-tile-label">${STRINGS_T.panelMouseGrid}</span></button>`
+      },
+      // F9e: ação de sessão (fecha o painel e abre o teclado), não é opção persistida
+      virtualKeyboard: {
+        html: `<button type="button" class="ms-tile" data-action="virtual-keyboard"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>')}</span><span class="ms-tile-label">${STRINGS_T.panelVirtualKeyboard}</span></button>`
+      },
+      // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
+      typography: {
+        html: `
         <div class="ms-a11y-block--span" role="group" aria-labelledby="ms-label-typo">
-          <p id="ms-label-typo" class="ms-a11y-control-label">${STRINGS.panelTypoGroupLabel}</p>
+          <p id="ms-label-typo" class="ms-a11y-control-label">${STRINGS_T.panelTypoGroupLabel}</p>
           <div class="ms-range">
-            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-range-lineHeight">${STRINGS.panelLineHeightTitle}</label><span class="ms-a11y-control-state" data-state-for="lineHeight" aria-hidden="true"></span></div>
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-range-lineHeight">${STRINGS_T.panelLineHeightTitle}</label><span class="ms-a11y-control-state" data-state-for="lineHeight" aria-hidden="true"></span></div>
             <input type="range" class="ms-range-input" id="ms-range-lineHeight" data-range="lineHeight" min="0" step="1" value="0">
           </div>
           <div class="ms-range">
-            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-range-wordSpacing">${STRINGS.panelWordSpacingTitle}</label><span class="ms-a11y-control-state" data-state-for="wordSpacing" aria-hidden="true"></span></div>
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-range-wordSpacing">${STRINGS_T.panelWordSpacingTitle}</label><span class="ms-a11y-control-state" data-state-for="wordSpacing" aria-hidden="true"></span></div>
             <input type="range" class="ms-range-input" id="ms-range-wordSpacing" data-range="wordSpacing" min="0" step="1" value="0">
           </div>
           <div class="ms-range">
-            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-range-letterSpacing">${STRINGS.panelLetterSpacingTitle}</label><span class="ms-a11y-control-state" data-state-for="letterSpacing" aria-hidden="true"></span></div>
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-range-letterSpacing">${STRINGS_T.panelLetterSpacingTitle}</label><span class="ms-a11y-control-state" data-state-for="letterSpacing" aria-hidden="true"></span></div>
             <input type="range" class="ms-range-input" id="ms-range-letterSpacing" data-range="letterSpacing" min="0" step="1" value="0">
           </div>
-          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="reset-font" aria-label="${STRINGS.panelResetFontLabel}">${STRINGS.panelResetFont}</button>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="reset-font" aria-label="${STRINGS_T.panelResetFontLabel}">${STRINGS_T.panelResetFont}</button>
         </div>`
-    },
-    // F10b: Estúdio de Voz (ocupa a linha inteira; prefs em options.voice*)
-    voiceStudio: {
-      html: `
+      },
+      // F10b: Estúdio de Voz (ocupa a linha inteira; prefs em options.voice*)
+      voiceStudio: {
+        html: `
         <div class="ms-a11y-block--span" role="group" aria-labelledby="ms-label-voice">
-          <p id="ms-label-voice" class="ms-a11y-control-label">${STRINGS.panelVoiceStudioTitle}</p>
+          <p id="ms-label-voice" class="ms-a11y-control-label">${STRINGS_T.panelVoiceStudioTitle}</p>
           <div class="ms-range">
-            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-name">${STRINGS.panelVoiceSelectLabel}</label></div>
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-name">${STRINGS_T.panelVoiceSelectLabel}</label></div>
             <select class="ms-range-input" id="ms-voice-name" data-voice="voiceName"></select>
           </div>
           <div class="ms-range">
-            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-voiceRate">${STRINGS.panelVoiceRateLabel}</label><span class="ms-a11y-control-state" data-state-for="voiceRate" aria-hidden="true"></span></div>
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-voiceRate">${STRINGS_T.panelVoiceRateLabel}</label><span class="ms-a11y-control-state" data-state-for="voiceRate" aria-hidden="true"></span></div>
             <input type="range" class="ms-range-input" id="ms-voice-voiceRate" data-voice="voiceRate">
           </div>
           <div class="ms-range">
-            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-voicePitch">${STRINGS.panelVoicePitchLabel}</label><span class="ms-a11y-control-state" data-state-for="voicePitch" aria-hidden="true"></span></div>
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-voicePitch">${STRINGS_T.panelVoicePitchLabel}</label><span class="ms-a11y-control-state" data-state-for="voicePitch" aria-hidden="true"></span></div>
             <input type="range" class="ms-range-input" id="ms-voice-voicePitch" data-voice="voicePitch">
           </div>
           <div class="ms-range">
-            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-voiceVolume">${STRINGS.panelVoiceVolumeLabel}</label><span class="ms-a11y-control-state" data-state-for="voiceVolume" aria-hidden="true"></span></div>
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-voice-voiceVolume">${STRINGS_T.panelVoiceVolumeLabel}</label><span class="ms-a11y-control-state" data-state-for="voiceVolume" aria-hidden="true"></span></div>
             <input type="range" class="ms-range-input" id="ms-voice-voiceVolume" data-voice="voiceVolume">
           </div>
-          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-all" aria-pressed="false" hidden style="display:none">${STRINGS.panelVoiceAll}</button>
-          <p class="ms-a11y-control-state" data-voice-hint hidden>${STRINGS.panelVoiceMoreHint}</p>
-          <p class="ms-a11y-control-state" data-speech-notice-studio hidden>${STRINGS.panelSpeechFailed}</p>
-          <p class="ms-a11y-control-state" data-voice-note hidden>${STRINGS.panelVoiceUnsupported}</p>
-          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-test" aria-label="${STRINGS.panelVoiceTestLabel}">${STRINGS.panelVoiceTest}</button>
-          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-reset" aria-label="${STRINGS.panelVoiceResetLabel}">${STRINGS.panelVoiceReset}</button>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-all" aria-pressed="false" hidden style="display:none">${STRINGS_T.panelVoiceAll}</button>
+          <p class="ms-a11y-control-state" data-voice-hint hidden>${STRINGS_T.panelVoiceMoreHint}</p>
+          <p class="ms-a11y-control-state" data-speech-notice-studio hidden>${STRINGS_T.panelSpeechFailed}</p>
+          <p class="ms-a11y-control-state" data-voice-note hidden>${STRINGS_T.panelVoiceUnsupported}</p>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-test" aria-label="${STRINGS_T.panelVoiceTestLabel}">${STRINGS_T.panelVoiceTest}</button>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-reset" aria-label="${STRINGS_T.panelVoiceResetLabel}">${STRINGS_T.panelVoiceReset}</button>
         </div>`
-    },
-    // F10e: interruptor próprio (fluxo com avisos no JS) + linha de status/revogar/lista de comandos
-    voiceCommands: {
-      html: switchTile({
-        option: "voiceCommands",
-        title: STRINGS.panelVcTitle,
-        label: STRINGS.panelVcLabel,
-        desc: STRINGS.panelVcDesc,
-        icon: svgIcon(
-          '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/>'
-        )
-      })
-    },
-    voiceCommandsMore: {
-      html: `
+      },
+      // F10e: interruptor próprio (fluxo com avisos no JS) + linha de status/revogar/lista de comandos
+      voiceCommands: {
+        html: switchTile({
+          option: "voiceCommands",
+          title: STRINGS_T.panelVcTitle,
+          label: STRINGS_T.panelVcLabel,
+          desc: STRINGS_T.panelVcDesc,
+          icon: svgIcon(
+            '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/>'
+          )
+        })
+      },
+      voiceCommandsMore: {
+        html: `
         <div class="ms-a11y-block--span">
           <p class="ms-a11y-control-state" data-vc-status role="status" aria-live="polite"></p>
-          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="vc-revoke" hidden style="display:none" aria-label="${STRINGS.panelVcRevokeLabel}">${STRINGS.panelVcRevoke}</button>
-          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="vc-commands" aria-expanded="false" aria-controls="ms-vc-commands">${STRINGS.panelVcShow}</button>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="vc-revoke" hidden style="display:none" aria-label="${STRINGS_T.panelVcRevokeLabel}">${STRINGS_T.panelVcRevoke}</button>
+          <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="vc-commands" aria-expanded="false" aria-controls="ms-vc-commands">${STRINGS_T.panelVcShow}</button>
           <ul class="ms-a11y-control-state" id="ms-vc-commands" data-vc-list hidden></ul>
         </div>`
-    },
-    textSpacing: {
-      html: switchTile({
-        option: "textSpacing",
-        title: STRINGS.panelTextSpacing,
-        label: STRINGS.panelTextSpacing,
+      },
+      textSpacing: {
+        html: switchTile({
+          option: "textSpacing",
+          title: STRINGS_T.panelTextSpacing,
+          label: STRINGS_T.panelTextSpacing,
+          icon: svgIcon(
+            '<path d="M4 4v16"/><path d="M20 4v16"/><path d="m8 12h8"/><path d="m10 9-3 3 3 3"/><path d="m14 9 3 3-3 3"/>'
+          )
+        })
+      },
+      reducedMotion: {
+        html: switchTile({
+          option: "reducedMotion",
+          title: STRINGS_T.panelReducedMotion,
+          label: STRINGS_T.panelReducedMotion,
+          icon: svgIcon(
+            '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'
+          )
+        })
+      },
+      strongFocus: {
+        html: switchTile({
+          option: "strongFocus",
+          title: STRINGS_T.panelStrongFocusTitle,
+          label: STRINGS_T.panelStrongFocusTitle,
+          desc: STRINGS_T.panelStrongFocusDesc,
+          icon: svgIcon(
+            '<rect x="4" y="6" width="16" height="12" rx="2"/><rect x="1.5" y="3.5" width="21" height="17" rx="3.5"/>'
+          )
+        })
+      },
+      showShortcuts: {
+        html: switchTile({
+          option: "showShortcuts",
+          title: STRINGS_T.panelShortcutsTitle,
+          label: STRINGS_T.panelShortcutsTitle,
+          desc: STRINGS_T.panelShortcutsDesc,
+          icon: svgIcon(
+            '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>'
+          )
+        })
+      },
+      blockFlashing: {
+        html: switchTile({
+          option: "blockFlashing",
+          title: STRINGS_T.panelBlockFlashingTitle,
+          label: STRINGS_T.panelBlockFlashingTitle,
+          desc: STRINGS_T.panelBlockFlashingDesc,
+          icon: svgIcon('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>')
+        })
+      },
+      muteMedia: {
+        html: switchTile({
+          option: "muteMedia",
+          title: STRINGS_T.panelMuteMediaTitle,
+          label: STRINGS_T.panelMuteMediaTitle,
+          desc: STRINGS_T.panelMuteMediaDesc,
+          icon: svgIcon(
+            '<path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6"/><path d="m21 9-5 6"/>'
+          )
+        })
+      },
+      hideImages: {
+        html: switchTile({
+          option: "hideImages",
+          title: STRINGS_T.panelHideImages,
+          label: STRINGS_T.panelHideImages,
+          desc: STRINGS_T.panelHideImagesHint,
+          icon: svgIcon(
+            '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>'
+          )
+        })
+      }
+    };
+    SECTIONS = [
+      {
+        id: "text",
+        title: STRINGS_T.sectionTextTitle,
         icon: svgIcon(
-          '<path d="M4 4v16"/><path d="M20 4v16"/><path d="m8 12h8"/><path d="m10 9-3 3 3 3"/><path d="m14 9 3 3-3 3"/>'
-        )
-      })
-    },
-    reducedMotion: {
-      html: switchTile({
-        option: "reducedMotion",
-        title: STRINGS.panelReducedMotion,
-        label: STRINGS.panelReducedMotion,
+          '<path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/>'
+        ),
+        controls: [
+          "language",
+          "textScale",
+          "dyslexiaFont",
+          "textSpacing",
+          "readingRuler",
+          "speak",
+          "pause",
+          "speechNotice",
+          "readFocus",
+          "voiceStudio",
+          "voiceCommands",
+          "voiceCommandsMore",
+          "typography"
+        ]
+      },
+      {
+        id: "colors",
+        title: STRINGS_T.sectionColorsTitle,
         icon: svgIcon(
-          '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'
-        )
-      })
-    },
-    strongFocus: {
-      html: switchTile({
-        option: "strongFocus",
-        title: STRINGS.panelStrongFocusTitle,
-        label: STRINGS.panelStrongFocusTitle,
-        desc: STRINGS.panelStrongFocusDesc,
+          '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/>'
+        ),
+        controls: [
+          "colorTheme",
+          "colorSaturation",
+          "customText",
+          "customHeading",
+          "customBg",
+          "cursorStyle",
+          "highlightLinks"
+        ]
+      },
+      {
+        id: "pageTools",
+        title: STRINGS_T.sectionPageToolsTitle,
         icon: svgIcon(
-          '<rect x="4" y="6" width="16" height="12" rx="2"/><rect x="1.5" y="3.5" width="21" height="17" rx="3.5"/>'
-        )
-      })
-    },
-    showShortcuts: {
-      html: switchTile({
-        option: "showShortcuts",
-        title: STRINGS.panelShortcutsTitle,
-        label: STRINGS.panelShortcutsTitle,
-        desc: STRINGS.panelShortcutsDesc,
-        icon: svgIcon(
-          '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>'
-        )
-      })
-    },
-    blockFlashing: {
-      html: switchTile({
-        option: "blockFlashing",
-        title: STRINGS.panelBlockFlashingTitle,
-        label: STRINGS.panelBlockFlashingTitle,
-        desc: STRINGS.panelBlockFlashingDesc,
-        icon: svgIcon('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>')
-      })
-    },
-    muteMedia: {
-      html: switchTile({
-        option: "muteMedia",
-        title: STRINGS.panelMuteMediaTitle,
-        label: STRINGS.panelMuteMediaTitle,
-        desc: STRINGS.panelMuteMediaDesc,
-        icon: svgIcon(
-          '<path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6"/><path d="m21 9-5 6"/>'
-        )
-      })
-    },
-    hideImages: {
-      html: switchTile({
-        option: "hideImages",
-        title: STRINGS.panelHideImages,
-        label: STRINGS.panelHideImages,
-        desc: STRINGS.panelHideImagesHint,
+          '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 14h8"/>'
+        ),
+        controls: [
+          "highlightHeadings",
+          "highlightControls",
+          "enlargeTargets",
+          "textMagnifier",
+          "pageOutline",
+          "mouseGrid",
+          "virtualKeyboard"
+        ]
+      },
+      {
+        id: "motion",
+        title: STRINGS_T.sectionMotionTitle,
         icon: svgIcon(
           '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>'
-        )
-      })
-    }
-  };
-  var SECTIONS = [
-    {
-      id: "text",
-      title: STRINGS.sectionTextTitle,
-      icon: svgIcon(
-        '<path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/>'
-      ),
-      controls: [
-        "textScale",
-        "dyslexiaFont",
-        "textSpacing",
-        "readingRuler",
-        "speak",
-        "pause",
-        "speechNotice",
-        "readFocus",
-        "voiceStudio",
-        "voiceCommands",
-        "voiceCommandsMore",
-        "typography"
-      ]
-    },
-    {
-      id: "colors",
-      title: STRINGS.sectionColorsTitle,
-      icon: svgIcon(
-        '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/>'
-      ),
-      controls: [
-        "colorTheme",
-        "colorSaturation",
-        "customText",
-        "customHeading",
-        "customBg",
-        "cursorStyle",
-        "highlightLinks"
-      ]
-    },
-    {
-      id: "pageTools",
-      title: STRINGS.sectionPageToolsTitle,
-      icon: svgIcon(
-        '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 14h8"/>'
-      ),
-      controls: [
-        "highlightHeadings",
-        "highlightControls",
-        "enlargeTargets",
-        "textMagnifier",
-        "pageOutline",
-        "mouseGrid",
-        "virtualKeyboard"
-      ]
-    },
-    {
-      id: "motion",
-      title: STRINGS.sectionMotionTitle,
-      icon: svgIcon(
-        '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>'
-      ),
-      controls: ["reducedMotion", "blockFlashing", "muteMedia", "hideImages"]
-    },
-    {
-      id: "keyboard",
-      title: STRINGS.sectionKeyboardTitle,
-      icon: svgIcon(
-        '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>'
-      ),
-      controls: ["strongFocus", "showShortcuts"]
-    }
-  ];
+        ),
+        controls: ["reducedMotion", "blockFlashing", "muteMedia", "hideImages"]
+      },
+      {
+        id: "keyboard",
+        title: STRINGS_T.sectionKeyboardTitle,
+        icon: svgIcon(
+          '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>'
+        ),
+        controls: ["strongFocus", "showShortcuts"]
+      }
+    ];
+  }
   function buildProfiles() {
     const el2 = (tag, cls, text) => {
       const n = document.createElement(tag);
@@ -4551,7 +5466,7 @@
     const h = el2(
       "h3",
       "ms-a11y-section-title ms-profiles-title",
-      STRINGS.profilesTitle
+      STRINGS_T.profilesTitle
     );
     h.id = "ms-profiles-title";
     const list = el2("div", "ms-profile-list");
@@ -4560,15 +5475,15 @@
       b.type = "button";
       b.setAttribute("data-profile", p.id);
       b.setAttribute("aria-pressed", "false");
-      b.appendChild(el2("span", "ms-profile-name", STRINGS["profile" + p.key + "Name"]));
-      b.appendChild(el2("span", "ms-profile-desc", STRINGS["profile" + p.key + "Desc"]));
-      const custom = el2("span", "ms-profile-custom", STRINGS.profileCustom);
+      b.appendChild(el2("span", "ms-profile-name", STRINGS_T["profile" + p.key + "Name"]));
+      b.appendChild(el2("span", "ms-profile-desc", STRINGS_T["profile" + p.key + "Desc"]));
+      const custom = el2("span", "ms-profile-custom", STRINGS_T.profileCustom);
       custom.hidden = true;
       b.appendChild(custom);
       list.appendChild(b);
     }
     sec.appendChild(h);
-    sec.appendChild(el2("p", "ms-profiles-hint", STRINGS.profilesHint));
+    sec.appendChild(el2("p", "ms-profiles-hint", STRINGS_T.profilesHint));
     sec.appendChild(list);
     return sec;
   }
@@ -4609,6 +5524,7 @@
     onOpenVirtualKeyboard,
     brand
   }) {
+    refreshTexts();
     const texts = { ...DEFAULT_BRAND, ...brand };
     const panel = document.createElement("div");
     panel.id = "ms-a11y-panel";
@@ -4628,7 +5544,7 @@
         <h2 id="ms-a11y-title"></h2>
         <p class="ms-a11y-subtitle"></p>
       </div>
-      <button type="button" class="ms-a11y-close" aria-label="${STRINGS.panelCloseLabel}">
+      <button type="button" class="ms-a11y-close" aria-label="${STRINGS_T.panelCloseLabel}">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
           <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
         </svg>
@@ -4641,11 +5557,11 @@
         <div class="ms-a11y-card-row">
           <div class="ms-a11y-card-text">
             <span class="ms-a11y-card-star" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
-            <strong>${STRINGS.panelSimpleTitle}</strong>
-            <p>${STRINGS.panelSimpleDesc}</p>
+            <strong>${STRINGS_T.panelSimpleTitle}</strong>
+            <p>${STRINGS_T.panelSimpleDesc}</p>
           </div>
           <button type="button" class="ms-switch" role="switch" aria-checked="false"
-            data-action="modo-simples" aria-label="${STRINGS.panelSimpleSwitchLabel}">
+            data-action="modo-simples" aria-label="${STRINGS_T.panelSimpleSwitchLabel}">
             <span class="ms-switch-thumb"></span>
           </button>
         </div>
@@ -4653,8 +5569,8 @@
       ${SECTIONS.map(renderSection).join("")}
 
       <div class="ms-a11y-actions">
-        <button type="button" class="ms-a11y-action" data-action="reset-all">${STRINGS.panelResetLabel}</button>
-        <button type="button" class="ms-a11y-action" data-action="move-side">${STRINGS.panelMoveToLeft}</button>
+        <button type="button" class="ms-a11y-action" data-action="reset-all">${STRINGS_T.panelResetLabel}</button>
+        <button type="button" class="ms-a11y-action" data-action="move-side">${STRINGS_T.panelMoveToLeft}</button>
       </div>
 
       <div class="ms-a11y-live" aria-live="polite" aria-atomic="true"></div>
@@ -4669,14 +5585,14 @@
     setText("#ms-a11y-title", texts.title || DEFAULT_BRAND.title);
     setText(".ms-a11y-subtitle", texts.subtitle);
     setText(".ms-a11y-footer-note", texts.footer);
-    const radioBtn = (cls, value, label) => {
+    const radioBtn = (cls, value, label2) => {
       const b = document.createElement("button");
       b.type = "button";
       b.setAttribute("role", "radio");
       b.setAttribute("aria-checked", "false");
       b.className = cls;
       b.setAttribute("data-value", value);
-      b.setAttribute("aria-label", label);
+      b.setAttribute("aria-label", label2);
       return b;
     };
     const satGroup = panel.querySelector('[data-option="colorSaturation"]');
@@ -4684,7 +5600,7 @@
       const b = radioBtn(
         "ms-segment",
         s.value,
-        `${STRINGS.panelSaturationTitle} ${s.label}`
+        `${STRINGS_T.panelSaturationTitle} ${s.label}`
       );
       b.textContent = s.label;
       satGroup.appendChild(b);
@@ -4694,25 +5610,25 @@
       const b = radioBtn(
         "ms-segment",
         c.value,
-        `${STRINGS.panelCursorTitle} ${c.label}`
+        `${STRINGS_T.panelCursorTitle} ${c.label}`
       );
       b.textContent = c.label;
       cursorGroup.appendChild(b);
     });
-    Object.entries(CUSTOM_COLORS).forEach(([key, cfg]) => {
+    Object.entries(CUSTOM_COLORS2).forEach(([key, cfg]) => {
       const group = panel.querySelector(`[data-option="${key}"]`);
       const none = radioBtn(
         "ms-swatch ms-swatch--none",
         "",
-        `${cfg.title}: ${STRINGS.panelCustomNone}`
+        `${cfg.title}: ${STRINGS_T.panelCustomNone}`
       );
-      none.title = STRINGS.panelCustomNone;
+      none.title = STRINGS_T.panelCustomNone;
       group.appendChild(none);
       cfg.presets.forEach((hex) => {
         const b = radioBtn(
           "ms-swatch",
           hex,
-          `${STRINGS.panelCustomSwatchLabel} ${hex} \u2014 ${cfg.title}`
+          `${STRINGS_T.panelCustomSwatchLabel} ${hex} \u2014 ${cfg.title}`
         );
         b.style.backgroundColor = hex;
         b.title = hex;
@@ -4721,11 +5637,11 @@
       const other = radioBtn(
         "ms-swatch ms-swatch--custom",
         "x",
-        `${cfg.title}: ${STRINGS.panelCustomOther}`
+        `${cfg.title}: ${STRINGS_T.panelCustomOther}`
       );
       other.hidden = true;
       group.appendChild(other);
-      panel.querySelector(`[data-picker="${key}"]`).setAttribute("aria-label", `${STRINGS.panelCustomPickerLabel} ${cfg.title}`);
+      panel.querySelector(`[data-picker="${key}"]`).setAttribute("aria-label", `${STRINGS_T.panelCustomPickerLabel} ${cfg.title}`);
     });
     let _releaseFocus = null;
     panel.querySelectorAll(".ms-a11y-section-toggle").forEach((btn) => {
@@ -4761,6 +5677,25 @@
         () => onSetOption(key, typoValue(key, Number(input.value)))
       );
     });
+    const langSel = panel.querySelector("[data-language]");
+    [
+      [
+        "auto",
+        t("panelLanguageAuto", { lang: LANG_NAMES[resolveLocale("auto")] })
+      ],
+      ...Object.entries(LANG_NAMES)
+    ].forEach(([value, label2]) => {
+      const o = document.createElement("option");
+      o.value = value;
+      o.textContent = label2;
+      if (value !== "auto") o.lang = BCP47[value];
+      langSel.appendChild(o);
+    });
+    langSel.style.minHeight = "44px";
+    langSel.addEventListener(
+      "change",
+      () => onSetOption("language", langSel.value)
+    );
     const voiceSel = panel.querySelector('[data-voice="voiceName"]');
     const voiceSupported = isVoiceSupported();
     const voiceInput = (key) => panel.querySelector(`[data-voice="${key}"]`);
@@ -4807,8 +5742,9 @@
         voices = voiceSupported ? listVoices() : [];
       } catch (e) {
       }
-      const isPt2 = (v) => /^pt([-_]|$)/i.test(v.lang || "");
-      const pt = voices.filter(isPt2);
+      const loc = getLocale();
+      const isPt = (v) => new RegExp(`^${loc}([-_]|$)`, "i").test(v.lang || "");
+      const pt = voices.filter(isPt);
       const hasOthers = voices.length > pt.length;
       voiceAllBtn.hidden = !hasOthers && pt.length === collapseVoices(pt).length;
       voiceAllBtn.style.display = voiceAllBtn.hidden ? "none" : "";
@@ -4839,7 +5775,7 @@
       voiceSel.textContent = "";
       const auto = document.createElement("option");
       auto.value = "";
-      auto.textContent = STRINGS.panelVoiceAuto;
+      auto.textContent = STRINGS_T.panelVoiceAuto;
       voiceSel.appendChild(auto);
       const optionOf = (v) => {
         const o = document.createElement("option");
@@ -4874,7 +5810,7 @@
       const on3 = speechFailed || noVoices;
       if (on3 === noticeOn) return;
       noticeOn = on3;
-      speechNotice.textContent = on3 ? STRINGS.panelSpeechFailed : "";
+      speechNotice.textContent = on3 ? STRINGS_T.panelSpeechFailed : "";
       studioNotice.hidden = !on3;
     };
     function checkNoVoices() {
@@ -4916,7 +5852,7 @@
     const vcRevoke = panel.querySelector('[data-action="vc-revoke"]');
     const vcToggleBtn = panel.querySelector('[data-action="vc-commands"]');
     const vcList = panel.querySelector("[data-vc-list]");
-    STRINGS.panelVcCommands.split("|").forEach((c) => {
+    STRINGS_T.panelVcCommands.split("|").forEach((c) => {
       const li = document.createElement("li");
       li.textContent = `\u201C${c}\u201D`;
       vcList.appendChild(li);
@@ -4924,7 +5860,7 @@
     vcToggleBtn.addEventListener("click", () => {
       const open2 = vcToggleBtn.getAttribute("aria-expanded") !== "true";
       vcToggleBtn.setAttribute("aria-expanded", String(open2));
-      vcToggleBtn.textContent = open2 ? STRINGS.panelVcHide : STRINGS.panelVcShow;
+      vcToggleBtn.textContent = open2 ? STRINGS_T.panelVcHide : STRINGS_T.panelVcShow;
       vcList.hidden = !open2;
     });
     let recMode = null;
@@ -4946,19 +5882,19 @@
     if (!(globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition) || globalThis.isSecureContext === false) {
       recMode = "none";
     }
-    const vcNoneText = () => getUnsupportedReason() === "brave" ? STRINGS.panelVcBrave : STRINGS.panelVcUnsupported;
+    const vcNoneText = () => getUnsupportedReason() === "brave" ? STRINGS_T.panelVcBrave : STRINGS_T.panelVcUnsupported;
     if (getUnsupportedReason()) recMode = "none";
     const VC_TEXT = {
-      listening: STRINGS.panelVcListening,
-      blocked: STRINGS.panelVcBlocked,
-      "no-mic": STRINGS.panelVcNoMic,
-      error: STRINGS.panelVcError,
-      "needs-consent": VOICE_CMD_STRINGS["status_needs-consent"],
-      "needs-model": VOICE_CMD_STRINGS["status_needs-model"]
+      listening: STRINGS_T.panelVcListening,
+      blocked: STRINGS_T.panelVcBlocked,
+      "no-mic": STRINGS_T.panelVcNoMic,
+      error: STRINGS_T.panelVcError,
+      "needs-consent": STRINGS_T["status_needs-consent"],
+      "needs-model": STRINGS_T["status_needs-model"]
     };
     const renderVcStatus = () => {
       if (recMode === "none") return;
-      vcStatus.textContent = vcUnsub ? vcCore === "unsupported" ? vcNoneText() : VC_TEXT[vcCore] || "" : vcOn ? STRINGS.panelVcListening : "";
+      vcStatus.textContent = vcUnsub ? vcCore === "unsupported" ? vcNoneText() : VC_TEXT[vcCore] || "" : vcOn ? STRINGS_T.panelVcListening : "";
     };
     let dialogEl = null;
     const closeDialog = (refocus = true) => {
@@ -5051,44 +5987,44 @@
     };
     const askCloud = (prefix = "") => {
       const me = openDialog({
-        title: STRINGS.panelVcCloudTitle,
-        text: `${prefix}${STRINGS.panelVcCloudText}`.trim(),
+        title: STRINGS_T.panelVcCloudTitle,
+        text: `${prefix}${STRINGS_T.panelVcCloudText}`.trim(),
         buttons: [
           {
-            label: STRINGS.panelVcCloudYes,
+            label: STRINGS_T.panelVcCloudYes,
             run: () => {
               closeDialog();
               onSetOption("voiceCloudConsent", true);
               turnOn();
             }
           },
-          { label: STRINGS.panelVcCloudNo }
+          { label: STRINGS_T.panelVcCloudNo }
         ]
       });
       return me;
     };
     const askDownload = () => {
       const me = openDialog({
-        title: STRINGS.panelVcDownloadTitle,
-        text: STRINGS.panelVcDownloadText,
+        title: STRINGS_T.panelVcDownloadTitle,
+        text: STRINGS_T.panelVcDownloadText,
         buttons: [
           {
-            label: STRINGS.panelVcDownloadNow,
+            label: STRINGS_T.panelVcDownloadNow,
             run: ({ live, btns }) => {
               const p = installLocalModel();
               btns.forEach((b) => b.disabled = true);
-              live.textContent = STRINGS.panelVcDownloading;
+              live.textContent = STRINGS_T.panelVcDownloading;
               p.then((ok) => {
                 if (dialogEl !== me) return;
                 if (ok) {
                   closeDialog();
                   turnOn();
-                } else askCloud(`${STRINGS.panelVcDownloadFail} `);
+                } else askCloud(`${STRINGS_T.panelVcDownloadFail} `);
               });
             }
           },
-          { label: STRINGS.panelVcUseInternet, run: () => askCloud() },
-          { label: STRINGS.panelVcNotNow }
+          { label: STRINGS_T.panelVcUseInternet, run: () => askCloud() },
+          { label: STRINGS_T.panelVcNotNow }
         ]
       });
     };
@@ -5118,7 +6054,7 @@
     panel.querySelector('[data-action="move-side"]').addEventListener("click", () => onMoveSide == null ? void 0 : onMoveSide());
     function setSide(side) {
       panel.setAttribute("data-ms-side", side);
-      panel.querySelector('[data-action="move-side"]').textContent = side === "left" ? STRINGS.panelMoveToRight : STRINGS.panelMoveToLeft;
+      panel.querySelector('[data-action="move-side"]').textContent = side === "left" ? STRINGS_T.panelMoveToRight : STRINGS_T.panelMoveToLeft;
     }
     panel.querySelector('[data-action="modo-simples"]').addEventListener("click", (e) => {
       const btn = e.currentTarget;
@@ -5179,21 +6115,22 @@
     });
     panel.querySelector('[data-action="speak"]').addEventListener("click", () => onSpeak());
     function sync(s, ui = {}) {
-      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o;
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
       lastSync = [s, ui];
       const modoBtn = panel.querySelector('[data-action="modo-simples"]');
       if (modoBtn) {
         modoBtn.setAttribute("aria-checked", String(!!s.modoSimples));
         modoBtn.classList.toggle("ms-switch--on", !!s.modoSimples);
       }
-      const scale = ((_a = s.options) == null ? void 0 : _a.textScale) || "100";
+      langSel.value = ((_a = s.options) == null ? void 0 : _a.language) || "auto";
+      const scale = ((_b = s.options) == null ? void 0 : _b.textScale) || "100";
       panel.querySelectorAll('[data-option="textScale"] .ms-segment').forEach((btn) => {
         const on3 = btn.getAttribute("data-value") === scale;
         btn.setAttribute("aria-checked", String(on3));
         btn.setAttribute("tabindex", on3 ? "0" : "-1");
         btn.classList.toggle("ms-segment--on", on3);
       });
-      const theme2 = ((_b = s.options) == null ? void 0 : _b.colorTheme) || "senac";
+      const theme2 = ((_c = s.options) == null ? void 0 : _c.colorTheme) || "senac";
       panel.querySelectorAll('[data-option="colorTheme"] .ms-theme-btn').forEach((btn) => {
         const on3 = btn.getAttribute("data-value") === theme2;
         btn.setAttribute("aria-checked", String(on3));
@@ -5224,18 +6161,18 @@
           );
         });
       };
-      const sat = ((_c = s.options) == null ? void 0 : _c.colorSaturation) || "normal";
-      const cursor = ((_d = s.options) == null ? void 0 : _d.cursorStyle) || "default";
+      const sat = ((_d = s.options) == null ? void 0 : _d.colorSaturation) || "normal";
+      const cursor = ((_e = s.options) == null ? void 0 : _e.cursorStyle) || "default";
       syncRadios('[data-option="colorSaturation"] .ms-segment', sat);
       syncRadios('[data-option="cursorStyle"] .ms-segment', cursor);
-      Object.keys(CUSTOM_COLORS).forEach((key) => {
+      Object.keys(CUSTOM_COLORS2).forEach((key) => {
         var _a2;
         const val = ((_a2 = s.options) == null ? void 0 : _a2[key]) || "";
         const other = panel.querySelector(
           `[data-option="${key}"] .ms-swatch--custom`
         );
         if (other) {
-          const isOther = !!val && !CUSTOM_COLORS[key].presets.includes(val);
+          const isOther = !!val && !CUSTOM_COLORS2[key].presets.includes(val);
           other.hidden = !isOther;
           other.setAttribute("data-value", isOther ? val : "x");
           other.style.backgroundColor = isOther ? val : "";
@@ -5245,18 +6182,18 @@
         const input = panel.querySelector(`[data-picker="${key}"]`);
         if (input) input.value = val || "#000000";
         const st = panel.querySelector(`[data-state-for="${key}"]`);
-        if (st) st.textContent = val || STRINGS.panelCustomNone;
+        if (st) st.textContent = val || STRINGS_T.panelCustomNone;
       });
       const warn = panel.querySelector("[data-contrast-warn]");
       if (warn) {
         const eff = effectiveColors(s.options || {});
         const low = [
-          [STRINGS.panelCustomTextTitle, eff.text],
-          [STRINGS.panelCustomHeadingTitle, eff.heading]
+          [STRINGS_T.panelCustomTextTitle, eff.text],
+          [STRINGS_T.panelCustomHeadingTitle, eff.heading]
         ].filter(([, c]) => c && eff.bg).map(([title, c]) => [title, contrastRatio(c, eff.bg)]).filter(([, r]) => r < 4.5);
-        const bgLabel = ((_e = s.options) == null ? void 0 : _e.customBg) ? STRINGS.panelCustomBgTitle : STRINGS.panelAutoBgTitle;
+        const bgLabel = ((_f = s.options) == null ? void 0 : _f.customBg) ? STRINGS_T.panelCustomBgTitle : STRINGS_T.panelAutoBgTitle;
         warn.textContent = low.map(
-          ([title, r]) => `${STRINGS.panelContrastWarn} ${title} / ${bgLabel}: ${r.toFixed(1).replace(".", ",")}:1.`
+          ([title, r]) => `${STRINGS_T.panelContrastWarn} ${title} / ${bgLabel}: ${r.toFixed(1).replace(".", ",")}:1.`
         ).join(" ");
       }
       [
@@ -5284,16 +6221,16 @@
         btn.setAttribute("aria-checked", String(on3));
         btn.classList.toggle("ms-switch--on", on3);
         const st = btn.querySelector("[data-state]");
-        if (st) st.textContent = on3 ? STRINGS.stateOn : STRINGS.stateOff;
+        if (st) st.textContent = on3 ? STRINGS_T.stateOn : STRINGS_T.stateOff;
         if (key === "readFocus" && !isFocusReaderSupported()) {
           btn.disabled = true;
-          btn.setAttribute("title", STRINGS.panelReadFocusUnsupported);
-          if (st) st.textContent = STRINGS.panelReadFocusUnsupportedState;
+          btn.setAttribute("title", STRINGS_T.panelReadFocusUnsupported);
+          if (st) st.textContent = STRINGS_T.panelReadFocusUnsupportedState;
           const d = panel.querySelector("#ms-desc-readFocus");
-          if (d) d.textContent = STRINGS.panelReadFocusUnsupported;
+          if (d) d.textContent = STRINGS_T.panelReadFocusUnsupported;
         }
       });
-      voiceName = ((_f = s.options) == null ? void 0 : _f.voiceName) || "";
+      voiceName = ((_g = s.options) == null ? void 0 : _g.voiceName) || "";
       fillVoices(voiceName);
       VOICE_SLIDERS.forEach(([key]) => {
         var _a2;
@@ -5311,12 +6248,12 @@
       if (!voiceSupported) {
         panel.querySelectorAll('[data-voice], [data-action^="voice-"]').forEach((el2) => {
           el2.disabled = true;
-          el2.setAttribute("title", STRINGS.panelVoiceUnsupported);
+          el2.setAttribute("title", STRINGS_T.panelVoiceUnsupported);
         });
         panel.querySelector("[data-voice-note]").hidden = false;
       }
-      vcOn = !!((_g = s.options) == null ? void 0 : _g.voiceCommands);
-      vcConsent = !!((_h = s.options) == null ? void 0 : _h.voiceCloudConsent);
+      vcOn = !!((_h = s.options) == null ? void 0 : _h.voiceCommands);
+      vcConsent = !!((_i = s.options) == null ? void 0 : _i.voiceCloudConsent);
       subscribeVoiceStatus();
       renderVcStatus();
       setShown(vcRevoke, vcConsent);
@@ -5324,7 +6261,7 @@
         vcSwitch.disabled = true;
         vcSwitch.setAttribute("title", vcNoneText());
         const st = vcSwitch.querySelector("[data-state]");
-        if (st) st.textContent = STRINGS.panelReadFocusUnsupportedState;
+        if (st) st.textContent = STRINGS_T.panelReadFocusUnsupportedState;
         const d = panel.querySelector("#ms-desc-voiceCommands");
         if (d) d.textContent = vcNoneText();
         vcStatus.textContent = vcNoneText();
@@ -5333,12 +6270,12 @@
       setShown(pauseBtn, reading);
       if (reading) {
         const paused = isPaused();
-        pauseBtn.querySelector("[data-pause-text]").textContent = paused ? STRINGS.panelResume : STRINGS.panelPause;
+        pauseBtn.querySelector("[data-pause-text]").textContent = paused ? STRINGS_T.panelResume : STRINGS_T.panelPause;
         pauseBtn.setAttribute(
           "aria-label",
-          paused ? STRINGS.panelResumeLabel : STRINGS.panelPauseLabel
+          paused ? STRINGS_T.panelResumeLabel : STRINGS_T.panelPauseLabel
         );
-      } else if (((_i = panel.getRootNode) == null ? void 0 : _i.call(panel).activeElement) === pauseBtn) {
+      } else if (((_j = panel.getRootNode) == null ? void 0 : _j.call(panel).activeElement) === pauseBtn) {
         panel.querySelector('[data-action="speak"]').focus();
       }
       const setState = (key, text) => {
@@ -5352,15 +6289,15 @@
       );
       setState(
         "colorTheme",
-        (_k = (_j = COLOR_THEMES.find((x) => x.value === theme2)) == null ? void 0 : _j.label) != null ? _k : theme2
+        (_l = (_k = COLOR_THEMES.find((x) => x.value === theme2)) == null ? void 0 : _k.label) != null ? _l : theme2
       );
       setState(
         "colorSaturation",
-        (_m = (_l = SATURATIONS.find((x) => x.value === sat)) == null ? void 0 : _l.label) != null ? _m : sat
+        (_n = (_m = SATURATIONS.find((x) => x.value === sat)) == null ? void 0 : _m.label) != null ? _n : sat
       );
       setState(
         "cursorStyle",
-        (_o = (_n = CURSORS.find((x) => x.value === cursor)) == null ? void 0 : _n.label) != null ? _o : cursor
+        (_p = (_o = CURSORS.find((x) => x.value === cursor)) == null ? void 0 : _o.label) != null ? _p : cursor
       );
       panel.querySelectorAll("[data-profile]").forEach((btn) => {
         const active = s.activeProfile === btn.getAttribute("data-profile");
@@ -5370,10 +6307,10 @@
       });
       const speakBtn = panel.querySelector('[data-action="speak"]');
       if (speakBtn && ui.speaking !== void 0) {
-        speakBtn.querySelector("[data-speak-text]").textContent = ui.speaking ? STRINGS.panelVoiceStopButton : STRINGS.panelVoiceButton;
+        speakBtn.querySelector("[data-speak-text]").textContent = ui.speaking ? STRINGS_T.panelVoiceStopButton : STRINGS_T.panelVoiceButton;
         speakBtn.setAttribute(
           "aria-label",
-          ui.speaking ? STRINGS.panelVoiceStopLabel : STRINGS.panelVoiceLabel
+          ui.speaking ? STRINGS_T.panelVoiceStopLabel : STRINGS_T.panelVoiceLabel
         );
       }
     }
@@ -5429,17 +6366,17 @@
     chrome.innerHTML = `
     <div class="ms-simples-chrome-inner">
       <button type="button" class="ms-chrome-icon" data-action="open-panel"
-        aria-label="${STRINGS.sessionOpenPanelLabel}" title="${STRINGS.sessionOpenPanelTitle}">
+        aria-label="${STRINGS_T.sessionOpenPanelLabel}" title="${STRINGS_T.sessionOpenPanelTitle}">
         ${SLIDERS_ICON}
       </button>
       <div class="ms-simples-toggle-wrap" data-active="false">
         <span class="ms-simples-spark" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
         <div class="ms-simples-toggle-text">
-          <strong>${STRINGS.sessionBrand}</strong>
-          <span class="ms-simples-sub" data-sub>${STRINGS.sessionSubOff}</span>
+          <strong>${STRINGS_T.sessionBrand}</strong>
+          <span class="ms-simples-sub" data-sub>${STRINGS_T.sessionSubOff}</span>
         </div>
         <button type="button" class="ms-switch ms-chrome-switch" role="switch" aria-checked="false"
-          data-action="toggle-simples" aria-label="${STRINGS.sessionSwitchLabel}">
+          data-action="toggle-simples" aria-label="${STRINGS_T.sessionSwitchLabel}">
           <span class="ms-switch-thumb"></span>
         </button>
       </div>
@@ -5449,35 +6386,35 @@
     bar.id = "ms-session-bar";
     bar.className = "ms-session-bar";
     bar.setAttribute("role", "region");
-    bar.setAttribute("aria-label", STRINGS.sessionBarLabel);
+    bar.setAttribute("aria-label", STRINGS_T.sessionBarLabel);
     bar.innerHTML = `
     <div class="ms-session-bar-inner" data-state="off">
       <div class="ms-session-off">
-        <p><span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span> ${STRINGS.sessionOffPrompt}</p>
-        <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="activate">${STRINGS.sessionActivate}</button>
+        <p><span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span> ${STRINGS_T.sessionOffPrompt}</p>
+        <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="activate">${STRINGS_T.sessionActivate}</button>
       </div>
       <div class="ms-session-on" hidden>
         <div class="ms-session-on-top">
           <div class="ms-session-on-title" tabindex="-1">
             <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5l2.5 5.6 6 .6-4.5 4 1.3 6-5.3-3.1-5.3 3.1 1.3-6-4.5-4 6-.6z" fill="currentColor"/></svg></span>
-            <strong>${STRINGS.sessionOnTitle}<span class="ms-sr-only">${STRINGS.sessionOnSrSuffix}</span></strong>
-            <span class="ms-session-badge">${STRINGS.sessionBadge}</span>
+            <strong>${STRINGS_T.sessionOnTitle}<span class="ms-sr-only">${STRINGS_T.sessionOnSrSuffix}</span></strong>
+            <span class="ms-session-badge">${STRINGS_T.sessionBadge}</span>
           </div>
           <p class="ms-session-desc" data-session-desc>
-            ${STRINGS.sessionDescSimple}
+            ${STRINGS_T.sessionDescSimple}
           </p>
         </div>
         <div class="ms-session-actions">
-          <button type="button" class="ms-session-btn ms-session-btn--light" data-action="speak" aria-label="${STRINGS.sessionSpeakLabel}">
-            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></span> <span data-speak-label>${STRINGS.sessionSpeakText}</span>
+          <button type="button" class="ms-session-btn ms-session-btn--light" data-action="speak" aria-label="${STRINGS_T.sessionSpeakLabel}">
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></span> <span data-speak-label>${STRINGS_T.sessionSpeakText}</span>
           </button>
           <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="lang" aria-pressed="false">
-            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg></span> <span class="ms-btn-pre">${STRINGS.sessionLangPre}</span>${STRINGS.sessionLangMain}<span class="ms-btn-post">: <span data-lang-label aria-hidden="true">${STRINGS.sessionLangOff}</span></span>
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg></span> <span class="ms-btn-pre">${STRINGS_T.sessionLangPre}</span>${STRINGS_T.sessionLangMain}<span class="ms-btn-post">: <span data-lang-label aria-hidden="true">${STRINGS_T.sessionLangOff}</span></span>
           </button>
           <button type="button" class="ms-session-btn ms-session-btn--dark" data-action="images" aria-pressed="false">
-            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/></svg></span> ${STRINGS.sessionImages}<span class="ms-btn-post">: <span data-images-label aria-hidden="true">${STRINGS.sessionImagesHidden}</span></span>
+            <span aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/></svg></span> ${STRINGS_T.sessionImages}<span class="ms-btn-post">: <span data-images-label aria-hidden="true">${STRINGS_T.sessionImagesHidden}</span></span>
           </button>
-          <button type="button" class="ms-session-btn ms-session-btn--light" data-action="exit">${STRINGS.sessionExit}<span class="ms-btn-post">${STRINGS.sessionExitPost}</span></button>
+          <button type="button" class="ms-session-btn ms-session-btn--light" data-action="exit">${STRINGS_T.sessionExit}<span class="ms-btn-post">${STRINGS_T.sessionExitPost}</span></button>
         </div>
       </div>
     </div>
@@ -5525,7 +6462,7 @@
         sw.classList.toggle("ms-switch--on", on3);
       }
       if (wrap) wrap.setAttribute("data-active", String(on3));
-      if (sub) sub.textContent = on3 ? STRINGS.sessionSubOn : STRINGS.sessionSubOff;
+      if (sub) sub.textContent = on3 ? STRINGS_T.sessionSubOn : STRINGS_T.sessionSubOff;
       _placeChrome(chrome, on3, mount);
       const inner = bar.querySelector(".ms-session-bar-inner");
       const off = bar.querySelector(".ms-session-off");
@@ -5545,10 +6482,10 @@
       }
       if (langLabel) {
         langLabel.setAttribute("aria-hidden", String(langAvailable));
-        langLabel.textContent = !langAvailable ? STRINGS.sessionLangUnavailable : langOn ? STRINGS.sessionLangOn : STRINGS.sessionLangOff;
+        langLabel.textContent = !langAvailable ? STRINGS_T.sessionLangUnavailable : langOn ? STRINGS_T.sessionLangOn : STRINGS_T.sessionLangOff;
       }
       if (desc) {
-        desc.textContent = langOn ? STRINGS.sessionDescSimple : STRINGS.sessionDescCalm;
+        desc.textContent = langOn ? STRINGS_T.sessionDescSimple : STRINGS_T.sessionDescCalm;
       }
       const hideImgs = !!((_b = s.options) == null ? void 0 : _b.hideImages);
       const imgBtn = bar.querySelector('[data-action="images"]');
@@ -5558,7 +6495,7 @@
         imgBtn.classList.toggle("ms-session-btn--active", !hideImgs);
       }
       if (imgLabel)
-        imgLabel.textContent = hideImgs ? STRINGS.sessionImagesHidden : STRINGS.sessionImagesVisible;
+        imgLabel.textContent = hideImgs ? STRINGS_T.sessionImagesHidden : STRINGS_T.sessionImagesVisible;
       if (ui.speaking !== void 0) {
         const speakBtn = bar.querySelector('[data-action="speak"]');
         const speakLabel = bar.querySelector("[data-speak-label]");
@@ -5566,11 +6503,11 @@
           speakBtn.classList.toggle("ms-session-btn--speaking", ui.speaking);
           speakBtn.setAttribute(
             "aria-label",
-            ui.speaking ? STRINGS.sessionStopLabel : STRINGS.sessionSpeakLabel
+            ui.speaking ? STRINGS_T.sessionStopLabel : STRINGS_T.sessionSpeakLabel
           );
         }
         if (speakLabel)
-          speakLabel.textContent = ui.speaking ? STRINGS.sessionStopText : STRINGS.sessionSpeakText;
+          speakLabel.textContent = ui.speaking ? STRINGS_T.sessionStopText : STRINGS_T.sessionSpeakText;
       }
     }
     function destroy() {
@@ -5670,11 +6607,11 @@
     return items.map((item) => {
       var _a, _b;
       if (!item || typeof item !== "object") return null;
-      const label = String((_a = item.label) != null ? _a : "").trim();
+      const label2 = String((_a = item.label) != null ? _a : "").trim();
       const href = String((_b = item.href) != null ? _b : "").trim();
-      if (!label || !href || !isSafeHref(href)) return null;
+      if (!label2 || !href || !isSafeHref(href)) return null;
       const short = item.short != null && String(item.short).trim() ? String(item.short).trim() : void 0;
-      return short ? { label, href, short } : { label, href };
+      return short ? { label: label2, href, short } : { label: label2, href };
     }).filter(Boolean);
   }
   function findHostAuthoredPills() {
@@ -5701,7 +6638,7 @@
         nav.className = "ms-pills-nav ms-simple-only";
         nav.setAttribute("data-ms-pills", "");
         nav.setAttribute("data-ms-injected", "");
-        nav.setAttribute("aria-label", "Navega\xE7\xE3o do Modo Simples");
+        nav.setAttribute("aria-label", t("simpleNavLabel"));
         const inner2 = document.createElement("div");
         inner2.className = "ms-pills-nav__inner";
         nav.appendChild(inner2);
@@ -5816,26 +6753,26 @@
       return `#${escapeIdent(el2.id)}`;
     }
     const parts = [];
-    let current2 = el2;
+    let current3 = el2;
     const root = typeof document !== "undefined" ? document.documentElement : null;
-    while (current2 && current2.nodeType === 1 && current2 !== root) {
-      let part = current2.tagName.toLowerCase();
-      if (current2.id) {
-        parts.unshift(`#${escapeIdent(current2.id)}`);
+    while (current3 && current3.nodeType === 1 && current3 !== root) {
+      let part = current3.tagName.toLowerCase();
+      if (current3.id) {
+        parts.unshift(`#${escapeIdent(current3.id)}`);
         break;
       }
-      const parent = current2.parentElement;
+      const parent = current3.parentElement;
       if (parent && parent.children) {
         const siblings = Array.from(parent.children).filter(
-          (c) => c.tagName === current2.tagName
+          (c) => c.tagName === current3.tagName
         );
         if (siblings.length > 1) {
-          const index = siblings.indexOf(current2) + 1;
+          const index = siblings.indexOf(current3) + 1;
           part += `:nth-of-type(${index})`;
         }
       }
       parts.unshift(part);
-      current2 = parent;
+      current3 = parent;
     }
     return parts.join(" > ");
   }
@@ -5884,7 +6821,7 @@
       width: `${r.width}px`,
       height: `${r.height}px`
     });
-    _status.textContent = ` ${STRINGS.manualCurrent} ${describe(el2)}.`;
+    _status.textContent = ` ${t("manualCurrent")} ${describe(el2)}.`;
   }
   function cycleCandidate(step) {
     var _a;
@@ -5944,13 +6881,13 @@
       boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
       cursor: "default"
     });
-    _banner.append(STRINGS.manualInstruction);
+    _banner.append(t("manualInstruction"));
     _status = document.createElement("span");
     _banner.appendChild(_status);
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.textContent = STRINGS.manualCancel;
-    cancelBtn.setAttribute("aria-label", STRINGS.manualCancelLabel);
+    cancelBtn.textContent = t("manualCancel");
+    cancelBtn.setAttribute("aria-label", t("manualCancelLabel"));
     Object.assign(cancelBtn.style, {
       marginLeft: "1rem",
       padding: "0.3rem 0.75rem",
@@ -6088,7 +7025,7 @@
     msg.setAttribute("aria-live", "polite");
     box2.appendChild(msg);
     setTimeout(() => {
-      msg.textContent = STRINGS.lowConfNotice;
+      msg.textContent = t("lowConfNotice");
     }, 50);
     const mk = (text, onClick) => {
       const b = document.createElement("button");
@@ -6111,11 +7048,11 @@
       });
       box2.appendChild(b);
     };
-    mk(STRINGS.lowConfChoose, () => {
+    mk(t("lowConfChoose"), () => {
       var _a;
       return (_a = opts.onChoose) == null ? void 0 : _a.call(opts);
     });
-    mk(STRINGS.lowConfClose, hideLowConfidenceNotice);
+    mk(t("lowConfClose"), hideLowConfidenceNotice);
     document.body.appendChild(box2);
   }
   function hideLowConfidenceNotice() {
@@ -6196,7 +7133,7 @@
       if (!key) continue;
       const name = (el2.getAttribute("aria-label") || el2.textContent || el2.getAttribute("title") || "").trim().replace(/\s+/g, " ").slice(0, 40);
       out.push({
-        keys: `${STRINGS.shortcutAccessKeyPrefix}${key.toUpperCase()}`,
+        keys: `${t("shortcutAccessKeyPrefix")}${key.toUpperCase()}`,
         text: name || key
       });
     }
@@ -6231,9 +7168,9 @@
     });
     card.id = CARD_ID;
     card.setAttribute("role", "region");
-    card.setAttribute("aria-label", STRINGS.shortcutsTitle);
+    card.setAttribute("aria-label", t("shortcutsTitle"));
     card.append(
-      el("h2", STRINGS.shortcutsTitle, {
+      el("h2", t("shortcutsTitle"), {
         margin: "0 0 8px",
         font: "700 16px/1.3 system-ui, sans-serif",
         color: "#fff"
@@ -6244,7 +7181,7 @@
       padding: "0",
       "list-style": "none"
     });
-    for (const s of [...SHORTCUTS, ...pageAccessKeys()]) {
+    for (const s of [...getShortcuts(), ...pageAccessKeys()]) {
       const li = el("li", "", { margin: "0 0 6px", color: "#fff" });
       li.append(
         el("kbd", s.keys, {
@@ -6260,7 +7197,7 @@
       );
       list.append(li);
     }
-    const close = el("button", STRINGS.shortcutsClose, {
+    const close = el("button", t("shortcutsClose"), {
       "min-width": "44px",
       "min-height": "44px",
       padding: "0 16px",
@@ -6323,7 +7260,7 @@
     ),
     y0: _barTop ? _barH : 0
   });
-  var current = () => _stack[_stack.length - 1];
+  var current2 = () => _stack[_stack.length - 1];
   function px(a) {
     const v = viewport();
     return { x: a.x * v.w, y: v.y0 + a.y * v.h, w: a.w * v.w, h: a.h * v.h };
@@ -6385,10 +7322,10 @@
       justifyContent: "center",
       zIndex: "1"
     });
-    const mk = (label, fn) => {
+    const mk = (label2, fn) => {
       const b = document.createElement("button");
       b.type = "button";
-      b.textContent = label;
+      b.textContent = label2;
       Object.assign(b.style, {
         minHeight: "44px",
         padding: compact ? "0 8px" : "0 14px",
@@ -6405,11 +7342,14 @@
       });
       bar.appendChild(b);
     };
-    mk(compact ? STRINGS.gridClickShort : STRINGS.gridClickBtn, () => clickCurrent());
-    mk(compact ? STRINGS.gridBackShort : STRINGS.gridBackBtn, () => goBack());
-    mk(compact ? STRINGS.gridCloseShort : STRINGS.gridCloseBtn, () => closeMouseGrid());
+    mk(compact ? t("gridClickShort") : t("gridClickBtn"), () => clickCurrent());
+    mk(compact ? t("gridBackShort") : t("gridBackBtn"), () => goBack());
+    mk(
+      compact ? t("gridCloseShort") : t("gridCloseBtn"),
+      () => closeMouseGrid()
+    );
     _barH = bar.offsetHeight + 16;
-    const a = px(current());
+    const a = px(current2());
     box(_root2, {
       position: "absolute",
       left: `${a.x}px`,
@@ -6421,13 +7361,13 @@
       boxShadow: `0 0 0 100vmax ${rgbaOf(bg, 0.55)}`,
       pointerEvents: "none"
     });
-    if (canSubdivide(current())) {
+    if (canSubdivide(current2())) {
       for (let n = 1; n <= 9; n++) {
-        const c = px(cellArea(current(), n));
+        const c = px(cellArea(current2(), n));
         const b = document.createElement("button");
         b.type = "button";
         b.setAttribute("data-cell", String(n));
-        b.setAttribute("aria-label", `${STRINGS.gridCellLabel} ${n}`);
+        b.setAttribute("aria-label", `${t("gridCellLabel")} ${n}`);
         b.textContent = String(n);
         Object.assign(b.style, {
           position: "absolute",
@@ -6453,7 +7393,7 @@
     }
   }
   function levelText() {
-    return canSubdivide(current()) ? `${STRINGS.gridLevelPre} ${_stack.length}. ${STRINGS.gridChoose}` : STRINGS.gridMin;
+    return canSubdivide(current2()) ? `${t("gridLevelPre")} ${_stack.length}. ${t("gridChoose")}` : t("gridMin");
   }
   function deepElementAt(x, y) {
     let el2 = document.elementFromPoint(x, y);
@@ -6498,7 +7438,7 @@
     if (_root2) {
       _stack = [{ x: 0, y: 0, w: 1, h: 1 }];
       render();
-      announce(STRINGS.gridOpen);
+      announce(t("gridOpen"));
       return;
     }
     _prevFocus2 = document.activeElement;
@@ -6507,7 +7447,7 @@
     _root2.id = MOUSE_GRID_ID;
     _root2.setAttribute("role", "dialog");
     _root2.setAttribute("aria-modal", "true");
-    _root2.setAttribute("aria-label", STRINGS.gridDialogLabel);
+    _root2.setAttribute("aria-label", t("gridDialogLabel"));
     _root2.tabIndex = -1;
     Object.assign(_root2.style, {
       position: "fixed",
@@ -6523,12 +7463,12 @@
     window.addEventListener("resize", onResize);
     _releaseTrap = trapFocus(_root2);
     _root2.focus();
-    announce(STRINGS.gridOpen);
+    announce(t("gridOpen"));
   }
   function selectCell(n) {
     if (!_root2 || !Number.isInteger(n) || n < 1 || n > 9) return false;
-    if (!canSubdivide(current())) return false;
-    _stack.push(cellArea(current(), n));
+    if (!canSubdivide(current2())) return false;
+    _stack.push(cellArea(current2(), n));
     render();
     const prevFocus = _root2.contains(document.activeElement);
     if (!prevFocus) _root2.focus();
@@ -6538,7 +7478,7 @@
   function goBack() {
     if (!_root2) return false;
     if (_stack.length < 2) {
-      announce(STRINGS.gridTop);
+      announce(t("gridTop"));
       return false;
     }
     _stack.pop();
@@ -6562,16 +7502,16 @@
     const prev = _prevFocus2;
     _prevFocus2 = null;
     if (restoreFocus && (prev == null ? void 0 : prev.isConnected)) (_a = prev.focus) == null ? void 0 : _a.call(prev);
-    if (!silent) announce(STRINGS.gridClosed);
+    if (!silent) announce(t("gridClosed"));
   }
   function clickCurrent() {
     var _a, _b;
     if (!_root2) return null;
-    const { x, y } = areaCenter(current());
+    const { x, y } = areaCenter(current2());
     closeMouseGrid({ restoreFocus: false, silent: true });
     const target = deepElementAt(x, y);
     if (!target) {
-      announce(STRINGS.gridClosed);
+      announce(t("gridClosed"));
       return null;
     }
     const init = (buttons) => ({
@@ -6599,7 +7539,7 @@
     );
     const focusable = (_a = target.closest) == null ? void 0 : _a.call(target, FOCUSABLE2);
     if (focusable && !focusable.disabled) (_b = focusable.focus) == null ? void 0 : _b.call(focusable);
-    announce(STRINGS.gridClicked);
+    announce(t("gridClicked"));
     return target;
   }
 
@@ -6621,7 +7561,7 @@
   var SENSITIVE_AC = /^(cc-|one-time-code$|new-password$|current-password$)/;
   function isSensitive(el2) {
     const tokens = (el2.getAttribute("autocomplete") || "").toLowerCase().split(/\s+/);
-    return tokens.some((t) => SENSITIVE_AC.test(t));
+    return tokens.some((t2) => SENSITIVE_AC.test(t2));
   }
   var clean3 = (s) => (s || "").replace(/\s+/g, " ").trim();
   function fieldText(el2) {
@@ -6668,8 +7608,8 @@
     for (let n = el2; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
       if ((_c = n.closest) == null ? void 0 : _c.call(n, OWN2)) return "";
       if ((_d = n.matches) == null ? void 0 : _d.call(n, BLOCK)) {
-        const t = clean3(n.textContent);
-        if (t) return t.slice(0, MAX_CHARS);
+        const t2 = clean3(n.textContent);
+        if (t2) return t2.slice(0, MAX_CHARS);
       }
     }
     const own = [...el2.childNodes].filter((c) => c.nodeType === 3).map((c) => c.textContent).join(" ");
@@ -6845,8 +7785,8 @@
     });
   }
   function stopTextMagnifier() {
-    for (const [t, type, fn, opts] of _listeners2)
-      t.removeEventListener(type, fn, opts);
+    for (const [t2, type, fn, opts] of _listeners2)
+      t2.removeEventListener(type, fn, opts);
     _listeners2 = [];
     if (_raf !== null) {
       cancelAnimationFrame(_raf);
@@ -6983,13 +7923,77 @@
     w: "?",
     e: "\xB0"
   };
-  var DEAD_NAMES = {
-    "\xB4": STRINGS.vkDeadAcute,
-    "`": STRINGS.vkDeadGrave,
-    "~": STRINGS.vkDeadTilde,
-    "^": STRINGS.vkDeadCircumflex,
-    "\xA8": STRINGS.vkDeadDiaeresis
+  var DEAD_NAME_KEYS = {
+    "\xB4": "vkDeadAcute",
+    "`": "vkDeadGrave",
+    "~": "vkDeadTilde",
+    "^": "vkDeadCircumflex",
+    "\xA8": "vkDeadDiaeresis"
   };
+  var deadName = (ch) => t(DEAD_NAME_KEYS[ch]);
+  var ROWS_EN = [
+    [
+      "`~",
+      "1!",
+      "2@",
+      "3#",
+      "4$",
+      "5%",
+      "6^",
+      "7&",
+      "8*",
+      "9(",
+      "0)",
+      "-_",
+      "=+",
+      "Backspace"
+    ],
+    ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[{", "]}", "\\|"],
+    ["Caps", "a", "s", "d", "f", "g", "h", "j", "k", "l", ";:", `'"`],
+    ["Shift", "z", "x", "c", "v", "b", "n", "m", ",<", ".>", "/?", "Shift"],
+    ["Fechar", "Space", "Enter"]
+  ];
+  var ROWS_ES = [
+    [
+      "\xBA\xAA",
+      "1!",
+      '2"',
+      "3\xB7",
+      "4$",
+      "5%",
+      "6&",
+      "7/",
+      "8(",
+      "9)",
+      "0=",
+      "'?",
+      "\xA1\xBF",
+      "Backspace"
+    ],
+    ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "`^", "+*"],
+    ["Caps", "a", "s", "d", "f", "g", "h", "j", "k", "l", "\xF1", "\xB4\xA8", "\xE7"],
+    ["Shift", "<>", "z", "x", "c", "v", "b", "n", "m", ",;", ".:", "-_", "Shift"],
+    ["Fechar", "AltGr", "Space", "Enter"]
+  ];
+  var ALTGR_ES = {
+    \u00BA\u00AA: "\\",
+    "1!": "|",
+    '2"': "@",
+    "3\xB7": "#",
+    "4$": "~",
+    "6&": "\xAC",
+    "`^": "[",
+    "+*": "]",
+    "\xB4\xA8": "{",
+    \u00E7: "}",
+    e: "\u20AC"
+  };
+  var LAYOUTS = {
+    pt: { rows: ROWS, altgr: ALTGR, dead: DEAD_KEYS },
+    en: { rows: ROWS_EN, altgr: {}, dead: [] },
+    es: { rows: ROWS_ES, altgr: ALTGR_ES, dead: ["\xB4", "`", "^", "\xA8"] }
+  };
+  var layout = () => LAYOUTS[getLocale()];
   var SPECIAL = [
     "Backspace",
     "Caps",
@@ -7220,7 +8224,7 @@
     _listeners3.push([target, type, fn, opts]);
   }
   function charOf(def) {
-    const ag = _altgr && ALTGR[def];
+    const ag = _altgr && layout().altgr[def];
     if (ag) return ag;
     if (def.length === 1) return _shift !== _caps ? def.toUpperCase() : def;
     return _shift ? def[1] : def[0];
@@ -7228,19 +8232,19 @@
   function labelOf2(def) {
     switch (def) {
       case "Backspace":
-        return STRINGS.vkBackspace;
+        return t("vkBackspace");
       case "Caps":
-        return STRINGS.vkCaps;
+        return t("vkCaps");
       case "Enter":
-        return STRINGS.vkEnter;
+        return t("vkEnter");
       case "Shift":
-        return STRINGS.vkShift;
+        return t("vkShift");
       case "AltGr":
-        return STRINGS.vkAltGr;
+        return t("vkAltGr");
       case "Fechar":
-        return STRINGS.vkClose;
+        return t("vkClose");
       case "Space":
-        return STRINGS.vkSpace;
+        return t("vkSpace");
       default:
         return charOf(def);
     }
@@ -7252,7 +8256,7 @@
   function updatePreview() {
     const p = _root3 == null ? void 0 : _root3.querySelector("[data-vk-preview]");
     if (!p) return;
-    p.textContent = _num ? `${STRINGS.vkPendingPre} ${_num.text}` : "";
+    p.textContent = _num ? `${t("vkPendingPre")} ${_num.text}` : "";
     p.style.setProperty("display", _num ? "block" : "none", "important");
     reserve();
   }
@@ -7281,7 +8285,7 @@
     const hc = _root3.querySelector("[data-vk-hint-close]");
     if (hc) setStyle(hc, { background, color, border: `2px solid ${color}` });
     for (const { btn, def } of _keys) {
-      const pressed = def === "Shift" && _shift || def === "Caps" && _caps || def === "AltGr" && _altgr || _dead && def.length === 2 && DEAD_KEYS.includes(charOf(def)) && charOf(def) === _dead;
+      const pressed = def === "Shift" && _shift || def === "Caps" && _caps || def === "AltGr" && _altgr || _dead && def.length === 2 && layout().dead.includes(charOf(def)) && charOf(def) === _dead;
       btn.setAttribute("aria-pressed", String(!!pressed));
       setStyle(
         btn,
@@ -7290,8 +8294,8 @@
       if (!SPECIAL.includes(def)) {
         const ch = charOf(def);
         btn.textContent = ch;
-        const dead = DEAD_KEYS.includes(ch);
-        btn.setAttribute("aria-label", dead ? DEAD_NAMES[ch] : ch);
+        const dead = layout().dead.includes(ch);
+        btn.setAttribute("aria-label", dead ? deadName(ch) : ch);
         btn.dataset.char = ch;
       }
     }
@@ -7391,7 +8395,7 @@
       typeChar(" ");
     } else {
       const ch = charOf(def);
-      if (DEAD_KEYS.includes(ch)) {
+      if (layout().dead.includes(ch)) {
         if (_dead) typeChar(" ");
         _dead = ch;
       } else {
@@ -7433,7 +8437,7 @@
     return Math.max(rowUnits(row.slice(0, k)), rowUnits(row.slice(k)));
   };
   var unitCss = (narrow) => {
-    const n = Math.max(...ROWS.map((r) => unitsOf(r, narrow)));
+    const n = Math.max(...layout().rows.map((r) => unitsOf(r, narrow)));
     return `min(calc((100% - ${(n - 1) * GAP2}px) / ${n}), 56px)`;
   };
   var basis = (w) => `calc(${w} * var(--vk-u) + ${(w - 1) * GAP2}px)`;
@@ -7495,7 +8499,7 @@
     const root = document.createElement("div");
     root.id = KEYBOARD_ID;
     root.setAttribute("role", "group");
-    root.setAttribute("aria-label", STRINGS.vkLabel);
+    root.setAttribute("aria-label", t("vkLabel"));
     setStyle(root, {
       position: "fixed",
       left: "0",
@@ -7518,7 +8522,7 @@
     });
     const hint = document.createElement("p");
     hint.dataset.vkHint = "";
-    hint.textContent = STRINGS.vkHint;
+    hint.textContent = t("vkHint");
     setStyle(hint, {
       margin: "4px 8px",
       font: "600 18px/1.4 system-ui, sans-serif",
@@ -7527,7 +8531,7 @@
     const hintClose = document.createElement("button");
     hintClose.type = "button";
     hintClose.dataset.vkHintClose = "";
-    hintClose.textContent = STRINGS.vkClose;
+    hintClose.textContent = t("vkClose");
     setStyle(hintClose, {
       "min-width": "44px",
       "min-height": "44px",
@@ -7563,8 +8567,8 @@
       "min-height": "0",
       flex: "1 1 auto"
     });
-    for (const row of ROWS.slice(0, -1)) scroll.append(buildRow(row));
-    const bottom = buildRow(ROWS[ROWS.length - 1]);
+    for (const row of layout().rows.slice(0, -1)) scroll.append(buildRow(row));
+    const bottom = buildRow(layout().rows.at(-1));
     bottom.dataset.vkBottom = "";
     bottom.style.setProperty("flex", "0 0 auto", "important");
     bottom.style.setProperty("margin", "4px 0 0", "important");
@@ -7586,9 +8590,9 @@
     hideFab();
     const focus = (e) => {
       var _a;
-      const t = e.target;
-      if ((_a = t == null ? void 0 : t.closest) == null ? void 0 : _a.call(t, `#${KEYBOARD_ID}, #ms-mouse-grid, #ms-container`)) return;
-      setTarget(isEditableField(t) ? t : null);
+      const t2 = e.target;
+      if ((_a = t2 == null ? void 0 : t2.closest) == null ? void 0 : _a.call(t2, `#${KEYBOARD_ID}, #ms-mouse-grid, #ms-container`)) return;
+      setTarget(isEditableField(t2) ? t2 : null);
     };
     on2(document, "focusin", focus);
     on2(document, "focusout", (e) => {
@@ -7601,12 +8605,12 @@
     const ae = document.activeElement;
     setTarget(isEditableField(ae) ? ae : null);
     render2();
-    announce(STRINGS.vkOpened);
+    announce(t("vkOpened"));
   }
   function closeVirtualKeyboard({ silent = false } = {}) {
     if (!_root3) return;
-    for (const [t, type, fn, opts] of _listeners3)
-      t.removeEventListener(type, fn, opts);
+    for (const [t2, type, fn, opts] of _listeners3)
+      t2.removeEventListener(type, fn, opts);
     _listeners3 = [];
     for (const el2 of [..._inputmodes.keys()]) restoreInputmode(el2);
     _inputmodes = /* @__PURE__ */ new Map();
@@ -7631,7 +8635,7 @@
     _caps = false;
     _keys = [];
     _lines = [];
-    if (!silent) announce(STRINGS.vkClosed);
+    if (!silent) announce(t("vkClosed"));
   }
 
   // src/ui/binding.js
@@ -7667,7 +8671,8 @@
     voiceCloudConsent: false,
     voiceRate: 1,
     voicePitch: 1,
-    voiceVolume: 1
+    voiceVolume: 1,
+    language: "auto"
   };
   var FONT_KEYS = [
     "textScale",
@@ -7678,8 +8683,8 @@
     "letterSpacing"
   ];
   function isEditableTarget(e) {
-    const t = typeof e.composedPath === "function" ? e.composedPath()[0] : e.target;
-    return !!(t && (t.isContentEditable || t.matches && t.matches(
+    const t2 = typeof e.composedPath === "function" ? e.composedPath()[0] : e.target;
+    return !!(t2 && (t2.isContentEditable || t2.matches && t2.matches(
       'input, select, textarea, [contenteditable]:not([contenteditable="false"])'
     )));
   }
@@ -7692,6 +8697,15 @@
     styleEl.textContent = getUIStyles(ms._config.position);
     ms._shadow.appendChild(styleEl);
     ms._styleEl = styleEl;
+    ms._host.lang = BCP47[getLocale()];
+    mountPanelAndFab(ms);
+    const s = state_default.get();
+    ms._syncSessionChrome();
+    ms._simpleNav = createSimpleNav();
+    ms._syncSimpleNav();
+    if (ms._chrome) ms._chrome.sync(s);
+  }
+  function mountPanelAndFab(ms) {
     const s = state_default.get();
     ms._panel = createA11yPanel({
       state: s,
@@ -7713,7 +8727,7 @@
             FONT_KEYS.map((k) => [k, RESET_OPTIONS[k]])
           )
         });
-        announce(STRINGS.announceResetFont);
+        announce(STRINGS_T.announceResetFont);
       },
       onMoveSide: () => ms._movePanelSide(),
       // F9c: o painel é modal (página inert): fecha o painel antes de mover o foco para o alvo
@@ -7748,10 +8762,32 @@
       ms._panel.open();
       ms._setPageInert(true);
     }
-    ms._syncSessionChrome();
-    ms._simpleNav = createSimpleNav();
-    ms._syncSimpleNav();
-    if (ms._chrome) ms._chrome.sync(s);
+  }
+  function rebuildUI(ms) {
+    var _a, _b;
+    if (!((_a = ms._host) == null ? void 0 : _a.isConnected)) return;
+    const wasOpen = state_default.get().panelOpen;
+    const focused = ms._shadow.activeElement;
+    const hadFocus = !!focused && ms._panel.element.contains(focused);
+    if (hadFocus) focused.blur();
+    ms._host.lang = BCP47[getLocale()];
+    ms._panel.close();
+    ms._panel.element.remove();
+    ms._fab.element.remove();
+    mountPanelAndFab(ms);
+    if (ms._chrome) {
+      ms._chrome.destroy();
+      ms._chrome = null;
+      ms._syncSessionChrome();
+    }
+    if (wasOpen && hadFocus) {
+      (_b = ms._panel.element.querySelector("[data-language]")) == null ? void 0 : _b.focus();
+    }
+  }
+  function bindLocaleChange(ms) {
+    const onChange = () => rebuildUI(ms);
+    document.addEventListener("ms:localechange", onChange);
+    return () => document.removeEventListener("ms:localechange", onChange);
   }
   function syncSessionChrome(ms) {
     if (ms._config.sessionBar && !ms._chrome) {
@@ -7823,9 +8859,14 @@
       }
     };
     document.addEventListener("click", ms._onDocClick, true);
-    ms._removeStateListener = eventBus_default.on("stateChange", ({ prev, next }) => {
+    const removeState = eventBus_default.on("stateChange", ({ prev, next }) => {
       ms._onStateChange(prev, next);
     });
+    const removeLocale = bindLocaleChange(ms);
+    ms._removeStateListener = () => {
+      removeState();
+      removeLocale();
+    };
     ms._removeSpeakListener = onSpeakingChange(
       (speaking) => ms._syncSpeaking(speaking)
     );
@@ -7846,7 +8887,7 @@
     ms._panel.open();
     ms._setPageInert(true);
     ms._fab.sync({ panelOpen: true });
-    announce(STRINGS.announcePanelOpen);
+    announce(STRINGS_T.announcePanelOpen);
   }
   function setPageInert(ms, on3) {
     var _a;
@@ -7888,10 +8929,10 @@
   function toggleSpeak() {
     if (isSpeaking()) {
       stopSpeaking();
-      announce(STRINGS.announceReadStopped);
+      announce(STRINGS_T.announceReadStopped);
     } else {
       speakMainContent();
-      announce(STRINGS.announceReadStart);
+      announce(STRINGS_T.announceReadStart);
     }
   }
   function syncSpeaking(ms, speaking) {
@@ -7924,7 +8965,7 @@
         persistence_default.remove("preferShowImagesInMs");
       }
     }
-    announce(STRINGS.announceResetAll);
+    announce(STRINGS_T.announceResetAll);
   }
   function applyProfile(ms, id) {
     const turnOff = state_default.get().activeProfile === id;
@@ -7940,7 +8981,8 @@
         voicePitch,
         voiceVolume,
         voiceCommands,
-        voiceCloudConsent
+        voiceCloudConsent,
+        language
       } = state_default.get().options;
       state_default.set({
         activeProfile: prof ? prof.id : null,
@@ -7953,6 +8995,7 @@
           voiceVolume,
           voiceCommands,
           voiceCloudConsent,
+          language,
           ...prof ? prof.options : {}
         }
       });
@@ -7963,7 +9006,7 @@
     }
     ms._profileBaseline = state_default.get();
     announce(
-      prof ? `${STRINGS.profileOnPre}${STRINGS[`profile${prof.key}Name`]}${STRINGS.profileOnPost}` : STRINGS.profileOff
+      prof ? `${STRINGS_T.profileOnPre}${STRINGS_T[`profile${prof.key}Name`]}${STRINGS_T.profileOnPost}` : STRINGS_T.profileOff
     );
   }
   function movePanelSide(ms) {
@@ -7972,7 +9015,7 @@
     ms._panel.setSide(ms._side);
     ms._savePanelSide(ms._side);
     placeShortcutsCard(ms._shortcutsSide());
-    announce(ms._side === "left" ? STRINGS.announceSideLeft : STRINGS.announceSideRight);
+    announce(ms._side === "left" ? STRINGS_T.announceSideLeft : STRINGS_T.announceSideRight);
   }
   function hideWidget(ms) {
     var _a, _b;
@@ -7993,7 +9036,7 @@
     } else {
       (_b = (_a = document.activeElement) == null ? void 0 : _a.blur) == null ? void 0 : _b.call(_a);
     }
-    announce(STRINGS.announceWidgetHidden);
+    announce(STRINGS_T.announceWidgetHidden);
   }
   function showWidget(ms) {
     ms._fab.setHidden(false);
@@ -8052,7 +9095,7 @@
     "ms-theme-mono",
     "ms-theme-lightHigh"
   ];
-  var CUSTOM_COLORS2 = {
+  var CUSTOM_COLORS3 = {
     text: ["ms-custom-text", "--ms-custom-text"],
     heading: ["ms-custom-heading", "--ms-custom-heading"],
     bg: ["ms-custom-bg", "--ms-custom-bg"],
@@ -8068,7 +9111,7 @@
     "ms-sat-high",
     "ms-cursor-white",
     "ms-cursor-black",
-    ...Object.values(CUSTOM_COLORS2).map(([cls]) => cls),
+    ...Object.values(CUSTOM_COLORS3).map(([cls]) => cls),
     ...Object.values(TYPO_VARS).map(([cls]) => cls),
     "ms-dyslexia-font",
     "ms-highlight-links",
@@ -8153,7 +9196,7 @@
       opts.cursorStyle === "bigWhite" || opts.cursorStyle === "bigBlack"
     );
     const eff = effectiveColors(opts);
-    for (const [key, [cls, prop]] of Object.entries(CUSTOM_COLORS2)) {
+    for (const [key, [cls, prop]] of Object.entries(CUSTOM_COLORS3)) {
       const on3 = !!eff[key];
       html.classList.toggle(cls, on3);
       if (on3) (_b = (_a = html.style) == null ? void 0 : _a.setProperty) == null ? void 0 : _b.call(_a, prop, eff[key]);
@@ -8214,7 +9257,7 @@
       ...OPTION_FLAG_CLASSES
     );
     for (const [, prop] of [
-      ...Object.values(CUSTOM_COLORS2),
+      ...Object.values(CUSTOM_COLORS3),
       ...Object.values(TYPO_VARS)
     ]) {
       (_b = (_a = document.documentElement.style) == null ? void 0 : _a.removeProperty) == null ? void 0 : _b.call(_a, prop);
@@ -8404,8 +9447,8 @@
     _onPointer2 = (e) => moveTo(e.clientY);
     _onTouch2 = (e) => {
       var _a;
-      const t = (_a = e.touches) == null ? void 0 : _a[0];
-      if (t) moveTo(t.clientY);
+      const t2 = (_a = e.touches) == null ? void 0 : _a[0];
+      if (t2) moveTo(t2.clientY);
     };
     _onFocus = (e) => {
       const el2 = e.target;
@@ -8525,7 +9568,7 @@
     const badge = document.createElement("div");
     badge.setAttribute(BADGE_ATTR, "");
     badge.setAttribute("role", "note");
-    badge.textContent = STRINGS.mediaOtherSiteNotice;
+    badge.textContent = t("mediaOtherSiteNotice");
     Object.assign(badge.style, {
       position: "absolute",
       zIndex: "2147483644",
@@ -8699,7 +9742,7 @@
       still.type = "button";
       still.setAttribute(
         "aria-label",
-        alt ? `${STRINGS.gifShowLabel}: ${alt}` : STRINGS.gifShowLabel
+        alt ? `${t("gifShowLabel")}: ${alt}` : t("gifShowLabel")
       );
     } else if (alt) {
       still.setAttribute("role", "img");
@@ -8725,7 +9768,7 @@
     if (interactive) {
       const tag = document.createElement("span");
       tag.setAttribute("aria-hidden", "true");
-      tag.textContent = `\u25B6 ${STRINGS.gifShowLabel}`;
+      tag.textContent = `\u25B6 ${t("gifShowLabel")}`;
       Object.assign(tag.style, {
         position: "absolute",
         left: "6px",
@@ -8842,6 +9885,7 @@
       if (this._initialized) return;
       this._initialized = true;
       this._loadPersistedState();
+      setLocale(state_default.get().options.language);
       injectPageStyles(getPageStyles());
       setLexendFontUrl(this._config.fontUrl);
       this._buildUI();
@@ -8925,7 +9969,8 @@
         } catch (_) {
         }
       }
-      if (VOICE_CMD_STRINGS[`status_${s}`]) announce(VOICE_CMD_STRINGS[`status_${s}`]);
+      const statusKey = `status_${s}`;
+      if (t(statusKey) !== statusKey) announce(t(statusKey));
       if ([
         "blocked",
         "needs-consent",
@@ -8991,7 +10036,7 @@
         case "help": {
           if (typeof speechSynthesis === "undefined") break;
           stopSpeaking();
-          const u = new SpeechSynthesisUtterance(VOICE_CMD_STRINGS.helpSpoken);
+          const u = new SpeechSynthesisUtterance(t("helpSpoken"));
           applyVoice(u, o);
           speechSynthesis.speak(u);
           break;
@@ -9005,7 +10050,7 @@
       } catch (_) {
         return;
       }
-      announce(STRINGS.announceStillOn);
+      announce(t("announceStillOn"));
     }
     destroy() {
       var _a, _b, _c, _d;
@@ -9220,7 +10265,7 @@
           setPrincipal(el2, this._config);
           document.documentElement.classList.add("ms-ativo");
           applyOptions(currentState);
-          if (doAnnounce) announce(STRINGS.announceOn);
+          if (doAnnounce) announce(t("announceOn"));
           return;
         }
         if (!saved.legacy) this._discardPrincipal();
@@ -9234,7 +10279,7 @@
       } else {
         applyModoSimples(currentState, this._config);
       }
-      if (doAnnounce) announce(STRINGS.announceOn);
+      if (doAnnounce) announce(t("announceOn"));
     }
     /** Seleção manual opcional (IMP-22 vale aqui: nada oculto antes de confirmar; cancelar mantém a página). */
     _startManualChoice() {
@@ -9245,11 +10290,11 @@
           setPrincipal(el2, this._config);
           this._savePrincipalPath(path, el2);
           applyModoSimples(state_default.get(), this._config);
-          announce(STRINGS.manualChosen);
+          announce(t("manualChosen"));
         },
         onCancel: () => {
           this._setPageInert(state_default.get().panelOpen);
-          announce(STRINGS.manualCancelled);
+          announce(t("manualCancelled"));
         }
       });
     }
@@ -9265,7 +10310,7 @@
           stopManualSelect();
           revertModoSimples();
           applyOptions(next);
-          if (!this._applyingProfile) announce(STRINGS.announceOff);
+          if (!this._applyingProfile) announce(t("announceOff"));
         }
       }
       const optionKeys = [
@@ -9300,8 +10345,12 @@
         "voiceCloudConsent",
         "voiceRate",
         "voicePitch",
-        "voiceVolume"
+        "voiceVolume",
+        "language"
       ];
+      if (prev.options.language !== next.options.language) {
+        setLocale(next.options.language);
+      }
       const optionChanged = optionKeys.some(
         (k) => prev.options[k] !== next.options[k]
       );
