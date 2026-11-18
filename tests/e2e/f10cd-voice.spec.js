@@ -196,6 +196,43 @@ test.describe('F10d — modo de reconhecimento e consentimento', () => {
     expect(await page.evaluate(() => window.__recs.length)).toBe(0);
   });
 
+  test('sem microfone (audio-capture): para, desliga e não reinicia em laço', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page, { voiceCommands: true, rec: 'local' });
+    await listening(page);
+    await page.evaluate(() => window.__recError('audio-capture'));
+    await flipsOff(page);
+    expect(await page.evaluate(() => window.__recs[0].aborted)).toBe(true);
+    expect(await page.evaluate(() => window.__recs[0].starts)).toBe(1);
+  });
+
+  test('erro desconhecido (bad-grammar): para e desliga; no-speech continua escutando', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page, { voiceCommands: true, rec: 'local' });
+    await listening(page);
+    await page.evaluate(() => window.__recError('no-speech'));
+    expect((await persisted(page)).voiceCommands).toBe(true);
+    await page.evaluate(() => window.__recError('bad-grammar'));
+    await flipsOff(page);
+  });
+
+  test('mais de 5 reinícios em 10 s: para e desliga (sem laço)', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page, { voiceCommands: true, rec: 'local' });
+    await listening(page);
+    await page.evaluate(() => {
+      for (let i = 0; i < 6; i++) window.__recs[0].onend();
+    });
+    await flipsOff(page);
+    expect(await page.evaluate(() => window.__recs[0].starts)).toBe(6);
+  });
+
   test('desligado por padrão: sem opção salva, nada escuta', async ({
     site,
   }) => {

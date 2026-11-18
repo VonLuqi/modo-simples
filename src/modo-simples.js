@@ -193,6 +193,7 @@ class ModoSimples {
     const run = (this._voiceRun = (this._voiceRun || 0) + 1);
     const mode = await getRecognitionMode();
     if (run !== this._voiceRun || !state.get().options.voiceCommands) return;
+    this._voiceMode = mode;
     startVoiceCommands({
       mode,
       onCommand: (c) => this._runVoiceCommand(c),
@@ -210,6 +211,7 @@ class ModoSimples {
         'needs-model',
         'unsupported',
         'error',
+        'no-mic',
       ].includes(s)
     ) {
       state.set({ options: { voiceCommands: false } });
@@ -674,6 +676,18 @@ class ModoSimples {
     if (prev.options.readFocus !== next.options.readFocus) {
       if (next.options.readFocus) startFocusReader();
       else stopFocusReader();
+    }
+
+    // tirar o consentimento com a nuvem escutando para tudo na hora (sem esperar desligar)
+    if (
+      prev.options.voiceCloudConsent &&
+      !next.options.voiceCloudConsent &&
+      this._voiceMode === 'cloud' &&
+      next.options.voiceCommands
+    ) {
+      this._voiceRun = (this._voiceRun || 0) + 1;
+      stopVoiceCommands();
+      state.set({ options: { voiceCommands: false } });
     }
 
     if (prev.options.voiceCommands !== next.options.voiceCommands) {

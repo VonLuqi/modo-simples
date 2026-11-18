@@ -305,6 +305,8 @@ export const VOICE_CMD_STRINGS = Object.freeze({
   status_unsupported:
     'Este navegador ou esta página não aceita comandos de voz.',
   status_error: 'Os comandos de voz pararam. Ligue de novo para tentar.',
+  'status_no-mic':
+    'Não encontrei um microfone. Conecte um microfone e ligue os comandos de voz de novo.',
   helpSpoken:
     'Você pode dizer: ler página, parar, pausar, continuar, mais rápido, mais devagar, descer, subir, ligar modo simples, desligar modo simples, abrir painel, fechar painel e ajuda.',
 });

@@ -56,7 +56,7 @@ describe('voice.js', () => {
     assert.deepEqual(VOICE_LIMITS, {
       rate: { min: 0.5, max: 2, step: 0.1 },
       pitch: { min: 0, max: 2, step: 0.1 },
-      volume: { min: 0, max: 1, step: 0.1 },
+      volume: { min: 0.1, max: 1, step: 0.1 },
     });
   });
 
@@ -93,6 +93,8 @@ describe('voice.js', () => {
     assert.equal(clampVoice('pitch', 0), 0);
     assert.equal(clampVoice('pitch', -3), 0);
     assert.equal(clampVoice('volume', 5), 1);
+    assert.equal(clampVoice('volume', 0), 0.1); // leitura muda não existe (L3)
+    assert.equal(clampVoice('volume', -1), 0.1);
     assert.equal(clampVoice('volume', 'abc'), 1);
     assert.equal(clampVoice('rate', undefined), 1);
     assert.equal(clampVoice('rate', null), 1);

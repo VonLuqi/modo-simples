@@ -7,6 +7,8 @@ import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 import state from '../../src/core/state.js';
+import ModoSimples from '../../src/modo-simples.js';
+import { installHappy } from './helpers/happyEnv.js';
 import {
   getRecognitionMode,
   installLocalModel,
@@ -241,5 +243,107 @@ describe('startVoiceCommands', () => {
     recs[0].onend();
     assert.equal(isListening(), false);
     assert.equal(status.at(-1), 'error');
+  });
+});
+
+describe('M1 — erros e laço de reinício', () => {
+  it('audio-capture (sem microfone): para e avisa no-mic, sem reiniciar', () => {
+    installRecognition();
+    go('local');
+    recs[0].onerror({ error: 'audio-capture' });
+    assert.equal(isListening(), false);
+    assert.equal(status.at(-1), 'no-mic');
+    assert.equal(recs[0].starts, 1);
+  });
+
+  it('qualquer outro erro (bad-grammar, network, ...): para e avisa error', () => {
+    for (const err of ['bad-grammar', 'network', 'coisa-nova']) {
+      status.length = 0;
+      installRecognition();
+      go('local');
+      recs[0].onerror({ error: err });
+      assert.equal(isListening(), false, err);
+      assert.equal(status.at(-1), 'error', err);
+    }
+  });
+
+  it('no-speech e aborted seguem o reinício normal', () => {
+    installRecognition();
+    go('local');
+    for (const err of ['no-speech', 'aborted']) {
+      recs[0].onerror({ error: err });
+      assert.equal(isListening(), true, err);
+    }
+  });
+
+  it('mais de 5 reinícios em 10 s: para e avisa error', () => {
+    installRecognition();
+    go('local');
+    for (let i = 0; i < 5; i++) recs[0].onend(); // 5 reinícios: ainda escuta
+    assert.equal(isListening(), true);
+    assert.equal(recs[0].starts, 6);
+    recs[0].onend(); // o 6º estoura o limite
+    assert.equal(isListening(), false);
+    assert.equal(status.at(-1), 'error');
+    assert.equal(recs[0].starts, 6);
+  });
+
+  it('reinícios espaçados (fora da janela de 10 s) não estouram o limite', () => {
+    installRecognition();
+    go('local');
+    const real = Date.now;
+    let t = real();
+    Date.now = () => t;
+    try {
+      for (let i = 0; i < 12; i++) {
+        t += 11000;
+        recs[0].onend();
+      }
+    } finally {
+      Date.now = real;
+    }
+    assert.equal(isListening(), true);
+  });
+});
+
+describe('M2 — tirar o consentimento com a nuvem escutando', () => {
+  let env;
+  let inst;
+
+  const boot = async (available) => {
+    env = installHappy();
+    installRecognition({ available });
+    state.set({
+      options: { voiceCommands: true, voiceCloudConsent: true },
+    });
+    inst = new ModoSimples({ persistence: false });
+    inst.init();
+    await env.wait(30);
+  };
+
+  afterEach(() => {
+    inst?.destroy();
+    inst = null;
+    env?.restore();
+    state.set({ options: { voiceCommands: false } });
+  });
+
+  it('nuvem: voiceCloudConsent true→false para o reconhecimento e desliga o interruptor', async () => {
+    await boot(); // sem available() → nuvem
+    assert.equal(isListening(), true);
+    assert.equal(recs[0].processLocally, undefined);
+    state.set({ options: { voiceCloudConsent: false } });
+    assert.equal(isListening(), false);
+    assert.equal(recs[0].aborted, true);
+    assert.equal(state.get().options.voiceCommands, false);
+  });
+
+  it('local: tirar o consentimento não mexe (a voz nunca saiu do aparelho)', async () => {
+    await boot(async () => 'available');
+    assert.equal(isListening(), true);
+    assert.equal(recs[0].processLocally, true);
+    state.set({ options: { voiceCloudConsent: false } });
+    assert.equal(isListening(), true);
+    assert.equal(state.get().options.voiceCommands, true);
   });
 });

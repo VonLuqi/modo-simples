@@ -13,6 +13,9 @@ import state from '../core/state.js';
 
 const LANG = 'pt-BR';
 const MAX_WORDS = 5; // fala longa é conversa, não comando
+// reinício automático: mais de 5 fins em 10 s = laço (ex.: sem microfone); para e avisa
+const MAX_RESTARTS = 5;
+const RESTART_WINDOW_MS = 10000;
 
 function getCtor() {
   const g = globalThis;
@@ -85,6 +88,7 @@ export function parseCommand(text) {
 let _rec = null;
 let _enabled = false;
 let _onStatus = () => {};
+let _restarts = [];
 
 const status = (s) => {
   try {
@@ -127,6 +131,7 @@ export function startVoiceCommands({ mode, onCommand, onStatus } = {}) {
     return false;
   }
   teardown();
+  _restarts = [];
 
   const rec = new Ctor();
   rec.lang = LANG;
@@ -150,13 +155,24 @@ export function startVoiceCommands({ mode, onCommand, onStatus } = {}) {
     } else if (err === 'language-not-supported') {
       teardown();
       status('unsupported');
-    } else if (err === 'network') {
+    } else if (err === 'audio-capture') {
       teardown();
+      status('no-mic');
+    } else if (err && err !== 'no-speech' && err !== 'aborted') {
+      teardown(); // erro desconhecido (network, bad-grammar...): nunca reiniciar às cegas
       status('error');
     } // no-speech / aborted: o onend reinicia
   };
   rec.onend = () => {
     if (!_enabled || _rec !== rec) return;
+    const now = Date.now();
+    _restarts = _restarts.filter((t) => now - t < RESTART_WINDOW_MS);
+    _restarts.push(now);
+    if (_restarts.length > MAX_RESTARTS) {
+      teardown();
+      status('error');
+      return;
+    }
     try {
       rec.start(); // o navegador encerra sozinho após silêncio
     } catch (_) {

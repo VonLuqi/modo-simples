@@ -8,7 +8,7 @@
 export const VOICE_LIMITS = {
   rate: { min: 0.5, max: 2, step: 0.1 },
   pitch: { min: 0, max: 2, step: 0.1 },
-  volume: { min: 0, max: 1, step: 0.1 },
+  volume: { min: 0.1, max: 1, step: 0.1 }, // 0 = leitura muda: não oferecer
 };
 
 const LANG = 'pt-BR';
