@@ -96,6 +96,7 @@ test.describe('Modo Simples: ligar e desligar', () => {
       const tiles = [...root.querySelectorAll('.ms-tile')];
       const out = [];
       for (const t of tiles) {
+        if (t.hidden || t.getClientRects().length === 0) continue; // tile oculto (ex.: Pausar fora da leitura)
         t.scrollIntoView({ block: 'center' });
         const r = t.getBoundingClientRect();
         const x = r.x + r.width / 2;

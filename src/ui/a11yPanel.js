@@ -938,6 +938,7 @@ export function createA11yPanel({
   let vcConsent = false;
   let vcCore = ''; // último status do núcleo (ModoSimples.onVoiceStatus); '' = ainda não sei
   let vcUnsub = null;
+  let vcBusy = false; // getRecognitionMode em andamento (clique duplo)
   let lastSync = null;
   // assina o status do núcleo na 1ª chance (a instância pública aparece depois de criar o painel)
   const subscribeVoiceStatus = () => {
@@ -978,12 +979,12 @@ export function createA11yPanel({
 
   // Diálogo próprio (role=dialog, modal): o resto do painel fica inerte, então o Tab não escapa
   let dialogEl = null;
-  const closeDialog = () => {
+  const closeDialog = (refocus = true) => {
     if (!dialogEl) return;
     dialogEl.remove();
     dialogEl = null;
     [...panel.children].forEach((c) => c.removeAttribute('inert'));
-    vcSwitch.focus();
+    if (refocus) vcSwitch.focus();
   };
   const openDialog = ({ title, text, buttons }) => {
     if (dialogEl) {
@@ -1115,7 +1116,14 @@ export function createA11yPanel({
       onSetOption('voiceCommands', false);
       return;
     }
-    const mode = await getRecognitionMode();
+    if (vcBusy) return; // 2º clique antes da resposta do navegador: ignora (um só aviso)
+    vcBusy = true;
+    let mode;
+    try {
+      mode = await getRecognitionMode();
+    } finally {
+      vcBusy = false;
+    }
     recMode = mode;
     if (mode === 'local' || (mode === 'cloud' && vcConsent)) turnOn();
     else if (mode === 'download') askDownload();
@@ -1467,6 +1475,7 @@ export function createA11yPanel({
 
   function close() {
     outline.close({ restoreFocus: false });
+    closeDialog(false); // aviso aberto não pode sobreviver ao painel (nem deixar o painel inerte)
     panel.hidden = true;
     if (_releaseFocus) {
       _releaseFocus();

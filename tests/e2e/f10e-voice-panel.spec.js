@@ -84,7 +84,13 @@ async function boot(
       }
       if (mode === 'local') Rec.available = async () => 'available';
       if (mode === 'download') {
-        Rec.available = async () => (installed ? 'available' : 'downloadable');
+        Rec.available = async () => {
+          // resposta lenta do navegador (window.__slowAvail = ms): dá tempo de um 2º clique
+          if (window.__slowAvail) {
+            await new Promise((r) => setTimeout(r, window.__slowAvail));
+          }
+          return installed ? 'available' : 'downloadable';
+        };
         Rec.install = async () => {
           window.__installs.push(!!navigator.userActivation?.isActive);
           installed = installOk;
@@ -226,6 +232,55 @@ test.describe('F10e — Comandos de voz: avisos e consentimento', () => {
     await expect(page.locator(SW)).toHaveAttribute('aria-checked', 'true');
     await expect(page.locator(SW)).toBeFocused();
     await expect.poll(() => recStarts(page)).toBe(1);
+  });
+
+  test('L1: fechar o painel com o aviso aberto não deixa nada inerte ao reabrir; foco no Fechar', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page, { rec: 'download' });
+    await realClick(page, page.locator(SW));
+    await expect(page.locator(DLG)).toBeVisible();
+    await realClick(page, page.locator('#ms-fab')); // fecha o painel por fora
+    await expect(page.locator('#ms-a11y-panel')).toBeHidden();
+    await page.locator('#ms-fab').click(); // reabre
+    await expect(page.locator('#ms-a11y-panel')).toBeVisible();
+    await expect(page.locator(DLG)).toHaveCount(0);
+    expect(
+      await page.evaluate(
+        () =>
+          document
+            .getElementById('ms-container')
+            .shadowRoot.querySelectorAll('#ms-a11y-panel [inert]').length,
+      ),
+    ).toBe(0);
+    await expect(page.locator('.ms-a11y-close')).toBeFocused();
+    // e o interruptor volta a funcionar
+    await realClick(page, page.locator(SW));
+    await expect(page.locator(DLG)).toBeVisible();
+  });
+
+  test('L2: clique duplo antes do navegador responder abre um único aviso', async ({
+    site,
+  }) => {
+    const { page } = site;
+    await boot(page, { rec: 'download' });
+    await page.evaluate(() => {
+      window.__slowAvail = 400;
+      window.__dlgs = 0;
+      const sr = document.getElementById('ms-container').shadowRoot;
+      new MutationObserver((ms) => {
+        for (const m of ms)
+          for (const n of m.addedNodes)
+            if (n.classList?.contains('ms-a11y-dialog')) window.__dlgs++;
+      }).observe(sr.getElementById('ms-a11y-panel'), { childList: true });
+    });
+    await page.locator(SW).scrollIntoViewIfNeeded();
+    const box = await page.locator(SW).boundingBox();
+    await page.mouse.dblclick(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(page.locator(DLG)).toHaveCount(1);
+    await page.waitForTimeout(700);
+    expect(await page.evaluate(() => window.__dlgs)).toBe(1);
   });
 
   test('Esc cancela só o aviso: painel segue aberto, nada liga, foco volta ao interruptor', async ({
