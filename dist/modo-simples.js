@@ -2754,6 +2754,7 @@
     panelVcListening: "Ouvindo\u2026",
     panelVcBlocked: "O microfone est\xE1 bloqueado. Libere nas configura\xE7\xF5es do navegador.",
     panelSpeechFailed: "Seu navegador n\xE3o conseguiu ler em voz alta: n\xE3o h\xE1 voz instalada. No Brave, abra-o com a op\xE7\xE3o --enable-speech-dispatcher, ou use Chrome ou Edge.",
+    panelVoiceMoreHint: 'H\xE1 mais vozes parecidas. Use "Mostrar todas as vozes" para ver todas.',
     panelVoiceAll: "Mostrar todas as vozes",
     panelVcBrave: "O Brave n\xE3o permite comandos de voz. Use Chrome ou Edge.",
     panelVcNoMic: "N\xE3o achei um microfone.",
@@ -4000,6 +4001,47 @@
     (v - TYPO_LIMITS.lineHeight.min) / TYPO_LIMITS.lineHeight.step
   ) + 1 : Math.round(v / TYPO_LIMITS[key].step);
   var typoText = (key, v) => v > 0 ? `${String(v).replace(".", ",")}${key === "lineHeight" ? "" : " em"}` : STRINGS.panelTypoDefault;
+  var VOICES_PER_LANG = 6;
+  function collapseVoices(list, max = VOICES_PER_LANG) {
+    const byLang = /* @__PURE__ */ new Map();
+    list.forEach((v) => {
+      const k = (v.lang || "").toLowerCase();
+      if (!byLang.has(k)) byLang.set(k, []);
+      byLang.get(k).push(v);
+    });
+    const out = [];
+    byLang.forEach((g) => {
+      if (g.length <= max) return out.push(...g);
+      const base = g.filter((v) => !v.name.includes("+"));
+      out.push(...(base.length >= 2 ? base : g).slice(0, max));
+    });
+    return out;
+  }
+  function groupVoicesByLang(list) {
+    const byLang = /* @__PURE__ */ new Map();
+    list.forEach((v) => {
+      const k = v.lang || "?";
+      if (!byLang.has(k)) byLang.set(k, []);
+      byLang.get(k).push(v);
+    });
+    const rank = (k) => /^pt[-_]br$/i.test(k) ? 0 : /^pt([-_]|$)/i.test(k) ? 1 : 2;
+    let names = null;
+    try {
+      names = new Intl.DisplayNames(["pt-BR"], { type: "language" });
+    } catch (e) {
+    }
+    return [...byLang.keys()].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b)).map((k) => {
+      let nome = "";
+      try {
+        nome = (names == null ? void 0 : names.of(k.replace("_", "-"))) || "";
+      } catch (e) {
+      }
+      return {
+        label: nome && nome !== k ? `${nome} (${k})` : k,
+        voices: byLang.get(k).sort((a, b) => a.name.localeCompare(b.name))
+      };
+    });
+  }
   var VOICE_SLIDERS = [
     ["voiceRate", STRINGS.panelVoiceRateLabel],
     ["voicePitch", STRINGS.panelVoicePitchLabel],
@@ -4316,6 +4358,7 @@
             <input type="range" class="ms-range-input" id="ms-voice-voiceVolume" data-voice="voiceVolume">
           </div>
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-all" aria-pressed="false" hidden style="display:none">${STRINGS.panelVoiceAll}</button>
+          <p class="ms-a11y-control-state" data-voice-hint hidden>${STRINGS.panelVoiceMoreHint}</p>
           <p class="ms-a11y-control-state" data-speech-notice-studio hidden>${STRINGS.panelSpeechFailed}</p>
           <p class="ms-a11y-control-state" data-voice-note hidden>${STRINGS.panelVoiceUnsupported}</p>
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-test" aria-label="${STRINGS.panelVoiceTestLabel}">${STRINGS.panelVoiceTest}</button>
@@ -4739,6 +4782,7 @@
     );
     let voiceName = "";
     const voiceAllBtn = panel.querySelector('[data-action="voice-all"]');
+    const voiceHint = panel.querySelector("[data-voice-hint]");
     let showAllVoices = false;
     voiceAllBtn.addEventListener("click", () => {
       showAllVoices = !showAllVoices;
@@ -4757,13 +4801,25 @@
       }
       const isPt2 = (v) => /^pt([-_]|$)/i.test(v.lang || "");
       const pt = voices.filter(isPt2);
-      const rest = voices.filter((v) => !isPt2(v)).sort((a, b) => a.name.localeCompare(b.name));
-      if (selected && rest.some((v) => v.name === selected)) showAllVoices = true;
-      voiceAllBtn.hidden = rest.length === 0;
-      voiceAllBtn.style.display = rest.length === 0 ? "none" : "";
+      const hasOthers = voices.length > pt.length;
+      voiceAllBtn.hidden = !hasOthers && pt.length === collapseVoices(pt).length;
+      voiceAllBtn.style.display = voiceAllBtn.hidden ? "none" : "";
       voiceAllBtn.setAttribute("aria-pressed", String(showAllVoices));
-      voices = showAllVoices ? [...pt, ...rest] : pt;
-      const sig = `${showAllVoices}|${voices.map((v) => `${v.name}|${v.lang}`).join("\n")}`;
+      let items;
+      let groups = null;
+      let hidden = 0;
+      if (showAllVoices) {
+        groups = groupVoicesByLang(voices);
+        items = groups.flatMap((g) => g.voices);
+      } else {
+        items = collapseVoices(pt);
+        hidden = pt.length - items.length;
+        const saved = selected && voices.find((v) => v.name === selected);
+        if (saved && !items.includes(saved)) items = [...items, saved];
+      }
+      voiceHint.hidden = hidden <= 0;
+      voices = items;
+      const sig = `${showAllVoices}|${hidden}|${voices.map((v) => `${v.name}|${v.lang}`).join("\n")}`;
       if (sig === voicesSig) {
         if (!isVoiceSelFocused() && voiceSel.value !== (selected || "")) {
           voiceSel.value = selected || "";
@@ -4777,12 +4833,22 @@
       auto.value = "";
       auto.textContent = STRINGS.panelVoiceAuto;
       voiceSel.appendChild(auto);
-      voices.forEach((v) => {
+      const optionOf = (v) => {
         const o = document.createElement("option");
         o.value = v.name;
         o.textContent = `${v.name} (${v.lang})`;
-        voiceSel.appendChild(o);
-      });
+        return o;
+      };
+      if (groups) {
+        groups.forEach((g) => {
+          const og = document.createElement("optgroup");
+          og.label = g.label;
+          g.voices.forEach((v) => og.appendChild(optionOf(v)));
+          voiceSel.appendChild(og);
+        });
+      } else {
+        voices.forEach((v) => voiceSel.appendChild(optionOf(v)));
+      }
       voiceSel.value = selected || "";
     };
     fillVoices("");
