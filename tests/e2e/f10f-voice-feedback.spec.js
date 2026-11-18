@@ -296,13 +296,15 @@ test.describe('F10f — lista de vozes', () => {
     site,
   }) => {
     const { page } = site;
+    // nomes reais do espeak-ng (Brave --enable-speech-dispatcher): 1 base + variantes por idioma
     const vs = [
-      { name: 'Maria', lang: 'pt-BR' },
-      { name: 'Joao', lang: 'pt-BR' },
-      ...Array.from({ length: 40 }, (_, i) => ({
-        name: `Maria+m${i}`,
+      { name: 'Portuguese (Brazil) espeak-ng', lang: 'pt-BR' },
+      ...['Adam', 'Alex', 'Alicia', 'Andrea', 'Andy'].map((v) => ({
+        name: `Portuguese (Brazil)+${v} espeak-ng`,
         lang: 'pt-BR',
       })),
+      { name: 'Portuguese (Portugal) espeak-ng', lang: 'pt' },
+      { name: 'Portuguese (Portugal)+Adam espeak-ng', lang: 'pt' },
     ];
     await boot(page, { voices: vs });
     const nomes = await page
@@ -310,8 +312,8 @@ test.describe('F10f — lista de vozes', () => {
       .evaluateAll((os) => os.map((o) => o.textContent));
     expect(nomes).toEqual([
       'Automática (português)',
-      'Joao (pt-BR)',
-      'Maria (pt-BR)',
+      'Portuguese (Brazil) espeak-ng (pt-BR)',
+      'Portuguese (Portugal) espeak-ng (pt)',
     ]);
   });
 

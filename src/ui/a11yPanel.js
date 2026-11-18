@@ -69,10 +69,9 @@ function collapseVoices(list, max = VOICES_PER_LANG) {
   });
   const out = [];
   byLang.forEach((g) => {
-    if (g.length <= max) return out.push(...g);
-    // variante "Nome+Variante" fica de fora; sobrando menos de 2 nomes-base, vale os primeiros
+    // variante "Nome+Variante" fica de fora sempre que houver ao menos 1 nome-base; sem base, valem as primeiras
     const base = g.filter((v) => !v.name.includes('+'));
-    out.push(...(base.length >= 2 ? base : g).slice(0, max));
+    out.push(...(base.length ? base : g).slice(0, max));
   });
   return out;
 }
