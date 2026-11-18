@@ -24,27 +24,28 @@
      * of whether they match these selectors.
      */
     distractionSelectors: [
-      "header",
+      // IMP-20: nunca pega diálogos/modais (role=dialog|alertdialog, aria-modal), cookie/consent
+      // (o usuário precisa responder) nem iframes de conteúdo; header/nav só como cromo do site.
+      'header:not([role="dialog"]):not([role="alertdialog"]):not([aria-modal="true"])',
       "footer",
       "aside",
       '[role="complementary"]',
       '[role="banner"]',
       '[role="contentinfo"]',
-      "nav",
+      'nav:not([role="dialog"]):not([role="alertdialog"]):not([aria-modal="true"])',
       ".ad",
       ".ads",
       ".advertisement",
-      '[class*="banner"]:not([class*="page-banner"])',
-      '[class*="popup"]',
-      '[class*="overlay"]',
+      '[class*="banner"]:not([class*="page-banner"]):not([role="dialog"]):not([role="alertdialog"]):not([aria-modal="true"]):not([class*="cookie"]):not([class*="consent"])',
+      '[class*="popup"]:not([role="dialog"]):not([role="alertdialog"]):not([aria-modal="true"])',
+      '[class*="overlay"]:not([role="dialog"]):not([role="alertdialog"]):not([aria-modal="true"]):not([class*="modal"]):not([class*="dialog"])',
       '[class*="sidebar"]',
-      '[class*="cookie"]',
       '[class*="newsletter"]',
       '[class*="promo"]',
       '[class*="carousel"]',
       '[class*="slider"]',
       ".slider",
-      "iframe"
+      'iframe[src*="doubleclick"], iframe[src*="googlesyndication"], iframe[id^="google_ads"], iframe[title*="dvertis"]'
     ],
     /**
      * Scoring weights used by the heuristic engine (somam; sem teto).
@@ -1891,9 +1892,11 @@
       color: #ffe600 !important;
     }
     html.ms-theme-yellowBlack body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
-      background-color: transparent !important;
       color: #ffe600 !important;
       border-color: #ffe600 !important;
+    }
+    html.ms-theme-yellowBlack body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *):not(img):not(picture):not(video):not(canvas):not(svg):not(svg *):not(iframe) {
+      background-color: transparent !important;
     }
     html.ms-theme-yellowBlack a,
     html.ms-theme-yellowBlack a:visited {
@@ -1935,9 +1938,11 @@
       color: #f8fafc !important;
     }
     html.ms-theme-darkHigh body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
-      background-color: transparent !important;
       color: #f8fafc !important;
       border-color: #94a3b8 !important;
+    }
+    html.ms-theme-darkHigh body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *):not(img):not(picture):not(video):not(canvas):not(svg):not(svg *):not(iframe) {
+      background-color: transparent !important;
     }
     html.ms-theme-darkHigh a,
     html.ms-theme-darkHigh a:visited {
@@ -1977,9 +1982,11 @@
       color: #3d3226 !important;
     }
     html.ms-theme-soft body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
-      background-color: transparent !important;
       color: #3d3226 !important;
       border-color: #c4b59a !important;
+    }
+    html.ms-theme-soft body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *):not(img):not(picture):not(video):not(canvas):not(svg):not(svg *):not(iframe) {
+      background-color: transparent !important;
     }
     html.ms-theme-soft a,
     html.ms-theme-soft a:visited {
@@ -2010,9 +2017,11 @@
       color: #000000 !important;
     }
     html.ms-theme-lightHigh body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
-      background-color: transparent !important;
       color: #000000 !important;
       border-color: #000000 !important;
+    }
+    html.ms-theme-lightHigh body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *):not(img):not(picture):not(video):not(canvas):not(svg):not(svg *):not(iframe) {
+      background-color: transparent !important;
     }
     html.ms-theme-lightHigh a,
     html.ms-theme-lightHigh a:visited {
@@ -2072,7 +2081,7 @@
     html.ms-custom-bg body {
       background-color: var(--ms-custom-bg) !important;
     }
-    html.ms-custom-bg body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *) {
+    html.ms-custom-bg body *:not(#ms-container):not(#ms-container *):not(.site-header):not(.site-header *):not(#ms-session-bar):not(#ms-session-bar *):not(.ms-pills-nav):not(.ms-pills-nav *):not(#ms-simples-chrome):not(#ms-simples-chrome *):not(img):not(picture):not(video):not(canvas):not(svg):not(svg *):not(iframe) {
       background-color: transparent !important;
     }
     html.ms-custom-text,
@@ -9416,6 +9425,12 @@
     win2.ModoSimples = instance;
     return instance;
   }
+  function applyEarlyPrefs(win2) {
+    if (!win2.document.documentElement || !win2.document.head) return;
+    new ModoSimples(readPreBootConfig(win2))._loadPersistedState();
+    injectPageStyles(getPageStyles());
+    applyOptions(state_default.get());
+  }
   function shouldAutoBoot(win2, script) {
     if (script && script.getAttribute("data-ms-autoboot") === "false") {
       return false;
@@ -9427,6 +9442,7 @@
     if (shouldAutoBoot(window, script)) {
       const boot = () => bootModoSimples(window);
       if (document.readyState === "loading") {
+        applyEarlyPrefs(window);
         document.addEventListener("DOMContentLoaded", boot);
       } else {
         boot();
