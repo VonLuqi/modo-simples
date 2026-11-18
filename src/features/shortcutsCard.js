@@ -67,6 +67,9 @@ function el(tag, text, style) {
 }
 
 function build(side) {
+  // celular estreito: fonte e espaços menores (com fonte de fallback larga o cartão passava da
+  // metade da tela e o tutorial não tinha onde pôr o balão)
+  const narrow = window.innerWidth <= 360;
   const card = el('section', '', {
     position: 'fixed',
     bottom: '16px',
@@ -74,10 +77,10 @@ function build(side) {
     width: '280px',
     'max-width': 'calc(100vw - 120px)', // não cobre o botão flutuante (56px + folgas) a 390px
     'box-sizing': 'border-box',
-    padding: '12px 14px',
+    padding: narrow ? '8px 10px' : '12px 14px',
     background: '#0B2C5F',
     color: '#fff',
-    font: '400 15px/1.4 system-ui, sans-serif',
+    font: `400 ${narrow ? 13 : 15}px/1.3 system-ui, sans-serif`,
     'border-radius': '10px',
     'box-shadow': '0 4px 16px rgba(0,0,0,0.35)',
     'z-index': '2147483640',
@@ -98,7 +101,10 @@ function build(side) {
     'list-style': 'none',
   });
   for (const s of [...getShortcuts(), ...pageAccessKeys()]) {
-    const li = el('li', '', { margin: '0 0 6px', color: '#fff' });
+    const li = el('li', '', {
+      margin: narrow ? '0 0 3px' : '0 0 6px',
+      color: '#fff',
+    });
     li.append(
       el('kbd', s.keys, {
         display: 'inline-block',
@@ -107,7 +113,7 @@ function build(side) {
         background: '#fff',
         color: '#0B2C5F',
         'border-radius': '4px',
-        font: '700 14px/1.4 system-ui, sans-serif',
+        font: `700 ${narrow ? 12 : 14}px/1.4 system-ui, sans-serif`,
       }),
       document.createTextNode(s.text),
     );

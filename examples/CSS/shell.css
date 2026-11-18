@@ -152,7 +152,7 @@ a:hover {
 /* Uma linha só em telas largas; abaixo de 1180px vira o menu recolhível (UX-25; com o botão Pesquisar ao lado, 1101-1179 estourava) */
 .main-nav ul {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.25rem 0.65rem;
   list-style: none;
@@ -287,6 +287,52 @@ body > main,
 .footer-inner a {
   color: #fff;
   text-underline-offset: 3px;
+}
+
+/* Menu recolhido por espaço: nav-toggle.js põe html.nav-collapsed quando a lista não cabe numa linha
+   (fonte de fallback mais larga, zoom de texto). Mesmas regras do @media abaixo. */
+html.nav-collapsed .header-inner {
+  position: relative;
+  flex-wrap: wrap;
+}
+
+html.nav-collapsed .main-nav {
+  flex: 0 0 auto;
+  margin-left: auto;
+  overflow: visible;
+}
+
+html.nav-collapsed .nav-toggle {
+  display: inline-flex;
+}
+
+html.nav-collapsed .main-nav ul {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: var(--ms-header-z);
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 0.5rem;
+  background: var(--ms-surface);
+  border: 1px solid var(--ms-border);
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 14%);
+}
+
+html.nav-collapsed .main-nav--open ul {
+  display: flex;
+}
+
+html.nav-collapsed .main-nav li a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 0;
 }
 
 @media (max-width: 1180px) {

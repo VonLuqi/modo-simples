@@ -43,6 +43,19 @@ export const test = base.extend({
       });
     }
 
+    // E2E_FONT="DejaVu Sans": simula o runner do CI (sem Lexend e com fallback mais largo)
+    if (process.env.E2E_FONT) {
+      await page.addInitScript((font) => {
+        const add = () => {
+          const s = document.createElement('style');
+          s.textContent = `:root{--ms-font:'${font}',sans-serif !important}body,button,input,select,textarea{font-family:'${font}',sans-serif !important}`;
+          (document.head || document.documentElement).appendChild(s);
+        };
+        if (document.head) add();
+        else document.addEventListener('DOMContentLoaded', add);
+      }, process.env.E2E_FONT);
+    }
+
     page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
     page.on('console', (m) => {
       if (m.type() === 'error') errors.push(`console.error: ${m.text()}`);
