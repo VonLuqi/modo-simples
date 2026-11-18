@@ -1703,6 +1703,7 @@
     if (base.modoSimples !== now.modoSimples) return true;
     return Object.keys(base.options).some(
       (k) => !k.startsWith("voice") && // voz é preferência do aparelho, não do perfil (F10)
+      k !== "language" && // idioma também não é de perfil
       (k !== "reducedMotion" || reducedMotionIsUserChoice) && base.options[k] !== now.options[k]
     );
   }
@@ -1723,12 +1724,18 @@
   function isVoiceSupported() {
     return typeof speechSynthesis !== "undefined" && typeof SpeechSynthesisUtterance !== "undefined";
   }
-  var isLang = (v) => (v.lang || "").toLowerCase().split(/[-_]/)[0] === getLocale();
-  var isExact = (v) => (v.lang || "").toLowerCase().replace("_", "-") === BCP47[getLocale()].toLowerCase();
-  function listVoices() {
+  var isLang = (v, loc) => (v.lang || "").toLowerCase().split(/[-_]/)[0] === loc;
+  var isExact = (v, loc) => (v.lang || "").toLowerCase().replace("_", "-") === BCP47[loc].toLowerCase();
+  function pageLocale() {
+    var _a;
+    const lang2 = typeof document !== "undefined" ? (_a = document.documentElement) == null ? void 0 : _a.getAttribute("lang") : null;
+    const primary = String(lang2 || "").toLowerCase().split(/[-_]/)[0];
+    return primary in BCP47 ? primary : getLocale();
+  }
+  function listVoices(loc = getLocale()) {
     var _a;
     if (!isVoiceSupported()) return [];
-    const rank = (v) => isExact(v) ? 0 : isLang(v) ? 1 : 2;
+    const rank = (v) => isExact(v, loc) ? 0 : isLang(v, loc) ? 1 : 2;
     return [...((_a = speechSynthesis.getVoices) == null ? void 0 : _a.call(speechSynthesis)) || []].sort(
       (a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name)
     );
@@ -1763,10 +1770,11 @@
     speechSynthesis.addEventListener("voiceschanged", cb);
     return () => speechSynthesis.removeEventListener("voiceschanged", cb);
   }
-  function applyVoice(utt, prefs = {}) {
-    utt.lang = BCP47[getLocale()];
-    const voices = listVoices();
-    const chosen = prefs.voiceName && voices.find((v) => v.name === prefs.voiceName) || voices.find(isExact) || voices.find(isLang);
+  function applyVoice(utt, prefs = {}, source = "ui") {
+    const loc = source === "page" ? pageLocale() : getLocale();
+    utt.lang = BCP47[loc];
+    const voices = listVoices(loc);
+    const chosen = prefs.voiceName && voices.find((v) => v.name === prefs.voiceName) || voices.find((v) => isExact(v, loc)) || voices.find((v) => isLang(v, loc));
     if (chosen) utt.voice = chosen;
     utt.rate = clampVoice("rate", prefs.voiceRate);
     utt.pitch = clampVoice("pitch", prefs.voicePitch);
@@ -4199,7 +4207,7 @@
     _resume = { index, chunks, i };
     const utterance = new SpeechSynthesisUtterance(chunks[i]);
     _utterance = utterance;
-    applyVoice(utterance, state_default.get().options);
+    applyVoice(utterance, state_default.get().options, "page");
     const next = () => {
       if (run !== _runId) return;
       _utterance = null;
@@ -4219,7 +4227,7 @@
     _resume = { text };
     const utterance = new SpeechSynthesisUtterance(text);
     _utterance = utterance;
-    applyVoice(utterance, state_default.get().options);
+    applyVoice(utterance, state_default.get().options, "page");
     const done = () => {
       if (run !== _runId) return;
       _speaking = false;
@@ -4404,7 +4412,7 @@
     if (!text) return;
     speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    applyVoice(utterance, state_default.get().options);
+    applyVoice(utterance, state_default.get().options, "page");
     _spoke = true;
     utterance.onerror = (e) => {
       if (isSpeechFailure(e)) notifySpeechError();
@@ -8671,8 +8679,7 @@
     voiceCloudConsent: false,
     voiceRate: 1,
     voicePitch: 1,
-    voiceVolume: 1,
-    language: "auto"
+    voiceVolume: 1
   };
   var FONT_KEYS = [
     "textScale",
