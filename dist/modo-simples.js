@@ -3654,9 +3654,9 @@
       .ms-session-bar-inner { padding: calc(0.5 * var(--ms-u)) 0; }
       .ms-session-on-top { margin-bottom: calc(0.4 * var(--ms-u)); }
       .ms-session-on-title { font-size: calc(0.95 * var(--ms-u)); gap: calc(0.4 * var(--ms-u)); flex-wrap: nowrap; }
-      .ms-session-on-title > span { flex: none; }
+      .ms-session-on-title > span:not(.ms-session-badge) { flex: none; }
       .ms-session-on-title strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .ms-session-badge { font-size: calc(0.75 * var(--ms-u)); padding: calc(0.15 * var(--ms-u)) calc(0.5 * var(--ms-u)); white-space: nowrap; }
+      .ms-session-badge { font-size: calc(0.75 * var(--ms-u)); padding: calc(0.15 * var(--ms-u)) calc(0.5 * var(--ms-u)); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
       .ms-session-desc,
       .ms-btn-pre,
       .ms-btn-post {
@@ -7158,6 +7158,7 @@
     return n;
   }
   function build(side) {
+    const narrow = window.innerWidth <= 360;
     const card = el("section", "", {
       position: "fixed",
       bottom: "16px",
@@ -7166,10 +7167,10 @@
       "max-width": "calc(100vw - 120px)",
       // não cobre o botão flutuante (56px + folgas) a 390px
       "box-sizing": "border-box",
-      padding: "12px 14px",
+      padding: narrow ? "8px 10px" : "12px 14px",
       background: "#0B2C5F",
       color: "#fff",
-      font: "400 15px/1.4 system-ui, sans-serif",
+      font: `400 ${narrow ? 13 : 15}px/1.3 system-ui, sans-serif`,
       "border-radius": "10px",
       "box-shadow": "0 4px 16px rgba(0,0,0,0.35)",
       "z-index": "2147483640"
@@ -7190,7 +7191,10 @@
       "list-style": "none"
     });
     for (const s of [...getShortcuts(), ...pageAccessKeys()]) {
-      const li = el("li", "", { margin: "0 0 6px", color: "#fff" });
+      const li = el("li", "", {
+        margin: narrow ? "0 0 3px" : "0 0 6px",
+        color: "#fff"
+      });
       li.append(
         el("kbd", s.keys, {
           display: "inline-block",
@@ -7199,7 +7203,7 @@
           background: "#fff",
           color: "#0B2C5F",
           "border-radius": "4px",
-          font: "700 14px/1.4 system-ui, sans-serif"
+          font: `700 ${narrow ? 12 : 14}px/1.4 system-ui, sans-serif`
         }),
         document.createTextNode(s.text)
       );
