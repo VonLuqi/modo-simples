@@ -33,6 +33,11 @@ async function boot(
       } catch {
         /* sem storage */
       }
+      // o Playwright roda em HeadlessChrome, UA em que o core pula available(): simula Chrome de verdade
+      Object.defineProperty(navigator, 'userAgent', {
+        configurable: true,
+        value: navigator.userAgent.replace('HeadlessChrome', 'Chrome'),
+      });
       window.__spoken = [];
       window.__utts = [];
       window.__cancels = 0;

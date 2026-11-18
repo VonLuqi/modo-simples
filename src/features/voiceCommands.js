@@ -28,7 +28,10 @@ const secure = () => globalThis.isSecureContext !== false;
 export async function getRecognitionMode() {
   const Ctor = getCtor();
   if (!Ctor || !secure()) return 'none';
-  if (typeof Ctor.available === 'function') {
+  // headless-shell (UA HeadlessChrome) derruba o renderizador em available() com processLocally
+  // (QA T202): nesses UAs nem pergunta; Chrome, Brave e Edge de verdade não usam esse UA
+  const headless = /HeadlessChrome/.test(globalThis.navigator?.userAgent || '');
+  if (!headless && typeof Ctor.available === 'function') {
     try {
       const r = await Ctor.available({ langs: [LANG], processLocally: true });
       if (r === 'available') return 'local';

@@ -111,6 +111,55 @@ describe('getRecognitionMode', () => {
   });
 });
 
+describe('getRecognitionMode — Chrome headless (QA T202)', () => {
+  const setUA = (ua) =>
+    Object.defineProperty(globalThis, 'navigator', {
+      configurable: true,
+      value: { userAgent: ua },
+    });
+  let antes;
+  beforeEach(() => {
+    antes = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  });
+  afterEach(() => {
+    if (antes) Object.defineProperty(globalThis, 'navigator', antes);
+    else delete globalThis.navigator;
+  });
+
+  it('HeadlessChrome: não chama available() e cai na nuvem (com consentimento por trás)', async () => {
+    let chamou = 0;
+    installRecognition({
+      available: async () => {
+        chamou++;
+        return 'available';
+      },
+    });
+    setUA('Mozilla/5.0 HeadlessChrome/159.0.0.0 Safari/537.36');
+    assert.equal(await getRecognitionMode(), 'cloud');
+    assert.equal(chamou, 0);
+    assert.equal(go('cloud'), false); // sem consentimento a nuvem segue travada
+    assert.equal(status.at(-1), 'needs-consent');
+  });
+
+  it('HeadlessChrome sem construtor continua none', async () => {
+    setUA('Mozilla/5.0 HeadlessChrome/159.0.0.0 Safari/537.36');
+    assert.equal(await getRecognitionMode(), 'none');
+  });
+
+  it('Chrome normal ainda pergunta available()', async () => {
+    let chamou = 0;
+    installRecognition({
+      available: async () => {
+        chamou++;
+        return 'available';
+      },
+    });
+    setUA('Mozilla/5.0 Chrome/159.0.0.0 Safari/537.36');
+    assert.equal(await getRecognitionMode(), 'local');
+    assert.equal(chamou, 1);
+  });
+});
+
 describe('installLocalModel', () => {
   it('chama install com pt-BR local e devolve boolean', async () => {
     let arg;
