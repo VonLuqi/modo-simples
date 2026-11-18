@@ -2060,6 +2060,12 @@
     html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, #ms-virtual-keyboard *, [data-ms-hidden]):not(:has(img)):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
       display: inline-block !important;
     }
+    /* Sem suporte a :has() a regra acima \xE9 descartada: sem ela, links ganham inline-block (inclui os de imagem) */
+    @supports not selector(:has(*)) {
+      html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, #ms-virtual-keyboard *, [data-ms-hidden]):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
+        display: inline-block !important;
+      }
+    }
     /* \u2500\u2500 Foco bem vis\xEDvel (F7e): anel duplo (preto + amarelo), leg\xEDvel em qualquer fundo \u2500\u2500 */
     html.ms-strong-focus :focus-visible:not(#ms-container, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *) {
       outline: 3px solid #000 !important;
@@ -2604,6 +2610,12 @@
     fabHideLabel: "Esconder bot\xE3o de acessibilidade nesta p\xE1gina",
     announceWidgetHidden: "Bot\xE3o de acessibilidade escondido. Alt+Shift+A mostra de novo.",
     announceResetAll: "Tudo desligado. P\xE1gina sem ajustes.",
+    announceStillOn: "Modo Simples continua ligado",
+    announceOn: "Modo Simples ativado",
+    announceOff: "Modo Simples desativado",
+    announcePanelOpen: "Painel de acessibilidade aberto",
+    announceReadStopped: "Leitura interrompida",
+    announceReadStart: "Lendo conte\xFAdo principal",
     announceSideLeft: "Painel movido para a esquerda",
     announceSideRight: "Painel movido para a direita",
     panelResetLabel: "Desligar tudo",
@@ -2671,6 +2683,7 @@
     vkEnter: "Enter",
     vkShift: "Shift",
     vkCaps: "Caps",
+    vkAltGr: "AltGr",
     vkSpace: "Espa\xE7o",
     vkDeadAcute: "Acento agudo",
     vkDeadGrave: "Acento grave",
@@ -3355,8 +3368,17 @@
   var FOCUSABLE = 'a[href], button, input, select, textarea, summary, [contenteditable=""], [contenteditable="true"]';
   var CANDIDATES = "h1, h2, h3, h4, h5, h6, [role], main, nav, header, footer, aside, form, section, search";
   var clean2 = (s) => (s || "").replace(/\s+/g, " ").trim();
+  function deepCandidates(root, out = []) {
+    for (const el2 of root.querySelectorAll("*")) {
+      if (el2.matches(OWN)) continue;
+      if (el2.matches(CANDIDATES)) out.push(el2);
+      if (el2.shadowRoot) deepCandidates(el2.shadowRoot, out);
+    }
+    return out;
+  }
   function isHidden(el2) {
-    for (let n = el2; n && n.nodeType === 1; n = n.parentElement) {
+    var _a, _b;
+    for (let n = el2; n && n.nodeType === 1; n = n.parentElement || ((_b = (_a = n.getRootNode) == null ? void 0 : _a.call(n)) == null ? void 0 : _b.host)) {
       if (n.hidden || n.getAttribute("aria-hidden") === "true" || n.hasAttribute("data-ms-hidden")) {
         return true;
       }
@@ -3432,7 +3454,7 @@
   function collectOutline(root = document) {
     const headings = [];
     const landmarks = [];
-    for (const el2 of root.querySelectorAll(CANDIDATES)) {
+    for (const el2 of deepCandidates(root)) {
       if (el2.closest(OWN) || isHidden(el2)) continue;
       const level = headingLevel(el2);
       if (level) {
@@ -6029,8 +6051,23 @@
       "/?",
       "Shift"
     ],
-    ["Fechar", "Space", "Enter"]
+    ["Fechar", "AltGr", "Space", "Enter"]
   ];
+  var ALTGR = {
+    "1!": "\xB9",
+    "2@": "\xB2",
+    "3#": "\xB3",
+    "4$": "\xA3",
+    "5%": "\xA2",
+    "6\xA8": "\xAC",
+    "=+": "\xA7",
+    "[{": "\xAA",
+    "]}": "\xBA",
+    "/?": "\xB0",
+    q: "/",
+    w: "?",
+    e: "\xB0"
+  };
   var DEAD_NAMES = {
     "\xB4": STRINGS.vkDeadAcute,
     "`": STRINGS.vkDeadGrave,
@@ -6038,7 +6075,15 @@
     "^": STRINGS.vkDeadCircumflex,
     "\xA8": STRINGS.vkDeadDiaeresis
   };
-  var SPECIAL = ["Backspace", "Caps", "Enter", "Shift", "Fechar", "Space"];
+  var SPECIAL = [
+    "Backspace",
+    "Caps",
+    "Enter",
+    "Shift",
+    "AltGr",
+    "Fechar",
+    "Space"
+  ];
   var isCE = (el2) => el2.isContentEditable === true || ["", "true", "plaintext-only"].includes(el2.getAttribute("contenteditable"));
   function isEditableField(el2) {
     var _a;
@@ -6079,6 +6124,11 @@
     const base = numBase(el2);
     if (base === "") return false;
     return numCommit(el2, base.slice(0, -1), "deleteContentBackward", null);
+  }
+  function flushNum() {
+    if (!_num) return;
+    _num = null;
+    updatePreview();
   }
   var win = () => document.defaultView || window;
   function fire(el2, type, init = {}) {
@@ -6237,6 +6287,7 @@
   var _target = null;
   var _dead = null;
   var _shift = false;
+  var _altgr = false;
   var _caps = false;
   var _touch = false;
   var _listeners3 = [];
@@ -6254,6 +6305,8 @@
     _listeners3.push([target, type, fn, opts]);
   }
   function charOf(def) {
+    const ag = _altgr && ALTGR[def];
+    if (ag) return ag;
     if (def.length === 1) return _shift !== _caps ? def.toUpperCase() : def;
     return _shift ? def[1] : def[0];
   }
@@ -6267,6 +6320,8 @@
         return STRINGS.vkEnter;
       case "Shift":
         return STRINGS.vkShift;
+      case "AltGr":
+        return STRINGS.vkAltGr;
       case "Fechar":
         return STRINGS.vkClose;
       case "Space":
@@ -6311,7 +6366,7 @@
     const hc = _root3.querySelector("[data-vk-hint-close]");
     if (hc) setStyle(hc, { background, color, border: `2px solid ${color}` });
     for (const { btn, def } of _keys) {
-      const pressed = def === "Shift" && _shift || def === "Caps" && _caps || _dead && def.length === 2 && DEAD_KEYS.includes(charOf(def)) && charOf(def) === _dead;
+      const pressed = def === "Shift" && _shift || def === "Caps" && _caps || def === "AltGr" && _altgr || _dead && def.length === 2 && DEAD_KEYS.includes(charOf(def)) && charOf(def) === _dead;
       btn.setAttribute("aria-pressed", String(!!pressed));
       setStyle(
         btn,
@@ -6369,10 +6424,12 @@
   }
   function setTarget(el2) {
     if (el2 === _target) return;
+    flushNum();
     if (_target) restoreInputmode(_target);
     _target = el2;
     _dead = null;
     _shift = false;
+    _altgr = false;
     _num = null;
     updatePreview();
     if (el2 && _touch) {
@@ -6402,6 +6459,10 @@
       _caps = !_caps;
       return paint();
     }
+    if (def === "AltGr") {
+      _altgr = !_altgr;
+      return paint();
+    }
     if (!_target) return;
     (_a = _target.focus) == null ? void 0 : _a.call(_target, { preventScroll: true });
     if (def === "Backspace") {
@@ -6421,6 +6482,7 @@
         typeChar(ch);
       }
       _shift = false;
+      _altgr = false;
     }
     paint();
   }
@@ -6432,7 +6494,7 @@
     Shift: 2,
     Fechar: 2,
     Enter: 2,
-    Space: 6
+    Space: 5
   };
   function buildRow(row) {
     const line = document.createElement("div");
@@ -6440,6 +6502,7 @@
       display: "flex",
       "flex-wrap": "wrap",
       gap: "4px",
+      "justify-content": "center",
       margin: "0 0 4px"
     });
     for (const def of row) {
@@ -6450,16 +6513,16 @@
       if (def !== "Fechar") btn.tabIndex = -1;
       btn.textContent = SPECIAL.includes(def) ? labelOf2(def) : "";
       setStyle(btn, {
-        flex: `${w} 1 ${basis(w)}`,
+        flex: `0 0 ${basis(w)}`,
         "min-width": "24px",
-        "min-height": "40px",
+        "min-height": "44px",
         margin: "0",
         padding: "0 2px",
         font: "600 18px/1 system-ui, sans-serif",
         "border-radius": "8px",
         cursor: "pointer"
       });
-      if (def === "Shift" || def === "Caps")
+      if (def === "Shift" || def === "Caps" || def === "AltGr")
         btn.setAttribute("aria-pressed", "false");
       btn.addEventListener("pointerdown", (e) => e.preventDefault());
       btn.addEventListener("mousedown", (e) => e.preventDefault());
@@ -6554,6 +6617,7 @@
     if (_root3) return;
     _touch = touch != null ? touch : isTouchDevice();
     _shift = false;
+    _altgr = false;
     _caps = false;
     _dead = null;
     _keys = [];
@@ -6568,7 +6632,10 @@
     };
     on2(document, "focusin", focus);
     on2(document, "focusout", (e) => {
-      if (!e.relatedTarget && e.target === _target) setTarget(null);
+      if (!e.relatedTarget && e.target === _target) {
+        flushNum();
+        setTarget(null);
+      }
     });
     on2(window, "resize", () => render2());
     const ae = document.activeElement;
@@ -6600,6 +6667,7 @@
     _target = null;
     _dead = null;
     _shift = false;
+    _altgr = false;
     _caps = false;
     _keys = [];
     if (!silent) announce(STRINGS.vkClosed);
@@ -6811,7 +6879,7 @@
     ms._panel.open();
     ms._setPageInert(true);
     ms._fab.sync({ panelOpen: true });
-    announce("Painel de acessibilidade aberto");
+    announce(STRINGS.announcePanelOpen);
   }
   function setPageInert(ms, on3) {
     var _a;
@@ -6852,10 +6920,10 @@
   function toggleSpeak() {
     if (isSpeaking()) {
       stopSpeaking();
-      announce("Leitura interrompida");
+      announce(STRINGS.announceReadStopped);
     } else {
       speakMainContent();
-      announce("Lendo conte\xFAdo principal");
+      announce(STRINGS.announceReadStart);
     }
   }
   function syncSpeaking(ms, speaking) {
@@ -7837,7 +7905,7 @@
       } catch (_) {
         return;
       }
-      announce("Modo Simples continua ligado");
+      announce(STRINGS.announceStillOn);
     }
     destroy() {
       var _a, _b, _c;
@@ -8048,7 +8116,7 @@
           setPrincipal(el2, this._config);
           document.documentElement.classList.add("ms-ativo");
           applyOptions(currentState);
-          if (doAnnounce) announce("Modo Simples ativado");
+          if (doAnnounce) announce(STRINGS.announceOn);
           return;
         }
         if (!saved.legacy) this._discardPrincipal();
@@ -8062,7 +8130,7 @@
       } else {
         applyModoSimples(currentState, this._config);
       }
-      if (doAnnounce) announce("Modo Simples ativado");
+      if (doAnnounce) announce(STRINGS.announceOn);
     }
     /** Seleção manual opcional (IMP-22 vale aqui: nada oculto antes de confirmar; cancelar mantém a página). */
     _startManualChoice() {
@@ -8093,7 +8161,7 @@
           stopManualSelect();
           revertModoSimples();
           applyOptions(next);
-          if (!this._applyingProfile) announce("Modo Simples desativado");
+          if (!this._applyingProfile) announce(STRINGS.announceOff);
         }
       }
       const optionKeys = [
