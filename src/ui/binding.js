@@ -28,7 +28,8 @@ import {
   openVirtualKeyboard,
   closeVirtualKeyboard,
 } from '../features/virtualKeyboard.js';
-import { STRINGS as S } from './strings.js';
+import { STRINGS_T as S } from './strings.js';
+import { getLocale, BCP47 } from '../i18n/index.js';
 import { getProfile } from '../core/profiles.js';
 
 /** Valores iniciais das opções (espelha core/state.js) — alvo do "Desligar tudo". */
@@ -104,6 +105,20 @@ export function buildUI(ms) {
   ms._shadow.appendChild(styleEl);
   ms._styleEl = styleEl;
 
+  ms._host.lang = BCP47[getLocale()];
+  mountPanelAndFab(ms);
+  const s = state.get();
+
+  ms._syncSessionChrome();
+
+  ms._simpleNav = createSimpleNav();
+  ms._syncSimpleNav();
+  // Reposiciona SIMPLES após pills (MS on some com o header)
+  if (ms._chrome) ms._chrome.sync(s);
+}
+
+/** Cria painel + FAB no shadow root (primeira montagem e a cada troca de idioma). */
+function mountPanelAndFab(ms) {
   const s = state.get();
 
   ms._panel = createA11yPanel({
@@ -163,13 +178,39 @@ export function buildUI(ms) {
     ms._panel.open();
     ms._setPageInert(true);
   }
+}
 
-  ms._syncSessionChrome();
+/**
+ * Troca de idioma: refaz painel, FAB e barra de sessão com os textos novos. O painel aberto
+ * continua aberto e o foco volta ao seletor de idioma (que acabou de ser usado).
+ */
+export function rebuildUI(ms) {
+  if (!ms._host?.isConnected) return;
+  const wasOpen = state.get().panelOpen;
+  // foco dentro do painel: solta antes de remover o elemento (o navegador também faria isso)
+  const focused = ms._shadow.activeElement;
+  const hadFocus = !!focused && ms._panel.element.contains(focused);
+  if (hadFocus) focused.blur();
+  ms._host.lang = BCP47[getLocale()];
+  ms._panel.close(); // solta a armadilha de foco do painel antigo
+  ms._panel.element.remove();
+  ms._fab.element.remove();
+  mountPanelAndFab(ms);
+  if (ms._chrome) {
+    ms._chrome.destroy();
+    ms._chrome = null;
+    ms._syncSessionChrome();
+  }
+  if (wasOpen && hadFocus) {
+    ms._panel.element.querySelector('[data-language]')?.focus();
+  }
+}
 
-  ms._simpleNav = createSimpleNav();
-  ms._syncSimpleNav();
-  // Reposiciona SIMPLES após pills (MS on some com o header)
-  if (ms._chrome) ms._chrome.sync(s);
+/** Escuta 'ms:localechange' e refaz a UI. @returns {() => void} remove o listener */
+function bindLocaleChange(ms) {
+  const onChange = () => rebuildUI(ms);
+  document.addEventListener('ms:localechange', onChange);
+  return () => document.removeEventListener('ms:localechange', onChange);
 }
 
 /** Cria/destrói a barra de sessão conforme config.sessionBar (default: desligada). */
@@ -280,9 +321,15 @@ export function bindEvents(ms) {
   };
   document.addEventListener('click', ms._onDocClick, true);
 
-  ms._removeStateListener = eventBus.on('stateChange', ({ prev, next }) => {
+  const removeState = eventBus.on('stateChange', ({ prev, next }) => {
     ms._onStateChange(prev, next);
   });
+  const removeLocale = bindLocaleChange(ms);
+  // destroy() chama _removeStateListener: leva junto o listener de idioma
+  ms._removeStateListener = () => {
+    removeState();
+    removeLocale();
+  };
 
   // Estado "lendo/parado" da UI vem dos eventos do tts: sem polling (IMP-25)
   ms._removeSpeakListener = onSpeakingChange((speaking) =>

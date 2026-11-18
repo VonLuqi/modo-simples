@@ -6,7 +6,11 @@
  */
 
 import { trapFocus } from '../utils/focus.js';
-import { STRINGS as S, VOICE_CMD_STRINGS as VC } from './strings.js';
+import { STRINGS_T as S, STRINGS_T as VC } from './strings.js';
+import { t, getLocale, resolveLocale, BCP47 } from '../i18n/index.js';
+
+/** Nome de cada idioma na própria língua (seletor de idioma). */
+const LANG_NAMES = { pt: 'Português', en: 'English', es: 'Español' };
 import { TYPO_LIMITS } from '../core/state.js';
 import { isFocusReaderSupported } from '../features/focusReader.js';
 import {
@@ -84,11 +88,16 @@ function groupVoicesByLang(list) {
     if (!byLang.has(k)) byLang.set(k, []);
     byLang.get(k).push(v);
   });
+  const loc = getLocale();
   const rank = (k) =>
-    /^pt[-_]br$/i.test(k) ? 0 : /^pt([-_]|$)/i.test(k) ? 1 : 2;
+    k.toLowerCase() === BCP47[loc].toLowerCase()
+      ? 0
+      : new RegExp(`^${loc}([-_]|$)`, 'i').test(k)
+        ? 1
+        : 2;
   let names = null;
   try {
-    names = new Intl.DisplayNames(['pt-BR'], { type: 'language' });
+    names = new Intl.DisplayNames([BCP47[getLocale()]], { type: 'language' });
   } catch {
     /* sem Intl.DisplayNames: só o código */
   }
@@ -109,11 +118,16 @@ function groupVoicesByLang(list) {
 }
 
 /** Estúdio de Voz (F10b): sliders [chave em options, rótulo]. */
-const VOICE_SLIDERS = [
-  ['voiceRate', S.panelVoiceRateLabel],
-  ['voicePitch', S.panelVoicePitchLabel],
-  ['voiceVolume', S.panelVoiceVolumeLabel],
-];
+// Tabelas com texto: refeitas por refreshTexts() a cada painel criado (troca de idioma).
+let VOICE_SLIDERS,
+  TEXT_SCALES,
+  DEFAULT_BRAND,
+  COLOR_THEMES,
+  SATURATIONS,
+  CURSORS,
+  CUSTOM_COLORS,
+  CONTROLS,
+  SECTIONS;
 const VOICE_LIMIT_OF = {
   voiceRate: 'rate',
   voicePitch: 'pitch',
@@ -130,89 +144,7 @@ const voiceText = (key, v) =>
     ? `${Math.round(v * 100)}%`
     : `${v.toFixed(1).replace('.', ',')}${key === 'voiceRate' ? '×' : ''}`;
 
-const TEXT_SCALES = [
-  { value: '100', label: '100%', title: S.scaleDefault },
-  { value: '125', label: '125%', title: S.scaleLarge },
-  { value: '150', label: '150%', title: S.scaleLarger },
-  { value: '175', label: '175%', title: S.scaleMax },
-];
-
-const DEFAULT_BRAND = {
-  title: S.panelDefaultTitle,
-  subtitle: '',
-  footer: S.panelDefaultFooter,
-};
-
-const COLOR_THEMES = [
-  { value: 'senac', label: S.themeSite, sub: S.themeSiteSub },
-  {
-    value: 'yellowBlack',
-    label: S.themeYellowBlack,
-    sub: S.themeYellowBlackSub,
-  },
-  { value: 'darkHigh', label: S.themeDarkHigh, sub: S.themeDarkHighSub },
-  { value: 'soft', label: S.themeSoft, sub: S.themeSoftSub },
-  { value: 'mono', label: S.themeMono, sub: S.themeMonoSub },
-  { value: 'lightHigh', label: S.themeLightHigh, sub: S.themeLightHighSub },
-];
-
-const SATURATIONS = [
-  { value: 'low', label: S.panelSaturationLow },
-  { value: 'normal', label: S.panelSaturationNormal },
-  { value: 'high', label: S.panelSaturationHigh },
-];
-
-const CURSORS = [
-  { value: 'default', label: S.panelCursorDefault },
-  { value: 'bigWhite', label: S.panelCursorBigWhite },
-  { value: 'bigBlack', label: S.panelCursorBigBlack },
-];
-
 /** Cor personalizada: título + 8 presets com contraste ≥ 7:1 contra branco ou preto. */
-const CUSTOM_COLORS = {
-  customText: {
-    labelId: 'ms-label-ctext',
-    title: S.panelCustomTextTitle,
-    presets: [
-      '#000000',
-      '#1a1a1a',
-      '#0b2c5f',
-      '#14532d',
-      '#7f1d1d',
-      '#ffffff',
-      '#fef08a',
-      '#bae6fd',
-    ],
-  },
-  customHeading: {
-    labelId: 'ms-label-cheading',
-    title: S.panelCustomHeadingTitle,
-    presets: [
-      '#000000',
-      '#0b2c5f',
-      '#7f1d1d',
-      '#14532d',
-      '#4a148c',
-      '#ffffff',
-      '#fde047',
-      '#93c5fd',
-    ],
-  },
-  customBg: {
-    labelId: 'ms-label-cbg',
-    title: S.panelCustomBgTitle,
-    presets: [
-      '#ffffff',
-      '#fffbe6',
-      '#f5efe0',
-      '#e6f0ff',
-      '#e8f5e9',
-      '#000000',
-      '#0f172a',
-      '#1a1a1a',
-    ],
-  },
-};
 
 const svgIcon = (inner) =>
   `<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${inner}</svg>`;
@@ -232,10 +164,109 @@ const radioHead = (id, title, option) =>
  * Controles do painel, em blocos de uma grade de 3 colunas. `wide` = linha inteira
  * (radiogroup com texto de estado); os demais são tiles. A ordem vem de SECTIONS[].controls.
  */
-const CONTROLS = {
-  textScale: {
-    wide: true,
-    html: `
+
+/**
+ * Seções da sanfona (data-driven): novas seções (F8/F9) entram aqui.
+ * A primeira abre por padrão; o estado aberto não é persistido.
+ */
+
+function refreshTexts() {
+  VOICE_SLIDERS = [
+    ['voiceRate', S.panelVoiceRateLabel],
+    ['voicePitch', S.panelVoicePitchLabel],
+    ['voiceVolume', S.panelVoiceVolumeLabel],
+  ];
+  TEXT_SCALES = [
+    { value: '100', label: '100%', title: S.scaleDefault },
+    { value: '125', label: '125%', title: S.scaleLarge },
+    { value: '150', label: '150%', title: S.scaleLarger },
+    { value: '175', label: '175%', title: S.scaleMax },
+  ];
+  DEFAULT_BRAND = {
+    title: S.panelDefaultTitle,
+    subtitle: '',
+    footer: S.panelDefaultFooter,
+  };
+  COLOR_THEMES = [
+    { value: 'senac', label: S.themeSite, sub: S.themeSiteSub },
+    {
+      value: 'yellowBlack',
+      label: S.themeYellowBlack,
+      sub: S.themeYellowBlackSub,
+    },
+    { value: 'darkHigh', label: S.themeDarkHigh, sub: S.themeDarkHighSub },
+    { value: 'soft', label: S.themeSoft, sub: S.themeSoftSub },
+    { value: 'mono', label: S.themeMono, sub: S.themeMonoSub },
+    { value: 'lightHigh', label: S.themeLightHigh, sub: S.themeLightHighSub },
+  ];
+  SATURATIONS = [
+    { value: 'low', label: S.panelSaturationLow },
+    { value: 'normal', label: S.panelSaturationNormal },
+    { value: 'high', label: S.panelSaturationHigh },
+  ];
+  CURSORS = [
+    { value: 'default', label: S.panelCursorDefault },
+    { value: 'bigWhite', label: S.panelCursorBigWhite },
+    { value: 'bigBlack', label: S.panelCursorBigBlack },
+  ];
+  CUSTOM_COLORS = {
+    customText: {
+      labelId: 'ms-label-ctext',
+      title: S.panelCustomTextTitle,
+      presets: [
+        '#000000',
+        '#1a1a1a',
+        '#0b2c5f',
+        '#14532d',
+        '#7f1d1d',
+        '#ffffff',
+        '#fef08a',
+        '#bae6fd',
+      ],
+    },
+    customHeading: {
+      labelId: 'ms-label-cheading',
+      title: S.panelCustomHeadingTitle,
+      presets: [
+        '#000000',
+        '#0b2c5f',
+        '#7f1d1d',
+        '#14532d',
+        '#4a148c',
+        '#ffffff',
+        '#fde047',
+        '#93c5fd',
+      ],
+    },
+    customBg: {
+      labelId: 'ms-label-cbg',
+      title: S.panelCustomBgTitle,
+      presets: [
+        '#ffffff',
+        '#fffbe6',
+        '#f5efe0',
+        '#e6f0ff',
+        '#e8f5e9',
+        '#000000',
+        '#0f172a',
+        '#1a1a1a',
+      ],
+    },
+  };
+  CONTROLS = {
+    // Idioma da UI (auto | pt | en | es); opções preenchidas por DOM, cada uma no próprio idioma
+    language: {
+      html: `
+        <div class="ms-a11y-block--span">
+          <div class="ms-range">
+            <div class="ms-a11y-control-head"><label class="ms-range-label" for="ms-language">${S.panelLanguageTitle}</label></div>
+            <select class="ms-range-input" id="ms-language" data-language></select>
+          </div>
+        </div>`,
+    },
+    textScale: {
+      wide: true,
+      html: `
         ${radioHead('ms-label-text', S.panelTextSizeTitle, 'textScale')}
         <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-text" data-option="textScale">
           ${TEXT_SCALES.map(
@@ -247,10 +278,10 @@ const CONTROLS = {
             </button>`,
           ).join('')}
         </div>`,
-  },
-  colorTheme: {
-    wide: true,
-    html: `
+    },
+    colorTheme: {
+      wide: true,
+      html: `
         ${radioHead('ms-label-theme', S.panelThemeTitle, 'colorTheme')}
         <div class="ms-theme-grid" role="radiogroup" aria-labelledby="ms-label-theme" data-option="colorTheme">
           ${COLOR_THEMES.map(
@@ -264,152 +295,152 @@ const CONTROLS = {
             </button>`,
           ).join('')}
         </div>`,
-  },
-  // Segmentos preenchidos em createA11yPanel (DOM, sem interpolação no template)
-  colorSaturation: {
-    wide: true,
-    html: `
+    },
+    // Segmentos preenchidos em createA11yPanel (DOM, sem interpolação no template)
+    colorSaturation: {
+      wide: true,
+      html: `
         ${radioHead('ms-label-sat', S.panelSaturationTitle, 'colorSaturation')}
         <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-sat" data-option="colorSaturation"></div>`,
-  },
-  // Segmentos preenchidos em createA11yPanel. Em tela de toque não há cursor: o controle fica e é inofensivo
-  cursorStyle: {
-    wide: true,
-    html: `
+    },
+    // Segmentos preenchidos em createA11yPanel. Em tela de toque não há cursor: o controle fica e é inofensivo
+    cursorStyle: {
+      wide: true,
+      html: `
         ${radioHead('ms-label-cursor', S.panelCursorTitle, 'cursorStyle')}
         <div class="ms-segmented" role="radiogroup" aria-labelledby="ms-label-cursor" data-option="cursorStyle"></div>`,
-  },
-  customText: {
-    wide: true,
-    html: `
+    },
+    customText: {
+      wide: true,
+      html: `
         ${radioHead('ms-label-ctext', S.panelCustomTextTitle, 'customText')}
         <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-ctext" data-option="customText"></div>
         <input type="color" class="ms-color-input" data-picker="customText">`,
-  },
-  customHeading: {
-    wide: true,
-    html: `
+    },
+    customHeading: {
+      wide: true,
+      html: `
         ${radioHead('ms-label-cheading', S.panelCustomHeadingTitle, 'customHeading')}
         <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-cheading" data-option="customHeading"></div>
         <input type="color" class="ms-color-input" data-picker="customHeading">`,
-  },
-  customBg: {
-    wide: true,
-    html: `
+    },
+    customBg: {
+      wide: true,
+      html: `
         ${radioHead('ms-label-cbg', S.panelCustomBgTitle, 'customBg')}
         <div class="ms-swatches" role="radiogroup" aria-labelledby="ms-label-cbg" data-option="customBg"></div>
         <input type="color" class="ms-color-input" data-picker="customBg">
         <p class="ms-a11y-warn" role="status" aria-atomic="true" data-contrast-warn></p>`,
-  },
-  dyslexiaFont: {
-    html: switchTile({
-      option: 'dyslexiaFont',
-      title: S.panelDyslexiaTitle,
-      label: S.panelDyslexiaLabel,
-      desc: S.panelDyslexiaDesc,
-      icon: svgIcon(
-        '<path d="M4 19 10 5l6 14"/><path d="M6.5 14h7"/><path d="M19 9v10"/>',
-      ),
-    }),
-  },
-  readingRuler: {
-    html: switchTile({
-      option: 'readingRuler',
-      title: S.panelRulerTitle,
-      label: S.panelRulerTitle,
-      desc: S.panelRulerDesc,
-      icon: svgIcon(
-        '<path d="M4 8h16"/><rect x="4" y="11" width="16" height="3" rx="1" fill="currentColor"/><path d="M4 18h16"/>',
-      ),
-    }),
-  },
-  speak: {
-    html: `<button type="button" class="ms-btn-ouvir ms-tile" data-action="speak" aria-label="${S.panelVoiceLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>')}</span><span class="ms-tile-label" data-speak-text>${S.panelVoiceButton}</span></button>`,
-  },
-  // F10e: aparece só enquanto o "Ouvir" lê; alterna Pausar/Continuar (display:none via JS: .ms-tile é flex)
-  pause: {
-    html: `<button type="button" class="ms-tile" data-action="pause" hidden style="display:none" aria-label="${S.panelPauseLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M8 5v14"/><path d="M16 5v14"/>')}</span><span class="ms-tile-label" data-pause-text>${S.panelPause}</span></button>`,
-  },
-  // T211: aviso quando a leitura falha / não há voz (região viva sempre presente; o texto entra e sai)
-  speechNotice: {
-    html: `<p class="ms-a11y-block--span ms-a11y-control-state" data-speech-notice role="status" aria-live="polite" style="margin:0"></p>`,
-  },
-  readFocus: {
-    html: switchTile({
-      option: 'readFocus',
-      title: S.panelReadFocusTitle,
-      label: S.panelReadFocusTitle,
-      desc: S.panelReadFocusDesc,
-      icon: svgIcon(
-        '<path d="M5 4v14l4-3.5 2.5 5 2.5-1-2.5-5H16z"/><path d="M17.5 5.5a4 4 0 0 1 0 5"/>',
-      ),
-    }),
-  },
-  highlightLinks: {
-    html: switchTile({
-      option: 'highlightLinks',
-      title: S.panelHighlightLinks,
-      label: S.panelHighlightLinks,
-      icon: svgIcon(
-        '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
-      ),
-    }),
-  },
-  highlightHeadings: {
-    html: switchTile({
-      option: 'highlightHeadings',
-      title: S.panelHighlightHeadings,
-      label: S.panelHighlightHeadings,
-      icon: svgIcon(
-        '<path d="M6 4v16"/><path d="M18 4v16"/><path d="M6 12h12"/>',
-      ),
-    }),
-  },
-  highlightControls: {
-    html: switchTile({
-      option: 'highlightControls',
-      title: S.panelHighlightControls,
-      label: S.panelHighlightControls,
-      icon: svgIcon(
-        '<rect x="3" y="7" width="18" height="10" rx="2"/><path d="M8 12h8"/>',
-      ),
-    }),
-  },
-  enlargeTargets: {
-    html: switchTile({
-      option: 'enlargeTargets',
-      title: S.panelEnlargeTargets,
-      label: S.panelEnlargeTargets,
-      icon: svgIcon(
-        '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 15l6-6"/><path d="M10 9h5v5"/>',
-      ),
-    }),
-  },
-  textMagnifier: {
-    html: switchTile({
-      option: 'textMagnifier',
-      title: S.panelTextMagnifier,
-      label: S.panelTextMagnifier,
-      icon: svgIcon(
-        '<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/><path d="M8 10h4"/>',
-      ),
-    }),
-  },
-  // F9c: ação de sessão (abre um diálogo), não é opção persistida
-  pageOutline: {
-    html: `<button type="button" class="ms-tile" data-action="page-outline" aria-haspopup="dialog"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M4 6h16"/><path d="M8 12h12"/><path d="M12 18h8"/>')}</span><span class="ms-tile-label">${S.panelPageOutline}</span></button>`,
-  },
-  // F9d: ação de sessão (fecha o painel e abre a grade), não é opção persistida
-  mouseGrid: {
-    html: `<button type="button" class="ms-tile" data-action="mouse-grid"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/>')}</span><span class="ms-tile-label">${S.panelMouseGrid}</span></button>`,
-  },
-  // F9e: ação de sessão (fecha o painel e abre o teclado), não é opção persistida
-  virtualKeyboard: {
-    html: `<button type="button" class="ms-tile" data-action="virtual-keyboard"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>')}</span><span class="ms-tile-label">${S.panelVirtualKeyboard}</span></button>`,
-  },
-  // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
-  typography: {
-    html: `
+    },
+    dyslexiaFont: {
+      html: switchTile({
+        option: 'dyslexiaFont',
+        title: S.panelDyslexiaTitle,
+        label: S.panelDyslexiaLabel,
+        desc: S.panelDyslexiaDesc,
+        icon: svgIcon(
+          '<path d="M4 19 10 5l6 14"/><path d="M6.5 14h7"/><path d="M19 9v10"/>',
+        ),
+      }),
+    },
+    readingRuler: {
+      html: switchTile({
+        option: 'readingRuler',
+        title: S.panelRulerTitle,
+        label: S.panelRulerTitle,
+        desc: S.panelRulerDesc,
+        icon: svgIcon(
+          '<path d="M4 8h16"/><rect x="4" y="11" width="16" height="3" rx="1" fill="currentColor"/><path d="M4 18h16"/>',
+        ),
+      }),
+    },
+    speak: {
+      html: `<button type="button" class="ms-btn-ouvir ms-tile" data-action="speak" aria-label="${S.panelVoiceLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>')}</span><span class="ms-tile-label" data-speak-text>${S.panelVoiceButton}</span></button>`,
+    },
+    // F10e: aparece só enquanto o "Ouvir" lê; alterna Pausar/Continuar (display:none via JS: .ms-tile é flex)
+    pause: {
+      html: `<button type="button" class="ms-tile" data-action="pause" hidden style="display:none" aria-label="${S.panelPauseLabel}"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M8 5v14"/><path d="M16 5v14"/>')}</span><span class="ms-tile-label" data-pause-text>${S.panelPause}</span></button>`,
+    },
+    // T211: aviso quando a leitura falha / não há voz (região viva sempre presente; o texto entra e sai)
+    speechNotice: {
+      html: `<p class="ms-a11y-block--span ms-a11y-control-state" data-speech-notice role="status" aria-live="polite" style="margin:0"></p>`,
+    },
+    readFocus: {
+      html: switchTile({
+        option: 'readFocus',
+        title: S.panelReadFocusTitle,
+        label: S.panelReadFocusTitle,
+        desc: S.panelReadFocusDesc,
+        icon: svgIcon(
+          '<path d="M5 4v14l4-3.5 2.5 5 2.5-1-2.5-5H16z"/><path d="M17.5 5.5a4 4 0 0 1 0 5"/>',
+        ),
+      }),
+    },
+    highlightLinks: {
+      html: switchTile({
+        option: 'highlightLinks',
+        title: S.panelHighlightLinks,
+        label: S.panelHighlightLinks,
+        icon: svgIcon(
+          '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+        ),
+      }),
+    },
+    highlightHeadings: {
+      html: switchTile({
+        option: 'highlightHeadings',
+        title: S.panelHighlightHeadings,
+        label: S.panelHighlightHeadings,
+        icon: svgIcon(
+          '<path d="M6 4v16"/><path d="M18 4v16"/><path d="M6 12h12"/>',
+        ),
+      }),
+    },
+    highlightControls: {
+      html: switchTile({
+        option: 'highlightControls',
+        title: S.panelHighlightControls,
+        label: S.panelHighlightControls,
+        icon: svgIcon(
+          '<rect x="3" y="7" width="18" height="10" rx="2"/><path d="M8 12h8"/>',
+        ),
+      }),
+    },
+    enlargeTargets: {
+      html: switchTile({
+        option: 'enlargeTargets',
+        title: S.panelEnlargeTargets,
+        label: S.panelEnlargeTargets,
+        icon: svgIcon(
+          '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 15l6-6"/><path d="M10 9h5v5"/>',
+        ),
+      }),
+    },
+    textMagnifier: {
+      html: switchTile({
+        option: 'textMagnifier',
+        title: S.panelTextMagnifier,
+        label: S.panelTextMagnifier,
+        icon: svgIcon(
+          '<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/><path d="M8 10h4"/>',
+        ),
+      }),
+    },
+    // F9c: ação de sessão (abre um diálogo), não é opção persistida
+    pageOutline: {
+      html: `<button type="button" class="ms-tile" data-action="page-outline" aria-haspopup="dialog"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<path d="M4 6h16"/><path d="M8 12h12"/><path d="M12 18h8"/>')}</span><span class="ms-tile-label">${S.panelPageOutline}</span></button>`,
+    },
+    // F9d: ação de sessão (fecha o painel e abre a grade), não é opção persistida
+    mouseGrid: {
+      html: `<button type="button" class="ms-tile" data-action="mouse-grid"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/>')}</span><span class="ms-tile-label">${S.panelMouseGrid}</span></button>`,
+    },
+    // F9e: ação de sessão (fecha o painel e abre o teclado), não é opção persistida
+    virtualKeyboard: {
+      html: `<button type="button" class="ms-tile" data-action="virtual-keyboard"><span class="ms-tile-icon" aria-hidden="true">${svgIcon('<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>')}</span><span class="ms-tile-label">${S.panelVirtualKeyboard}</span></button>`,
+    },
+    // Ocupa a linha inteira da grade (não é radiogroup, então não usa `wide`)
+    typography: {
+      html: `
         <div class="ms-a11y-block--span" role="group" aria-labelledby="ms-label-typo">
           <p id="ms-label-typo" class="ms-a11y-control-label">${S.panelTypoGroupLabel}</p>
           <div class="ms-range">
@@ -426,10 +457,10 @@ const CONTROLS = {
           </div>
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="reset-font" aria-label="${S.panelResetFontLabel}">${S.panelResetFont}</button>
         </div>`,
-  },
-  // F10b: Estúdio de Voz (ocupa a linha inteira; prefs em options.voice*)
-  voiceStudio: {
-    html: `
+    },
+    // F10b: Estúdio de Voz (ocupa a linha inteira; prefs em options.voice*)
+    voiceStudio: {
+      html: `
         <div class="ms-a11y-block--span" role="group" aria-labelledby="ms-label-voice">
           <p id="ms-label-voice" class="ms-a11y-control-label">${S.panelVoiceStudioTitle}</p>
           <div class="ms-range">
@@ -455,178 +486,175 @@ const CONTROLS = {
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-test" aria-label="${S.panelVoiceTestLabel}">${S.panelVoiceTest}</button>
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="voice-reset" aria-label="${S.panelVoiceResetLabel}">${S.panelVoiceReset}</button>
         </div>`,
-  },
-  // F10e: interruptor próprio (fluxo com avisos no JS) + linha de status/revogar/lista de comandos
-  voiceCommands: {
-    html: switchTile({
-      option: 'voiceCommands',
-      title: S.panelVcTitle,
-      label: S.panelVcLabel,
-      desc: S.panelVcDesc,
-      icon: svgIcon(
-        '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/>',
-      ),
-    }),
-  },
-  voiceCommandsMore: {
-    html: `
+    },
+    // F10e: interruptor próprio (fluxo com avisos no JS) + linha de status/revogar/lista de comandos
+    voiceCommands: {
+      html: switchTile({
+        option: 'voiceCommands',
+        title: S.panelVcTitle,
+        label: S.panelVcLabel,
+        desc: S.panelVcDesc,
+        icon: svgIcon(
+          '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/>',
+        ),
+      }),
+    },
+    voiceCommandsMore: {
+      html: `
         <div class="ms-a11y-block--span">
           <p class="ms-a11y-control-state" data-vc-status role="status" aria-live="polite"></p>
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="vc-revoke" hidden style="display:none" aria-label="${S.panelVcRevokeLabel}">${S.panelVcRevoke}</button>
           <button type="button" class="ms-a11y-action ms-a11y-action--font" data-action="vc-commands" aria-expanded="false" aria-controls="ms-vc-commands">${S.panelVcShow}</button>
           <ul class="ms-a11y-control-state" id="ms-vc-commands" data-vc-list hidden></ul>
         </div>`,
-  },
-  textSpacing: {
-    html: switchTile({
-      option: 'textSpacing',
-      title: S.panelTextSpacing,
-      label: S.panelTextSpacing,
+    },
+    textSpacing: {
+      html: switchTile({
+        option: 'textSpacing',
+        title: S.panelTextSpacing,
+        label: S.panelTextSpacing,
+        icon: svgIcon(
+          '<path d="M4 4v16"/><path d="M20 4v16"/><path d="m8 12h8"/><path d="m10 9-3 3 3 3"/><path d="m14 9 3 3-3 3"/>',
+        ),
+      }),
+    },
+    reducedMotion: {
+      html: switchTile({
+        option: 'reducedMotion',
+        title: S.panelReducedMotion,
+        label: S.panelReducedMotion,
+        icon: svgIcon(
+          '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>',
+        ),
+      }),
+    },
+    strongFocus: {
+      html: switchTile({
+        option: 'strongFocus',
+        title: S.panelStrongFocusTitle,
+        label: S.panelStrongFocusTitle,
+        desc: S.panelStrongFocusDesc,
+        icon: svgIcon(
+          '<rect x="4" y="6" width="16" height="12" rx="2"/><rect x="1.5" y="3.5" width="21" height="17" rx="3.5"/>',
+        ),
+      }),
+    },
+    showShortcuts: {
+      html: switchTile({
+        option: 'showShortcuts',
+        title: S.panelShortcutsTitle,
+        label: S.panelShortcutsTitle,
+        desc: S.panelShortcutsDesc,
+        icon: svgIcon(
+          '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
+        ),
+      }),
+    },
+    blockFlashing: {
+      html: switchTile({
+        option: 'blockFlashing',
+        title: S.panelBlockFlashingTitle,
+        label: S.panelBlockFlashingTitle,
+        desc: S.panelBlockFlashingDesc,
+        icon: svgIcon('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>'),
+      }),
+    },
+    muteMedia: {
+      html: switchTile({
+        option: 'muteMedia',
+        title: S.panelMuteMediaTitle,
+        label: S.panelMuteMediaTitle,
+        desc: S.panelMuteMediaDesc,
+        icon: svgIcon(
+          '<path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6"/><path d="m21 9-5 6"/>',
+        ),
+      }),
+    },
+    hideImages: {
+      html: switchTile({
+        option: 'hideImages',
+        title: S.panelHideImages,
+        label: S.panelHideImages,
+        desc: S.panelHideImagesHint,
+        icon: svgIcon(
+          '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>',
+        ),
+      }),
+    },
+  };
+  SECTIONS = [
+    {
+      id: 'text',
+      title: S.sectionTextTitle,
       icon: svgIcon(
-        '<path d="M4 4v16"/><path d="M20 4v16"/><path d="m8 12h8"/><path d="m10 9-3 3 3 3"/><path d="m14 9 3 3-3 3"/>',
+        '<path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/>',
       ),
-    }),
-  },
-  reducedMotion: {
-    html: switchTile({
-      option: 'reducedMotion',
-      title: S.panelReducedMotion,
-      label: S.panelReducedMotion,
+      controls: [
+        'language',
+        'textScale',
+        'dyslexiaFont',
+        'textSpacing',
+        'readingRuler',
+        'speak',
+        'pause',
+        'speechNotice',
+        'readFocus',
+        'voiceStudio',
+        'voiceCommands',
+        'voiceCommandsMore',
+        'typography',
+      ],
+    },
+    {
+      id: 'colors',
+      title: S.sectionColorsTitle,
       icon: svgIcon(
-        '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>',
+        '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/>',
       ),
-    }),
-  },
-  strongFocus: {
-    html: switchTile({
-      option: 'strongFocus',
-      title: S.panelStrongFocusTitle,
-      label: S.panelStrongFocusTitle,
-      desc: S.panelStrongFocusDesc,
+      controls: [
+        'colorTheme',
+        'colorSaturation',
+        'customText',
+        'customHeading',
+        'customBg',
+        'cursorStyle',
+        'highlightLinks',
+      ],
+    },
+    {
+      id: 'pageTools',
+      title: S.sectionPageToolsTitle,
       icon: svgIcon(
-        '<rect x="4" y="6" width="16" height="12" rx="2"/><rect x="1.5" y="3.5" width="21" height="17" rx="3.5"/>',
+        '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 14h8"/>',
       ),
-    }),
-  },
-  showShortcuts: {
-    html: switchTile({
-      option: 'showShortcuts',
-      title: S.panelShortcutsTitle,
-      label: S.panelShortcutsTitle,
-      desc: S.panelShortcutsDesc,
-      icon: svgIcon(
-        '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
-      ),
-    }),
-  },
-  blockFlashing: {
-    html: switchTile({
-      option: 'blockFlashing',
-      title: S.panelBlockFlashingTitle,
-      label: S.panelBlockFlashingTitle,
-      desc: S.panelBlockFlashingDesc,
-      icon: svgIcon('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>'),
-    }),
-  },
-  muteMedia: {
-    html: switchTile({
-      option: 'muteMedia',
-      title: S.panelMuteMediaTitle,
-      label: S.panelMuteMediaTitle,
-      desc: S.panelMuteMediaDesc,
-      icon: svgIcon(
-        '<path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6"/><path d="m21 9-5 6"/>',
-      ),
-    }),
-  },
-  hideImages: {
-    html: switchTile({
-      option: 'hideImages',
-      title: S.panelHideImages,
-      label: S.panelHideImages,
-      desc: S.panelHideImagesHint,
+      controls: [
+        'highlightHeadings',
+        'highlightControls',
+        'enlargeTargets',
+        'textMagnifier',
+        'pageOutline',
+        'mouseGrid',
+        'virtualKeyboard',
+      ],
+    },
+    {
+      id: 'motion',
+      title: S.sectionMotionTitle,
       icon: svgIcon(
         '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>',
       ),
-    }),
-  },
-};
-
-/**
- * Seções da sanfona (data-driven): novas seções (F8/F9) entram aqui.
- * A primeira abre por padrão; o estado aberto não é persistido.
- */
-const SECTIONS = [
-  {
-    id: 'text',
-    title: S.sectionTextTitle,
-    icon: svgIcon(
-      '<path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/>',
-    ),
-    controls: [
-      'textScale',
-      'dyslexiaFont',
-      'textSpacing',
-      'readingRuler',
-      'speak',
-      'pause',
-      'speechNotice',
-      'readFocus',
-      'voiceStudio',
-      'voiceCommands',
-      'voiceCommandsMore',
-      'typography',
-    ],
-  },
-  {
-    id: 'colors',
-    title: S.sectionColorsTitle,
-    icon: svgIcon(
-      '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/>',
-    ),
-    controls: [
-      'colorTheme',
-      'colorSaturation',
-      'customText',
-      'customHeading',
-      'customBg',
-      'cursorStyle',
-      'highlightLinks',
-    ],
-  },
-  {
-    id: 'pageTools',
-    title: S.sectionPageToolsTitle,
-    icon: svgIcon(
-      '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 14h8"/>',
-    ),
-    controls: [
-      'highlightHeadings',
-      'highlightControls',
-      'enlargeTargets',
-      'textMagnifier',
-      'pageOutline',
-      'mouseGrid',
-      'virtualKeyboard',
-    ],
-  },
-  {
-    id: 'motion',
-    title: S.sectionMotionTitle,
-    icon: svgIcon(
-      '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>',
-    ),
-    controls: ['reducedMotion', 'blockFlashing', 'muteMedia', 'hideImages'],
-  },
-  {
-    id: 'keyboard',
-    title: S.sectionKeyboardTitle,
-    icon: svgIcon(
-      '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
-    ),
-    controls: ['strongFocus', 'showShortcuts'],
-  },
-];
+      controls: ['reducedMotion', 'blockFlashing', 'muteMedia', 'hideImages'],
+    },
+    {
+      id: 'keyboard',
+      title: S.sectionKeyboardTitle,
+      icon: svgIcon(
+        '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
+      ),
+      controls: ['strongFocus', 'showShortcuts'],
+    },
+  ];
+}
 
 /** F7f: escolha de perfil, montada por DOM (textos só de strings.js; botões com aria-pressed). */
 function buildProfiles() {
@@ -715,6 +743,7 @@ export function createA11yPanel({
   onOpenVirtualKeyboard,
   brand,
 }) {
+  refreshTexts();
   const texts = { ...DEFAULT_BRAND, ...brand };
   const panel = document.createElement('div');
   panel.id = 'ms-a11y-panel';
@@ -897,6 +926,24 @@ export function createA11yPanel({
     );
   });
   // F10b: Estúdio de Voz — escolha de voz + sliders (teclado nativo); prefs ficam em options.voice*
+  const langSel = panel.querySelector('[data-language]');
+  [
+    [
+      'auto',
+      t('panelLanguageAuto', { lang: LANG_NAMES[resolveLocale('auto')] }),
+    ],
+    ...Object.entries(LANG_NAMES),
+  ].forEach(([value, label]) => {
+    const o = document.createElement('option');
+    o.value = value;
+    o.textContent = label;
+    if (value !== 'auto') o.lang = BCP47[value];
+    langSel.appendChild(o);
+  });
+  langSel.style.minHeight = '44px';
+  langSel.addEventListener('change', () =>
+    onSetOption('language', langSel.value),
+  );
   const voiceSel = panel.querySelector('[data-voice="voiceName"]');
   const voiceSupported = isVoiceSupported();
   const voiceInput = (key) => panel.querySelector(`[data-voice="${key}"]`);
@@ -942,7 +989,8 @@ export function createA11yPanel({
     }
     // Padrão: só português, com as variantes parecidas recolhidas (Linux/espeak tem centenas);
     // "Mostrar todas as vozes" abre tudo, agrupado por idioma. A voz salva sempre aparece.
-    const isPt = (v) => /^pt([-_]|$)/i.test(v.lang || '');
+    const loc = getLocale();
+    const isPt = (v) => new RegExp(`^${loc}([-_]|$)`, 'i').test(v.lang || '');
     const pt = voices.filter(isPt);
     const hasOthers = voices.length > pt.length;
     voiceAllBtn.hidden = !hasOthers && pt.length === collapseVoices(pt).length;
@@ -1376,6 +1424,7 @@ export function createA11yPanel({
       modoBtn.classList.toggle('ms-switch--on', !!s.modoSimples);
     }
 
+    langSel.value = s.options?.language || 'auto';
     const scale = s.options?.textScale || '100';
     panel
       .querySelectorAll('[data-option="textScale"] .ms-segment')

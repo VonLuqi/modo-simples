@@ -47,6 +47,8 @@ export const STRINGS = Object.freeze({
   panelVoiceButton: 'Ouvir',
   panelVoiceStopButton: 'Parar',
   panelVoiceStopLabel: 'Parar leitura',
+  panelLanguageTitle: 'Idioma',
+  panelLanguageAuto: 'Automático ({lang})',
   panelVoiceStudioTitle: 'Estúdio de Voz',
   panelVoiceSelectLabel: 'Voz',
   panelVoiceAuto: 'Automática (português)',
