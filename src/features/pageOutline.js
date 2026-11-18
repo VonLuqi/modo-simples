@@ -19,8 +19,22 @@ const CANDIDATES =
   'h1, h2, h3, h4, h5, h6, [role], main, nav, header, footer, aside, form, section, search';
 const clean = (s) => (s || '').replace(/\s+/g, ' ').trim();
 
+/** Candidatos em ordem de documento, entrando nos shadow roots abertos (o conteúdo vem logo após o host). */
+function deepCandidates(root, out = []) {
+  for (const el of root.querySelectorAll('*')) {
+    if (el.matches(OWN)) continue;
+    if (el.matches(CANDIDATES)) out.push(el);
+    if (el.shadowRoot) deepCandidates(el.shadowRoot, out);
+  }
+  return out;
+}
+
 function isHidden(el) {
-  for (let n = el; n && n.nodeType === 1; n = n.parentElement) {
+  for (
+    let n = el;
+    n && n.nodeType === 1;
+    n = n.parentElement || n.getRootNode?.()?.host
+  ) {
     if (
       n.hidden ||
       n.getAttribute('aria-hidden') === 'true' ||
@@ -111,7 +125,7 @@ function headingLevel(el) {
 export function collectOutline(root = document) {
   const headings = [];
   const landmarks = [];
-  for (const el of root.querySelectorAll(CANDIDATES)) {
+  for (const el of deepCandidates(root)) {
     if (el.closest(OWN) || isHidden(el)) continue;
     const level = headingLevel(el);
     if (level) {

@@ -182,7 +182,7 @@ class ModoSimples {
     } catch (_) {
       return;
     }
-    announce('Modo Simples continua ligado');
+    announce(STRINGS.announceStillOn);
   }
 
   destroy() {
@@ -436,7 +436,7 @@ class ModoSimples {
         setPrincipal(el, this._config);
         document.documentElement.classList.add('ms-ativo');
         applyOptions(currentState);
-        if (doAnnounce) announce('Modo Simples ativado');
+        if (doAnnounce) announce(STRINGS.announceOn);
         return;
       }
       // caminho inválido, sumiu ou o texto encolheu demais: não é mais a mesma área (IMP-06).
@@ -457,7 +457,7 @@ class ModoSimples {
       applyModoSimples(currentState, this._config);
     }
 
-    if (doAnnounce) announce('Modo Simples ativado');
+    if (doAnnounce) announce(STRINGS.announceOn);
   }
 
   /** Seleção manual opcional (IMP-22 vale aqui: nada oculto antes de confirmar; cancelar mantém a página). */
@@ -493,7 +493,7 @@ class ModoSimples {
         stopManualSelect();
         revertModoSimples();
         applyOptions(next);
-        if (!this._applyingProfile) announce('Modo Simples desativado');
+        if (!this._applyingProfile) announce(STRINGS.announceOff);
       }
     }
 

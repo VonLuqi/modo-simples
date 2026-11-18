@@ -133,8 +133,25 @@ export const ROWS = [
     '/?',
     'Shift',
   ],
-  ['Fechar', 'Space', 'Enter'],
+  ['Fechar', 'AltGr', 'Space', 'Enter'],
 ];
+
+/** Nível AltGr ABNT2: tecla (como em ROWS) -> caractere. */
+const ALTGR = {
+  '1!': '¹',
+  '2@': '²',
+  '3#': '³',
+  '4$': '£',
+  '5%': '¢',
+  '6¨': '¬',
+  '=+': '§',
+  '[{': 'ª',
+  ']}': 'º',
+  '/?': '°',
+  q: '/',
+  w: '?',
+  e: '°',
+};
 const DEAD_NAMES = {
   '´': S.vkDeadAcute,
   '`': S.vkDeadGrave,
@@ -142,7 +159,15 @@ const DEAD_NAMES = {
   '^': S.vkDeadCircumflex,
   '¨': S.vkDeadDiaeresis,
 };
-const SPECIAL = ['Backspace', 'Caps', 'Enter', 'Shift', 'Fechar', 'Space'];
+const SPECIAL = [
+  'Backspace',
+  'Caps',
+  'Enter',
+  'Shift',
+  'AltGr',
+  'Fechar',
+  'Space',
+];
 
 // ── campo-alvo ──────────────────────────────────────────────────────────────
 
@@ -208,6 +233,16 @@ function numDelete(el) {
   const base = numBase(el);
   if (base === '') return false;
   return numCommit(el, base.slice(0, -1), 'deleteContentBackward', null);
+}
+
+/**
+ * Ao sair do campo, encerra o número pendente ("1.", "-"): o campo já guarda o último valor válido
+ * (numCommit) e o texto intermediário não pode voltar quando o campo for focado de novo.
+ */
+function flushNum() {
+  if (!_num) return;
+  _num = null;
+  updatePreview();
 }
 
 const win = () => document.defaultView || window;
@@ -394,6 +429,7 @@ let _root = null;
 let _target = null;
 let _dead = null;
 let _shift = false;
+let _altgr = false;
 let _caps = false;
 let _touch = false;
 let _listeners = [];
@@ -418,6 +454,8 @@ function on(target, type, fn, opts) {
 
 /** Caractere que a tecla gera agora (Shift/Caps aplicados). */
 function charOf(def) {
+  const ag = _altgr && ALTGR[def];
+  if (ag) return ag;
   if (def.length === 1) return _shift !== _caps ? def.toUpperCase() : def;
   return _shift ? def[1] : def[0];
 }
@@ -432,6 +470,8 @@ function labelOf(def) {
       return S.vkEnter;
     case 'Shift':
       return S.vkShift;
+    case 'AltGr':
+      return S.vkAltGr;
     case 'Fechar':
       return S.vkClose;
     case 'Space':
@@ -486,6 +526,7 @@ function paint() {
     const pressed =
       (def === 'Shift' && _shift) ||
       (def === 'Caps' && _caps) ||
+      (def === 'AltGr' && _altgr) ||
       (_dead &&
         def.length === 2 &&
         DEAD_KEYS.includes(charOf(def)) &&
@@ -560,10 +601,12 @@ function restoreInputmode(el) {
 
 function setTarget(el) {
   if (el === _target) return;
+  flushNum();
   if (_target) restoreInputmode(_target);
   _target = el;
   _dead = null;
   _shift = false;
+  _altgr = false;
   _num = null;
   updatePreview();
   if (el && _touch) {
@@ -596,6 +639,10 @@ function press(def) {
     _caps = !_caps;
     return paint();
   }
+  if (def === 'AltGr') {
+    _altgr = !_altgr;
+    return paint();
+  }
   if (!_target) return;
   _target.focus?.({ preventScroll: true }); // o foco pode ter ido para uma tecla (Tab)
   if (def === 'Backspace') {
@@ -615,12 +662,13 @@ function press(def) {
       typeChar(ch);
     }
     _shift = false; // Shift vale para uma tecla só
+    _altgr = false;
   }
   paint();
 }
 
 /** Largura de 1 unidade de tecla: 10 por linha em telas estreitas, no máximo 56px nas largas. */
-const UNIT = 'min(calc((100% - 40px) / 10), 56px)';
+const UNIT = 'min(calc((100% - 40px) / 10), 56px)'; // linha de 10 teclas; nunca estica (sem flex-grow)
 const basis = (w) => `calc(${w} * ${UNIT} + ${(w - 1) * 4}px)`;
 const WEIGHT = {
   Backspace: 2,
@@ -628,7 +676,7 @@ const WEIGHT = {
   Shift: 2,
   Fechar: 2,
   Enter: 2,
-  Space: 6,
+  Space: 5,
 };
 
 function buildRow(row) {
@@ -637,6 +685,7 @@ function buildRow(row) {
     display: 'flex',
     'flex-wrap': 'wrap',
     gap: '4px',
+    'justify-content': 'center',
     margin: '0 0 4px',
   });
   for (const def of row) {
@@ -647,16 +696,16 @@ function buildRow(row) {
     if (def !== 'Fechar') btn.tabIndex = -1; // só o Fechar entra na ordem do Tab
     btn.textContent = SPECIAL.includes(def) ? labelOf(def) : '';
     setStyle(btn, {
-      flex: `${w} 1 ${basis(w)}`,
+      flex: `0 0 ${basis(w)}`,
       'min-width': '24px',
-      'min-height': '40px',
+      'min-height': '44px',
       margin: '0',
       padding: '0 2px',
       font: '600 18px/1 system-ui, sans-serif',
       'border-radius': '8px',
       cursor: 'pointer',
     });
-    if (def === 'Shift' || def === 'Caps')
+    if (def === 'Shift' || def === 'Caps' || def === 'AltGr')
       btn.setAttribute('aria-pressed', 'false');
     // sem roubar o foco do campo (mouse e toque)
     btn.addEventListener('pointerdown', (e) => e.preventDefault());
@@ -760,6 +809,7 @@ export function openVirtualKeyboard({ touch } = {}) {
   if (_root) return;
   _touch = touch ?? isTouchDevice();
   _shift = false;
+  _altgr = false;
   _caps = false;
   _dead = null;
   _keys = [];
@@ -774,7 +824,10 @@ export function openVirtualKeyboard({ touch } = {}) {
   };
   on(document, 'focusin', focus);
   on(document, 'focusout', (e) => {
-    if (!e.relatedTarget && e.target === _target) setTarget(null); // tocou fora de tudo
+    if (!e.relatedTarget && e.target === _target) {
+      flushNum();
+      setTarget(null); // tocou fora de tudo
+    }
   });
   on(window, 'resize', () => render());
   const ae = document.activeElement;
@@ -808,6 +861,7 @@ export function closeVirtualKeyboard({ silent = false } = {}) {
   _target = null;
   _dead = null;
   _shift = false;
+  _altgr = false;
   _caps = false;
   _keys = [];
   if (!silent) announce(S.vkClosed);

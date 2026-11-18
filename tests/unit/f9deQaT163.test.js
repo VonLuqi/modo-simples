@@ -311,3 +311,22 @@ describe('L3 — Enter só envia como o Enter nativo enviaria', () => {
     assert.deepEqual(calls, ['sem-botao']);
   });
 });
+
+describe('F11a — número pendente ao sair do campo', () => {
+  it('focusout para fora limpa o pendente: ao focar de novo recomeça do valor do campo', () => {
+    const n = $('#n');
+    openVirtualKeyboard({ touch: false });
+    focus(n);
+    tap('1!');
+    tap('.>');
+    assert.match(
+      $('#' + KEYBOARD_ID + ' [data-vk-preview]').textContent,
+      /1\./,
+    );
+    fire(n, 'focusout', { relatedTarget: null });
+    assert.equal($('#' + KEYBOARD_ID + ' [data-vk-preview]').textContent, '');
+    focus(n);
+    tap('5%');
+    assert.equal(n.value, '15');
+  });
+});

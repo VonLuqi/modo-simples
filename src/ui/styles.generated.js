@@ -1207,6 +1207,12 @@ export const PAGE_CSS = `
     html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, #ms-virtual-keyboard *, [data-ms-hidden]):not(:has(img)):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
       display: inline-block !important;
     }
+    /* Sem suporte a :has() a regra acima é descartada: sem ela, links ganham inline-block (inclui os de imagem) */
+    @supports not selector(:has(*)) {
+      html.ms-enlarge-targets a:not(#ms-container *, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *, #ms-mouse-grid *, #ms-virtual-keyboard *, [data-ms-hidden]):not(:is(p, dd, blockquote, figcaption, label) a, :is(li, td):not(:is(nav, [role="navigation"], [role="menu"], [role="menubar"], [role="tablist"]) *) a) {
+        display: inline-block !important;
+      }
+    }
     /* ── Foco bem visível (F7e): anel duplo (preto + amarelo), legível em qualquer fundo ── */
     html.ms-strong-focus :focus-visible:not(#ms-container, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *) {
       outline: 3px solid #000 !important;

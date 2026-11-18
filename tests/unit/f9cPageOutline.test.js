@@ -280,3 +280,19 @@ describe('F9c integração com o painel', () => {
     assert.equal($('#ms-container'), null);
   });
 });
+
+describe('F11a collectOutline — shadow roots abertos', () => {
+  it('entra no shadowRoot em ordem de documento e ignora hosts da própria lib', () => {
+    env = installHappy({
+      bodyHtml:
+        '<h1>A</h1><div id="host"></div><h2>C</h2><div id="ms-container"></div>',
+    });
+    const host = document.getElementById('host');
+    host.attachShadow({ mode: 'open' }).innerHTML = '<h2>B</h2>';
+    document
+      .getElementById('ms-container')
+      .attachShadow({ mode: 'open' }).innerHTML = '<h2>Lib</h2>';
+    const got = collectOutline().headings.map((h) => h.text);
+    assert.deepEqual(got, ['A', 'B', 'C']);
+  });
+});

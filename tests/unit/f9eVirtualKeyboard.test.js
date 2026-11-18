@@ -394,3 +394,50 @@ describe('ciclo de vida', () => {
     assert.equal(state.get().options.textMagnifier, false);
   });
 });
+
+describe('F11a — AltGr (ABNT2)', () => {
+  it('toggle aria-pressed; escreve ¹ ² ³ £ ¢ ¬ § ª º ° / ? ° e volta ao normal após uma tecla', () => {
+    openVirtualKeyboard({ touch: false });
+    const t = $('#t');
+    focus(t);
+    const casos = [
+      ['1!', '¹'],
+      ['2@', '²'],
+      ['3#', '³'],
+      ['4$', '£'],
+      ['5%', '¢'],
+      ['6¨', '¬'],
+      ['=+', '§'],
+      ['[{', 'ª'],
+      [']}', 'º'],
+      ['/?', '°'],
+      ['q', '/'],
+      ['w', '?'],
+      ['e', '°'],
+    ];
+    for (const [def, ch] of casos) {
+      t.value = '';
+      tap('AltGr');
+      assert.equal(key('AltGr').getAttribute('aria-pressed'), 'true');
+      tap(def);
+      assert.equal(t.value, ch, def);
+      assert.equal(key('AltGr').getAttribute('aria-pressed'), 'false');
+    }
+    t.value = '';
+    tap('q');
+    assert.equal(t.value, 'q');
+  });
+  it('tecla sem nível AltGr escreve o normal; AltGr some ao fechar', () => {
+    openVirtualKeyboard({ touch: false });
+    const t = $('#t');
+    focus(t);
+    tap('AltGr');
+    tap('r');
+    assert.equal(t.value, 'r');
+    tap('AltGr');
+    closeVirtualKeyboard({ silent: true });
+    openVirtualKeyboard({ touch: false });
+    focus(t);
+    assert.equal(key('AltGr').getAttribute('aria-pressed'), 'false');
+  });
+});

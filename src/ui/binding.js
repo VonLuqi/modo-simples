@@ -300,7 +300,7 @@ export function openPanel(ms) {
   ms._panel.open();
   ms._setPageInert(true);
   ms._fab.sync({ panelOpen: true });
-  announce('Painel de acessibilidade aberto');
+  announce(S.announcePanelOpen);
 }
 
 /**
@@ -363,10 +363,10 @@ export function toggleSpeak() {
   // a UI acompanha por onSpeakingChange (ver _bindEvents)
   if (isSpeaking()) {
     stopSpeaking();
-    announce('Leitura interrompida');
+    announce(S.announceReadStopped);
   } else {
     speakMainContent();
-    announce('Lendo conteúdo principal');
+    announce(S.announceReadStart);
   }
 }
 
