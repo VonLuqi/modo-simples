@@ -43,6 +43,14 @@ export const STRINGS = Object.freeze({
   panelVoiceStopLabel: 'Parar leitura',
   mediaOtherSiteNotice:
     'Este vídeo é de outro site. Não consigo tirar o som dele.',
+  panelStrongFocusTitle: 'Foco bem visível',
+  panelStrongFocusDesc:
+    'Contorno grosso e de duas cores no item em que você está, em qualquer fundo',
+  panelShortcutsTitle: 'Mostrar atalhos do teclado',
+  panelShortcutsDesc: 'Um cartão na tela lista as teclas que você pode usar',
+  shortcutsTitle: 'Atalhos do teclado',
+  shortcutsClose: 'Fechar',
+  shortcutAccessKeyPrefix: 'Alt+',
   panelBlockFlashingTitle: 'Bloquear animações e GIFs',
   panelBlockFlashingDesc:
     'Para animações, textos que correm e vídeos que começam sozinhos. GIFs ficam parados até você clicar',
@@ -59,6 +67,7 @@ export const STRINGS = Object.freeze({
   stateOff: 'Desligado',
   sectionTextTitle: 'Texto e leitura',
   sectionColorsTitle: 'Cores e destaque',
+  sectionKeyboardTitle: 'Teclado e foco',
   sectionMotionTitle: 'Movimento e imagens',
   panelHighlightLinks: 'Destacar links',
   panelTextSpacing: 'Espaçamento de texto',
@@ -172,3 +181,13 @@ export const STRINGS = Object.freeze({
   manualCancel: 'Voltar',
   manualCancelLabel: 'Voltar sem escolher',
 });
+
+/** Atalhos do teclado do Modo Simples: fonte única do cartão "Atalhos do teclado" (F7e). */
+export const SHORTCUTS = Object.freeze([
+  { keys: 'Alt+Shift+A', text: 'Abrir o painel de acessibilidade' },
+  { keys: 'Esc', text: 'Fechar o painel ou sair da escolha de conteúdo' },
+  { keys: 'Tab', text: 'Ir ao próximo item' },
+  { keys: 'Shift+Tab', text: 'Voltar ao item anterior' },
+  { keys: 'Enter', text: 'Ativar o botão ou link' },
+  { keys: 'Espaço', text: 'Ligar ou desligar um interruptor' },
+]);

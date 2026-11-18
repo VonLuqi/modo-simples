@@ -292,6 +292,28 @@ const CONTROLS = {
       ),
     }),
   },
+  strongFocus: {
+    html: switchTile({
+      option: 'strongFocus',
+      title: S.panelStrongFocusTitle,
+      label: S.panelStrongFocusTitle,
+      desc: S.panelStrongFocusDesc,
+      icon: svgIcon(
+        '<rect x="4" y="6" width="16" height="12" rx="2"/><rect x="1.5" y="3.5" width="21" height="17" rx="3.5"/>',
+      ),
+    }),
+  },
+  showShortcuts: {
+    html: switchTile({
+      option: 'showShortcuts',
+      title: S.panelShortcutsTitle,
+      label: S.panelShortcutsTitle,
+      desc: S.panelShortcutsDesc,
+      icon: svgIcon(
+        '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
+      ),
+    }),
+  },
   blockFlashing: {
     html: switchTile({
       option: 'blockFlashing',
@@ -369,6 +391,14 @@ const SECTIONS = [
       '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>',
     ),
     controls: ['reducedMotion', 'blockFlashing', 'muteMedia', 'hideImages'],
+  },
+  {
+    id: 'keyboard',
+    title: S.sectionKeyboardTitle,
+    icon: svgIcon(
+      '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
+    ),
+    controls: ['strongFocus', 'showShortcuts'],
   },
 ];
 
@@ -780,6 +810,8 @@ export function createA11yPanel({
       'readFocus',
       'muteMedia',
       'blockFlashing',
+      'strongFocus',
+      'showShortcuts',
     ].forEach((key) => {
       const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
       if (!btn) return;

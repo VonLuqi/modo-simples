@@ -25,6 +25,8 @@ import eventBus from './eventBus.js';
  *       simpleLanguage: boolean,
  *       muteMedia:     boolean,  // F7c: pausa e muta vídeo/áudio
  *       readFocus:     boolean,  // F7b: lê em voz alta o elemento focado
+ *       strongFocus:   boolean,  // F7e: anel de foco reforçado na página
+ *       showShortcuts: boolean,  // F7e: cartão com os atalhos do teclado
  *       blockFlashing: boolean,  // F7d: sem animação/GIF/autoplay (epilepsia)
  *     }
  *   }
@@ -72,6 +74,8 @@ const initialState = {
     simpleLanguage: false,
     readFocus: false,
     blockFlashing: false,
+    strongFocus: false,
+    showShortcuts: false,
     muteMedia: false,
   },
 };

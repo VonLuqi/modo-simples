@@ -241,6 +241,8 @@
       simpleLanguage: false,
       readFocus: false,
       blockFlashing: false,
+      strongFocus: false,
+      showShortcuts: false,
       muteMedia: false
     }
   };
@@ -300,6 +302,8 @@
     simpleLanguage: ["Linguagem simples ligada", "Linguagem simples desligada"],
     readFocus: ["Leitura do foco ligada", "Leitura do foco desligada"],
     muteMedia: ["V\xEDdeos e sons silenciados", "V\xEDdeos e sons liberados"],
+    strongFocus: ["Foco refor\xE7ado ligado", "Foco refor\xE7ado desligado"],
+    showShortcuts: ["Atalhos do teclado vis\xEDveis", "Atalhos do teclado ocultos"],
     blockFlashing: [
       "Bloqueio de anima\xE7\xF5es e GIFs ligado",
       "Bloqueio de anima\xE7\xF5es e GIFs desligado"
@@ -506,6 +510,8 @@
         readFocus: Boolean(opts.readFocus),
         muteMedia: Boolean(opts.muteMedia),
         blockFlashing: Boolean(opts.blockFlashing),
+        strongFocus: Boolean(opts.strongFocus),
+        showShortcuts: Boolean(opts.showShortcuts),
         // Linguagem simples é acoplada ao MS; sem MS não reativa “órfã”
         simpleLanguage: modoSimples ? Boolean(opts.simpleLanguage) : false
       }
@@ -542,7 +548,7 @@
       const found = /* @__PURE__ */ new Set();
       for (const selector of selectors) {
         try {
-          document.querySelectorAll(selector).forEach((el) => found.add(el));
+          document.querySelectorAll(selector).forEach((el2) => found.add(el2));
         } catch (_2) {
         }
       }
@@ -553,11 +559,11 @@
   // src/heuristics/contentDetector.js
   function detectMainContent(config = defaults_default) {
     const scored = [];
-    const rank = (el) => {
-      if (typeof el.matches !== "function") return 0;
+    const rank = (el2) => {
+      if (typeof el2.matches !== "function") return 0;
       const i = config.mainSelectors.findIndex((sel) => {
         try {
-          return el.matches(sel);
+          return el2.matches(sel);
         } catch (_) {
           return false;
         }
@@ -585,25 +591,25 @@
   }
 
   // src/core/instancePersistence.js
-  var textLength = (el) => (el && el.textContent || "").trim().length;
+  var textLength = (el2) => (el2 && el2.textContent || "").trim().length;
   var STATE_KEY = "state";
   var PRINCIPAL_KEY = "principal";
   var SIDE_KEY = "panelSide";
-  function saveHideImagesBeforeMs(ms, hide) {
-    ms._hideImagesBeforeMs = !!hide;
+  function saveHideImagesBeforeMs(ms, hide2) {
+    ms._hideImagesBeforeMs = !!hide2;
     if (!ms._config.persistence) return;
     const key = "hideImagesBeforeMs";
     if (ms._config.hostnamePersistence) {
-      persistence_default.saveForHost(key, !!hide);
+      persistence_default.saveForHost(key, !!hide2);
     } else {
-      persistence_default.save(key, !!hide);
+      persistence_default.save(key, !!hide2);
     }
   }
   function takeHideImagesBeforeMs(ms) {
-    let hide = ms._hideImagesBeforeMs;
-    if (hide === null && ms._config.persistence) {
+    let hide2 = ms._hideImagesBeforeMs;
+    if (hide2 === null && ms._config.persistence) {
       const key = "hideImagesBeforeMs";
-      hide = ms._config.hostnamePersistence ? persistence_default.loadForHost(key, null) : persistence_default.load(key, null);
+      hide2 = ms._config.hostnamePersistence ? persistence_default.loadForHost(key, null) : persistence_default.load(key, null);
     }
     ms._hideImagesBeforeMs = null;
     if (ms._config.persistence) {
@@ -614,7 +620,7 @@
         persistence_default.remove(key);
       }
     }
-    return !!hide;
+    return !!hide2;
   }
   function loadPreferShowImages(ms) {
     if (!ms._config.persistence) return false;
@@ -672,11 +678,11 @@
     const isUserChoice = saved.v >= 1 && typeof rm === "boolean";
     ms._reducedMotionUser = isUserChoice ? rm : null;
   }
-  function savePrincipalPath(ms, path, el) {
+  function savePrincipalPath(ms, path, el2) {
     if (!ms._config.persistence || !path) return;
     persistence_default.saveForPath(PRINCIPAL_KEY, {
       path,
-      textLen: textLength(el)
+      textLen: textLength(el2)
     });
   }
   function loadPrincipal(ms) {
@@ -702,16 +708,16 @@
     if (!ms._config.persistence) return;
     persistence_default.removeForPath(PRINCIPAL_KEY);
   }
-  function isPlausiblePrincipal(ms, el, saved) {
-    const len = textLength(el);
+  function isPlausiblePrincipal(ms, el2, saved) {
+    const len = textLength(el2);
     if (len < ms._config.scoring.minTextLength) return false;
     if (saved.textLen && len < saved.textLen * 0.5) return false;
-    if (saved.legacy) return ms._legacyHintFits(el, len);
+    if (saved.legacy) return ms._legacyHintFits(el2, len);
     return true;
   }
-  function legacyHintFits(ms, el, len) {
+  function legacyHintFits(ms, el2, len) {
     const { element, confidence } = detectMainContent(ms._config);
-    if (confidence < ms._config.confidenceThreshold || element === el) {
+    if (confidence < ms._config.confidenceThreshold || element === el2) {
       return true;
     }
     return len >= textLength(element) * 0.5;
@@ -1834,6 +1840,12 @@
       outline-offset: 2px !important;
     }
 
+    /* \u2500\u2500 Foco bem vis\xEDvel (F7e): anel duplo (preto + amarelo), leg\xEDvel em qualquer fundo \u2500\u2500 */
+    html.ms-strong-focus :focus-visible:not(#ms-container, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *) {
+      outline: 3px solid #000 !important;
+      outline-offset: 2px !important;
+      box-shadow: 0 0 0 6px #ffd400 !important;
+    }
     /* \u2500\u2500 Lexend / dyslexia font \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
     html.ms-dyslexia-font,
     html.ms-dyslexia-font body,
@@ -2398,6 +2410,13 @@
     panelVoiceStopButton: "Parar",
     panelVoiceStopLabel: "Parar leitura",
     mediaOtherSiteNotice: "Este v\xEDdeo \xE9 de outro site. N\xE3o consigo tirar o som dele.",
+    panelStrongFocusTitle: "Foco bem vis\xEDvel",
+    panelStrongFocusDesc: "Contorno grosso e de duas cores no item em que voc\xEA est\xE1, em qualquer fundo",
+    panelShortcutsTitle: "Mostrar atalhos do teclado",
+    panelShortcutsDesc: "Um cart\xE3o na tela lista as teclas que voc\xEA pode usar",
+    shortcutsTitle: "Atalhos do teclado",
+    shortcutsClose: "Fechar",
+    shortcutAccessKeyPrefix: "Alt+",
     panelBlockFlashingTitle: "Bloquear anima\xE7\xF5es e GIFs",
     panelBlockFlashingDesc: "Para anima\xE7\xF5es, textos que correm e v\xEDdeos que come\xE7am sozinhos. GIFs ficam parados at\xE9 voc\xEA clicar",
     gifShowLabel: "Mostrar anima\xE7\xE3o",
@@ -2411,6 +2430,7 @@
     stateOff: "Desligado",
     sectionTextTitle: "Texto e leitura",
     sectionColorsTitle: "Cores e destaque",
+    sectionKeyboardTitle: "Teclado e foco",
     sectionMotionTitle: "Movimento e imagens",
     panelHighlightLinks: "Destacar links",
     panelTextSpacing: "Espa\xE7amento de texto",
@@ -2514,6 +2534,14 @@
     manualCancel: "Voltar",
     manualCancelLabel: "Voltar sem escolher"
   });
+  var SHORTCUTS = Object.freeze([
+    { keys: "Alt+Shift+A", text: "Abrir o painel de acessibilidade" },
+    { keys: "Esc", text: "Fechar o painel ou sair da escolha de conte\xFAdo" },
+    { keys: "Tab", text: "Ir ao pr\xF3ximo item" },
+    { keys: "Shift+Tab", text: "Voltar ao item anterior" },
+    { keys: "Enter", text: "Ativar o bot\xE3o ou link" },
+    { keys: "Espa\xE7o", text: "Ligar ou desligar um interruptor" }
+  ]);
 
   // src/ui/fab.js
   var TIP_SEEN_KEY = "fabTipSeen";
@@ -2618,7 +2646,7 @@
   ].join(", ");
   function getFocusable(container) {
     return Array.from(container.querySelectorAll(FOCUSABLE_SELECTORS)).filter(
-      (el) => !el.closest("[hidden]") && el.getBoundingClientRect().width > 0
+      (el2) => !el2.closest("[hidden]") && el2.getBoundingClientRect().width > 0
     );
   }
   function trapFocus(container) {
@@ -2685,11 +2713,11 @@
     "figcaption",
     "blockquote"
   ];
-  function closestSafe(el, selector) {
+  function closestSafe(el2, selector) {
     var _a, _b, _c;
-    if (!el) return null;
-    if (typeof el.closest === "function") return el.closest(selector);
-    let node = el;
+    if (!el2) return null;
+    if (typeof el2.closest === "function") return el2.closest(selector);
+    let node = el2;
     while (node) {
       if (node.matches && node.matches(selector)) return node;
       const parts = selector.split(",").map((s) => s.trim());
@@ -2712,28 +2740,28 @@
   function getRoot() {
     return document.querySelector("[data-ms-principal]") || document.querySelector("main") || document.querySelector('[role="main"]') || document.body;
   }
-  function isVisiblyReadable(el) {
-    if (!el || closestSafe(el, "#ms-container") || closestSafe(el, "#ms-simples-chrome") || closestSafe(el, "#ms-session-bar")) {
+  function isVisiblyReadable(el2) {
+    if (!el2 || closestSafe(el2, "#ms-container") || closestSafe(el2, "#ms-simples-chrome") || closestSafe(el2, "#ms-session-bar")) {
       return false;
     }
-    if (closestSafe(el, "[data-ms-hidden]")) return false;
+    if (closestSafe(el2, "[data-ms-hidden]")) return false;
     const html = document.documentElement;
     const msOn = html.classList.contains("ms-ativo");
     const simpleLang = html.classList.contains("ms-simple-language");
-    if (msOn && closestSafe(el, ".ms-simple-hide")) return false;
-    if (!msOn && closestSafe(el, ".ms-simple-only")) return false;
-    if (simpleLang && closestSafe(el, "[data-ms-plain]")) return false;
-    if (!simpleLang && closestSafe(el, "[data-ms-simple]")) return false;
-    return (el.textContent || "").trim().length > 0;
+    if (msOn && closestSafe(el2, ".ms-simple-hide")) return false;
+    if (!msOn && closestSafe(el2, ".ms-simple-only")) return false;
+    if (simpleLang && closestSafe(el2, "[data-ms-plain]")) return false;
+    if (!simpleLang && closestSafe(el2, "[data-ms-simple]")) return false;
+    return (el2.textContent || "").trim().length > 0;
   }
   function collectBlocks() {
     const root = getRoot();
     if (!root) return [];
     const nodes = Array.from(root.querySelectorAll(BLOCK_TAGS.join(",")));
     const readable = new Set(nodes.filter(isVisiblyReadable));
-    return nodes.filter((el) => {
-      if (!readable.has(el)) return false;
-      let parent = el.parentElement;
+    return nodes.filter((el2) => {
+      if (!readable.has(el2)) return false;
+      let parent = el2.parentElement;
       while (parent && parent !== root) {
         if (readable.has(parent)) return false;
         parent = parent.parentElement;
@@ -2786,19 +2814,19 @@
     });
     _activeEl = null;
   }
-  function highlightAndScroll(el) {
+  function highlightAndScroll(el2) {
     clearHighlight();
-    el.setAttribute("data-ms-tts-active", "");
-    _activeEl = el;
+    el2.setAttribute("data-ms-tts-active", "");
+    _activeEl = el2;
     const reduceMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (typeof el.scrollIntoView === "function") {
+    if (typeof el2.scrollIntoView === "function") {
       try {
-        el.scrollIntoView({
+        el2.scrollIntoView({
           block: "center",
           behavior: reduceMotion ? "auto" : "smooth"
         });
       } catch (_) {
-        el.scrollIntoView(true);
+        el2.scrollIntoView(true);
       }
     }
   }
@@ -2808,10 +2836,10 @@
       stopSpeaking();
       return;
     }
-    const el = _blocks[index];
+    const el2 = _blocks[index];
     _blockIndex = index;
-    highlightAndScroll(el);
-    const text = (el.innerText || el.textContent || "").replace(/\s+/g, " ").trim();
+    highlightAndScroll(el2);
+    const text = (el2.innerText || el2.textContent || "").replace(/\s+/g, " ").trim();
     if (!text) {
       speakBlockAt(index + 1, run);
       return;
@@ -2899,11 +2927,11 @@
   }
   var clean = (t) => (t || "").replace(/\s+/g, " ").trim();
   var cap = (t) => t.length > MAX_TEXT ? t.slice(0, MAX_TEXT).trim() : t;
-  function accessibleName(el) {
+  function accessibleName(el2) {
     var _a, _b, _c;
-    const ids = el.getAttribute("aria-labelledby");
+    const ids = el2.getAttribute("aria-labelledby");
     if (ids) {
-      const root = ((_a = el.getRootNode) == null ? void 0 : _a.call(el)) || document;
+      const root = ((_a = el2.getRootNode) == null ? void 0 : _a.call(el2)) || document;
       const text = clean(
         ids.split(/\s+/).map((id) => {
           var _a2, _b2;
@@ -2912,38 +2940,38 @@
       );
       if (text) return cap(text);
     }
-    const aria = clean(el.getAttribute("aria-label"));
+    const aria = clean(el2.getAttribute("aria-label"));
     if (aria) return cap(aria);
-    const tag = el.tagName.toLowerCase();
+    const tag = el2.tagName.toLowerCase();
     let label = "";
-    if (el.labels && el.labels.length) {
+    if (el2.labels && el2.labels.length) {
       label = clean(
-        Array.from(el.labels).map((l) => l.textContent).join(" ")
+        Array.from(el2.labels).map((l) => l.textContent).join(" ")
       );
     } else if (["input", "select", "textarea"].includes(tag)) {
-      label = clean((_c = (_b = el.closest) == null ? void 0 : _b.call(el, "label")) == null ? void 0 : _c.textContent);
+      label = clean((_c = (_b = el2.closest) == null ? void 0 : _b.call(el2, "label")) == null ? void 0 : _c.textContent);
     }
     if (label) return cap(label);
-    const alt = clean(el.getAttribute("alt"));
+    const alt = clean(el2.getAttribute("alt"));
     if (alt) return cap(alt);
-    const title = clean(el.getAttribute("title"));
+    const title = clean(el2.getAttribute("title"));
     if (title) return cap(title);
-    const type = (el.getAttribute("type") || "").toLowerCase();
+    const type = (el2.getAttribute("type") || "").toLowerCase();
     if (tag === "input") {
       if (["button", "submit", "reset"].includes(type)) {
         return cap(
-          clean(el.value) || (type === "submit" ? STRINGS.focusSubmitName : "")
+          clean(el2.value) || (type === "submit" ? STRINGS.focusSubmitName : "")
         );
       }
-      return cap(clean(el.getAttribute("placeholder")));
+      return cap(clean(el2.getAttribute("placeholder")));
     }
     if (["select", "textarea"].includes(tag)) return "";
-    return cap(clean(el.textContent));
+    return cap(clean(el2.textContent));
   }
-  function roleWord(el) {
-    const tag = el.tagName.toLowerCase();
-    const role = (el.getAttribute("role") || "").toLowerCase();
-    const type = (el.getAttribute("type") || "").toLowerCase();
+  function roleWord(el2) {
+    const tag = el2.tagName.toLowerCase();
+    const role = (el2.getAttribute("role") || "").toLowerCase();
+    const type = (el2.getAttribute("type") || "").toLowerCase();
     if (role === "switch") return STRINGS.roleSwitch;
     if (role === "checkbox") return STRINGS.roleCheckbox;
     if (role === "radio") return STRINGS.roleRadio;
@@ -2964,26 +2992,26 @@
       if (type === "radio") return STRINGS.roleRadio;
       return STRINGS.roleField;
     }
-    if (el.isContentEditable) return STRINGS.roleField;
+    if (el2.isContentEditable) return STRINGS.roleField;
     return "";
   }
-  function stateWord(el) {
-    const checked = el.getAttribute("aria-checked");
-    const isSwitch = (el.getAttribute("role") || "") === "switch";
-    const type = (el.getAttribute("type") || "").toLowerCase();
-    const nativo = el.tagName === "INPUT" && ["checkbox", "radio"].includes(type);
+  function stateWord(el2) {
+    const checked = el2.getAttribute("aria-checked");
+    const isSwitch = (el2.getAttribute("role") || "") === "switch";
+    const type = (el2.getAttribute("type") || "").toLowerCase();
+    const nativo = el2.tagName === "INPUT" && ["checkbox", "radio"].includes(type);
     if (checked === null && !nativo) return "";
-    const on = checked !== null ? checked === "true" : el.checked;
+    const on = checked !== null ? checked === "true" : el2.checked;
     if (isSwitch) return on ? STRINGS.focusSwitchOn : STRINGS.focusSwitchOff;
     return on ? STRINGS.focusChecked : STRINGS.focusUnchecked;
   }
-  function describeFocus(el) {
-    if (!el || el.nodeType !== 1) return "";
-    const tag = el.tagName.toLowerCase();
+  function describeFocus(el2) {
+    if (!el2 || el2.nodeType !== 1) return "";
+    const tag = el2.tagName.toLowerCase();
     if (tag === "body" || tag === "html") return "";
-    const role = roleWord(el);
-    const name = accessibleName(el);
-    const parts = [name, role, role ? stateWord(el) : ""].filter(Boolean);
+    const role = roleWord(el2);
+    const name = accessibleName(el2);
+    const parts = [name, role, role ? stateWord(el2) : ""].filter(Boolean);
     return parts.join(", ");
   }
   function speakNow(target) {
@@ -3309,6 +3337,28 @@
         )
       })
     },
+    strongFocus: {
+      html: switchTile({
+        option: "strongFocus",
+        title: STRINGS.panelStrongFocusTitle,
+        label: STRINGS.panelStrongFocusTitle,
+        desc: STRINGS.panelStrongFocusDesc,
+        icon: svgIcon(
+          '<rect x="4" y="6" width="16" height="12" rx="2"/><rect x="1.5" y="3.5" width="21" height="17" rx="3.5"/>'
+        )
+      })
+    },
+    showShortcuts: {
+      html: switchTile({
+        option: "showShortcuts",
+        title: STRINGS.panelShortcutsTitle,
+        label: STRINGS.panelShortcutsTitle,
+        desc: STRINGS.panelShortcutsDesc,
+        icon: svgIcon(
+          '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>'
+        )
+      })
+    },
     blockFlashing: {
       html: switchTile({
         option: "blockFlashing",
@@ -3381,6 +3431,14 @@
         '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 9"/>'
       ),
       controls: ["reducedMotion", "blockFlashing", "muteMedia", "hideImages"]
+    },
+    {
+      id: "keyboard",
+      title: STRINGS.sectionKeyboardTitle,
+      icon: svgIcon(
+        '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>'
+      ),
+      controls: ["strongFocus", "showShortcuts"]
     }
   ];
   function renderSection(sec, index) {
@@ -3468,9 +3526,9 @@
     </div>
   `;
     const setText = (selector, text) => {
-      const el = panel.querySelector(selector);
-      el.textContent = text;
-      el.hidden = !text;
+      const el2 = panel.querySelector(selector);
+      el2.textContent = text;
+      el2.hidden = !text;
     };
     setText("#ms-a11y-title", texts.title || DEFAULT_BRAND.title);
     setText(".ms-a11y-subtitle", texts.subtitle);
@@ -3704,7 +3762,9 @@
         "hideImages",
         "readFocus",
         "muteMedia",
-        "blockFlashing"
+        "blockFlashing",
+        "strongFocus",
+        "showShortcuts"
       ].forEach((key) => {
         var _a2;
         const btn = panel.querySelector(`.ms-switch[data-option="${key}"]`);
@@ -3723,8 +3783,8 @@
         }
       });
       const setState = (key, text) => {
-        const el = panel.querySelector(`[data-state-for="${key}"]`);
-        if (el) el.textContent = text;
+        const el2 = panel.querySelector(`[data-state-for="${key}"]`);
+        if (el2) el2.textContent = text;
       };
       const curScale = TEXT_SCALES.find((x) => x.value === scale);
       setState(
@@ -3854,8 +3914,8 @@
     });
     chrome.querySelector('[data-action="open-panel"]').addEventListener("click", () => onOpenPanel());
     const focusIn = (selector) => {
-      const el = bar.querySelector(selector);
-      if (el && typeof el.focus === "function") el.focus();
+      const el2 = bar.querySelector(selector);
+      if (el2 && typeof el2.focus === "function") el2.focus();
     };
     bar.querySelector('[data-action="activate"]').addEventListener("click", () => {
       onToggleModoSimples(true);
@@ -3947,8 +4007,8 @@
     const list = Array.isArray(selectors) ? selectors : selectors ? [selectors] : [];
     for (const sel of list) {
       try {
-        const el = document.querySelector(sel);
-        if (el) return el;
+        const el2 = document.querySelector(sel);
+        if (el2) return el2;
       } catch (_) {
       }
     }
@@ -4043,8 +4103,8 @@
   }
   function findHostAuthoredPills() {
     const all = document.querySelectorAll("[data-ms-pills]");
-    for (const el of all) {
-      if (!el.hasAttribute("data-ms-injected")) return el;
+    for (const el2 of all) {
+      if (!el2.hasAttribute("data-ms-injected")) return el2;
     }
     return null;
   }
@@ -4174,13 +4234,13 @@
     if (typeof CSS !== "undefined" && CSS.escape) return CSS.escape(value);
     return String(value).replace(/([^\w-])/g, "\\$1");
   }
-  function buildCssPath(el) {
-    if (!el || el.nodeType !== 1) return "";
-    if (el.id) {
-      return `#${escapeIdent(el.id)}`;
+  function buildCssPath(el2) {
+    if (!el2 || el2.nodeType !== 1) return "";
+    if (el2.id) {
+      return `#${escapeIdent(el2.id)}`;
     }
     const parts = [];
-    let current = el;
+    let current = el2;
     const root = typeof document !== "undefined" ? document.documentElement : null;
     while (current && current.nodeType === 1 && current !== root) {
       let part = current.tagName.toLowerCase();
@@ -4211,36 +4271,36 @@
     }
     return active;
   }
-  function isOwnUi(el) {
+  function isOwnUi(el2) {
     var _a, _b, _c, _d, _e;
-    return !!(((_a = el == null ? void 0 : el.closest) == null ? void 0 : _a.call(el, "#ms-container")) || ((_b = el == null ? void 0 : el.closest) == null ? void 0 : _b.call(el, `#${BANNER_ID}`)) || ((_c = el == null ? void 0 : el.closest) == null ? void 0 : _c.call(el, `#${NOTICE_ID}`)) || ((_d = el == null ? void 0 : el.closest) == null ? void 0 : _d.call(el, `#${HIGHLIGHT_ID}`)) || // chrome da lib no light DOM: barra de sessão, switch SIMPLES e pills (QA R34 MED-2)
-    ((_e = el == null ? void 0 : el.closest) == null ? void 0 : _e.call(
-      el,
+    return !!(((_a = el2 == null ? void 0 : el2.closest) == null ? void 0 : _a.call(el2, "#ms-container")) || ((_b = el2 == null ? void 0 : el2.closest) == null ? void 0 : _b.call(el2, `#${BANNER_ID}`)) || ((_c = el2 == null ? void 0 : el2.closest) == null ? void 0 : _c.call(el2, `#${NOTICE_ID}`)) || ((_d = el2 == null ? void 0 : el2.closest) == null ? void 0 : _d.call(el2, `#${HIGHLIGHT_ID}`)) || // chrome da lib no light DOM: barra de sessão, switch SIMPLES e pills (QA R34 MED-2)
+    ((_e = el2 == null ? void 0 : el2.closest) == null ? void 0 : _e.call(
+      el2,
       "#ms-session-bar, #ms-simples-chrome, .ms-pills-nav, [data-ms-pills]"
     )));
   }
-  function isCandidate(el) {
-    if (!el || el === document.documentElement || el === document.body) {
+  function isCandidate(el2) {
+    if (!el2 || el2 === document.documentElement || el2 === document.body) {
       return false;
     }
-    if (isOwnUi(el)) return false;
-    const r = el.getBoundingClientRect();
+    if (isOwnUi(el2)) return false;
+    const r = el2.getBoundingClientRect();
     return r.width >= MIN_W && r.height >= MIN_H;
   }
-  function describe(el) {
-    const tag = el.tagName.toLowerCase();
-    const name = el.getAttribute("aria-label") || el.id || (el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 40);
+  function describe(el2) {
+    const tag = el2.tagName.toLowerCase();
+    const name = el2.getAttribute("aria-label") || el2.id || (el2.textContent || "").trim().replace(/\s+/g, " ").slice(0, 40);
     return name ? `${tag}: ${name}` : tag;
   }
-  function setCurrent(el) {
-    _current = el;
+  function setCurrent(el2) {
+    _current = el2;
     if (!_highlight || !_status) return;
-    if (!el) {
+    if (!el2) {
       _highlight.style.display = "none";
       _status.textContent = "";
       return;
     }
-    const r = el.getBoundingClientRect();
+    const r = el2.getBoundingClientRect();
     Object.assign(_highlight.style, {
       display: "block",
       top: `${r.top + window.scrollY}px`,
@@ -4248,7 +4308,7 @@
       width: `${r.width}px`,
       height: `${r.height}px`
     });
-    _status.textContent = ` ${STRINGS.manualCurrent} ${describe(el)}.`;
+    _status.textContent = ` ${STRINGS.manualCurrent} ${describe(el2)}.`;
   }
   function cycleCandidate(step) {
     var _a;
@@ -4268,15 +4328,15 @@
     setCurrent(next);
     _banner == null ? void 0 : _banner.focus();
   }
-  function confirmSelect(el) {
+  function confirmSelect(el2) {
     document.querySelectorAll("[data-ms-principal]").forEach((node) => {
       node.removeAttribute("data-ms-principal");
     });
-    el.setAttribute("data-ms-principal", "");
-    const path = buildCssPath(el);
+    el2.setAttribute("data-ms-principal", "");
+    const path = buildCssPath(el2);
     const cb = _callbacks == null ? void 0 : _callbacks.onSelect;
     stopManualSelect();
-    if (cb) cb(el, path);
+    if (cb) cb(el2, path);
   }
   function startManualSelect(opts = {}) {
     stopManualSelect();
@@ -4356,9 +4416,9 @@
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
-      const el = e.target;
-      if (!el || el === document.documentElement || el === document.body) return;
-      confirmSelect(el);
+      const el2 = e.target;
+      if (!el2 || el2 === document.documentElement || el2 === document.body) return;
+      confirmSelect(el2);
     };
     _onKey = (e) => {
       var _a, _b, _c, _d;
@@ -4407,8 +4467,8 @@
       e.stopImmediatePropagation();
     };
     _onOver = (e) => {
-      const el = e.target;
-      if (el && !isOwnUi(el) && el !== document.documentElement) setCurrent(el);
+      const el2 = e.target;
+      if (el2 && !isOwnUi(el2) && el2 !== document.documentElement) setCurrent(el2);
     };
     document.addEventListener("click", _onClick, true);
     document.addEventListener("keydown", _onKey, true);
@@ -4555,6 +4615,8 @@
     simpleLanguage: false,
     readFocus: false,
     blockFlashing: false,
+    strongFocus: false,
+    showShortcuts: false,
     muteMedia: false
   };
   var FONT_KEYS = [
@@ -4633,9 +4695,9 @@
         onOpenPanel: () => ms._openPanel(),
         onSpeak: () => ms._toggleSpeak(),
         onToggleSimpleLanguage: (value) => state_default.set({ options: { simpleLanguage: value } }),
-        onToggleHideImages: (hide) => {
-          state_default.set({ options: { hideImages: hide } });
-          if (state_default.get().modoSimples) ms._savePreferShowImages(!hide);
+        onToggleHideImages: (hide2) => {
+          state_default.set({ options: { hideImages: hide2 } });
+          if (state_default.get().modoSimples) ms._savePreferShowImages(!hide2);
         }
       });
       ms._chrome.sync(state_default.get());
@@ -4718,10 +4780,10 @@
     var _a;
     (_a = ms._inertObserver) == null ? void 0 : _a.disconnect();
     ms._inertObserver = null;
-    for (const el of ms._inerted || []) el.removeAttribute("inert");
+    for (const el2 of ms._inerted || []) el2.removeAttribute("inert");
     ms._inerted = [];
     if (!on) return;
-    for (const el of document.body.children) ms._inertSibling(el);
+    for (const el2 of document.body.children) ms._inertSibling(el2);
     ms._inertObserver = new MutationObserver((records) => {
       for (const r of records) {
         for (const n of r.addedNodes) {
@@ -4731,12 +4793,12 @@
     });
     ms._inertObserver.observe(document.body, { childList: true });
   }
-  function inertSibling(ms, el) {
-    if (el === ms._host || el.hasAttribute("inert") || el.hasAttribute("aria-live") || el.hasAttribute("data-ms-live") || el.id === "ms-manual-select-banner" || el.id === "ms-manual-select-highlight") {
+  function inertSibling(ms, el2) {
+    if (el2 === ms._host || el2.hasAttribute("inert") || el2.hasAttribute("aria-live") || el2.hasAttribute("data-ms-live") || el2.id === "ms-manual-select-banner" || el2.id === "ms-manual-select-highlight") {
       return;
     }
-    el.setAttribute("inert", "");
-    ms._inerted.push(el);
+    el2.setAttribute("inert", "");
+    ms._inerted.push(el2);
   }
   function closePanel(ms) {
     var _a, _b, _c;
@@ -4814,15 +4876,15 @@
   // src/heuristics/distractionDetector.js
   function detectDistractions(mainElement, config = defaults_default) {
     const distractions = [];
-    const isMsChrome = (el) => {
+    const isMsChrome = (el2) => {
       var _a, _b;
-      if (!el || !el.id && !el.getAttribute) return false;
-      if (el.id === "ms-container" || el.id === "ms-session-bar" || el.id === "ms-simples-chrome") {
+      if (!el2 || !el2.id && !el2.getAttribute) return false;
+      if (el2.id === "ms-container" || el2.id === "ms-session-bar" || el2.id === "ms-simples-chrome") {
         return true;
       }
-      if ((_a = el.hasAttribute) == null ? void 0 : _a.call(el, "data-ms-pills")) return true;
-      if ((_b = el.closest) == null ? void 0 : _b.call(
-        el,
+      if ((_a = el2.hasAttribute) == null ? void 0 : _a.call(el2, "data-ms-pills")) return true;
+      if ((_b = el2.closest) == null ? void 0 : _b.call(
+        el2,
         "#ms-container, #ms-session-bar, #ms-simples-chrome, [data-ms-pills]"
       )) {
         return true;
@@ -4830,13 +4892,13 @@
       return false;
     };
     const seen = /* @__PURE__ */ new Set();
-    for (const el of queryAll(config.distractionSelectors)) {
-      if (isMsChrome(el)) continue;
-      if (mainElement && el.contains(mainElement)) continue;
-      if (mainElement && mainElement.contains(el)) continue;
-      if (!seen.has(el)) {
-        seen.add(el);
-        distractions.push(el);
+    for (const el2 of queryAll(config.distractionSelectors)) {
+      if (isMsChrome(el2)) continue;
+      if (mainElement && el2.contains(mainElement)) continue;
+      if (mainElement && mainElement.contains(el2)) continue;
+      if (!seen.has(el2)) {
+        seen.add(el2);
+        distractions.push(el2);
       }
     }
     return distractions;
@@ -4882,6 +4944,7 @@
     "ms-text-spacing",
     "ms-reduced-motion",
     "ms-block-flashing",
+    "ms-strong-focus",
     "ms-hide-images",
     "ms-reading-ruler",
     "ms-simple-language"
@@ -4974,6 +5037,7 @@
     }
     html.classList.toggle("ms-reduced-motion", !!opts.reducedMotion);
     html.classList.toggle("ms-block-flashing", !!opts.blockFlashing);
+    html.classList.toggle("ms-strong-focus", !!opts.strongFocus);
     setHostFlag("data-ms-noflash", !!opts.blockFlashing);
     html.classList.toggle("ms-hide-images", !!opts.hideImages);
     html.classList.toggle("ms-reading-ruler", !!opts.readingRuler);
@@ -4983,17 +5047,17 @@
     if (!_mainElement) scan(config);
     if (_mainElement) _mainElement.setAttribute("data-ms-principal", "");
     _distractionElements.forEach(
-      (el) => el.setAttribute("data-ms-hidden", "true")
+      (el2) => el2.setAttribute("data-ms-hidden", "true")
     );
     document.documentElement.classList.add("ms-ativo");
     applyOptions(state2);
   }
   function revertModoSimples() {
-    document.querySelectorAll('[data-ms-hidden="true"]').forEach((el) => {
-      el.removeAttribute("data-ms-hidden");
+    document.querySelectorAll('[data-ms-hidden="true"]').forEach((el2) => {
+      el2.removeAttribute("data-ms-hidden");
     });
-    document.querySelectorAll("[data-ms-principal]").forEach((el) => {
-      el.removeAttribute("data-ms-principal");
+    document.querySelectorAll("[data-ms-principal]").forEach((el2) => {
+      el2.removeAttribute("data-ms-principal");
     });
     document.documentElement.classList.remove("ms-ativo");
     _mainElement = null;
@@ -5019,15 +5083,15 @@
       (_b = (_a = document.documentElement.style) == null ? void 0 : _a.removeProperty) == null ? void 0 : _b.call(_a, prop);
     }
   }
-  function setPrincipal(el, config) {
+  function setPrincipal(el2, config) {
     document.querySelectorAll("[data-ms-principal]").forEach((node) => {
       node.removeAttribute("data-ms-principal");
     });
-    _mainElement = el;
-    _manualPrincipal = el;
-    _manualPath = buildCssPath(el);
+    _mainElement = el2;
+    _manualPrincipal = el2;
+    _manualPath = buildCssPath(el2);
     _holdPrincipal = false;
-    el.setAttribute("data-ms-principal", "");
+    el2.setAttribute("data-ms-principal", "");
     _distractionElements = detectDistractions(_mainElement, config);
     document.querySelectorAll('[data-ms-hidden="true"]').forEach((node) => {
       node.removeAttribute("data-ms-hidden");
@@ -5075,6 +5139,7 @@
     "#ms-manual-select-banner",
     "#ms-reading-ruler",
     "[data-ms-media-badge]",
+    "#ms-shortcuts-card",
     "[data-ms-pills][data-ms-injected]",
     "[data-ms-live]"
   ].join(",");
@@ -5203,9 +5268,9 @@
       if (t) moveTo(t.clientY);
     };
     _onFocus = (e) => {
-      const el = e.target;
-      if (!(el == null ? void 0 : el.getBoundingClientRect) || el === document.body) return;
-      const r = el.getBoundingClientRect();
+      const el2 = e.target;
+      if (!(el2 == null ? void 0 : el2.getBoundingClientRect) || el2 === document.body) return;
+      const r = el2.getBoundingClientRect();
       moveTo(r.top + r.height / 2);
     };
     document.addEventListener("pointermove", _onPointer2, { passive: true });
@@ -5252,18 +5317,18 @@
     var _a;
     return !!((_a = navigator.userActivation) == null ? void 0 : _a.isActive);
   };
-  function isOwn(el) {
+  function isOwn(el2) {
     var _a;
-    return !!((_a = el.closest) == null ? void 0 : _a.call(el, `${OWN_HOST}, [${BADGE_ATTR}]`));
+    return !!((_a = el2.closest) == null ? void 0 : _a.call(el2, `${OWN_HOST}, [${BADGE_ATTR}]`));
   }
   function walk(root, visit) {
     const els = root.nodeType === 1 ? [root, ...root.querySelectorAll("*")] : Array.from(root.querySelectorAll("*"));
-    for (const el of els) {
-      if (el.id === "ms-container" || isOwn(el)) continue;
-      visit(el);
-      if (el.shadowRoot) {
-        if (_on2) watchRoot(el.shadowRoot);
-        walk(el.shadowRoot, visit);
+    for (const el2 of els) {
+      if (el2.id === "ms-container" || isOwn(el2)) continue;
+      visit(el2);
+      if (el2.shadowRoot) {
+        if (_on2) watchRoot(el2.shadowRoot);
+        walk(el2.shadowRoot, visit);
       }
     }
   }
@@ -5274,22 +5339,22 @@
     sr.addEventListener("play", onPlay, true);
     sr.addEventListener("volumechange", onVolume, true);
   }
-  function muteOne(el) {
-    if (!_prior.has(el)) {
-      _prior.set(el, el.muted);
-      _tracked.add(new WeakRef(el));
+  function muteOne(el2) {
+    if (!_prior.has(el2)) {
+      _prior.set(el2, el2.muted);
+      _tracked.add(new WeakRef(el2));
     }
-    el.muted = true;
-    el.removeAttribute("autoplay");
-    el.autoplay = false;
-    if (!el.paused) el.pause();
+    el2.muted = true;
+    el2.removeAttribute("autoplay");
+    el2.autoplay = false;
+    if (!el2.paused) el2.pause();
   }
   function pauseAutoplay(root = document) {
     let n = 0;
-    walk(root, (el) => {
+    walk(root, (el2) => {
       var _a;
-      if ((_a = el.matches) == null ? void 0 : _a.call(el, MEDIA_SELECTOR)) {
-        muteOne(el);
+      if ((_a = el2.matches) == null ? void 0 : _a.call(el2, MEDIA_SELECTOR)) {
+        muteOne(el2);
         n += 1;
       }
     });
@@ -5297,24 +5362,24 @@
   }
   function restoreMedia() {
     for (const ref of _tracked) {
-      const el = ref.deref();
-      if (el && _prior.has(el)) {
-        el.muted = _prior.get(el);
-        _prior.delete(el);
+      const el2 = ref.deref();
+      if (el2 && _prior.has(el2)) {
+        el2.muted = _prior.get(el2);
+        _prior.delete(el2);
       }
     }
     _tracked.clear();
   }
-  function isForeignVideoFrame(el) {
-    if (el.tagName !== "IFRAME") return false;
+  function isForeignVideoFrame(el2) {
+    if (el2.tagName !== "IFRAME") return false;
     let u;
     try {
-      u = new URL(el.getAttribute("src") || "", location.href);
+      u = new URL(el2.getAttribute("src") || "", location.href);
     } catch (_) {
       return false;
     }
     if (u.origin === location.origin) return false;
-    return VIDEO_HOSTS.test(u.hostname) || /autoplay/i.test(el.getAttribute("allow") || "");
+    return VIDEO_HOSTS.test(u.hostname) || /autoplay/i.test(el2.getAttribute("allow") || "");
   }
   function placeBadge(frame, badge) {
     const r = frame.getBoundingClientRect();
@@ -5349,10 +5414,10 @@
     _badges.set(frame, badge);
   }
   function scan2(root) {
-    walk(root, (el) => {
+    walk(root, (el2) => {
       var _a;
-      if ((_a = el.matches) == null ? void 0 : _a.call(el, MEDIA_SELECTOR)) muteOne(el);
-      else if (isForeignVideoFrame(el)) badgeFor(el);
+      if ((_a = el2.matches) == null ? void 0 : _a.call(el2, MEDIA_SELECTOR)) muteOne(el2);
+      else if (isForeignVideoFrame(el2)) badgeFor(el2);
     });
   }
   function relayout() {
@@ -5366,21 +5431,21 @@
   }
   function onPlay(e) {
     var _a;
-    const el = e.target;
-    if (!((_a = el == null ? void 0 : el.matches) == null ? void 0 : _a.call(el, MEDIA_SELECTOR)) || isOwn(el)) return;
-    if (!_prior.has(el)) {
-      _prior.set(el, el.muted);
-      _tracked.add(new WeakRef(el));
+    const el2 = e.target;
+    if (!((_a = el2 == null ? void 0 : el2.matches) == null ? void 0 : _a.call(el2, MEDIA_SELECTOR)) || isOwn(el2)) return;
+    if (!_prior.has(el2)) {
+      _prior.set(el2, el2.muted);
+      _tracked.add(new WeakRef(el2));
     }
-    el.muted = true;
-    if (!userActive()) el.pause();
+    el2.muted = true;
+    if (!userActive()) el2.pause();
   }
   function onVolume(e) {
     var _a;
-    const el = e.target;
-    if (!((_a = el == null ? void 0 : el.matches) == null ? void 0 : _a.call(el, MEDIA_SELECTOR)) || isOwn(el)) return;
-    if (!el.muted && !userActive()) el.muted = true;
-    else if (!el.muted) _prior.delete(el);
+    const el2 = e.target;
+    if (!((_a = el2 == null ? void 0 : el2.matches) == null ? void 0 : _a.call(el2, MEDIA_SELECTOR)) || isOwn(el2)) return;
+    if (!el2.muted && !userActive()) el2.muted = true;
+    else if (!el2.muted) _prior.delete(el2);
   }
   function startMediaMute() {
     if (_on2) return;
@@ -5428,9 +5493,9 @@
   var _marquees = /* @__PURE__ */ new Set();
   var _observer3 = null;
   var _on3 = false;
-  var isOwn2 = (el) => {
+  var isOwn2 = (el2) => {
     var _a;
-    return !!((_a = el.closest) == null ? void 0 : _a.call(el, OWN_HOST2));
+    return !!((_a = el2.closest) == null ? void 0 : _a.call(el2, OWN_HOST2));
   };
   function isGif(img) {
     const src = img.currentSrc || img.getAttribute("src") || "";
@@ -5526,10 +5591,10 @@
   function scan3(root) {
     if (root.nodeType !== 1 && root.nodeType !== 9) return;
     const all = root.nodeType === 1 ? [root, ...root.querySelectorAll("*")] : root.querySelectorAll("*");
-    for (const el of all) {
-      if (el.id === "ms-container" || isOwn2(el)) continue;
-      if (el.tagName === "IMG") handleImg(el);
-      else if (el.tagName === "MARQUEE") handleMarquee(el);
+    for (const el2 of all) {
+      if (el2.id === "ms-container" || isOwn2(el2)) continue;
+      if (el2.tagName === "IMG") handleImg(el2);
+      else if (el2.tagName === "MARQUEE") handleMarquee(el2);
     }
     pauseAutoplay(root);
   }
@@ -5563,6 +5628,129 @@
     for (const m of _marquees) (_a = m.start) == null ? void 0 : _a.call(m);
     _marquees.clear();
     if (!keepMedia) restoreMedia();
+  }
+
+  // src/features/shortcutsCard.js
+  var CARD_ID = "ms-shortcuts-card";
+  var DISMISS_KEY = "ms-shortcuts-dismissed";
+  var _card = null;
+  function dismissed() {
+    try {
+      return sessionStorage.getItem(DISMISS_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+  function setDismissed(on) {
+    try {
+      if (on) sessionStorage.setItem(DISMISS_KEY, "1");
+      else sessionStorage.removeItem(DISMISS_KEY);
+    } catch (_) {
+    }
+  }
+  function pageAccessKeys() {
+    const out = [];
+    for (const el2 of document.querySelectorAll("[accesskey]")) {
+      if (el2.closest("#ms-container, #" + CARD_ID)) continue;
+      const key = (el2.getAttribute("accesskey") || "").trim();
+      if (!key) continue;
+      const name = (el2.getAttribute("aria-label") || el2.textContent || el2.getAttribute("title") || "").trim().replace(/\s+/g, " ").slice(0, 40);
+      out.push({
+        keys: `${STRINGS.shortcutAccessKeyPrefix}${key.toUpperCase()}`,
+        text: name || key
+      });
+    }
+    return out;
+  }
+  function el(tag, text, style) {
+    const n = document.createElement(tag);
+    if (text) n.textContent = text;
+    if (style) {
+      for (const [k, v] of Object.entries(style)) {
+        n.style.setProperty(k, v, "important");
+      }
+    }
+    return n;
+  }
+  function build(side) {
+    const card = el("section", "", {
+      position: "fixed",
+      bottom: "16px",
+      [side]: "16px",
+      width: "280px",
+      "max-width": "calc(100vw - 120px)",
+      // não cobre o botão flutuante (56px + folgas) a 390px
+      "box-sizing": "border-box",
+      padding: "12px 14px",
+      background: "#0B2C5F",
+      color: "#fff",
+      font: "400 15px/1.4 system-ui, sans-serif",
+      "border-radius": "10px",
+      "box-shadow": "0 4px 16px rgba(0,0,0,0.35)",
+      "z-index": "2147483640"
+    });
+    card.id = CARD_ID;
+    card.setAttribute("role", "region");
+    card.setAttribute("aria-label", STRINGS.shortcutsTitle);
+    card.append(
+      el("h2", STRINGS.shortcutsTitle, {
+        margin: "0 0 8px",
+        font: "700 16px/1.3 system-ui, sans-serif",
+        color: "#fff"
+      })
+    );
+    const list = el("ul", "", {
+      margin: "0 0 10px",
+      padding: "0",
+      "list-style": "none"
+    });
+    for (const s of [...SHORTCUTS, ...pageAccessKeys()]) {
+      const li = el("li", "", { margin: "0 0 6px", color: "#fff" });
+      li.append(
+        el("kbd", s.keys, {
+          display: "inline-block",
+          padding: "1px 6px",
+          margin: "0 6px 0 0",
+          background: "#fff",
+          color: "#0B2C5F",
+          "border-radius": "4px",
+          font: "700 14px/1.4 system-ui, sans-serif"
+        }),
+        document.createTextNode(s.text)
+      );
+      list.append(li);
+    }
+    const close = el("button", STRINGS.shortcutsClose, {
+      "min-width": "44px",
+      "min-height": "44px",
+      padding: "0 16px",
+      background: "#fff",
+      color: "#0B2C5F",
+      border: "0",
+      "border-radius": "8px",
+      font: "700 15px/1 system-ui, sans-serif",
+      cursor: "pointer"
+    });
+    close.type = "button";
+    close.addEventListener("click", () => {
+      setDismissed(true);
+      hide();
+    });
+    card.append(list, close);
+    return card;
+  }
+  function hide() {
+    _card == null ? void 0 : _card.remove();
+    _card = null;
+  }
+  function startShortcutsCard({ side = "left" } = {}) {
+    if (_card || dismissed()) return;
+    _card = build(side);
+    document.body.appendChild(_card);
+  }
+  function stopShortcutsCard() {
+    setDismissed(false);
+    hide();
   }
 
   // src/modo-simples.js
@@ -5612,10 +5800,17 @@
       if (currentState.options.readFocus) startFocusReader();
       if (currentState.options.muteMedia) startMediaMute();
       if (currentState.options.blockFlashing) startFlashBlock();
+      if (currentState.options.showShortcuts) {
+        startShortcutsCard({ side: this._shortcutsSide() });
+      }
       if (currentState.modoSimples) {
         this._activateModoSimples(currentState, { announce: false });
         this._announceRestoredOnce();
       }
+    }
+    /** Cartão de atalhos fica do lado oposto ao botão flutuante. */
+    _shortcutsSide() {
+      return String(this._config.position || "").endsWith("left") ? "right" : "left";
     }
     /**
      * Modo restaurado em outra página: silêncio a cada navegação, mas uma única vez por sessão
@@ -5719,8 +5914,8 @@
       }
     }
     /** Guarda (memória + storage) se as imagens estavam ocultas antes de ligar o MS. */
-    _saveHideImagesBeforeMs(hide) {
-      saveHideImagesBeforeMs(this, hide);
+    _saveHideImagesBeforeMs(hide2) {
+      saveHideImagesBeforeMs(this, hide2);
     }
     /** Lê e esquece o valor guardado; sem registro (ex.: MS já estava ligado) = imagens visíveis. */
     _takeHideImagesBeforeMs() {
@@ -5781,8 +5976,8 @@
       setPageInert(this, on);
     }
     /** Delegate: ver inertSibling() em src/ui/binding.js. */
-    _inertSibling(el) {
-      inertSibling(this, el);
+    _inertSibling(el2) {
+      inertSibling(this, el2);
     }
     /** Delegate: ver closePanel() em src/ui/binding.js. */
     _closePanel() {
@@ -5823,14 +6018,14 @@
     _activateModoSimples(currentState, { announce: doAnnounce = true } = {}) {
       const saved = this._loadPrincipal();
       if (saved) {
-        let el = null;
+        let el2 = null;
         try {
-          el = document.querySelector(saved.path);
+          el2 = document.querySelector(saved.path);
         } catch (_) {
         }
-        if (el && this._isPlausiblePrincipal(el, saved)) {
-          this._savePrincipalPath(saved.path, el);
-          setPrincipal(el, this._config);
+        if (el2 && this._isPlausiblePrincipal(el2, saved)) {
+          this._savePrincipalPath(saved.path, el2);
+          setPrincipal(el2, this._config);
           document.documentElement.classList.add("ms-ativo");
           applyOptions(currentState);
           if (doAnnounce) announce("Modo Simples ativado");
@@ -5853,10 +6048,10 @@
     _startManualChoice() {
       this._setPageInert(false);
       startManualSelect({
-        onSelect: (el, path) => {
+        onSelect: (el2, path) => {
           this._setPageInert(state_default.get().panelOpen);
-          setPrincipal(el, this._config);
-          this._savePrincipalPath(path, el);
+          setPrincipal(el2, this._config);
+          this._savePrincipalPath(path, el2);
           applyModoSimples(state_default.get(), this._config);
           announce(STRINGS.manualChosen);
         },
@@ -5901,7 +6096,9 @@
         "simpleLanguage",
         "readFocus",
         "muteMedia",
-        "blockFlashing"
+        "blockFlashing",
+        "strongFocus",
+        "showShortcuts"
       ];
       const optionChanged = optionKeys.some(
         (k) => prev.options[k] !== next.options[k]
@@ -5921,6 +6118,11 @@
         if (next.options.blockFlashing) startFlashBlock();
         else stopFlashBlock({ keepMedia: next.options.muteMedia });
       }
+      if (prev.options.showShortcuts !== next.options.showShortcuts) {
+        if (next.options.showShortcuts) {
+          startShortcutsCard({ side: this._shortcutsSide() });
+        } else stopShortcutsCard();
+      }
       if (prev.options.readFocus !== next.options.readFocus) {
         if (next.options.readFocus) startFocusReader();
         else stopFocusReader();
@@ -5938,8 +6140,8 @@
       loadPersistedState(this);
     }
     /** Grava o principal escolhido POR PÁGINA, com o tamanho do texto para validar depois. */
-    _savePrincipalPath(path, el) {
-      savePrincipalPath(this, path, el);
+    _savePrincipalPath(path, el2) {
+      savePrincipalPath(this, path, el2);
     }
     /**
      * Principal salvo para ESTA página. Sem registro de página, aceita o registro antigo (por host,
@@ -5961,16 +6163,16 @@
      * texto da heurística (scoring.minTextLength) e, quando conhecido, não menos que metade do
      * tamanho de quando foi escolhido.
      */
-    _isPlausiblePrincipal(el, saved) {
-      return isPlausiblePrincipal(this, el, saved);
+    _isPlausiblePrincipal(el2, saved) {
+      return isPlausiblePrincipal(this, el2, saved);
     }
     /**
      * Registro antigo (por host, sem tamanho gravado) é só uma dica: além do mínimo de texto, quando
      * a heurística tem confiança nesta página o elemento da dica não pode ser bem menor que o
      * candidato dela (< 50% do texto) — outra página do host com a mesma estrutura de caminho.
      */
-    _legacyHintFits(el, len) {
-      return legacyHintFits(this, el, len);
+    _legacyHintFits(el2, len) {
+      return legacyHintFits(this, el2, len);
     }
     // ── System preferences ─────────────────────────────────────────────────────
     /**

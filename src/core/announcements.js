@@ -19,6 +19,8 @@ const TOGGLE_ANNOUNCEMENTS = {
   simpleLanguage: ['Linguagem simples ligada', 'Linguagem simples desligada'],
   readFocus: ['Leitura do foco ligada', 'Leitura do foco desligada'],
   muteMedia: ['Vídeos e sons silenciados', 'Vídeos e sons liberados'],
+  strongFocus: ['Foco reforçado ligado', 'Foco reforçado desligado'],
+  showShortcuts: ['Atalhos do teclado visíveis', 'Atalhos do teclado ocultos'],
   blockFlashing: [
     'Bloqueio de animações e GIFs ligado',
     'Bloqueio de animações e GIFs desligado',

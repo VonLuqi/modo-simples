@@ -25,6 +25,7 @@ const OWN_SELECTOR = [
   '#ms-manual-select-banner',
   '#ms-reading-ruler',
   '[data-ms-media-badge]',
+  '#ms-shortcuts-card',
   '[data-ms-pills][data-ms-injected]',
   '[data-ms-live]',
 ].join(',');

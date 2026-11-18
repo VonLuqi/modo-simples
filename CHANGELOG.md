@@ -4,6 +4,13 @@ Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) · versiona
 
 ## [Unreleased]
 
+### Adicionado (F7e — perfil Teclado: "Foco bem visível" e "Mostrar atalhos do teclado")
+
+- **Nova seção do painel "Teclado e foco"** com duas opções independentes (booleanos, padrão desligado, persistidos, zerados pelo "Desligar tudo", anunciados ao alternar): `strongFocus` e `showShortcuts`. Pensadas para o perfil Teclado (F7f) ligar junto com "Ler o que eu seleciono".
+- **`strongFocus`** — classe `ms-strong-focus` no `<html>`: todo `:focus-visible` da página ganha anel duplo (contorno preto de 3px + sombra amarela de 6px, `outline-offset: 2px`), legível em qualquer fundo (≥ 3:1, WCAG 2.4.13) e **também em elementos cujo CSS do site faz `outline: none`** (`!important`). A UI da lib (`#ms-container`, barra e chrome do Modo Simples) fica de fora: já tem foco próprio.
+- **`showShortcuts`** — cartão "Atalhos do teclado" (`role="region"`, canto inferior do lado oposto ao botão flutuante, `max-width: calc(100vw - 120px)` para não cobri-lo a 390px, fora da armadilha de foco do painel; texto branco sobre `#0B2C5F`). Lista vem de **uma fonte só** (`SHORTCUTS` em `src/ui/strings.js`: Alt+Shift+A, Esc, Tab, Shift+Tab, Enter, Espaço) mais os `accesskey` da própria página (`Alt+<tecla>` + nome do elemento). **Fechar** (44px) esconde só nesta sessão do navegador (`sessionStorage`); a opção continua ligada, e desligar/ligar de novo mostra outra vez. Módulo novo `src/features/shortcutsCard.js`; o cartão entra na lista de nós da lib ignorados pelo `domObserver`.
+- **Limites conhecidos:** o lado do cartão é escolhido ao ligar (mudar `position` do botão com o cartão aberto só vale na próxima vez); o prefixo real do `accesskey` varia por navegador/SO (mostramos `Alt+`).
+
 ### Adicionado (F7d — "Bloquear animações e GIFs", segurança para epilepsia)
 
 - **Opção `blockFlashing`** (booleano, padrão desligado, persistida, zerada pelo "Desligar tudo", anunciada ao alternar; independente de `reducedMotion` e `muteMedia`) com interruptor na seção "Movimento e imagens". Mais forte que "Reduzir movimento": a classe `ms-block-flashing` no `<html>` aplica `animation: none`, `transition: none` e `scroll-behavior: auto` em todo o site e, via atributo `data-ms-noflash` no host `#ms-container`, na UI do próprio widget.

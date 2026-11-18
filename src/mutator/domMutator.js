@@ -70,6 +70,7 @@ const OPTION_FLAG_CLASSES = [
   'ms-text-spacing',
   'ms-reduced-motion',
   'ms-block-flashing',
+  'ms-strong-focus',
   'ms-hide-images',
   'ms-reading-ruler',
   'ms-simple-language',
@@ -221,6 +222,7 @@ export function applyOptions(state) {
   }
   html.classList.toggle('ms-reduced-motion', !!opts.reducedMotion);
   html.classList.toggle('ms-block-flashing', !!opts.blockFlashing);
+  html.classList.toggle('ms-strong-focus', !!opts.strongFocus);
   setHostFlag('data-ms-noflash', !!opts.blockFlashing);
   html.classList.toggle('ms-hide-images', !!opts.hideImages);
   html.classList.toggle('ms-reading-ruler', !!opts.readingRuler);

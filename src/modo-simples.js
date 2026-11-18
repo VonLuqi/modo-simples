@@ -73,6 +73,10 @@ import { startFocusReader, stopFocusReader } from './features/focusReader.js';
 import { startMediaMute, stopMediaMute } from './features/mediaMute.js';
 import { startFlashBlock, stopFlashBlock } from './features/flashBlock.js';
 import {
+  startShortcutsCard,
+  stopShortcutsCard,
+} from './features/shortcutsCard.js';
+import {
   startManualSelect,
   stopManualSelect,
   showLowConfidenceNotice,
@@ -132,11 +136,21 @@ class ModoSimples {
     if (currentState.options.readFocus) startFocusReader();
     if (currentState.options.muteMedia) startMediaMute();
     if (currentState.options.blockFlashing) startFlashBlock();
+    if (currentState.options.showShortcuts) {
+      startShortcutsCard({ side: this._shortcutsSide() });
+    }
 
     if (currentState.modoSimples) {
       this._activateModoSimples(currentState, { announce: false });
       this._announceRestoredOnce();
     }
+  }
+
+  /** Cartão de atalhos fica do lado oposto ao botão flutuante. */
+  _shortcutsSide() {
+    return String(this._config.position || '').endsWith('left')
+      ? 'right'
+      : 'left';
   }
 
   /**
@@ -480,6 +494,8 @@ class ModoSimples {
       'readFocus',
       'muteMedia',
       'blockFlashing',
+      'strongFocus',
+      'showShortcuts',
     ];
     const optionChanged = optionKeys.some(
       (k) => prev.options[k] !== next.options[k],
@@ -501,6 +517,12 @@ class ModoSimples {
     if (prev.options.blockFlashing !== next.options.blockFlashing) {
       if (next.options.blockFlashing) startFlashBlock();
       else stopFlashBlock({ keepMedia: next.options.muteMedia });
+    }
+
+    if (prev.options.showShortcuts !== next.options.showShortcuts) {
+      if (next.options.showShortcuts) {
+        startShortcutsCard({ side: this._shortcutsSide() });
+      } else stopShortcutsCard();
     }
 
     if (prev.options.readFocus !== next.options.readFocus) {

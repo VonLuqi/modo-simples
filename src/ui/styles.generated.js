@@ -1070,6 +1070,12 @@ export const PAGE_CSS = `
       outline-offset: 2px !important;
     }
 
+    /* ── Foco bem visível (F7e): anel duplo (preto + amarelo), legível em qualquer fundo ── */
+    html.ms-strong-focus :focus-visible:not(#ms-container, #ms-simples-chrome *, #ms-session-bar *, #ms-shortcuts-card *) {
+      outline: 3px solid #000 !important;
+      outline-offset: 2px !important;
+      box-shadow: 0 0 0 6px #ffd400 !important;
+    }
     /* ── Lexend / dyslexia font ──────────────────────────────────────────── */
     html.ms-dyslexia-font,
     html.ms-dyslexia-font body,

@@ -44,6 +44,8 @@ const RESET_OPTIONS = {
   simpleLanguage: false,
   readFocus: false,
   blockFlashing: false,
+  strongFocus: false,
+  showShortcuts: false,
   muteMedia: false,
 };
 
