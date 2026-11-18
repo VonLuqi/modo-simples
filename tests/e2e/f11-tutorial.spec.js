@@ -456,6 +456,76 @@ test('Recolher o balão esconde o texto e mantém Próximo/Voltar', async ({
   await expect(page.locator('.ms-tut-text')).toBeHidden(); // vale para os próximos passos
 });
 
+test('sobreposições: balão livre do conteúdo, sem anel velho, teclado virtual com teclas (T181)', async ({
+  site,
+}, testInfo) => {
+  test.setTimeout(240_000);
+  const { page } = site;
+  await page.goto(INDEX);
+  await waitForLib(page);
+  await iniciar(page);
+  const steps = await getSteps(page);
+  const vp = page.viewportSize();
+  const shots = new Set([6, 20, 21, 22, 28]);
+  const cruza = (a, b) =>
+    a.x < b.x + b.width &&
+    b.x < a.x + a.width &&
+    a.y < b.y + b.height &&
+    b.y < a.y + a.height;
+  const visto = new Set();
+
+  for (let i = 1; i < STEPS; i++) {
+    await nextBtn(page).focus();
+    await page.keyboard.press('Enter');
+    await expect(count(page)).toHaveText(`Passo ${i + 1} de ${STEPS}`);
+    const t = steps[i].tool;
+    const n = i + 1;
+    if (process.env.F11_SHOTS && shots.has(n)) {
+      await page.waitForTimeout(350); // passa o fade de entrada do balão
+      await page.screenshot({
+        path: `${process.env.F11_SHOTS}/${testInfo.project.name}-passo-${String(n).padStart(2, '0')}.png`,
+      });
+    }
+    if (!t) continue;
+    const bb = await balloon(page).boundingBox();
+    if (t.t === 'switch' && t.o === 'showShortcuts') {
+      const card = await page.locator('#ms-shortcuts-card').boundingBox();
+      expect(cruza(bb, card), 'balão cobre o cartão de atalhos').toBe(false);
+      visto.add('atalhos');
+    }
+    if (t.t === 'outline') {
+      const o = await page.locator('.ms-outline').boundingBox();
+      expect(cruza(bb, o), 'balão cobre a estrutura').toBe(false);
+      await expect(page.locator('.ms-tut-spot')).toBeHidden();
+      visto.add('estrutura');
+    }
+    if (t.t === 'grid') {
+      const cel1 = { x: 0, y: 0, width: vp.width / 3, height: vp.height / 3 };
+      expect(cruza(bb, cel1), 'balão cobre a célula 1').toBe(false);
+      await expect(page.locator('.ms-tut-spot')).toBeHidden();
+      visto.add('grade');
+    }
+    if (t.t === 'vk') {
+      const vk = page.locator('#ms-virtual-keyboard');
+      const k = await vk.boundingBox();
+      expect(cruza(bb, k), 'balão cobre o teclado virtual').toBe(false);
+      await expect(page.locator('.ms-tut-spot')).toBeHidden();
+      // com o campo de teste em foco as teclas aparecem (não só "Toque num campo")
+      await expect(page.locator('.ms-tut-demo')).toBeFocused();
+      expect(await vk.locator('button').count()).toBeGreaterThan(20);
+      visto.add('teclado');
+    }
+  }
+  expect([...visto].sort()).toEqual([
+    'atalhos',
+    'estrutura',
+    'grade',
+    'teclado',
+  ]);
+  // o campo de teste some ao sair do passo
+  await expect(page.locator('.ms-tut-demo')).toHaveCount(0);
+});
+
 test('axe não acusa violação nova em passo de ferramenta (painel aberto)', async ({
   site,
 }, testInfo) => {
@@ -548,6 +618,24 @@ test.describe('botão "Responder formulário" no canto', () => {
       await waitForLib(page);
       await page.waitForTimeout(300);
       await expect(corner(page)).toHaveCount(0);
+    }
+  });
+
+  test('a 320px não encosta no FAB (T181 L4)', async ({ site }, testInfo) => {
+    const { page } = site;
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto(INDEX);
+    await waitForLib(page);
+    await encerrar(page, 'Pular');
+    await expect(corner(page)).toBeVisible();
+    const a = await corner(page).boundingBox();
+    const b = await page.locator('#ms-fab').boundingBox();
+    expect(a.x + a.width).toBeLessThanOrEqual(b.x - 4);
+    expect(a.x + a.width).toBeLessThanOrEqual(320);
+    if (process.env.F11_SHOTS) {
+      await page.screenshot({
+        path: `${process.env.F11_SHOTS}/${testInfo.project.name}-canto-320.png`,
+      });
     }
   });
 

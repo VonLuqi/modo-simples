@@ -26,6 +26,8 @@ window.MSTutorialStrings = {
   exploreClosed: 'Tutorial encerrado. Explore o painel à vontade.',
   peekHide: 'Recolher',
   peekShow: 'Expandir',
+  vkDemoLabel: 'Campo de teste para o teclado virtual',
+  vkDemoPlaceholder: 'Digite aqui com o teclado da tela',
   peekLabel: 'Recolher ou expandir o texto do balão para ver melhor a página',
   unsupported:
     ' Este navegador não tem voz: o ajuste não pode ser mostrado aqui.',
@@ -153,7 +155,7 @@ window.MSTutorialStrings = {
     {
       tool: { t: 'vk' },
       title: 'Teclado virtual',
-      text: 'Aberto o teclado na tela, fixo no rodapé, para digitar sem o teclado físico.',
+      text: 'Aberto o teclado na tela, fixo no rodapé, para digitar sem o teclado físico. Experimente no campo abaixo.',
     },
 
     // ── Movimento e imagens ─────────────────────────────────────────────

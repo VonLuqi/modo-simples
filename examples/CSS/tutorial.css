@@ -125,6 +125,29 @@
   color: var(--ms-text-muted);
 }
 
+/* Balão recolhido: só título e botões, o mais baixo possível (libera a tela para o efeito) */
+.ms-tut-balloon--min {
+  padding: 0.4rem 0.8rem 0.5rem;
+}
+
+.ms-tut-balloon--min .ms-tut-actions {
+  margin-top: 0.2rem;
+  gap: 0.35rem;
+}
+
+.ms-tut-balloon--min .ms-tut-count {
+  display: none; /* o "Passo n de N" segue anunciado pela região aria-live */
+}
+
+.ms-tut-balloon--min .ms-tut-title {
+  font-size: 1rem;
+}
+
+.ms-tut-balloon--min .ms-tut-peek {
+  min-height: 32px;
+  margin-top: -0.2rem;
+}
+
 .ms-tut-btn {
   min-height: 44px;
   min-width: 44px;
@@ -249,7 +272,9 @@
   z-index: 2147483000;
   display: flex;
   align-items: stretch;
-  max-width: calc(100vw - 96px);
+  max-width: calc(
+    100vw - 120px
+  ); /* nunca chega ao FAB (56px + folgas), nem a 320px */
   background: var(--senac-blue);
   border-radius: 999px;
   box-shadow: 0 4px 16px rgb(0 24 48 / 30%);
@@ -278,7 +303,10 @@
 }
 
 .ms-tut-corner__link {
-  padding: 0 0.6rem 0 1.1rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.25rem 0.6rem 0.25rem 1.1rem;
+  line-height: 1.2;
   text-decoration: none;
   border-radius: 999px 0 0 999px;
 }
@@ -353,6 +381,24 @@
   .ms-tut-btn--primary {
   background-color: var(--senac-blue) !important;
   color: #fff !important;
+}
+
+.ms-tut-demo {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  font: inherit;
+  border-radius: 8px;
+}
+
+#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial#ms-tutorial
+  .ms-tut-demo {
+  background-color: #fff !important;
+  color: #1c2733 !important;
+  border: 2px solid var(--senac-blue) !important;
 }
 
 #ms-tut-corner#ms-tut-corner#ms-tut-corner#ms-tut-corner#ms-tut-corner#ms-tut-corner#ms-tut-corner {

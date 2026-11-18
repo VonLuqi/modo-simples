@@ -454,6 +454,11 @@
     note.textContent = T.formLinkNote;
     link.appendChild(note);
     body.appendChild(text); // o link só entra no DOM no último passo (render)
+    var demo = el('input', 'ms-tut-demo'); // só no passo do teclado virtual (render)
+    demo.type = 'text';
+    demo.autocomplete = 'off';
+    demo.setAttribute('aria-label', T.vkDemoLabel);
+    demo.placeholder = T.vkDemoPlaceholder;
 
     var actions = el('div', 'ms-tut-actions');
     var skip = btn('ms-tut-btn ms-tut-btn--quiet', T.skip);
@@ -488,6 +493,7 @@
       body: body,
       text: text,
       link: link,
+      demo: demo,
       count: count,
       skip: skip,
       back: back,
@@ -510,8 +516,97 @@
     };
   }
 
+  // Conteúdo que o balão não pode cobrir: cartão de atalhos, lista da estrutura, célula 1 da grade,
+  // teclas do teclado virtual.
+  function avoidRects(step) {
+    var t = step.tool;
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    var n = null;
+    if (!t) return [];
+    if (t.t === 'grid') {
+      return [{ left: 0, top: 0, right: vw / 3, bottom: vh / 3 }];
+    }
+    if (t.t === 'switch' && t.o === 'showShortcuts') {
+      n = document.getElementById('ms-shortcuts-card');
+    } else if (t.t === 'outline') {
+      n = q('.ms-outline');
+    } else if (t.t === 'vk') {
+      n = document.getElementById('ms-virtual-keyboard');
+    }
+    return n && shown(n) ? [n.getBoundingClientRect()] : [];
+  }
+  function hits(b, rs) {
+    var r = b.getBoundingClientRect();
+    return rs.some(function (a) {
+      return (
+        r.left < a.right &&
+        a.left < r.right &&
+        r.top < a.bottom &&
+        a.top < r.bottom
+      );
+    });
+  }
+  function setCollapsed(on) {
+    var ui = run.ui;
+    ui.body.hidden = on;
+    ui.balloon.classList.toggle('ms-tut-balloon--min', on);
+    ui.peek.textContent = on ? T.peekShow : T.peekHide;
+    ui.peek.setAttribute('aria-expanded', String(!on));
+  }
+  // posições livres do balão (celular: faixa no topo ou no pé; desktop: os 4 cantos)
+  function tryFree(b, rs) {
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    var M = 12;
+    var cands;
+    b.classList.remove('ms-tut-balloon--sheet', 'ms-tut-balloon--sheet-top');
+    b.style.left = b.style.top = '';
+    if (vw < NARROW) {
+      cands = [
+        ['ms-tut-balloon--sheet', 'ms-tut-balloon--sheet-top'],
+        ['ms-tut-balloon--sheet'],
+      ];
+      return cands.some(function (c) {
+        b.classList.remove(
+          'ms-tut-balloon--sheet',
+          'ms-tut-balloon--sheet-top',
+        );
+        c.forEach(function (k) {
+          b.classList.add(k);
+        });
+        return !hits(b, rs);
+      });
+    }
+    var bw = b.offsetWidth;
+    var bh = b.offsetHeight;
+    cands = [
+      [vw - bw - M, M],
+      [vw - bw - M, vh - bh - M],
+      [M, vh - bh - M],
+      [M, M],
+    ];
+    return cands.some(function (p) {
+      b.style.left = p[0] + 'px';
+      b.style.top = p[1] + 'px';
+      return !hits(b, rs);
+    });
+  }
   function place() {
     if (!run) return;
+    layout();
+    var rs = avoidRects(T.steps[run.i]);
+    var b = run.ui.balloon;
+    if (!rs.length || !hits(b, rs) || tryFree(b, rs)) return;
+    // sem área livre com o texto aberto: recolhe o balão (Recolher) e tenta de novo
+    if (!run.ui.body.hidden && !run.ui.peek.hidden) {
+      setCollapsed(true);
+      layout();
+      if (!hits(b, rs) || tryFree(b, rs)) return;
+    }
+  }
+
+  function layout() {
     var ui = run.ui;
     var step = T.steps[run.i];
     var t = targetEl(step);
@@ -523,6 +618,8 @@
 
     var r = t && open ? t.getBoundingClientRect() : null;
     if (r && panel && t !== panel) r = clip(r, panel.getBoundingClientRect());
+    // sobreposições (estrutura, grade, teclado) não têm alvo no painel: sem anel de destaque
+    if (step.tool && /^(outline|grid|vk)$/.test(step.tool.t)) r = null;
     if (r && r.width > 0 && r.height > 0) {
       ui.spot.hidden = false;
       ui.spot.style.left = r.left - PAD + 'px';
@@ -597,10 +694,11 @@
     ui.skip.hidden = !!step.final; // no último passo "Explorar sozinho" já encerra
     ui.next.textContent = step.final ? T.explore : T.next;
     ui.peek.hidden = !!step.final || !!step.dim;
-    var collapsed = run.peek && !ui.peek.hidden;
-    ui.body.hidden = collapsed;
-    ui.peek.textContent = collapsed ? T.peekShow : T.peekHide;
-    ui.peek.setAttribute('aria-expanded', String(!collapsed));
+    // campo de teste: só no passo do teclado virtual (as teclas só aparecem com um campo em foco)
+    ui.demo.value = '';
+    if (step.tool && step.tool.t === 'vk') ui.body.appendChild(ui.demo);
+    else ui.demo.remove();
+    setCollapsed(run.peek && !ui.peek.hidden);
     announce(T.announce(run.i + 1, total, step.title, text));
   }
 
@@ -649,6 +747,10 @@
       render(extra);
       place();
       var prefer = firstFocus ? s.ui.balloon : s.lastBtn;
+      // teclado virtual: o foco vai ao campo de teste (dentro do balão) e as teclas aparecem
+      if (step.tool && step.tool.t === 'vk' && !s.ui.body.hidden) {
+        prefer = s.ui.demo;
+      }
       if (!prefer || prefer.hidden) prefer = s.ui.next;
       prefer.focus();
     });
@@ -670,7 +772,7 @@
     e.preventDefault();
     e.stopPropagation();
     var f = Array.prototype.filter.call(
-      run.ui.balloon.querySelectorAll('button, a[href]'),
+      run.ui.balloon.querySelectorAll('button, a[href], input'),
       function (n) {
         return !n.hidden && !n.closest('[hidden]');
       },
