@@ -333,7 +333,7 @@ test.describe('cabeçalho sem sobreposição', () => {
   for (const largura of [1024, 1280, 1440]) {
     test(`${largura}px: itens do cabeçalho não se cruzam (8 páginas)`, async ({
       site,
-    }, testInfo) => {
+    }) => {
       const { page } = site;
       await page.setViewportSize({ width: largura, height: 800 });
       for (const p of PAGES) {

@@ -174,6 +174,60 @@ test.describe('F9e — Teclado virtual', () => {
     expect(m.minH).toBeGreaterThanOrEqual(40);
   });
 
+  // F11 (QA T173 L3/M1): cada linha ABNT2 cabe numa linha só, sem quebra, sem corte e sem rolagem horizontal
+  for (const [w, minW] of [
+    [390, 24],
+    [320, 19], // 14 teclas em 304px: 24px não cabe (14*24 > 304)
+  ]) {
+    test(`${w}px: 5 linhas ABNT2 (uma linha cada), teclas >=44px de altura, rótulos sem corte`, async ({
+      site,
+    }) => {
+      const { page } = site;
+      await page.setViewportSize({ width: w, height: 844 });
+      await open(page);
+      await page.locator('#last').focus();
+      await expect(page.locator(`${KB} [data-vk-keys]`)).toBeVisible();
+      const m = await page.evaluate(() => {
+        const root = document.getElementById('ms-virtual-keyboard');
+        const rows = [
+          ...root.querySelectorAll(
+            '[data-vk-keys] [data-vk-scroll] > div, [data-vk-bottom]',
+          ),
+        ];
+        const btns = [...root.querySelectorAll('[data-vk]')];
+        return {
+          rows: rows.length,
+          rowLines: rows.map(
+            (r) =>
+              new Set(
+                [...r.children].map((b) =>
+                  Math.round(b.getBoundingClientRect().top),
+                ),
+              ).size,
+          ),
+          minH: Math.min(...btns.map((b) => b.getBoundingClientRect().height)),
+          minW: Math.min(...btns.map((b) => b.getBoundingClientRect().width)),
+          clipped: btns
+            .filter((b) => b.scrollWidth > b.clientWidth)
+            .map((b) => b.dataset.vk),
+          hscroll:
+            document.documentElement.scrollWidth -
+            document.documentElement.clientWidth,
+          rootOver: root.scrollWidth - root.clientWidth,
+        };
+      });
+      expect(m.rows).toBe(5);
+      expect(m.rowLines).toEqual([1, 1, 1, 1, 1]);
+      expect(m.minH).toBeGreaterThanOrEqual(44);
+      expect(m.minW).toBeGreaterThanOrEqual(minW);
+      expect(m.clipped).toEqual([]);
+      expect(m.hscroll).toBeLessThanOrEqual(0);
+      expect(m.rootOver).toBeLessThanOrEqual(0);
+      if (process.env.VK_SHOTS)
+        await page.screenshot({ path: `${process.env.VK_SHOTS}/vk-${w}.png` });
+    });
+  }
+
   test('"Desligar tudo" fecha o teclado', async ({ site }) => {
     const { page } = site;
     await open(page);

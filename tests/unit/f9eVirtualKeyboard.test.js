@@ -311,14 +311,14 @@ describe('teclado na tela', () => {
     assert.equal(ta.value, 'x\ny');
   });
 
-  it('teclas não roubam o foco (mousedown/pointerdown cancelados) e têm tamanho mínimo (24x40)', () => {
+  it('teclas não roubam o foco (mousedown/pointerdown cancelados) e têm tamanho mínimo (altura 44, sem esticar)', () => {
     openVirtualKeyboard({ touch: false });
     focus($('#t'));
     const b = key('a');
     assert.equal(fire(b, 'mousedown'), false);
     assert.equal(fire(b, 'pointerdown'), false);
-    assert.equal(b.style.minWidth, '24px');
-    assert.ok(parseInt(b.style.minHeight) >= 40);
+    assert.equal(b.style.minWidth, '0'); // largura pela unidade (e2e mede 390/320px)
+    assert.ok(parseInt(b.style.minHeight) >= 44);
   });
 
   it('toque: inputmode=none no campo focado; volta ao original ao trocar de campo e ao fechar', () => {

@@ -667,24 +667,28 @@ function press(def) {
   paint();
 }
 
-/** Largura de 1 unidade de tecla: 10 por linha em telas estreitas, no máximo 56px nas largas. */
-const UNIT = 'min(calc((100% - 40px) / 10), 56px)'; // linha de 10 teclas; nunca estica (sem flex-grow)
-const basis = (w) => `calc(${w} * ${UNIT} + ${(w - 1) * 4}px)`;
+const GAP = 2;
+/** Peso (em unidades de tecla) das teclas largas; as demais valem 1. */
 const WEIGHT = {
-  Backspace: 2,
-  Caps: 2,
-  Shift: 2,
-  Fechar: 2,
-  Enter: 2,
+  Fechar: 3,
+  AltGr: 2.5,
+  Enter: 3,
   Space: 5,
 };
+/** Teclas de uma unidade mostram um símbolo (o nome acessível vem de labelOf). */
+const GLYPH = { Backspace: '←', Caps: '⇪', Shift: '⇧' };
+const rowUnits = (row) => row.reduce((n, d) => n + (WEIGHT[d] || 1), 0);
+const MAX_UNITS = Math.max(...ROWS.map(rowUnits));
+/** 1 unidade = a linha mais larga numa linha só (sem quebra, sem esticar), no máximo 56px nas telas largas. */
+const UNIT = `min(calc((100% - ${(MAX_UNITS - 1) * GAP}px) / ${MAX_UNITS}), 56px)`;
+const basis = (w) => `calc(${w} * ${UNIT} + ${(w - 1) * GAP}px)`;
 
 function buildRow(row) {
   const line = document.createElement('div');
   setStyle(line, {
     display: 'flex',
-    'flex-wrap': 'wrap',
-    gap: '4px',
+    'flex-wrap': 'nowrap',
+    gap: `${GAP}px`,
     'justify-content': 'center',
     margin: '0 0 4px',
   });
@@ -694,14 +698,15 @@ function buildRow(row) {
     btn.type = 'button';
     btn.dataset.vk = def;
     if (def !== 'Fechar') btn.tabIndex = -1; // só o Fechar entra na ordem do Tab
-    btn.textContent = SPECIAL.includes(def) ? labelOf(def) : '';
+    btn.textContent = GLYPH[def] || (SPECIAL.includes(def) ? labelOf(def) : '');
+    if (GLYPH[def]) btn.setAttribute('aria-label', labelOf(def));
     setStyle(btn, {
       flex: `0 0 ${basis(w)}`,
-      'min-width': '24px',
+      'min-width': '0',
       'min-height': '44px',
       margin: '0',
-      padding: '0 2px',
-      font: '600 18px/1 system-ui, sans-serif',
+      padding: '0',
+      font: `600 ${GLYPH[def] ? 12 : 18}px/1 system-ui, sans-serif`,
       'border-radius': '8px',
       cursor: 'pointer',
     });
