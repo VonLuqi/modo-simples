@@ -1128,6 +1128,20 @@
 
   window.MSTutorial = { start: start, end: end };
 
+  // Troca de idioma: o balão é montado com os textos do idioma vigente, então o tour em curso
+  // termina (restaurando o estado do visitante); o botão do canto e o aria-label são refeitos.
+  document.addEventListener('ms:localechange', function () {
+    if (run) end(false);
+    var c = document.getElementById(CORNER_ID);
+    if (c) c.remove();
+    syncCorner();
+    document
+      .querySelectorAll('[data-tutorial-start][aria-label]')
+      .forEach(function (b) {
+        b.setAttribute('aria-label', T.startButtonLabel);
+      });
+  });
+
   whenLibReady(function () {
     if (!seen()) start();
     else syncCorner();

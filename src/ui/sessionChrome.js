@@ -6,7 +6,7 @@
  */
 
 import { hasSimpleLanguagePairs } from '../utils/simpleLanguage.js';
-import { STRINGS as S } from './strings.js';
+import { STRINGS_T as S } from './strings.js';
 
 const SLIDERS_ICON = `
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" focusable="false">

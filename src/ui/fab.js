@@ -6,7 +6,7 @@
  */
 
 import persistence from '../core/persistence.js';
-import { STRINGS as S } from './strings.js';
+import { STRINGS_T as S } from './strings.js';
 
 const TIP_SEEN_KEY = 'fabTipSeen';
 
